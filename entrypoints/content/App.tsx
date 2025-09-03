@@ -24,8 +24,8 @@ function App() {
           <span>{count}</span>
           <button onClick={() => setCount(count + 1)}>+</button>
         </div>
-        <p>カウントを増減させることができます。</p>
       </div>
+      <p className="text-red-800">カウントを増減させることができます。</p>
     </div>
   );
 }
