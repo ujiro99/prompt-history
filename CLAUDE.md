@@ -38,7 +38,6 @@ This is a browser extension built with WXT (Web Extension Toolkit) and React. Th
 
 - Background script handles extension lifecycle
 - Content script injects UI widgets into AI service pages
-- No popup interface - all UI is embedded in web pages
 
 **Technology Stack**:
 
@@ -48,7 +47,12 @@ This is a browser extension built with WXT (Web Extension Toolkit) and React. Th
 - **Testing**: Vitest with React Testing Library for unit testing
 - **Code Quality**: ESLint with TypeScript and React rules
 - **UI Framework**: Shadcn/ui components with Tailwind CSS styling
-- **Build System**: TypeScript with React JSX support, WXT handles manifest generation
+
+**Build System**:
+
+- TypeScript with React JSX support
+- WXT handles manifest generation and browser-specific builds
+- Extends base tsconfig from `.wxt/tsconfig.json`
 
 ## Key Files
 

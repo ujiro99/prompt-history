@@ -38,7 +38,6 @@
 
 - バックグラウンドスクリプトが拡張機能のライフサイクルを処理
 - コンテンツスクリプトがAIサービスページにUIウィジェットを注入
-- ポップアップインターフェースは使用せず、すべてのUIはWebページに埋め込まれる
 
 **技術スタック**:
 
@@ -48,7 +47,12 @@
 - **テスト**: React Testing Libraryを使用したVitestによるユニットテスト
 - **コード品質**: TypeScriptとReactルールを使用したESLint
 - **UIフレームワーク**: Tailwind CSSスタイリングを使用したShadcn/uiコンポーネント
-- **ビルドシステム**: React JSXサポート付きTypeScript、WXTがマニフェスト生成を処理
+
+**ビルドシステム**:
+
+- React JSXサポート付きTypeScript
+- WXTがマニフェスト生成とブラウザ固有のビルドを処理
+- `.wxt/tsconfig.json`からベースのtsconfigを拡張
 
 ## 主要ファイル
 

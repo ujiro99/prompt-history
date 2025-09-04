@@ -1,14 +1,22 @@
 {
   "permissions": {
     "allow": [
+      "Bash(pnpm build:*)",
+      "Bash(pnpm compile:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(pnpm test:*)",
       "WebFetch(domain:github.com)",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "WebSearch",
-      "Bash(pnpm compile:*)",
-      "WebFetch(domain:wxt.dev)",
       "WebFetch(domain:www.npmjs.com)",
-      "Bash(pnpm test:*)",
-      "Bash(pnpm lint:*)"
+      "WebFetch(domain:wxt.dev)",
+      "WebSearch",
+      "mcp__serena__check_onboarding_performed",
+      "mcp__serena__get_symbols_overview",
+      "mcp__serena__list_dir",
+      "mcp__serena__find_symbol",
+      "mcp__serena__find_file",
+      "mcp__serena__search_for_pattern",
+      "Bash(pnpm eslint:*)"
     ],
     "deny": [],
     "ask": []
