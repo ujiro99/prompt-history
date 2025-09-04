@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { i18n } from "#i18n";
 import "./App.css";
 
 function App() {
@@ -12,20 +13,20 @@ function App() {
   return (
     <div className="prompt-history-widget">
       <div className="widget-header">
-        <h3>Prompt History</h3>
+        <h3>{i18n.t("appName")}</h3>
         <button className="close-btn" onClick={() => setIsVisible(false)}>
           ×
         </button>
       </div>
       <div className="widget-content">
-        <p>プロンプト履歴拡張機能</p>
+        <p>{i18n.t("promptHistoryExtension")}</p>
         <div className="counter">
           <button onClick={() => setCount(count - 1)}>-</button>
           <span>{count}</span>
           <button onClick={() => setCount(count + 1)}>+</button>
         </div>
       </div>
-      <p className="text-red-800">カウントを増減させることができます。</p>
+      <p className="text-red-800">{i18n.t("canIncreaseDecrease")}</p>
     </div>
   );
 }
