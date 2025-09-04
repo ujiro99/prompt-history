@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@wxt-dev/analytics':
+        specifier: ^0.5.1
+        version: 0.5.1(wxt@0.20.8(@types/node@24.3.0)(jiti@2.5.1)(lightningcss@1.30.1)(rollup@4.50.0))
       react:
         specifier: ^19.1.0
         version: 19.1.1
@@ -617,6 +620,11 @@ packages:
 
   '@webext-core/match-patterns@1.0.3':
     resolution: {integrity: sha512-NY39ACqCxdKBmHgw361M9pfJma8e4AZo20w9AY+5ZjIj1W2dvXC8J31G5fjfOGbulW9w4WKpT8fPooi0mLkn9A==}
+
+  '@wxt-dev/analytics@0.5.1':
+    resolution: {integrity: sha512-X2Wcj0hNegY59rKR2Ne7j8M2PKRgEYTKCaSq9I5Ptgcct+rTah8P5znvSwILRH/Av8KM0uVyvE+0mPpyUxMZ+g==}
+    peerDependencies:
+      wxt: '>=0.20.0'
 
   '@wxt-dev/browser@0.1.4':
     resolution: {integrity: sha512-9x03I15i79XU8qYwjv4le0K2HdMl/Yga2wUBSoUbcrCnamv8P3nvuYxREQ9C5QY/qPAfeEVdAtaTrS3KWak71g==}
@@ -2066,6 +2074,10 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
+  ua-parser-js@1.0.41:
+    resolution: {integrity: sha512-LbBDqdIC5s8iROCUjMbW1f5dJQTEFB1+KO9ogbvlb3nm9n4YHa5p4KTvFPWvh2Hs8gZMBuiB1/8+pdfe/tDPug==}
+    hasBin: true
+
   ufo@1.6.1:
     resolution: {integrity: sha512-9a4/uxlTWJ4+a5i0ooc1rU7C7YOw3wT+UGqdeNNHWnOF9qcMBgLRS+4IYUqbczewFx4mLEig6gawh7X6mFlEkA==}
 
@@ -2763,6 +2775,12 @@ snapshots:
       is-potential-custom-element-name: 1.0.1
 
   '@webext-core/match-patterns@1.0.3': {}
+
+  '@wxt-dev/analytics@0.5.1(wxt@0.20.8(@types/node@24.3.0)(jiti@2.5.1)(lightningcss@1.30.1)(rollup@4.50.0))':
+    dependencies:
+      '@wxt-dev/browser': 0.1.4
+      ua-parser-js: 1.0.41
+      wxt: 0.20.8(@types/node@24.3.0)(jiti@2.5.1)(lightningcss@1.30.1)(rollup@4.50.0)
 
   '@wxt-dev/browser@0.1.4':
     dependencies:
@@ -4178,6 +4196,8 @@ snapshots:
   typedarray@0.0.6: {}
 
   typescript@5.9.2: {}
+
+  ua-parser-js@1.0.41: {}
 
   ufo@1.6.1: {}
 

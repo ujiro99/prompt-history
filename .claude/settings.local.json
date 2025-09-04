@@ -5,7 +5,8 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "WebSearch",
       "Bash(pnpm compile:*)",
-      "WebFetch(domain:wxt.dev)"
+      "WebFetch(domain:wxt.dev)",
+      "WebFetch(domain:www.npmjs.com)"
     ],
     "deny": [],
     "ask": []
