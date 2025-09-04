@@ -4,7 +4,7 @@
 
 ## プロジェクト概要
 
-これは WXT（Web Extension Toolkit）と React で構築されたブラウザ拡張機能です。このプロジェクトは、ブラウザ拡張機能開発のための WXT の規約ベースの構造に従っています。
+これは WXT（Web Extension Toolkit）と React で構築されたブラウザ拡張機能です。このプロジェクトは、ブラウザ拡張機能開発のための WXT の規約ベースの構造に従っています。この拡張機能は、ChatGPTサポートから始まり、AIサービス向けのプロンプト履歴管理機能を提供します。
 
 ## 開発コマンド
 
@@ -15,30 +15,44 @@
 - `pnpm zip` - Chrome用配布可能なZIPを作成
 - `pnpm zip:firefox` - Firefox用配布可能なZIPを作成
 - `pnpm compile` - ファイル出力なしで型チェックを実行
+- `pnpm test` - vitestでユニットテストを実行
+- `pnpm lint` - ESLint静的解析を実行
 
 ## アーキテクチャ
 
 **WXTフレームワーク**: ファイルベースのルーティングと設定よりも規約を重視するWXTのアプローチを使用しています。主要なディレクトリ：
 
-- `entrypoints/` - 拡張機能のエントリーポイント（バックグラウンド、コンテンツスクリプト、ポップアップ）
+- `entrypoints/` - 拡張機能のエントリーポイント（バックグラウンド、コンテンツスクリプト）
   - `background.ts` - サービスワーカー/バックグラウンドスクリプト
-  - `content.ts` - Googleドメインで実行されるコンテンツスクリプト
-  - `popup/` - 拡張機能ポップアップインターフェース（Reactアプリ）
+  - `content.ts` - AIサービスドメインで実行されるコンテンツスクリプト
+- `src/` - ソースコードディレクトリ
+  - `components/` - React UIコンポーネント
+  - `services/` - コアビジネスロジックサービス
+  - `types/` - TypeScript型定義
+  - `utils/` - ユーティリティ関数
 - `public/` - 静的アセットとアイコン
 - `assets/` - コード内で参照されるビルド時アセット
+- `docs/` - 設計および技術文書
 
 **拡張機能の構造**:
-- バックグラウンドスクリプトが拡張機能のライフサイクルを処理
-- コンテンツスクリプトは現在Googleドメイン（`*://*.google.com/*`）をターゲットとしている
-- ポップアップは標準的なカウンターの例を持つReactベースのUIを提供
 
-**ビルドシステム**:
-- React JSXサポート付きTypeScript
-- WXTがマニフェスト生成とブラウザ固有のビルドを処理
-- `.wxt/tsconfig.json`からベースのtsconfigを拡張
+- バックグラウンドスクリプトが拡張機能のライフサイクルを処理
+- コンテンツスクリプトがAIサービスページにUIウィジェットを注入
+- ポップアップインターフェースは使用せず、すべてのUIはWebページに埋め込まれる
+
+**技術スタック**:
+
+- **多言語化**: @wxt-dev/i18n による多言語サポート
+- **データ永続化**: クロスブラウザデータストレージ用のWXT Storage API
+- **分析**: ユーザー行動分析用の@wxt-dev/analytics
+- **テスト**: React Testing Libraryを使用したVitestによるユニットテスト
+- **コード品質**: TypeScriptとReactルールを使用したESLint
+- **UIフレームワーク**: Tailwind CSSスタイリングを使用したShadcn/uiコンポーネント
+- **ビルドシステム**: React JSXサポート付きTypeScript、WXTがマニフェスト生成を処理
 
 ## 主要ファイル
 
 - `wxt.config.ts` - Reactモジュール付きWXT設定
-- `entrypoints/popup/App.tsx` - メインポップアップコンポーネント
-- `entrypoints/popup/main.tsx` - Reactルートの初期化
+- `src/types/prompt.ts` - コア型定義
+- `vitest.config.ts` - テスト設定
+- `eslint.config.mjs` - リント設定

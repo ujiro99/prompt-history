@@ -1,5 +1,5 @@
-import { googleAnalytics4 } from "@wxt-dev/analytics/providers/google-analytics-4";
-import { storage } from "#imports";
+import { googleAnalytics4 } from "@wxt-dev/analytics/providers/google-analytics-4"
+import { storage } from "#imports"
 
 export default defineAppConfig({
   analytics: {
@@ -16,4 +16,4 @@ export default defineAppConfig({
       fallback: true,
     }),
   },
-});
+})

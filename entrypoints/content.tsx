@@ -1,6 +1,6 @@
-import ReactDOM from "react-dom/client";
-import App from "./content/App.tsx";
-import "./content/App.css";
+import ReactDOM from "react-dom/client"
+import App from "./content/App.tsx"
+import "./content/App.css"
 
 export default defineContentScript({
   matches: ["http://*/*", "https://*/*"],
@@ -12,17 +12,17 @@ export default defineContentScript({
       position: "inline",
       anchor: "body",
       onMount: (container) => {
-        const app = document.createElement("div");
-        container.append(app);
-        const root = ReactDOM.createRoot(app);
-        root.render(<App />);
-        return root;
+        const app = document.createElement("div")
+        container.append(app)
+        const root = ReactDOM.createRoot(app)
+        root.render(<App />)
+        return root
       },
       onRemove: (root) => {
-        root?.unmount();
+        root?.unmount()
       },
-    });
+    })
 
-    ui.mount();
+    ui.mount()
   },
-});
+})

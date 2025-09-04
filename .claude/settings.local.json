@@ -6,7 +6,9 @@
       "WebSearch",
       "Bash(pnpm compile:*)",
       "WebFetch(domain:wxt.dev)",
-      "WebFetch(domain:www.npmjs.com)"
+      "WebFetch(domain:www.npmjs.com)",
+      "Bash(pnpm test:*)",
+      "Bash(pnpm lint:*)"
     ],
     "deny": [],
     "ask": []
