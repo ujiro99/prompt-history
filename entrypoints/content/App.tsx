@@ -1,13 +1,13 @@
-import { useState } from "react";
-import { i18n } from "#i18n";
-import "./App.css";
+import { useState } from "react"
+import { i18n } from "#i18n"
+import "./App.css"
 
 function App() {
-  const [count, setCount] = useState(0);
-  const [isVisible, setIsVisible] = useState(true);
+  const [count, setCount] = useState(0)
+  const [isVisible, setIsVisible] = useState(true)
 
   if (!isVisible) {
-    return null;
+    return null
   }
 
   return (
@@ -27,8 +27,9 @@ function App() {
         </div>
       </div>
       <p className="text-red-800">{i18n.t("canIncreaseDecrease")}</p>
+      aaa
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
