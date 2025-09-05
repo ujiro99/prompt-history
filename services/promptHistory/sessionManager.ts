@@ -1,11 +1,11 @@
 import type { Session } from "../../types/prompt"
-import type { PromptStorageService } from "../storage"
+import type { StorageService } from "../storage"
 
 /**
  * セッションの生命周期管理を担当するクラス
  */
 export class SessionManager {
-  constructor(private storage: PromptStorageService) {}
+  constructor(private storage: StorageService) {}
 
   /**
    * セッション開始

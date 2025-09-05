@@ -12,21 +12,20 @@ import { settingsService } from "./settings"
 
 /**
  * 統合ストレージサービス（ファサードパターン）
- * 既存のPromptStorageServiceとの後方互換性を維持
  */
-export class PromptStorageService {
-  private static instance: PromptStorageService
+export class StorageService {
+  private static instance: StorageService
 
   private constructor() {}
 
   /**
    * シングルトンインスタンス取得
    */
-  static getInstance(): PromptStorageService {
-    if (!PromptStorageService.instance) {
-      PromptStorageService.instance = new PromptStorageService()
+  static getInstance(): StorageService {
+    if (!StorageService.instance) {
+      StorageService.instance = new StorageService()
     }
-    return PromptStorageService.instance
+    return StorageService.instance
   }
 
   /**
@@ -73,7 +72,7 @@ export class PromptStorageService {
   /**
    * プロンプトを取得
    */
-   
+
   getPrompt(_id: string): Prompt | null {
     // 非同期メソッドを同期的に呼び出すための実装は必要に応じて調整
     // 現在は互換性のため一時的にnullを返す
@@ -316,7 +315,7 @@ export class PromptStorageService {
 /**
  * ストレージサービスのシングルトンインスタンス
  */
-export const promptStorage = PromptStorageService.getInstance()
+export const promptStorage = StorageService.getInstance()
 
 // 個別サービスもエクスポート
 export { promptsService, sessionsService, pinsService, settingsService }

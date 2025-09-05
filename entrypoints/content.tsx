@@ -7,6 +7,7 @@ export default defineContentScript({
     "https://chatgpt.com/*",
     "https://chat.openai.com/*",
     "https://*.openai.com/*",
+    "https://ujiro99.github.io/selection-command/*",
   ],
   cssInjectionMode: "ui",
   runAt: "document_end",

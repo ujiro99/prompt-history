@@ -81,7 +81,6 @@ export class PromptsService {
         throw new Error(`Prompt with id ${id} not found`)
       }
 
-       
       const { [id]: _deleted, ...remainingPrompts } = currentPrompts
       await promptsStorage.setValue(remainingPrompts)
     } catch (error) {

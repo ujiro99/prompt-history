@@ -9,7 +9,7 @@ export default defineConfig({
     default_locale: "en",
   },
   webExt: {
-    startUrls: ["https://google.com/"],
+    startUrls: ["https://ujiro99.github.io/selection-command/en/test"],
   },
   vite: () => ({
     plugins: [tailwindcss()],

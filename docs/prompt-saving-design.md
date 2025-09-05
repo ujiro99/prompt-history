@@ -9,23 +9,42 @@ ChatGPTでのプロンプトの自動保存・手動保存機能を実装する�
 ### 2.1 サービス層構成
 
 ```
-┌─────────────────────────────────────┐
-│           Content Script            │
-├─────────────────────────────────────┤
-│  Session Manager  │  UI Controller  │
-├─────────────────────────────────────┤
-│    Storage Service    │  AI Service │
-├─────────────────────────────────────┤
-│         WXT Storage API             │
-└─────────────────────────────────────┘
+┌──────────────────────────────────┐
+│           Content Script         │
+├──────────────────────────────────┤
+│       HistoryManager (統合)      │
+├──────────────────────────────────┤
+│ StorageHelper │ ExecuteManager   │
+│ SessionManager                   │
+├──────────────────────────────────┤
+│ StorageService │ ChatGptService  │
+├──────────────────────────────────┤
+│         WXT Storage API          │
+└──────────────────────────────────┘
 ```
 
 ### 2.2 主要コンポーネント
 
-- **AIService**: AI サービス（ChatGPT）の検出とDOM操作
-- **StorageService**: プロンプトデータの永続化
+#### 統合層
+
+- **HistoryManager**: プロンプト履歴管理の統合クラス（ファサード）
+
+#### ビジネスロジック層
+
+- **StorageHelper**: 保存・削除・ピン留め操作の実行
+- **ExecuteManager**: プロンプト実行・取得操作
 - **SessionManager**: セッション状態管理
-- **UIController**: 保存ダイアログとUI制御
+
+#### サービス層
+
+- **ChatGptService**: ChatGPT固有のサービス（DOM操作統括）
+- **StorageService**: プロンプトデータの永続化
+
+#### ChatGPT専用層
+
+- **PromptManager**: DOM操作によるプロンプト抽出・挿入
+- **DomManager**: DOM要素の取得・操作
+- **ChatGptSelectors**: CSS セレクタ定義
 
 ## 3. データ設計
 
@@ -259,6 +278,9 @@ interface AIServiceInterface {
 }
 ```
 
+**実装例**: ChatGptServiceクラスがこのインターフェースを実装し、
+PromptManager、DomManager、ChatGptSelectorsを内部で利用。
+
 ### 10.2 将来の対応予定サービス
 
 - Gemini (bard.google.com)
@@ -267,23 +289,28 @@ interface AIServiceInterface {
 
 ## 11. 実装優先順位
 
-1. **Phase 1**: 基本データ構造とストレージサービス
-2. **Phase 2**: ChatGPT検出と基本DOM操作
-3. **Phase 3**: セッション管理機能
-4. **Phase 4**: 保存ダイアログUI
-5. **Phase 5**: 統合とテスト
-6. **Phase 6**: エラーハンドリング強化
+1. **Phase 1**: 基本データ構造とPromptStorageService
+2. **Phase 2**: ChatGPT検出と基本DOM操作（ChatGptService層）
+3. **Phase 3**: セッション管理機能（SessionManager）
+4. **Phase 4**: 保存操作実装（StorageHelper）
+5. **Phase 5**: プロンプト実行機能（ExecuteManager）
+6. **Phase 6**: 統合クラス（HistoryManager）
+7. **Phase 7**: UI統合とテスト
+8. **Phase 8**: エラーハンドリング強化
 
 ## 12. テスト方針
 
 ### 12.1 ユニットテスト
 
-- ストレージサービスの各操作
-- セッション管理ロジック
-- DOM操作ユーティリティ
+- PromptStorageServiceの各操作
+- StorageHelperの保存・削除ロジック
+- SessionManagerのセッション管理
+- ExecuteManagerのプロンプト実行ロジック
+- ChatGptServiceのDOM操作ユーティリティ
 
 ### 12.2 統合テスト
 
-- ChatGPT実環境での動作確認
-- 保存・呼び出し操作の検証
+- ChatGPT実環境でのHistoryManager動作確認
+- 保存・呼び出し操作の統合検証（StorageHelper + ExecuteManager）
+- セッション管理とプロンプト操作の連携確認
 - エラーケースの動作確認

@@ -3,17 +3,17 @@ import type {
   SaveDialogData,
   AIServiceInterface,
 } from "../../types/prompt"
-import type { PromptStorageService } from "../storage"
+import type { StorageService } from "../storage"
 import { SessionManager } from "./sessionManager"
 
 /**
  * プロンプトの保存・削除系処理を担当するクラス（Storage書き込み系）
  */
-export class saveManager {
+export class StorageHelper {
   private saveInProgress = false
 
   constructor(
-    private storage: PromptStorageService,
+    private storage: StorageService,
     private sessionManager: SessionManager,
   ) {}
 

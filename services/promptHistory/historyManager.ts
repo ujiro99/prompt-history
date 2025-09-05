@@ -1,4 +1,4 @@
-import { promptStorage, PromptStorageService } from "../storage"
+import { promptStorage, StorageService } from "../storage"
 import { ChatGptService } from "../chatgpt/chatGptService"
 import type {
   AIServiceInterface,
@@ -9,7 +9,7 @@ import type {
   PromptError,
 } from "../../types/prompt"
 import { SessionManager } from "./sessionManager"
-import { saveManager } from "./saveManager"
+import { StorageHelper } from "./storageHelper"
 import { ExecuteManager } from "./executeManager"
 
 /**
@@ -18,9 +18,9 @@ import { ExecuteManager } from "./executeManager"
 export class HistoryManager {
   private static instance: HistoryManager
   private aiService: AIServiceInterface | null = null
-  private storage: PromptStorageService
+  private storage: StorageService
   private sessionManager: SessionManager
-  private saveManager: saveManager
+  private storageHelper: StorageHelper
   private executeManager: ExecuteManager
   private initialized = false
 
@@ -35,7 +35,7 @@ export class HistoryManager {
   private constructor() {
     this.storage = promptStorage
     this.sessionManager = new SessionManager(this.storage)
-    this.saveManager = new saveManager(this.storage, this.sessionManager)
+    this.storageHelper = new StorageHelper(this.storage, this.sessionManager)
     this.executeManager = new ExecuteManager(this.storage, this.sessionManager)
   }
 
@@ -175,7 +175,7 @@ export class HistoryManager {
   async savePromptManually(saveData: SaveDialogData): Promise<Prompt | null> {
     this.ensureInitialized()
 
-    return this.saveManager.savePromptManually(
+    return this.storageHelper.savePromptManually(
       saveData,
       (prompt) => {
         this.notifyPromptSave(prompt)
@@ -200,8 +200,7 @@ export class HistoryManager {
    */
   private async handleAutoSave(): Promise<void> {
     if (!this.aiService) return
-
-    await this.saveManager.handleAutoSave(
+    await this.storageHelper.handleAutoSave(
       this.aiService,
       (prompt) => {
         this.notifyPromptSave(prompt)
@@ -218,7 +217,7 @@ export class HistoryManager {
   async deletePrompt(promptId: string): Promise<void> {
     this.ensureInitialized()
 
-    await this.saveManager.deletePrompt(
+    await this.storageHelper.deletePrompt(
       promptId,
       (prompt) => {
         this.notify({
@@ -238,7 +237,7 @@ export class HistoryManager {
    */
   async pinPrompt(promptId: string): Promise<void> {
     this.ensureInitialized()
-    await this.saveManager.pinPrompt(promptId)
+    await this.storageHelper.pinPrompt(promptId)
   }
 
   /**
@@ -246,7 +245,7 @@ export class HistoryManager {
    */
   async unpinPrompt(promptId: string): Promise<void> {
     this.ensureInitialized()
-    await this.saveManager.unpinPrompt(promptId)
+    await this.storageHelper.unpinPrompt(promptId)
   }
 
   // ===================
@@ -289,7 +288,7 @@ export class HistoryManager {
     initialName?: string
   } {
     this.ensureInitialized()
-    return this.saveManager.prepareSaveDialogData(this.aiService)
+    return this.storageHelper.prepareSaveDialogData(this.aiService)
   }
 
   /**

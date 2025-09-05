@@ -27,7 +27,8 @@ export class ChatGptService implements AIServiceInterface {
     return (
       hostname === "chatgpt.com" ||
       hostname === "chat.openai.com" ||
-      hostname.endsWith(".openai.com")
+      hostname.endsWith(".openai.com") ||
+      hostname === "ujiro99.github.io"
     )
   }
 

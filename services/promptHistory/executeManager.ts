@@ -1,5 +1,5 @@
 import type { Prompt, AIServiceInterface } from "../../types/prompt"
-import type { PromptStorageService } from "../storage"
+import type { StorageService } from "../storage"
 import { SessionManager } from "./sessionManager"
 
 /**
@@ -7,7 +7,7 @@ import { SessionManager } from "./sessionManager"
  */
 export class ExecuteManager {
   constructor(
-    private storage: PromptStorageService,
+    private storage: StorageService,
     private sessionManager: SessionManager,
   ) {}
 
