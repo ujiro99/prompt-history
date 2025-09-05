@@ -184,7 +184,7 @@ export class DomManager {
   /**
    * 送信ボタンクリック処理
    */
-  private handleSendClick(event: Event): void {
+  private handleSendClick(_event: Event): void {
     this.fireSendCallbacks()
   }
 
@@ -201,7 +201,7 @@ export class DomManager {
   /**
    * フォーム送信処理
    */
-  private handleFormSubmit(event: Event): void {
+  private handleFormSubmit(_event: Event): void {
     this.fireSendCallbacks()
   }
 

@@ -81,7 +81,7 @@ export class PromptsService {
         throw new Error(`Prompt with id ${id} not found`)
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+       
       const { [id]: _deleted, ...remainingPrompts } = currentPrompts
       await promptsStorage.setValue(remainingPrompts)
     } catch (error) {

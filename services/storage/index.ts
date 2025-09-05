@@ -73,7 +73,7 @@ export class PromptStorageService {
   /**
    * プロンプトを取得
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   getPrompt(_id: string): Prompt | null {
     // 非同期メソッドを同期的に呼び出すための実装は必要に応じて調整
     // 現在は互換性のため一時的にnullを返す

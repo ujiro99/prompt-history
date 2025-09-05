@@ -39,7 +39,7 @@ export class ChatGptDebugger {
             }
           }
         } catch (error) {
-          // 無視
+          console.error(error)
         }
       }
       return { found: false }
@@ -63,7 +63,7 @@ export class ChatGptDebugger {
         const element = document.querySelector(selector)
         console.log(`${index + 1}. ${selector}:`, element ? "✓" : "✗")
       } catch (error) {
-        console.log(`${index + 1}. ${selector}:`, "✗ (Error)")
+        console.log(`${index + 1}. ${selector}:`, "✗ (Error)", error)
       }
     })
 
@@ -73,7 +73,7 @@ export class ChatGptDebugger {
         const element = document.querySelector(selector)
         console.log(`${index + 1}. ${selector}:`, element ? "✓" : "✗")
       } catch (error) {
-        console.log(`${index + 1}. ${selector}:`, "✗ (Error)")
+        console.log(`${index + 1}. ${selector}:`, "✗ (Error)", error)
       }
     })
 

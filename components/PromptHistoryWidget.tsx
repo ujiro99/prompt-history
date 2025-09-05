@@ -71,7 +71,7 @@ export const PromptHistoryWidget: React.FC = () => {
       setCurrentSession(session)
     }
 
-    const handlePromptSave = (prompt: Prompt) => {
+    const handlePromptSave = (_prompt: Prompt) => {
       loadPrompts() // プロンプト一覧を更新
     }
 
