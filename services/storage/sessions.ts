@@ -2,11 +2,11 @@ import type { Session, PromptError } from "../../types/prompt"
 import { sessionStorage } from "./definitions"
 
 /**
- * セッション管理サービス
+ * Session management service
  */
 export class SessionsService {
   /**
-   * セッション開始
+   * Start session
    */
   async startSession(promptId: string): Promise<void> {
     try {
@@ -27,7 +27,7 @@ export class SessionsService {
   }
 
   /**
-   * セッション終了
+   * End session
    */
   async endSession(): Promise<void> {
     try {
@@ -42,14 +42,14 @@ export class SessionsService {
   }
 
   /**
-   * 現在のセッション取得
+   * Get current session
    */
   async getCurrentSession(): Promise<Session | null> {
     return await sessionStorage.getValue()
   }
 
   /**
-   * アクティブセッション判定
+   * Determine active session
    */
   async hasActiveSession(): Promise<boolean> {
     const session = await this.getCurrentSession()
@@ -60,14 +60,14 @@ export class SessionsService {
   }
 
   /**
-   * ストレージをクリア（デバッグ用）
+   * Clear storage (for debugging)
    */
   async clearSessions(): Promise<void> {
     await sessionStorage.setValue(null)
   }
 
   /**
-   * エラーオブジェクトの生成
+   * Create error object
    */
   private createError(
     code: string,
@@ -83,6 +83,6 @@ export class SessionsService {
 }
 
 /**
- * セッションサービスのシングルトンインスタンス
+ * Singleton instance of session service
  */
 export const sessionsService = new SessionsService()

@@ -13,7 +13,7 @@ import { StorageHelper } from "./storageHelper"
 import { ExecuteManager } from "./executeManager"
 
 /**
- * プロンプト履歴管理のメインオーケストレーター
+ * Main orchestrator for prompt history management
  */
 export class HistoryManager {
   private static instance: HistoryManager
@@ -24,7 +24,7 @@ export class HistoryManager {
   private executeManager: ExecuteManager
   private initialized = false
 
-  // コールバック
+  // Callbacks
   private onSessionChangeCallbacks: ((session: Session | null) => void)[] = []
   private onPromptSaveCallbacks: ((prompt: Prompt) => void)[] = []
   private onNotificationCallbacks: ((
@@ -40,7 +40,7 @@ export class HistoryManager {
   }
 
   /**
-   * シングルトンインスタンス取得
+   * Get singleton instance
    */
   static getInstance(): HistoryManager {
     if (!HistoryManager.instance) {
@@ -50,20 +50,20 @@ export class HistoryManager {
   }
 
   /**
-   * プロンプト履歴マネージャーの初期化
+   * Initialize prompt history manager
    */
   async initialize(): Promise<void> {
     try {
-      // ストレージサービス初期化
+      // Initialize storage service
       await this.storage.initialize()
 
-      // AIサービス初期化（サポートされている場合のみ）
+      // Initialize AI service (only if supported)
       await this.initializeAIService()
 
-      // イベントリスナー設定
+      // Set up event listeners
       this.setupEventListeners()
 
-      // セッション復元
+      // Restore session
       await this.sessionManager.restoreSession()
 
       this.initialized = true
@@ -83,7 +83,7 @@ export class HistoryManager {
   }
 
   /**
-   * AIサービス初期化
+   * Initialize AI service
    */
   private async initializeAIService(): Promise<void> {
     const service = new ChatGptService()
@@ -100,14 +100,14 @@ export class HistoryManager {
   }
 
   /**
-   * イベントリスナー設定
+   * Set up event listeners
    */
   private setupEventListeners(): void {
     if (this.aiService) {
-      // 送信イベント監視（自動保存）
+      // Monitor send events (auto-save)
       this.aiService.onSend(this.handleAutoSave.bind(this))
 
-      // ページ遷移イベント監視
+      // Monitor page navigation events
       window.addEventListener(
         "beforeunload",
         this.sessionManager.handlePageUnload.bind(this.sessionManager),
@@ -120,11 +120,11 @@ export class HistoryManager {
   }
 
   // ===================
-  // セッション管理
+  // Session Management
   // ===================
 
   /**
-   * セッション開始
+   * Start session
    */
   async startSession(promptId: string): Promise<void> {
     this.ensureInitialized()
@@ -139,7 +139,7 @@ export class HistoryManager {
   }
 
   /**
-   * セッション終了
+   * End session
    */
   async endSession(): Promise<void> {
     this.ensureInitialized()
@@ -154,7 +154,7 @@ export class HistoryManager {
   }
 
   /**
-   * 現在のセッション取得
+   * Get current session
    */
   getCurrentSession(): Session | null {
     this.ensureInitialized()
@@ -162,7 +162,7 @@ export class HistoryManager {
   }
 
   /**
-   * アクティブセッション判定
+   * Check if there's an active session
    */
   hasActiveSession(): boolean {
     this.ensureInitialized()
@@ -170,11 +170,11 @@ export class HistoryManager {
   }
 
   // ===================
-  // プロンプト保存系
+  // Prompt Saving
   // ===================
 
   /**
-   * 手動プロンプト保存
+   * Save prompt manually
    */
   async savePromptManually(saveData: SaveDialogData): Promise<Prompt | null> {
     this.ensureInitialized()
@@ -200,7 +200,7 @@ export class HistoryManager {
   }
 
   /**
-   * 自動プロンプト保存（送信時）
+   * Auto-save prompt (on send)
    */
   private async handleAutoSave(): Promise<void> {
     if (!this.aiService) return
@@ -216,7 +216,7 @@ export class HistoryManager {
   }
 
   /**
-   * プロンプト削除
+   * Delete prompt
    */
   async deletePrompt(promptId: string): Promise<void> {
     this.ensureInitialized()
@@ -237,7 +237,7 @@ export class HistoryManager {
   }
 
   /**
-   * プロンプトをピン留め
+   * Pin prompt
    */
   async pinPrompt(promptId: string): Promise<void> {
     this.ensureInitialized()
@@ -245,7 +245,7 @@ export class HistoryManager {
   }
 
   /**
-   * プロンプトのピン留め解除
+   * Unpin prompt
    */
   async unpinPrompt(promptId: string): Promise<void> {
     this.ensureInitialized()
@@ -253,11 +253,11 @@ export class HistoryManager {
   }
 
   // ===================
-  // プロンプト実行・UI系
+  // Prompt Execution & UI
   // ===================
 
   /**
-   * プロンプト実行
+   * Execute prompt
    */
   async executePrompt(promptId: string): Promise<void> {
     this.ensureInitialized()
@@ -284,7 +284,7 @@ export class HistoryManager {
   }
 
   /**
-   * 保存ダイアログ用データ準備
+   * Prepare data for save dialog
    */
   async prepareSaveDialogData(): Promise<{
     initialContent: string
@@ -296,7 +296,7 @@ export class HistoryManager {
   }
 
   /**
-   * プロンプト一覧取得（ソート済み）
+   * Get prompts list (sorted)
    */
   async getPrompts(): Promise<Prompt[]> {
     this.ensureInitialized()
@@ -304,7 +304,7 @@ export class HistoryManager {
   }
 
   /**
-   * ピン留めプロンプト取得（順序保持）
+   * Get pinned prompts (order preserved)
    */
   async getPinnedPrompts(): Promise<Prompt[]> {
     this.ensureInitialized()
@@ -312,43 +312,43 @@ export class HistoryManager {
   }
 
   // ===================
-  // コールバック管理
+  // Callback Management
   // ===================
 
   /**
-   * セッション変更通知の登録
+   * Register session change notifications
    */
   onSessionChange(callback: (session: Session | null) => void): void {
     this.onSessionChangeCallbacks.push(callback)
   }
 
   /**
-   * プロンプト保存通知の登録
+   * Register prompt save notifications
    */
   onPromptSave(callback: (prompt: Prompt) => void): void {
     this.onPromptSaveCallbacks.push(callback)
   }
 
   /**
-   * 通知の登録
+   * Register notifications
    */
   onNotification(callback: (notification: NotificationData) => void): void {
     this.onNotificationCallbacks.push(callback)
   }
 
   /**
-   * エラー通知の登録
+   * Register error notifications
    */
   onError(callback: (error: PromptError) => void): void {
     this.onErrorCallbacks.push(callback)
   }
 
   // ===================
-  // プライベートメソッド
+  // Private Methods
   // ===================
 
   /**
-   * 初期化チェック
+   * Check initialization
    */
   private ensureInitialized(): void {
     if (!this.initialized) {
@@ -359,7 +359,7 @@ export class HistoryManager {
   }
 
   /**
-   * セッション変更通知
+   * Notify session change
    */
   private notifySessionChange(session: Session | null): void {
     this.onSessionChangeCallbacks.forEach((callback) => {
@@ -372,7 +372,7 @@ export class HistoryManager {
   }
 
   /**
-   * プロンプト保存通知
+   * Notify prompt save
    */
   private notifyPromptSave(prompt: Prompt): void {
     this.onPromptSaveCallbacks.forEach((callback) => {
@@ -385,7 +385,7 @@ export class HistoryManager {
   }
 
   /**
-   * 通知
+   * Send notification
    */
   private notify(notification: NotificationData): void {
     this.onNotificationCallbacks.forEach((callback) => {
@@ -398,7 +398,7 @@ export class HistoryManager {
   }
 
   /**
-   * エラーハンドリング
+   * Error handling
    */
   private handleError(code: string, message: string, details: any): void {
     const error: PromptError = { code, message, details }
@@ -411,7 +411,7 @@ export class HistoryManager {
       }
     })
 
-    // ユーザー通知
+    // User notification
     this.notify({
       type: "error",
       message: message,
@@ -422,7 +422,7 @@ export class HistoryManager {
   }
 
   /**
-   * サービス終了処理
+   * Service cleanup
    */
   destroy(): void {
     if (

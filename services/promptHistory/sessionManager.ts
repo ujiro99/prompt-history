@@ -2,13 +2,13 @@ import type { Session } from "../../types/prompt"
 import type { StorageService } from "../storage"
 
 /**
- * セッションの生命周期管理を担当するクラス
+ * Class responsible for session lifecycle management
  */
 export class SessionManager {
   constructor(private storage: StorageService) {}
 
   /**
-   * セッション開始
+   * Start session
    */
   async startSession(promptId: string): Promise<Session | null> {
     console.debug("Starting session with promptId:", promptId)
@@ -22,7 +22,7 @@ export class SessionManager {
   }
 
   /**
-   * セッション終了
+   * End session
    */
   async endSession(): Promise<void> {
     console.debug("Ending current session")
@@ -34,13 +34,13 @@ export class SessionManager {
   }
 
   /**
-   * セッション復元（ページリロード後など）
+   * Restore session (after page reload, etc.)
    */
   async restoreSession(): Promise<void> {
     try {
       const session = this.storage.getCurrentSession()
       if (session && session.url !== window.location.href) {
-        // URLが変わっている場合はセッション終了
+        // End session if URL has changed
         await this.endSession()
       }
     } catch (error) {
@@ -49,32 +49,32 @@ export class SessionManager {
   }
 
   /**
-   * 現在のセッション取得
+   * Get current session
    */
   getCurrentSession(): Session | null {
     return this.storage.getCurrentSession()
   }
 
   /**
-   * アクティブセッション判定
+   * Determine active session
    */
   hasActiveSession(): boolean {
     return this.storage.hasActiveSession()
   }
 
   /**
-   * ページアンロード処理
+   * Handle page unload
    */
   handlePageUnload(): void {
-    // セッション状態をクリーンアップ
+    // Clean up session state
     this.endSession().catch(console.error)
   }
 
   /**
-   * ページ変更処理
+   * Handle page change
    */
   handlePageChange(): void {
-    // セッション復元を試行
+    // Attempt session restoration
     this.restoreSession().catch(console.error)
   }
 }

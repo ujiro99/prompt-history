@@ -2,18 +2,18 @@ import type { AppSettings, PromptError } from "../../types/prompt"
 import { settingsStorage } from "./definitions"
 
 /**
- * 設定管理サービス
+ * Settings management service
  */
 export class SettingsService {
   /**
-   * 設定を取得
+   * Get settings
    */
   async getSettings(): Promise<AppSettings> {
     return await settingsStorage.getValue()
   }
 
   /**
-   * 設定を更新
+   * Update settings
    */
   async setSettings(settings: Partial<AppSettings>): Promise<void> {
     try {
@@ -30,7 +30,7 @@ export class SettingsService {
   }
 
   /**
-   * ストレージをクリア（デバッグ用）
+   * Clear storage (for debugging)
    */
   async clearSettings(): Promise<void> {
     await settingsStorage.setValue({
@@ -42,7 +42,7 @@ export class SettingsService {
   }
 
   /**
-   * エラーオブジェクトの生成
+   * Create error object
    */
   private createError(
     code: string,
@@ -58,6 +58,6 @@ export class SettingsService {
 }
 
 /**
- * 設定サービスのシングルトンインスタンス
+ * Singleton instance of settings service
  */
 export const settingsService = new SettingsService()

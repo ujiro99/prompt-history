@@ -2,7 +2,7 @@ import { storage } from "wxt/utils/storage"
 import type { StoredPrompt, Session, AppSettings } from "../../types/prompt"
 
 /**
- * デフォルト設定値
+ * Default settings values
  */
 const DEFAULT_SETTINGS: AppSettings = {
   autoSaveEnabled: true,
@@ -12,7 +12,7 @@ const DEFAULT_SETTINGS: AppSettings = {
 }
 
 /**
- * プロンプトストレージの定義
+ * Prompt storage definition
  */
 export const promptsStorage = storage.defineItem<Record<string, StoredPrompt>>(
   "local:prompts",
@@ -20,14 +20,14 @@ export const promptsStorage = storage.defineItem<Record<string, StoredPrompt>>(
     fallback: {},
     version: 1,
     migrations: {
-      // 将来的なマイグレーション用の予約
-      // 例: 2: (oldData: any) => { /* migration logic */ }
+      // Reserved for future migrations
+      // Example: 2: (oldData: any) => { /* migration logic */ }
     },
   },
 )
 
 /**
- * セッションストレージの定義
+ * Session storage definition
  */
 export const sessionStorage = storage.defineItem<Session | null>(
   "local:session",
@@ -39,7 +39,7 @@ export const sessionStorage = storage.defineItem<Session | null>(
 )
 
 /**
- * ピン留め順序ストレージの定義
+ * Pinned order storage definition
  */
 export const pinnedOrderStorage = storage.defineItem<string[]>(
   "local:pinnedOrder",
@@ -51,7 +51,7 @@ export const pinnedOrderStorage = storage.defineItem<string[]>(
 )
 
 /**
- * 設定ストレージの定義
+ * Settings storage definition
  */
 export const settingsStorage = storage.defineItem<AppSettings>(
   "local:settings",

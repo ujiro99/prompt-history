@@ -1,11 +1,11 @@
 import { CHATGPT_SELECTORS } from "./chatGptSelectors"
 
 /**
- * デバッグ・ユーティリティを担当するクラス
+ * Class responsible for debug and utility functions
  */
 export class ChatGptDebugger {
   /**
-   * 要素の可視性チェック
+   * Check element visibility
    */
   private isElementVisible(element: Element): boolean {
     const rect = element.getBoundingClientRect()
@@ -21,7 +21,7 @@ export class ChatGptDebugger {
   }
 
   /**
-   * 現在検出されている要素情報を取得
+   * Get information about currently detected elements
    */
   getElementInfo(): {
     textInput: { found: boolean; selector?: string; tagName?: string }
@@ -52,7 +52,7 @@ export class ChatGptDebugger {
   }
 
   /**
-   * セレクタのテスト実行
+   * Run selector tests
    */
   testSelectors(): void {
     console.group("ChatGPT Selectors Test")

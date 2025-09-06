@@ -1,13 +1,13 @@
 import { DomManager } from "./domManager"
 
 /**
- * プロンプトの抽出・挿入を担当するクラス
+ * Class responsible for prompt extraction and injection
  */
 export class PromptManager {
   constructor(private domManager: DomManager) {}
 
   /**
-   * プロンプト内容抽出
+   * Extract prompt content
    */
   extractContent(): string {
     const input = this.domManager.getTextInput()
@@ -16,30 +16,30 @@ export class PromptManager {
       return ""
     }
 
-    // contenteditable div の場合
+    // For contenteditable div
     if (input.getAttribute("contenteditable") === "true") {
       const element = input as HTMLElement
-      // HTMLタグを除去してプレーンテキストを取得
+      // Remove HTML tags and get plain text
       return element.innerText || element.textContent || ""
     }
 
-    // textarea の場合
+    // For textarea
     if (input.tagName.toLowerCase() === "textarea") {
       return (input as HTMLTextAreaElement).value || ""
     }
 
-    // input の場合
+    // For input
     if (input.tagName.toLowerCase() === "input") {
       return (input as HTMLInputElement).value || ""
     }
 
-    // フォールバック
+    // Fallback
     const element = input as HTMLElement
     return element.textContent || element.innerText || ""
   }
 
   /**
-   * プロンプト内容挿入
+   * Inject prompt content
    */
   injectContent(content: string): void {
     const input = this.domManager.getTextInput()
@@ -49,42 +49,42 @@ export class PromptManager {
     }
 
     try {
-      // contenteditable div の場合
+      // For contenteditable div
       if (input.getAttribute("contenteditable") === "true") {
         const element = input as HTMLElement
 
-        // フォーカスを当てる
+        // Set focus
         element.focus()
 
-        // 既存の内容をクリア
+        // Clear existing content
         element.innerHTML = ""
         element.textContent = content
 
-        // 入力イベントを発火
+        // Trigger input events
         this.triggerInputEvents(element)
 
-        // カーソルを末尾に移動
+        // Move cursor to end
         this.setCursorToEnd(element)
         return
       }
 
-      // textarea または input の場合
+      // For textarea or input
       if (
         input.tagName.toLowerCase() === "textarea" ||
         input.tagName.toLowerCase() === "input"
       ) {
         const inputElement = input as HTMLTextAreaElement | HTMLInputElement
 
-        // フォーカスを当てる
+        // Set focus
         inputElement.focus()
 
-        // 値を設定
+        // Set value
         inputElement.value = content
 
-        // 入力イベントを発火
+        // Trigger input events
         this.triggerInputEvents(inputElement)
 
-        // カーソルを末尾に移動
+        // Move cursor to end
         inputElement.selectionStart = inputElement.selectionEnd = content.length
         return
       }
@@ -96,25 +96,25 @@ export class PromptManager {
   }
 
   /**
-   * 入力イベント発火
+   * Trigger input events
    */
   private triggerInputEvents(element: Element): void {
-    // input イベント
+    // input event
     element.dispatchEvent(
       new Event("input", { bubbles: true, cancelable: true }),
     )
 
-    // change イベント
+    // change event
     element.dispatchEvent(
       new Event("change", { bubbles: true, cancelable: true }),
     )
 
-    // compositionupdate イベント（IME対応）
+    // compositionupdate event (IME support)
     element.dispatchEvent(
       new CompositionEvent("compositionupdate", { bubbles: true, data: "" }),
     )
 
-    // React/Vue対応のため、より詳細な InputEvent
+    // More detailed InputEvent for React/Vue compatibility
     if (typeof InputEvent !== "undefined") {
       element.dispatchEvent(
         new InputEvent("input", {
@@ -127,7 +127,7 @@ export class PromptManager {
   }
 
   /**
-   * contenteditable要素のカーソルを末尾に移動
+   * Move cursor to end of contenteditable element
    */
   private setCursorToEnd(element: HTMLElement): void {
     if (window.getSelection && document.createRange) {
@@ -136,7 +136,7 @@ export class PromptManager {
 
       if (element.childNodes.length > 0) {
         range.selectNodeContents(element)
-        range.collapse(false) // 末尾に移動
+        range.collapse(false) // Move to end
       } else {
         range.setStart(element, 0)
         range.setEnd(element, 0)

@@ -3,7 +3,7 @@ import type { StorageService } from "../storage"
 import { SessionManager } from "./sessionManager"
 
 /**
- * プロンプトの実行・UI支援処理を担当するクラス（Storage読み込み系）
+ * Class responsible for prompt execution and UI support processing (Storage read operations)
  */
 export class ExecuteManager {
   constructor(
@@ -12,7 +12,7 @@ export class ExecuteManager {
   ) {}
 
   /**
-   * プロンプト実行
+   * Execute prompt
    */
   async executePrompt(
     promptId: string,
@@ -26,13 +26,13 @@ export class ExecuteManager {
         throw new Error(`Prompt not found: ${promptId}`)
       }
 
-      // AIサービスにプロンプトを挿入
+      // Inject prompt into AI service
       aiService.injectPromptContent(prompt.content)
 
-      // セッション開始
+      // Start session
       await this.sessionManager.startSession(promptId)
 
-      // 実行回数インクリメント
+      // Increment execution count
       await this.storage.incrementExecutionCount(promptId, window.location.href)
 
       onSuccess?.(prompt)
@@ -43,14 +43,14 @@ export class ExecuteManager {
   }
 
   /**
-   * プロンプト一覧取得（ソート済み）
+   * Get prompt list (sorted)
    */
   async getPrompts(): Promise<Prompt[]> {
     const prompts = await this.storage.getAllPrompts()
     const settings = this.storage.getSettings()
     console.debug("Loaded prompts:", prompts)
 
-    // ソート処理
+    // Sort processing
     switch (settings.defaultSortOrder) {
       case "recent":
         return prompts.sort(
@@ -66,7 +66,7 @@ export class ExecuteManager {
   }
 
   /**
-   * ピン留めプロンプト取得（順序保持）
+   * Get pinned prompts (maintaining order)
    */
   async getPinnedPrompts(): Promise<Prompt[]> {
     const pinnedOrder = await this.storage.getPinnedOrder()
@@ -78,7 +78,7 @@ export class ExecuteManager {
   }
 
   /**
-   * 設定取得
+   * Get settings
    */
   getSettings() {
     return this.storage.getSettings()

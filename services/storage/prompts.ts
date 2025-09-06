@@ -2,11 +2,11 @@ import type { Prompt, StoredPrompt, PromptError } from "../../types/prompt"
 import { promptsStorage, settingsStorage } from "./definitions"
 
 /**
- * プロンプト管理サービス
+ * Prompt management service
  */
 export class PromptsService {
   /**
-   * Promptオブジェクトをストレージ用のStoredPromptに変換
+   * Convert Prompt object to StoredPrompt for storage
    */
   private toStoredPrompt(prompt: Prompt): StoredPrompt {
     return {
@@ -18,7 +18,7 @@ export class PromptsService {
   }
 
   /**
-   * ストレージ用のStoredPromptをPromptオブジェクトに変換
+   * Convert StoredPrompt to Prompt object
    */
   private fromStoredPrompt(stored: StoredPrompt): Prompt {
     return {
@@ -30,7 +30,7 @@ export class PromptsService {
   }
 
   /**
-   * プロンプトを保存
+   * Save prompt
    */
   async savePrompt(
     prompt: Omit<Prompt, "id" | "createdAt" | "updatedAt">,
@@ -53,7 +53,7 @@ export class PromptsService {
 
       await promptsStorage.setValue(updatedPrompts)
 
-      // 最大数チェック
+      // Check maximum count
       await this.enforceMaxPrompts()
 
       return newPrompt
@@ -63,7 +63,7 @@ export class PromptsService {
   }
 
   /**
-   * プロンプトを更新
+   * Update prompt
    */
   async updatePrompt(
     id: string,
@@ -97,7 +97,7 @@ export class PromptsService {
   }
 
   /**
-   * プロンプトを削除
+   * Delete prompt
    */
   async deletePrompt(id: string): Promise<void> {
     try {
@@ -115,14 +115,14 @@ export class PromptsService {
   }
 
   /**
-   * ストレージをクリア（デバッグ用）
+   * Clear storage (for debugging)
    */
   async clearPrompts(): Promise<void> {
     await promptsStorage.setValue({})
   }
 
   /**
-   * プロンプトを取得
+   * Get prompt
    */
   async getPrompt(id: string): Promise<Prompt | null> {
     const storedPrompts = await promptsStorage.getValue()
@@ -131,7 +131,7 @@ export class PromptsService {
   }
 
   /**
-   * 全プロンプトを取得
+   * Get all prompts
    */
   async getAllPrompts(): Promise<Prompt[]> {
     const storedPrompts = await promptsStorage.getValue()
@@ -141,7 +141,7 @@ export class PromptsService {
   }
 
   /**
-   * プロンプトの実行回数を増加
+   * Increment prompt execution count
    */
   async incrementExecutionCount(id: string, url: string): Promise<void> {
     try {
@@ -165,14 +165,14 @@ export class PromptsService {
   }
 
   /**
-   * 最大プロンプト数制限の適用
+   * Apply maximum prompt count limit
    */
   private async enforceMaxPrompts(): Promise<void> {
     const settings = await settingsStorage.getValue()
     const prompts = await this.getAllPrompts()
 
     if (prompts.length > settings.maxPrompts) {
-      // ピン留めされていない古いプロンプトから削除
+      // Delete old unpinned prompts first
       const unpinnedPrompts = prompts
         .filter((p) => !p.isPinned)
         .sort((a, b) => a.lastExecutedAt.getTime() - b.lastExecutedAt.getTime())
@@ -187,14 +187,14 @@ export class PromptsService {
   }
 
   /**
-   * ユニークIDの生成
+   * Generate unique ID
    */
   private generateId(): string {
     return `prompt_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`
   }
 
   /**
-   * エラーオブジェクトの生成
+   * Create error object
    */
   private createError(
     code: string,
@@ -210,6 +210,6 @@ export class PromptsService {
 }
 
 /**
- * プロンプトサービスのシングルトンインスタンス
+ * Singleton instance of prompt service
  */
 export const promptsService = new PromptsService()

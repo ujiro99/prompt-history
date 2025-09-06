@@ -13,7 +13,7 @@ export default defineContentScript({
   runAt: "document_end",
 
   async main(ctx) {
-    // ChatGPTページが完全にロードされるまで待機
+    // Wait until the ChatGPT page is fully loaded
     await new Promise((resolve) => {
       if (document.readyState === "complete") {
         resolve(void 0)
@@ -22,7 +22,7 @@ export default defineContentScript({
       }
     })
 
-    // ChatGPT UIが準備されるまでさらに待機
+    // Wait additional time for ChatGPT UI to be ready
     await new Promise((resolve) => setTimeout(resolve, 1000))
 
     const ui = await createShadowRootUi(ctx, {

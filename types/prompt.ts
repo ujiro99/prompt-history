@@ -1,218 +1,218 @@
-// プロンプト管理機能の型定義
+// Type definitions for prompt management functionality
 
 /**
- * プロンプトデータの基本構造
+ * Basic structure of prompt data
  */
 export interface Prompt {
-  /** プロンプトの一意識別子（UUID） */
+  /** Unique identifier for prompt (UUID) */
   id: string
-  /** プロンプト名 */
+  /** Prompt name */
   name: string
-  /** プロンプト内容 */
+  /** Prompt content */
   content: string
-  /** 実行回数 */
+  /** Execution count */
   executionCount: number
-  /** 最新実行日時 */
+  /** Latest execution date */
   lastExecutedAt: Date
-  /** ピン留めフラグ */
+  /** Pin flag */
   isPinned: boolean
-  /** 最終実行URL */
+  /** Last execution URL */
   lastExecutionUrl: string
-  /** 作成日時 */
+  /** Creation date */
   createdAt: Date
-  /** 更新日時 */
+  /** Update date */
   updatedAt: Date
 }
 
 /**
- * ストレージ保存用のプロンプトデータ（日付フィールドはISO文字列）
+ * Prompt data for storage (date fields are ISO strings)
  */
 export interface StoredPrompt {
-  /** プロンプトの一意識別子（UUID） */
+  /** Unique identifier for prompt (UUID) */
   id: string
-  /** プロンプト名 */
+  /** Prompt name */
   name: string
-  /** プロンプト内容 */
+  /** Prompt content */
   content: string
-  /** 実行回数 */
+  /** Execution count */
   executionCount: number
-  /** 最新実行日時 */
+  /** Latest execution date */
   lastExecutedAt: string
-  /** ピン留めフラグ */
+  /** Pin flag */
   isPinned: boolean
-  /** 最終実行URL */
+  /** Last execution URL */
   lastExecutionUrl: string
-  /** 作成日時 */
+  /** Creation date */
   createdAt: string
-  /** 更新日時 */
+  /** Update date */
   updatedAt: string
 }
 
 /**
- * セッション状態管理
+ * Session state management
  */
 export interface Session {
-  /** 実行中プロンプトID（セッションなしの場合はnull） */
+  /** Active prompt ID (null if no session) */
   activePromptId: string | null
-  /** セッション開始URL */
+  /** Session start URL */
   url: string
-  /** セッション開始時刻 */
+  /** Session start time */
   startedAt: Date
 }
 
 /**
- * プロンプト保存ダイアログのProps
+ * Props for prompt save dialog
  */
 export interface SaveDialogProps {
-  /** 初期プロンプト名（編集時） */
+  /** Initial prompt name (when editing) */
   initialName?: string
-  /** 初期プロンプト内容 */
+  /** Initial prompt content */
   initialContent: string
-  /** 上書き保存が可能かどうか */
+  /** Whether overwrite save is available */
   isOverwriteAvailable: boolean
-  /** 保存時のコールバック */
+  /** Callback on save */
   onSave: (data: SaveDialogData) => void
-  /** キャンセル時のコールバック */
+  /** Callback on cancel */
   onCancel: () => void
 }
 
 /**
- * プロンプト保存データ
+ * Prompt save data
  */
 export interface SaveDialogData {
-  /** プロンプト名 */
+  /** Prompt name */
   name: string
-  /** プロンプト内容 */
+  /** Prompt content */
   content: string
-  /** 保存モード */
+  /** Save mode */
   saveMode: "new" | "overwrite"
 }
 
 /**
- * ストレージに保存するデータの型
+ * Type of data to be stored in storage
  */
 export interface StorageData {
-  /** プロンプト一覧 */
+  /** Prompt list */
   prompts: Record<string, Prompt>
-  /** 現在のセッション状態 */
+  /** Current session state */
   session: Session | null
-  /** ピン留めプロンプトの順序 */
+  /** Order of pinned prompts */
   pinnedOrder: string[]
-  /** アプリケーション設定 */
+  /** Application settings */
   settings: AppSettings
 }
 
 /**
- * アプリケーション設定
+ * Application settings
  */
 export interface AppSettings {
-  /** 自動保存機能の有効/無効 */
+  /** Enable/disable auto-save feature */
   autoSaveEnabled: boolean
-  /** 最大保存プロンプト数 */
+  /** Maximum number of stored prompts */
   maxPrompts: number
-  /** デフォルトの並び順 */
+  /** Default sort order */
   defaultSortOrder: "recent" | "execution" | "name"
-  /** 通知表示設定 */
+  /** Notification display setting */
   showNotifications: boolean
 }
 
 /**
- * AIサービス抽象化インターフェース
+ * AI service abstraction interface
  */
 export interface AIServiceInterface {
-  /** このサービスがサポートされているかチェック */
+  /** Check if this service is supported */
   isSupported(): boolean
-  /** テキスト入力要素を取得 */
+  /** Get text input element */
   getTextInput(): Element | null
-  /** 送信ボタン要素を取得 */
+  /** Get send button element */
   getSendButton(): Element | null
-  /** 現在のプロンプト内容を抽出 */
+  /** Extract current prompt content */
   extractPromptContent(): string
-  /** プロンプト内容を入力欄に挿入 */
+  /** Insert prompt content into input field */
   injectPromptContent(content: string): void
-  /** 送信イベント監視の設定 */
+  /** Set up send event monitoring */
   onSend(callback: () => void): void
-  /** サービス名を取得 */
+  /** Get service name */
   getServiceName(): string
 }
 
 /**
- * ChatGPT用のDOMセレクタ定義
+ * DOM selector definitions for ChatGPT
  */
 export interface ChatGPTSelectors {
-  /** テキスト入力欄のセレクタ（フォールバック用配列） */
+  /** Text input selectors (fallback array) */
   textInput: string[]
-  /** 送信ボタンのセレクタ（フォールバック用配列） */
+  /** Send button selectors (fallback array) */
   sendButton: string[]
-  /** チャット履歴のセレクタ（フォールバック用配列） */
+  /** Chat history selectors (fallback array) */
   chatHistory: string[]
 }
 
 /**
- * プロンプト一覧表示用のデータ
+ * Data for prompt list display
  */
 export interface PromptListItem {
-  /** プロンプトの基本情報 */
+  /** Basic prompt information */
   prompt: Prompt
-  /** 表示用の短縮された内容 */
+  /** Truncated content for display */
   truncatedContent: string
-  /** 最終実行からの経過時間（表示用） */
+  /** Time elapsed since last execution (for display) */
   relativeLastExecuted: string
 }
 
 /**
- * 並び順の設定
+ * Sort order setting
  */
 export type SortOrder = "recent" | "execution" | "name" | "pinned"
 
 /**
- * プロンプト検索・フィルタリングの条件
+ * Prompt search and filtering conditions
  */
 export interface PromptFilter {
-  /** キーワード検索 */
+  /** Keyword search */
   keyword?: string
-  /** ピン留めプロンプトのみ表示 */
+  /** Show only pinned prompts */
   pinnedOnly?: boolean
-  /** 並び順 */
+  /** Sort order */
   sortOrder?: SortOrder
 }
 
 /**
- * エラー情報
+ * Error information
  */
 export interface PromptError {
-  /** エラーコード */
+  /** Error code */
   code: string
-  /** エラーメッセージ */
+  /** Error message */
   message: string
-  /** エラー詳細 */
+  /** Error details */
   details?: any
 }
 
 /**
- * 通知情報
+ * Notification information
  */
 export interface NotificationData {
-  /** 通知タイプ */
+  /** Notification type */
   type: "success" | "error" | "info" | "warning"
-  /** 通知メッセージ */
+  /** Notification message */
   message: string
-  /** 自動消去時間（ms、0で自動消去しない） */
+  /** Auto-dismiss time (ms, 0 for no auto-dismiss) */
   duration?: number
 }
 
 /**
- * プロンプト統計情報
+ * Prompt statistics information
  */
 export interface PromptStats {
-  /** 総プロンプト数 */
+  /** Total number of prompts */
   totalPrompts: number
-  /** ピン留めプロンプト数 */
+  /** Number of pinned prompts */
   pinnedPrompts: number
-  /** 総実行回数 */
+  /** Total execution count */
   totalExecutions: number
-  /** 最も実行されたプロンプト */
+  /** Most executed prompt */
   mostExecutedPrompt?: Prompt
-  /** 最近実行されたプロンプト */
+  /** Recently executed prompt */
   recentlyExecutedPrompt?: Prompt
 }

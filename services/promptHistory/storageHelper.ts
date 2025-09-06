@@ -7,7 +7,7 @@ import type { StorageService } from "../storage"
 import { SessionManager } from "./sessionManager"
 
 /**
- * プロンプトの保存・削除系処理を担当するクラス（Storage書き込み系）
+ * Class responsible for prompt save and delete operations (Storage write operations)
  */
 export class StorageHelper {
   private saveInProgress = false
@@ -18,7 +18,7 @@ export class StorageHelper {
   ) {}
 
   /**
-   * 手動プロンプト保存
+   * Manual prompt save
    */
   async savePromptManually(
     saveData: SaveDialogData,
@@ -45,7 +45,7 @@ export class StorageHelper {
         savedPrompt = await this.storage.updatePrompt(session.activePromptId, {
           name: saveData.name,
           content: saveData.content,
-          isPinned: true, // 手動保存は自動ピン留め
+          isPinned: true, // Manual saves are automatically pinned
         })
       } else {
         savedPrompt = await this.storage.savePrompt({
@@ -53,12 +53,12 @@ export class StorageHelper {
           content: saveData.content,
           executionCount: 0,
           lastExecutedAt: new Date(),
-          isPinned: true, // 手動保存は自動ピン留め
+          isPinned: true, // Manual saves are automatically pinned
           lastExecutionUrl: window.location.href,
         })
       }
 
-      // ピン留め処理
+      // Pin processing
       if (savedPrompt.isPinned) {
         await this.storage.pinPrompt(savedPrompt.id)
       }
@@ -75,7 +75,7 @@ export class StorageHelper {
   }
 
   /**
-   * 自動プロンプト保存（送信時）
+   * Auto prompt save (on send)
    */
   async handleAutoSave(
     aiService: AIServiceInterface,
@@ -94,7 +94,7 @@ export class StorageHelper {
         return
       }
 
-      // 新規プロンプトとして保存（セッション状態無関係）
+      // Save as new prompt (regardless of session state)
       const savedPrompt = await this.storage.savePrompt({
         name: this.generatePromptName(content),
         content,
@@ -104,7 +104,7 @@ export class StorageHelper {
         lastExecutionUrl: window.location.href,
       })
 
-      // セッションがある場合は元プロンプトの実行回数もインクリメント
+      // If session exists, also increment execution count of original prompt
       const session = this.sessionManager.getCurrentSession()
       if (session?.activePromptId) {
         await this.storage.incrementExecutionCount(
@@ -123,7 +123,7 @@ export class StorageHelper {
   }
 
   /**
-   * プロンプト削除
+   * Delete prompt
    */
   async deletePrompt(
     promptId: string,
@@ -136,7 +136,7 @@ export class StorageHelper {
         throw new Error(`Prompt not found: ${promptId}`)
       }
 
-      // アクティブセッションの場合は終了
+      // End session if it's an active session
       const session = this.sessionManager.getCurrentSession()
       if (session?.activePromptId === promptId) {
         await this.sessionManager.endSession()
@@ -151,21 +151,21 @@ export class StorageHelper {
   }
 
   /**
-   * プロンプトをピン留め
+   * Pin prompt
    */
   async pinPrompt(promptId: string): Promise<void> {
     await this.storage.pinPrompt(promptId)
   }
 
   /**
-   * プロンプトのピン留め解除
+   * Unpin prompt
    */
   async unpinPrompt(promptId: string): Promise<void> {
     await this.storage.unpinPrompt(promptId)
   }
 
   /**
-   * 保存ダイアログ用データ準備
+   * Prepare data for save dialog
    */
   async prepareSaveDialogData(aiService: AIServiceInterface | null): Promise<{
     initialContent: string
@@ -190,7 +190,7 @@ export class StorageHelper {
   }
 
   /**
-   * プロンプト名自動生成
+   * Auto-generate prompt name
    */
   private generatePromptName(content: string): string {
     const maxLength = 50

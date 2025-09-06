@@ -1,32 +1,32 @@
 import type { ChatGPTSelectors } from "../../types/prompt"
 
 /**
- * ChatGPT用のDOMセレクタ定義
+ * DOM selector definitions for ChatGPT
  */
 export const CHATGPT_SELECTORS: ChatGPTSelectors = {
   textInput: [
-    // 新しいUI
+    // New UI
     "#prompt-textarea",
     '[data-testid="prompt-textarea"]',
-    // 旧UI、フォールバック
+    // Old UI, fallback
     'textarea[placeholder*="Message"]',
     'textarea[placeholder*="メッセージ"]',
     'div[contenteditable="true"][data-id*="prompt"]',
     'div[contenteditable="true"]',
-    // 更なるフォールバック
+    // Additional fallbacks
     "textarea",
     '[role="textbox"]',
   ],
   sendButton: [
-    // 新しいUI
+    // New UI
     '[data-testid="send-button"]',
     'button[aria-label*="Send"]',
     'button[aria-label*="送信"]',
-    // SVGアイコンベース
+    // SVG icon based
     'button svg[data-icon="paper-plane"]',
     'button svg[data-icon="arrow-up"]',
-    'button path[d*="M2.963"]', // 送信アイコンのパス
-    // フォールバック
+    'button path[d*="M2.963"]', // Path of send icon
+    // Fallbacks
     'form button[type="submit"]',
     "button:has(svg)",
     "button:last-child",

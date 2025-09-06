@@ -4,8 +4,8 @@ import { PromptManager } from "./promptManager"
 import { ChatGptDebugger } from "./chatGptDebugger"
 
 /**
- * ChatGPT用のサービス実装
- * 各マネージャーを統括し、AIServiceInterfaceを実装する
+ * Service implementation for ChatGPT
+ * Orchestrates managers and implements AIServiceInterface
  */
 export class ChatGptService implements AIServiceInterface {
   private domManager: DomManager
@@ -20,7 +20,7 @@ export class ChatGptService implements AIServiceInterface {
   }
 
   /**
-   * ChatGPTサイト判定
+   * Check if current site is ChatGPT
    */
   isSupported(): boolean {
     const hostname = window.location.hostname
@@ -33,7 +33,7 @@ export class ChatGptService implements AIServiceInterface {
   }
 
   /**
-   * サービス初期化
+   * Initialize service
    */
   async initialize(): Promise<void> {
     if (!this.isSupported()) {
@@ -47,45 +47,45 @@ export class ChatGptService implements AIServiceInterface {
   }
 
   /**
-   * サービス名取得
+   * Get service name
    */
   getServiceName(): string {
     return "ChatGPT"
   }
 
   /**
-   * テキスト入力要素取得
+   * Get text input element
    */
   getTextInput(): Element | null {
     return this.domManager.getTextInput()
   }
 
   /**
-   * 送信ボタン要素取得
+   * Get send button element
    */
   getSendButton(): Element | null {
     return this.domManager.getSendButton()
   }
 
   /**
-   * プロンプト内容抽出
+   * Extract prompt content
    */
   extractPromptContent(): string {
     return this.promptManager.extractContent()
   }
 
   /**
-   * プロンプト内容挿入
+   * Inject prompt content
    */
   injectPromptContent(content: string): void {
     this.promptManager.injectContent(content)
   }
 
   /**
-   * 送信イベント監視設定
+   * Set up send event monitoring
    */
   onSend(callback: () => void): void {
-    // プロンプト内容が空でないかチェックするラッパーを作成
+    // Create wrapper to check if prompt content is not empty
     const wrappedCallback = () => {
       const content = this.extractPromptContent().trim()
       console.debug("Extracted prompt content:", content)
@@ -98,14 +98,14 @@ export class ChatGptService implements AIServiceInterface {
   }
 
   /**
-   * 送信イベント監視解除
+   * Remove send event monitoring
    */
   offSend(callback: () => void): void {
     this.domManager.offSend(callback)
   }
 
   /**
-   * サービス終了処理
+   * Service cleanup
    */
   destroy(): void {
     this.domManager.destroy()
@@ -113,11 +113,11 @@ export class ChatGptService implements AIServiceInterface {
   }
 
   // ===================
-  // デバッグ・ユーティリティ
+  // Debug & Utilities
   // ===================
 
   /**
-   * 現在検出されている要素情報を取得
+   * Get information about currently detected elements
    */
   getElementInfo(): {
     textInput: { found: boolean; selector?: string; tagName?: string }
@@ -127,7 +127,7 @@ export class ChatGptService implements AIServiceInterface {
   }
 
   /**
-   * セレクタのテスト実行
+   * Run selector tests
    */
   testSelectors(): void {
     this.debugger.testSelectors()

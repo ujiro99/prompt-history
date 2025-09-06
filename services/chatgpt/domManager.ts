@@ -1,7 +1,7 @@
 import { CHATGPT_SELECTORS } from "./chatGptSelectors"
 
 /**
- * DOM要素管理とイベント処理を担当するクラス
+ * Class responsible for DOM element management and event handling
  */
 export class DomManager {
   private textInput: Element | null = null
@@ -10,7 +10,7 @@ export class DomManager {
   private sendCallbacks: (() => void)[] = []
 
   /**
-   * 複数のセレクタから要素を検索
+   * Find element from multiple selectors
    */
   private findElement(selectors: string[]): Element | null {
     for (const selector of selectors) {
@@ -27,7 +27,7 @@ export class DomManager {
   }
 
   /**
-   * 要素の可視性チェック
+   * Check element visibility
    */
   private isElementVisible(element: Element): boolean {
     const rect = element.getBoundingClientRect()
@@ -43,7 +43,7 @@ export class DomManager {
   }
 
   /**
-   * DOM要素の準備を待機
+   * Wait for DOM elements to be ready
    */
   async waitForElements(): Promise<void> {
     const maxRetries = 50 // 5秒間待機
@@ -65,7 +65,7 @@ export class DomManager {
   }
 
   /**
-   * テキスト入力要素取得
+   * Get text input element
    */
   getTextInput(): Element | null {
     if (!this.textInput) {
@@ -75,7 +75,7 @@ export class DomManager {
   }
 
   /**
-   * 送信ボタン要素取得
+   * Get send button element
    */
   getSendButton(): Element | null {
     if (!this.sendButton) {
@@ -85,16 +85,16 @@ export class DomManager {
   }
 
   /**
-   * イベントリスナー設定
+   * Set up event listeners
    */
   setupEventListeners(): void {
     console.debug("Setting up event listeners")
-    // 送信ボタンクリック監視
+    // Monitor send button click
     if (this.sendButton) {
       this.sendButton.addEventListener("click", this.handleSendClick.bind(this))
     }
 
-    // Enterキー監視（テキストエリア内）
+    // Monitor Enter key (within text area)
     if (this.textInput) {
       this.textInput.addEventListener(
         "keydown",
@@ -102,7 +102,7 @@ export class DomManager {
       )
     }
 
-    // フォーム送信監視
+    // Monitor form submission
     const form = this.textInput?.closest("form")
     if (form) {
       form.addEventListener("submit", this.handleFormSubmit.bind(this))
@@ -110,20 +110,20 @@ export class DomManager {
   }
 
   /**
-   * DOM変更監視設定
+   * Set up DOM change monitoring
    */
   setupDOMObserver(): void {
     this.observer = new MutationObserver((mutations) => {
       let shouldRefreshElements = false
 
       for (const mutation of mutations) {
-        // 新しいノードが追加された場合
+        // When new nodes are added
         if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
           shouldRefreshElements = true
           break
         }
 
-        // 属性が変更された場合
+        // When attributes are changed
         if (mutation.type === "attributes") {
           const target = mutation.target as Element
           if (target === this.textInput || target === this.sendButton) {
@@ -138,7 +138,7 @@ export class DomManager {
       }
     })
 
-    // 監視開始
+    // Start monitoring
     this.observer.observe(document.body, {
       childList: true,
       subtree: true,
@@ -148,31 +148,31 @@ export class DomManager {
   }
 
   /**
-   * 要素参照の更新
+   * Update element references
    */
   private refreshElements(): void {
     const newTextInput = this.findElement(CHATGPT_SELECTORS.textInput)
     const newSendButton = this.findElement(CHATGPT_SELECTORS.sendButton)
 
-    // 要素が変更された場合、イベントリスナーを再設定
+    // Re-set event listeners when elements change
     if (newTextInput !== this.textInput || newSendButton !== this.sendButton) {
       this.textInput = newTextInput
       this.sendButton = newSendButton
 
-      // 既存のイベントリスナーは自動的に解除される
+      // Existing event listeners are automatically removed
       this.setupEventListeners()
     }
   }
 
   /**
-   * 送信イベント監視設定
+   * Set up send event monitoring
    */
   onSend(callback: () => void): void {
     this.sendCallbacks.push(callback)
   }
 
   /**
-   * 送信イベント監視解除
+   * Remove send event monitoring
    */
   offSend(callback: () => void): void {
     const index = this.sendCallbacks.indexOf(callback)
@@ -182,31 +182,31 @@ export class DomManager {
   }
 
   /**
-   * 送信ボタンクリック処理
+   * Handle send button click
    */
   private handleSendClick(_event: Event): void {
     this.fireSendCallbacks()
   }
 
   /**
-   * キーダウン処理
+   * Handle key down
    */
   private handleKeyDown(event: KeyboardEvent): void {
-    // Ctrl+Enter または Cmd+Enter で送信
+    // Send with Ctrl+Enter or Cmd+Enter
     if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
       this.fireSendCallbacks()
     }
   }
 
   /**
-   * フォーム送信処理
+   * Handle form submission
    */
   private handleFormSubmit(_event: Event): void {
     this.fireSendCallbacks()
   }
 
   /**
-   * 送信コールバック実行
+   * Execute send callbacks
    */
   private fireSendCallbacks(): void {
     console.debug("Firing send callbacks")
@@ -220,7 +220,7 @@ export class DomManager {
   }
 
   /**
-   * 終了処理
+   * Cleanup
    */
   destroy(): void {
     if (this.observer) {

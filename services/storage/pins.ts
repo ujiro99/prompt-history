@@ -3,24 +3,24 @@ import { pinnedOrderStorage } from "./definitions"
 import { promptsService } from "./prompts"
 
 /**
- * ピン留め管理サービス
+ * Pin management service
  */
 export class PinsService {
   /**
-   * プロンプトをピン留め
+   * Pin prompt
    */
   async pinPrompt(id: string): Promise<void> {
     try {
-      // プロンプト存在チェック
+      // Check prompt existence
       const prompt = await promptsService.getPrompt(id)
       if (!prompt) {
         throw new Error(`Prompt with id ${id} not found`)
       }
 
-      // プロンプトのピン留めフラグ更新
+      // Update prompt pin flag
       await promptsService.updatePrompt(id, { isPinned: true })
 
-      // ピン留め順序に追加（重複チェック）
+      // Add to pinned order (duplicate check)
       const currentOrder = await pinnedOrderStorage.getValue()
       if (!currentOrder.includes(id)) {
         await pinnedOrderStorage.setValue([...currentOrder, id])
@@ -31,14 +31,14 @@ export class PinsService {
   }
 
   /**
-   * プロンプトのピン留め解除
+   * Unpin prompt
    */
   async unpinPrompt(id: string): Promise<void> {
     try {
-      // プロンプトのピン留めフラグ更新
+      // Update prompt pin flag
       await promptsService.updatePrompt(id, { isPinned: false })
 
-      // ピン留め順序から削除
+      // Remove from pinned order
       const currentOrder = await pinnedOrderStorage.getValue()
       const newOrder = currentOrder.filter((pinnedId) => pinnedId !== id)
       await pinnedOrderStorage.setValue(newOrder)
@@ -48,14 +48,14 @@ export class PinsService {
   }
 
   /**
-   * ピン留め順序を取得
+   * Get pinned order
    */
   async getPinnedOrder(): Promise<string[]> {
     return await pinnedOrderStorage.getValue()
   }
 
   /**
-   * ピン留め順序を更新
+   * Update pinned order
    */
   async updatePinnedOrder(order: string[]): Promise<void> {
     try {
@@ -70,7 +70,7 @@ export class PinsService {
   }
 
   /**
-   * プロンプト削除時のピン留め順序クリーンアップ
+   * Cleanup pinned order when prompt is deleted
    */
   async cleanupPinnedOrder(deletedPromptId: string): Promise<void> {
     try {
@@ -87,14 +87,14 @@ export class PinsService {
   }
 
   /**
-   * ストレージをクリア（デバッグ用）
+   * Clear storage (for debugging)
    */
   async clearPins(): Promise<void> {
     await pinnedOrderStorage.setValue([])
   }
 
   /**
-   * エラーオブジェクトの生成
+   * Create error object
    */
   private createError(
     code: string,
@@ -110,6 +110,6 @@ export class PinsService {
 }
 
 /**
- * ピン留めサービスのシングルトンインスタンス
+ * Singleton instance of pin service
  */
 export const pinsService = new PinsService()

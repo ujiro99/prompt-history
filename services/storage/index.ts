@@ -11,7 +11,7 @@ import { pinsService } from "./pins"
 import { settingsService } from "./settings"
 
 /**
- * 統合ストレージサービス（ファサードパターン）
+ * Integrated storage service (Facade pattern)
  */
 export class StorageService {
   private static instance: StorageService
@@ -19,7 +19,7 @@ export class StorageService {
   private constructor() {}
 
   /**
-   * シングルトンインスタンス取得
+   * Get singleton instance
    */
   static getInstance(): StorageService {
     if (!StorageService.instance) {
@@ -29,20 +29,20 @@ export class StorageService {
   }
 
   /**
-   * ストレージサービスの初期化
-   * WXT Storageは自動的に初期化されるため、このメソッドは互換性のためのダミー
+   * Initialize storage service
+   * WXT Storage is automatically initialized, so this method is a dummy for compatibility
    */
   async initialize(): Promise<void> {
-    // WXT Storageは自動初期化されるため何もしない
-    // 既存コードとの互換性を保つためのメソッド
+    // WXT Storage is automatically initialized, so do nothing
+    // Method for maintaining compatibility with existing code
   }
 
   // ===================
-  // プロンプト操作
+  // Prompt operations
   // ===================
 
   /**
-   * プロンプトを保存
+   * Save prompt
    */
   async savePrompt(
     prompt: Omit<Prompt, "id" | "createdAt" | "updatedAt">,
@@ -51,7 +51,7 @@ export class StorageService {
   }
 
   /**
-   * プロンプトを更新
+   * Update prompt
    */
   async updatePrompt(
     id: string,
@@ -61,125 +61,125 @@ export class StorageService {
   }
 
   /**
-   * プロンプトを削除
+   * Delete prompt
    */
   async deletePrompt(id: string): Promise<void> {
     await promptsService.deletePrompt(id)
-    // ピン留め順序からも削除
+    // Also remove from pinned order
     await pinsService.cleanupPinnedOrder(id)
   }
 
   /**
-   * プロンプトを取得
+   * Get prompt
    */
   async getPrompt(id: string): Promise<Prompt | null> {
     return await promptsService.getPrompt(id)
   }
 
   /**
-   * 全プロンプトを取得
+   * Get all prompts
    */
   async getAllPrompts(): Promise<Prompt[]> {
     return await promptsService.getAllPrompts()
   }
 
   /**
-   * プロンプトの実行回数を増加
+   * Increment prompt execution count
    */
   async incrementExecutionCount(id: string, url: string): Promise<void> {
     return await promptsService.incrementExecutionCount(id, url)
   }
 
   // ===================
-  // セッション操作
+  // Session operations
   // ===================
 
   /**
-   * セッション開始
+   * Start session
    */
   async startSession(promptId: string): Promise<void> {
     return await sessionsService.startSession(promptId)
   }
 
   /**
-   * セッション終了
+   * End session
    */
   async endSession(): Promise<void> {
     return await sessionsService.endSession()
   }
 
   /**
-   * 現在のセッション取得
+   * Get current session
    */
   getCurrentSession(): Session | null {
-    // 非同期メソッドを同期的に呼び出すための実装は必要に応じて調整
+    // Implementation for calling async methods synchronously needs adjustment as needed
     return null
   }
 
   /**
-   * 現在のセッション取得（非同期版）
+   * Get current session (async version)
    */
   async getCurrentSessionAsync(): Promise<Session | null> {
     return await sessionsService.getCurrentSession()
   }
 
   /**
-   * アクティブセッション判定
+   * Determine active session
    */
   hasActiveSession(): boolean {
-    // 非同期メソッドを同期的に呼び出すための実装は必要に応じて調整
+    // Implementation for calling async methods synchronously needs adjustment as needed
     return false
   }
 
   /**
-   * アクティブセッション判定（非同期版）
+   * Determine active session (async version)
    */
   async hasActiveSessionAsync(): Promise<boolean> {
     return await sessionsService.hasActiveSession()
   }
 
   // ===================
-  // ピン留め操作
+  // Pin operations
   // ===================
 
   /**
-   * プロンプトをピン留め
+   * Pin prompt
    */
   async pinPrompt(id: string): Promise<void> {
     return await pinsService.pinPrompt(id)
   }
 
   /**
-   * プロンプトのピン留め解除
+   * Unpin prompt
    */
   async unpinPrompt(id: string): Promise<void> {
     return await pinsService.unpinPrompt(id)
   }
 
   /**
-   * ピン留め順序を取得
+   * Get pinned order
    */
   async getPinnedOrder(): Promise<string[]> {
     return await pinsService.getPinnedOrder()
   }
 
   /**
-   * ピン留め順序を更新
+   * Update pinned order
    */
   async updatePinnedOrder(order: string[]): Promise<void> {
     return await pinsService.updatePinnedOrder(order)
   }
 
   // ===================
-  // 設定操作
+  // Settings operations
   // ===================
 
   /**
-   * 設定を取得
+   * Get settings
    */
   getSettings(): AppSettings {
-    // 非同期メソッドを同期的に呼び出すための実装は必要に応じて調整
-    // 現在は互換性のためデフォルト設定を返す
+    // Implementation for calling async methods synchronously needs adjustment as needed
+    // Currently returns default settings for compatibility
     return {
       autoSaveEnabled: true,
       maxPrompts: 1000,
@@ -189,28 +189,28 @@ export class StorageService {
   }
 
   /**
-   * 設定を取得（非同期版）
+   * Get settings (async version)
    */
   async getSettingsAsync(): Promise<AppSettings> {
     return await settingsService.getSettings()
   }
 
   /**
-   * 設定を更新
+   * Update settings
    */
   async setSettings(settings: Partial<AppSettings>): Promise<void> {
     return await settingsService.setSettings(settings)
   }
 
   // ===================
-  // 統計・ユーティリティ
+  // Statistics and utilities
   // ===================
 
   /**
-   * プロンプト統計を取得
+   * Get prompt statistics
    */
   getStats(): PromptStats {
-    // 非同期メソッドを同期的に呼び出すための実装は必要に応じて調整
+    // Implementation for calling async methods synchronously needs adjustment as needed
     return {
       totalPrompts: 0,
       pinnedPrompts: 0,
@@ -219,7 +219,7 @@ export class StorageService {
   }
 
   /**
-   * プロンプト統計を取得（非同期版）
+   * Get prompt statistics (async version)
    */
   async getStatsAsync(): Promise<PromptStats> {
     const prompts = await promptsService.getAllPrompts()
@@ -253,11 +253,11 @@ export class StorageService {
   }
 
   /**
-   * ストレージの完全クリア（デバッグ用）
+   * Complete storage clear (for debugging)
    */
   async clearAllData(): Promise<void> {
     try {
-      // 各ストレージアイテムを初期化
+      // Initialize each storage item
       await Promise.all([
         promptsService.clearPrompts(),
         sessionsService.clearSessions(),
@@ -270,7 +270,7 @@ export class StorageService {
   }
 
   /**
-   * エラーオブジェクトの生成
+   * Create error object
    */
   private createError(
     code: string,
@@ -286,9 +286,9 @@ export class StorageService {
 }
 
 /**
- * ストレージサービスのシングルトンインスタンス
+ * Singleton instance of storage service
  */
 export const promptStorage = StorageService.getInstance()
 
-// 個別サービスもエクスポート
+// Export individual services as well
 export { promptsService, sessionsService, pinsService, settingsService }
