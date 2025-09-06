@@ -1,5 +1,5 @@
 import { storage } from "wxt/utils/storage"
-import type { Prompt, Session, AppSettings } from "../../types/prompt"
+import type { StoredPrompt, Session, AppSettings } from "../../types/prompt"
 
 /**
  * デフォルト設定値
@@ -14,7 +14,7 @@ const DEFAULT_SETTINGS: AppSettings = {
 /**
  * プロンプトストレージの定義
  */
-export const promptsStorage = storage.defineItem<Record<string, Prompt>>(
+export const promptsStorage = storage.defineItem<Record<string, StoredPrompt>>(
   "local:prompts",
   {
     fallback: {},

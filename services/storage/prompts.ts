@@ -1,10 +1,34 @@
-import type { Prompt, PromptError } from "../../types/prompt"
+import type { Prompt, StoredPrompt, PromptError } from "../../types/prompt"
 import { promptsStorage, settingsStorage } from "./definitions"
 
 /**
  * プロンプト管理サービス
  */
 export class PromptsService {
+  /**
+   * Promptオブジェクトをストレージ用のStoredPromptに変換
+   */
+  private toStoredPrompt(prompt: Prompt): StoredPrompt {
+    return {
+      ...prompt,
+      createdAt: prompt.createdAt.toISOString(),
+      updatedAt: prompt.updatedAt.toISOString(),
+      lastExecutedAt: prompt.lastExecutedAt.toISOString(),
+    }
+  }
+
+  /**
+   * ストレージ用のStoredPromptをPromptオブジェクトに変換
+   */
+  private fromStoredPrompt(stored: StoredPrompt): Prompt {
+    return {
+      ...stored,
+      createdAt: new Date(stored.createdAt),
+      updatedAt: new Date(stored.updatedAt),
+      lastExecutedAt: new Date(stored.lastExecutedAt),
+    }
+  }
+
   /**
    * プロンプトを保存
    */
@@ -21,9 +45,10 @@ export class PromptsService {
       }
 
       const currentPrompts = await promptsStorage.getValue()
+      const storedPrompt = this.toStoredPrompt(newPrompt)
       const updatedPrompts = {
         ...currentPrompts,
-        [newPrompt.id]: newPrompt,
+        [newPrompt.id]: storedPrompt,
       }
 
       await promptsStorage.setValue(updatedPrompts)
@@ -53,14 +78,15 @@ export class PromptsService {
       }
 
       const updatedPrompt: Prompt = {
-        ...existingPrompt,
+        ...this.fromStoredPrompt(existingPrompt),
         ...updates,
         updatedAt: new Date(),
       }
 
+      const storedPrompt = this.toStoredPrompt(updatedPrompt)
       const updatedPrompts = {
         ...currentPrompts,
-        [id]: updatedPrompt,
+        [id]: storedPrompt,
       }
 
       await promptsStorage.setValue(updatedPrompts)
@@ -99,16 +125,19 @@ export class PromptsService {
    * プロンプトを取得
    */
   async getPrompt(id: string): Promise<Prompt | null> {
-    const prompts = await promptsStorage.getValue()
-    return prompts[id] || null
+    const storedPrompts = await promptsStorage.getValue()
+    const storedPrompt = storedPrompts[id]
+    return storedPrompt ? this.fromStoredPrompt(storedPrompt) : null
   }
 
   /**
    * 全プロンプトを取得
    */
   async getAllPrompts(): Promise<Prompt[]> {
-    const prompts = await promptsStorage.getValue()
-    return Object.values(prompts)
+    const storedPrompts = await promptsStorage.getValue()
+    return Object.values(storedPrompts).map((stored) =>
+      this.fromStoredPrompt(stored),
+    )
   }
 
   /**

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import type { NotificationData } from "../types/prompt"
 
 interface NotificationProps {
@@ -16,6 +16,14 @@ export const Notification: React.FC<NotificationProps> = ({
   const [isVisible, setIsVisible] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
 
+  const dismissNotification = useCallback(() => {
+    setIsAnimating(false)
+    setTimeout(() => {
+      setIsVisible(false)
+      onDismiss()
+    }, 500) // アニメーション終了を待つ
+  }, [onDismiss])
+
   useEffect(() => {
     if (notification) {
       setIsVisible(true)
@@ -32,15 +40,7 @@ export const Notification: React.FC<NotificationProps> = ({
     } else {
       dismissNotification()
     }
-  }, [notification])
-
-  const dismissNotification = () => {
-    setIsAnimating(false)
-    setTimeout(() => {
-      setIsVisible(false)
-      onDismiss()
-    }, 300) // アニメーション終了を待つ
-  }
+  }, [notification, dismissNotification])
 
   if (!isVisible || !notification) {
     return null
@@ -56,189 +56,51 @@ export const Notification: React.FC<NotificationProps> = ({
         return "⚠️"
       case "info":
       default:
-        return "ℹ️"
+        return ""
     }
   }
 
   const getTypeClass = (type: NotificationData["type"]): string => {
     switch (type) {
       case "success":
-        return "notification-success"
+        return "bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900 dark:to-green-800 text-green-800 dark:text-green-200"
       case "error":
-        return "notification-error"
+        return "bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900 dark:to-red-800 text-red-800 dark:text-red-200"
       case "warning":
-        return "notification-warning"
+        return "bg-gradient-to-br from-yellow-100 to-yellow-200 dark:from-yellow-900 dark:to-yellow-800 text-yellow-800 dark:text-yellow-200"
       case "info":
       default:
-        return "notification-info"
+        return "border-gray-200 dark:border-white/10 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200"
     }
   }
 
   return (
     <div
-      className={`notification-container ${isAnimating ? "notification-show" : "notification-hide"}`}
+      className={`fixed top-5 right-5 sm:left-auto sm:w-auto left-2.5 w-[calc(100%-1.25rem)] z-[10001] transition-all duration-500 ease-out ${
+        isAnimating
+          ? "translate-x-0 opacity-100 pointer-events-auto"
+          : "translate-x-1/2 opacity-0 pointer-events-none"
+      }`}
     >
-      <div className={`notification ${getTypeClass(notification.type)}`}>
-        <div className="notification-content">
-          <span className="notification-icon">
+      <div
+        className={`flex items-center justify-between min-w-[300px] sm:max-w-md max-w-none px-4 py-3 border rounded-lg shadow-xl ${getTypeClass(notification.type)}`}
+      >
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <span className="flex-shrink-0 text-base">
             {getIcon(notification.type)}
           </span>
-          <span className="notification-message">{notification.message}</span>
+          <span className="text-sm break-words leading-5">
+            {notification.message}
+          </span>
         </div>
         <button
-          className="notification-dismiss"
+          className="bg-transparent border-0 text-lg cursor-pointer p-0 w-6 h-6 flex items-center justify-center rounded transition-all duration-150 flex-shrink-0 ml-2 opacity-70 hover:opacity-100 hover:bg-black/10 dark:hover:bg-white/10"
           onClick={dismissNotification}
           title="Dismiss"
         >
           ×
         </button>
       </div>
-
-      <style>{`
-        .notification-container {
-          position: fixed;
-          top: 20px;
-          right: 20px;
-          z-index: 10001;
-          transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-          pointer-events: none;
-        }
-
-        .notification-show {
-          transform: translateX(0);
-          opacity: 1;
-          pointer-events: auto;
-        }
-
-        .notification-hide {
-          transform: translateX(100%);
-          opacity: 0;
-        }
-
-        .notification {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          min-width: 300px;
-          max-width: 400px;
-          padding: 12px 16px;
-          border-radius: 8px;
-          box-shadow:
-            0 10px 15px -3px rgba(0, 0, 0, 0.1),
-            0 4px 6px -2px rgba(0, 0, 0, 0.05);
-          backdrop-filter: blur(8px);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .notification-content {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          flex: 1;
-          min-width: 0;
-        }
-
-        .notification-icon {
-          flex-shrink: 0;
-          font-size: 16px;
-        }
-
-        .notification-message {
-          font-size: 14px;
-          font-weight: 500;
-          word-break: break-word;
-          line-height: 1.4;
-        }
-
-        .notification-dismiss {
-          background: none;
-          border: none;
-          font-size: 18px;
-          cursor: pointer;
-          padding: 0;
-          width: 24px;
-          height: 24px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 4px;
-          transition: background-color 0.15s ease;
-          flex-shrink: 0;
-          margin-left: 8px;
-          opacity: 0.7;
-        }
-
-        .notification-dismiss:hover {
-          opacity: 1;
-          background: rgba(0, 0, 0, 0.1);
-        }
-
-        /* 通知タイプ別スタイル */
-        .notification-success {
-          background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
-          color: #166534;
-        }
-
-        .notification-error {
-          background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
-          color: #991b1b;
-        }
-
-        .notification-warning {
-          background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
-          color: #92400e;
-        }
-
-        .notification-info {
-          background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-          color: #1e40af;
-        }
-
-        /* ダークモード対応 */
-        @media (prefers-color-scheme: dark) {
-          .notification {
-            border: 1px solid rgba(255, 255, 255, 0.1);
-          }
-
-          .notification-success {
-            background: linear-gradient(135deg, #064e3b 0%, #047857 100%);
-            color: #6ee7b7;
-          }
-
-          .notification-error {
-            background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%);
-            color: #fca5a5;
-          }
-
-          .notification-warning {
-            background: linear-gradient(135deg, #78350f 0%, #92400e 100%);
-            color: #fbbf24;
-          }
-
-          .notification-info {
-            background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%);
-            color: #93c5fd;
-          }
-
-          .notification-dismiss:hover {
-            background: rgba(255, 255, 255, 0.1);
-          }
-        }
-
-        /* モバイル対応 */
-        @media (max-width: 640px) {
-          .notification-container {
-            top: 10px;
-            right: 10px;
-            left: 10px;
-          }
-
-          .notification {
-            min-width: auto;
-            max-width: none;
-          }
-        }
-      `}</style>
     </div>
   )
 }
@@ -256,11 +118,11 @@ export const NotificationManager: React.FC<NotificationManagerProps> = ({
   onDismiss,
 }) => {
   return (
-    <div className="notification-manager">
+    <div className="relative">
       {notifications.map((notification, index) => (
         <div
           key={index}
-          className="notification-wrapper"
+          className="fixed right-5 sm:left-auto sm:w-auto left-2.5 w-[calc(100%-1.25rem)] z-[10001]"
           style={{ top: `${20 + index * 80}px` }}
         >
           <Notification
@@ -269,26 +131,6 @@ export const NotificationManager: React.FC<NotificationManagerProps> = ({
           />
         </div>
       ))}
-
-      <style>{`
-        .notification-manager {
-          position: relative;
-        }
-
-        .notification-wrapper {
-          position: fixed;
-          right: 20px;
-          z-index: 10001;
-        }
-
-        /* モバイル対応 */
-        @media (max-width: 640px) {
-          .notification-wrapper {
-            right: 10px;
-            left: 10px;
-          }
-        }
-      `}</style>
     </div>
   )
 }

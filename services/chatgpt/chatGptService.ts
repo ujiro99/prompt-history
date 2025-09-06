@@ -88,6 +88,7 @@ export class ChatGptService implements AIServiceInterface {
     // プロンプト内容が空でないかチェックするラッパーを作成
     const wrappedCallback = () => {
       const content = this.extractPromptContent().trim()
+      console.debug("Extracted prompt content:", content)
       if (content.length > 0) {
         callback()
       }

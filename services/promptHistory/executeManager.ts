@@ -21,7 +21,7 @@ export class ExecuteManager {
     onError?: (error: Error) => void,
   ): Promise<void> {
     try {
-      const prompt = this.storage.getPrompt(promptId)
+      const prompt = await this.storage.getPrompt(promptId)
       if (!prompt) {
         throw new Error(`Prompt not found: ${promptId}`)
       }
@@ -45,9 +45,10 @@ export class ExecuteManager {
   /**
    * プロンプト一覧取得（ソート済み）
    */
-  getPrompts(): Prompt[] {
-    const prompts = this.storage.getAllPrompts()
+  async getPrompts(): Promise<Prompt[]> {
+    const prompts = await this.storage.getAllPrompts()
     const settings = this.storage.getSettings()
+    console.debug("Loaded prompts:", prompts)
 
     // ソート処理
     switch (settings.defaultSortOrder) {
@@ -67,20 +68,13 @@ export class ExecuteManager {
   /**
    * ピン留めプロンプト取得（順序保持）
    */
-  getPinnedPrompts(): Prompt[] {
-    const pinnedOrder = this.storage.getPinnedOrder()
-    const prompts = this.storage.getAllPrompts()
+  async getPinnedPrompts(): Promise<Prompt[]> {
+    const pinnedOrder = await this.storage.getPinnedOrder()
+    const prompts = await this.storage.getAllPrompts()
 
     return pinnedOrder
       .map((id) => prompts.find((p) => p.id === id))
       .filter((p): p is Prompt => Boolean(p))
-  }
-
-  /**
-   * プロンプト取得
-   */
-  getPrompt(promptId: string): Prompt | null {
-    return this.storage.getPrompt(promptId)
   }
 
   /**

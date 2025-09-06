@@ -88,6 +88,7 @@ export class DomManager {
    * イベントリスナー設定
    */
   setupEventListeners(): void {
+    console.debug("Setting up event listeners")
     // 送信ボタンクリック監視
     if (this.sendButton) {
       this.sendButton.addEventListener("click", this.handleSendClick.bind(this))
@@ -150,7 +151,6 @@ export class DomManager {
    * 要素参照の更新
    */
   private refreshElements(): void {
-    console.debug("Refreshing elements")
     const newTextInput = this.findElement(CHATGPT_SELECTORS.textInput)
     const newSendButton = this.findElement(CHATGPT_SELECTORS.sendButton)
 
@@ -209,6 +209,7 @@ export class DomManager {
    * 送信コールバック実行
    */
   private fireSendCallbacks(): void {
+    console.debug("Firing send callbacks")
     this.sendCallbacks.forEach((callback) => {
       try {
         callback()

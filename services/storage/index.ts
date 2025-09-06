@@ -72,33 +72,14 @@ export class StorageService {
   /**
    * プロンプトを取得
    */
-
-  getPrompt(_id: string): Prompt | null {
-    // 非同期メソッドを同期的に呼び出すための実装は必要に応じて調整
-    // 現在は互換性のため一時的にnullを返す
-    return null
-  }
-
-  /**
-   * プロンプトを取得（非同期版）
-   */
-  async getPromptAsync(id: string): Promise<Prompt | null> {
+  async getPrompt(id: string): Promise<Prompt | null> {
     return await promptsService.getPrompt(id)
   }
 
   /**
    * 全プロンプトを取得
    */
-  getAllPrompts(): Prompt[] {
-    // 非同期メソッドを同期的に呼び出すための実装は必要に応じて調整
-    // 現在は互換性のため空配列を返す
-    return []
-  }
-
-  /**
-   * 全プロンプトを取得（非同期版）
-   */
-  async getAllPromptsAsync(): Promise<Prompt[]> {
+  async getAllPrompts(): Promise<Prompt[]> {
     return await promptsService.getAllPrompts()
   }
 
@@ -178,15 +159,7 @@ export class StorageService {
   /**
    * ピン留め順序を取得
    */
-  getPinnedOrder(): string[] {
-    // 非同期メソッドを同期的に呼び出すための実装は必要に応じて調整
-    return []
-  }
-
-  /**
-   * ピン留め順序を取得（非同期版）
-   */
-  async getPinnedOrderAsync(): Promise<string[]> {
+  async getPinnedOrder(): Promise<string[]> {
     return await pinsService.getPinnedOrder()
   }
 

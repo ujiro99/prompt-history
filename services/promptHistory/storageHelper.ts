@@ -82,6 +82,8 @@ export class StorageHelper {
     onSuccess?: (prompt: Prompt) => void,
     onError?: (error: Error) => void,
   ): Promise<void> {
+    console.debug("Auto-save triggered")
+
     if (!this.storage.getSettings().autoSaveEnabled) {
       return
     }
@@ -129,7 +131,7 @@ export class StorageHelper {
     onError?: (error: Error) => void,
   ): Promise<void> {
     try {
-      const prompt = this.storage.getPrompt(promptId)
+      const prompt = await this.storage.getPrompt(promptId)
       if (!prompt) {
         throw new Error(`Prompt not found: ${promptId}`)
       }
@@ -165,18 +167,18 @@ export class StorageHelper {
   /**
    * 保存ダイアログ用データ準備
    */
-  prepareSaveDialogData(aiService: AIServiceInterface | null): {
+  async prepareSaveDialogData(aiService: AIServiceInterface | null): Promise<{
     initialContent: string
     isOverwriteAvailable: boolean
     initialName?: string
-  } {
+  }> {
     const content = aiService?.extractPromptContent()?.trim() || ""
     const session = this.sessionManager.getCurrentSession()
     const isOverwriteAvailable = Boolean(session?.activePromptId)
 
     let initialName: string | undefined
     if (session?.activePromptId) {
-      const activePrompt = this.storage.getPrompt(session.activePromptId)
+      const activePrompt = await this.storage.getPrompt(session.activePromptId)
       initialName = activePrompt?.name
     }
 

@@ -5,7 +5,7 @@ import { PromptList } from "./PromptList"
 import { NotificationManager } from "./Notification"
 
 // Singleton instance for compatibility
-const sessionManager = HistoryManager.getInstance()
+const historyManager = HistoryManager.getInstance()
 import type {
   Prompt,
   Session,
@@ -29,6 +29,9 @@ export const PromptHistoryWidget: React.FC = () => {
   const [notifications, setNotifications] = useState<NotificationData[]>([])
   const [isInitializing, setIsInitializing] = useState(true)
   const [initError, setInitError] = useState<string | null>(null)
+  const [saveDialogData, setSaveDialogData] = useState<SaveDialogData | null>(
+    null,
+  )
 
   /**
    * 初期化処理
@@ -38,12 +41,12 @@ export const PromptHistoryWidget: React.FC = () => {
 
     const initialize = async () => {
       try {
-        await sessionManager.initialize()
+        await historyManager.initialize()
 
         if (mounted) {
           // 初期データロード
           loadPrompts()
-          setCurrentSession(sessionManager.getCurrentSession())
+          setCurrentSession(historyManager.getCurrentSession())
           setIsInitializing(false)
         }
       } catch (error) {
@@ -84,10 +87,10 @@ export const PromptHistoryWidget: React.FC = () => {
     }
 
     // コールバック登録
-    sessionManager.onSessionChange(handleSessionChange)
-    sessionManager.onPromptSave(handlePromptSave)
-    sessionManager.onNotification(handleNotification)
-    sessionManager.onError(handleError)
+    historyManager.onSessionChange(handleSessionChange)
+    historyManager.onPromptSave(handlePromptSave)
+    historyManager.onNotification(handleNotification)
+    historyManager.onError(handleError)
 
     // クリーンアップは自動的に行われないため、手動実装が必要
     return () => {
@@ -98,10 +101,12 @@ export const PromptHistoryWidget: React.FC = () => {
   /**
    * プロンプト一覧の読み込み
    */
-  const loadPrompts = () => {
+  const loadPrompts = async () => {
     try {
-      const allPrompts = sessionManager.getPrompts()
-      const pinned = sessionManager.getPinnedPrompts()
+      const [allPrompts, pinned] = await Promise.all([
+        historyManager.getPrompts(),
+        historyManager.getPinnedPrompts(),
+      ])
 
       setPrompts(allPrompts)
       setPinnedPrompts(pinned)
@@ -132,7 +137,13 @@ export const PromptHistoryWidget: React.FC = () => {
   /**
    * 保存ダイアログを開く
    */
-  const openSaveDialog = () => {
+  const openSaveDialog = async () => {
+    const data = await historyManager.prepareSaveDialogData()
+    setSaveDialogData({
+      name: data.initialName ?? "",
+      content: data.initialContent,
+      saveMode: data.isOverwriteAvailable ? "overwrite" : "new",
+    })
     setCurrentView("save")
   }
 
@@ -156,7 +167,7 @@ export const PromptHistoryWidget: React.FC = () => {
    */
   const handleSavePrompt = async (saveData: SaveDialogData) => {
     try {
-      const savedPrompt = await sessionManager.savePromptManually(saveData)
+      const savedPrompt = await historyManager.savePromptManually(saveData)
       if (savedPrompt) {
         closeView()
         loadPrompts() // 一覧を更新
@@ -176,7 +187,7 @@ export const PromptHistoryWidget: React.FC = () => {
    */
   const handleExecutePrompt = async (promptId: string) => {
     try {
-      await sessionManager.executePrompt(promptId)
+      await historyManager.executePrompt(promptId)
       closeView() // 実行後はビューを閉じる
     } catch (error) {
       console.error("Execute failed:", error)
@@ -189,7 +200,7 @@ export const PromptHistoryWidget: React.FC = () => {
   const handleDeletePrompt = async (promptId: string) => {
     if (confirm("Are you sure you want to delete this prompt?")) {
       try {
-        await sessionManager.deletePrompt(promptId)
+        await historyManager.deletePrompt(promptId)
         loadPrompts() // 一覧を更新
       } catch (error) {
         console.error("Delete failed:", error)
@@ -203,9 +214,9 @@ export const PromptHistoryWidget: React.FC = () => {
   const handleTogglePin = async (promptId: string, isPinned: boolean) => {
     try {
       if (isPinned) {
-        await sessionManager.pinPrompt(promptId)
+        await historyManager.pinPrompt(promptId)
       } else {
-        await sessionManager.unpinPrompt(promptId)
+        await historyManager.unpinPrompt(promptId)
       }
       loadPrompts() // 一覧を更新
     } catch (error) {
@@ -216,31 +227,10 @@ export const PromptHistoryWidget: React.FC = () => {
   // 初期化中の表示
   if (isInitializing) {
     return (
-      <div className="prompt-history-widget prompt-history-initializing">
-        <div className="prompt-history-spinner">Loading...</div>
-        <style>{`
-          .prompt-history-initializing {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-          }
-
-          .prompt-history-spinner {
-            color: #6b7280;
-            font-size: 14px;
-          }
-
-          @media (prefers-color-scheme: dark) {
-            .prompt-history-initializing {
-              background: #1f2937;
-              color: #d1d5db;
-            }
-          }
-        `}</style>
+      <div className="flex items-center justify-center p-5 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+        <div className="text-gray-500 dark:text-gray-300 text-sm">
+          Loading...
+        </div>
       </div>
     )
   }
@@ -248,35 +238,11 @@ export const PromptHistoryWidget: React.FC = () => {
   // 初期化エラーの表示
   if (initError) {
     return (
-      <div className="prompt-history-widget prompt-history-error">
-        <div className="prompt-history-error-content">
+      <div className="p-3 bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 rounded-lg text-red-800 dark:text-red-200">
+        <div className="flex items-center gap-2 text-sm">
           <span>❌</span>
           <span>Failed to initialize: {initError}</span>
         </div>
-        <style>{`
-          .prompt-history-error {
-            padding: 12px;
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            border-radius: 8px;
-            color: #991b1b;
-          }
-
-          .prompt-history-error-content {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-          }
-
-          @media (prefers-color-scheme: dark) {
-            .prompt-history-error {
-              background: #7f1d1d;
-              border-color: #991b1b;
-              color: #fca5a5;
-            }
-          }
-        `}</style>
       </div>
     )
   }
@@ -288,25 +254,25 @@ export const PromptHistoryWidget: React.FC = () => {
 
   return (
     <>
-      <div className="prompt-history-widget">
+      <div className="fixed bottom-5 right-5 sm:left-auto sm:w-auto left-2.5 w-[calc(100%-1.25rem)] z-[9999] font-sans">
         {currentView === "closed" && (
-          <div className="prompt-history-controls">
+          <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg">
             <button
-              className="prompt-history-button prompt-history-button-save"
+              className="flex items-center gap-1 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-md transition-colors whitespace-nowrap"
               onClick={openSaveDialog}
               title="Save current prompt"
             >
               💾 Save
             </button>
             <button
-              className="prompt-history-button prompt-history-button-list"
+              className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 text-sm font-medium border border-gray-300 dark:border-gray-500 rounded-md transition-colors whitespace-nowrap"
               onClick={openPromptList}
               title="View prompt history"
             >
               📋 History ({prompts.length})
             </button>
             <button
-              className="prompt-history-close"
+              className="flex items-center justify-center w-6 h-6 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-gray-700 dark:hover:text-gray-200 rounded transition-colors"
               onClick={() => setIsVisible(false)}
               title="Hide prompt history"
             >
@@ -316,19 +282,21 @@ export const PromptHistoryWidget: React.FC = () => {
         )}
 
         {currentView === "list" && (
-          <div className="prompt-history-panel">
-            <div className="prompt-history-panel-header">
-              <h3>Prompt History</h3>
-              <div className="prompt-history-panel-actions">
+          <div className="w-full sm:w-96 max-h-[600px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-2xl overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900">
+              <h3 className="m-0 text-base font-semibold text-gray-900 dark:text-gray-100">
+                Prompt History
+              </h3>
+              <div className="flex items-center gap-2">
                 <button
-                  className="prompt-history-button prompt-history-button-save"
+                  className="flex items-center gap-1 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-md transition-colors whitespace-nowrap"
                   onClick={openSaveDialog}
                   title="Save current prompt"
                 >
                   💾 Save
                 </button>
                 <button
-                  className="prompt-history-close"
+                  className="flex items-center justify-center w-6 h-6 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-gray-700 dark:hover:text-gray-200 rounded transition-colors"
                   onClick={closeView}
                   title="Close"
                 >
@@ -336,7 +304,7 @@ export const PromptHistoryWidget: React.FC = () => {
                 </button>
               </div>
             </div>
-            <div className="prompt-history-panel-content">
+            <div className="flex-1 overflow-hidden">
               <PromptList
                 prompts={prompts}
                 pinnedPrompts={pinnedPrompts}
@@ -348,191 +316,14 @@ export const PromptHistoryWidget: React.FC = () => {
             </div>
           </div>
         )}
-
-        <style>{`
-          .prompt-history-widget {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 9999;
-            font-family:
-              -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
-              sans-serif;
-          }
-
-          .prompt-history-controls {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            box-shadow:
-              0 4px 6px -1px rgba(0, 0, 0, 0.1),
-              0 2px 4px -1px rgba(0, 0, 0, 0.06);
-          }
-
-          .prompt-history-button {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            padding: 6px 12px;
-            border: none;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            white-space: nowrap;
-          }
-
-          .prompt-history-button-save {
-            background: #3b82f6;
-            color: white;
-          }
-
-          .prompt-history-button-save:hover {
-            background: #2563eb;
-          }
-
-          .prompt-history-button-list {
-            background: #f3f4f6;
-            color: #374151;
-            border: 1px solid #d1d5db;
-          }
-
-          .prompt-history-button-list:hover {
-            background: #e5e7eb;
-          }
-
-          .prompt-history-close {
-            background: none;
-            border: none;
-            font-size: 16px;
-            color: #6b7280;
-            cursor: pointer;
-            padding: 4px;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-            transition: all 0.15s ease;
-          }
-
-          .prompt-history-close:hover {
-            background: #f3f4f6;
-            color: #374151;
-          }
-
-          .prompt-history-panel {
-            width: 400px;
-            max-height: 600px;
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            box-shadow:
-              0 20px 25px -5px rgba(0, 0, 0, 0.1),
-              0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-          }
-
-          .prompt-history-panel-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px 20px;
-            border-bottom: 1px solid #e5e7eb;
-            background: #f9fafb;
-          }
-
-          .prompt-history-panel-header h3 {
-            margin: 0;
-            font-size: 16px;
-            font-weight: 600;
-            color: #111827;
-          }
-
-          .prompt-history-panel-actions {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-          }
-
-          .prompt-history-panel-content {
-            flex: 1;
-            overflow: hidden;
-          }
-
-          /* ダークモード対応 */
-          @media (prefers-color-scheme: dark) {
-            .prompt-history-controls {
-              background: #1f2937;
-              border-color: #374151;
-            }
-
-            .prompt-history-button-list {
-              background: #374151;
-              color: #d1d5db;
-              border-color: #4b5563;
-            }
-
-            .prompt-history-button-list:hover {
-              background: #4b5563;
-            }
-
-            .prompt-history-close {
-              color: #9ca3af;
-            }
-
-            .prompt-history-close:hover {
-              background: #374151;
-              color: #d1d5db;
-            }
-
-            .prompt-history-panel {
-              background: #1f2937;
-              border-color: #374151;
-            }
-
-            .prompt-history-panel-header {
-              background: #111827;
-              border-bottom-color: #374151;
-            }
-
-            .prompt-history-panel-header h3 {
-              color: #f9fafb;
-            }
-          }
-
-          /* モバイル対応 */
-          @media (max-width: 640px) {
-            .prompt-history-widget {
-              bottom: 10px;
-              right: 10px;
-              left: 10px;
-            }
-
-            .prompt-history-panel {
-              width: 100%;
-            }
-
-            .prompt-history-controls {
-              width: 100%;
-              justify-content: center;
-            }
-          }
-        `}</style>
       </div>
 
       {/* 保存ダイアログ */}
-      {currentView === "save" && (
+      {currentView === "save" && saveDialogData && (
         <SaveDialog
-          {...sessionManager.prepareSaveDialogData()}
+          initialName={saveDialogData.name}
+          initialContent={saveDialogData.content}
+          isOverwriteAvailable={saveDialogData.saveMode === "overwrite"}
           onSave={handleSavePrompt}
           onCancel={closeView}
         />

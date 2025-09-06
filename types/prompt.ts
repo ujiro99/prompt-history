@@ -25,6 +25,30 @@ export interface Prompt {
 }
 
 /**
+ * ストレージ保存用のプロンプトデータ（日付フィールドはISO文字列）
+ */
+export interface StoredPrompt {
+  /** プロンプトの一意識別子（UUID） */
+  id: string
+  /** プロンプト名 */
+  name: string
+  /** プロンプト内容 */
+  content: string
+  /** 実行回数 */
+  executionCount: number
+  /** 最新実行日時 */
+  lastExecutedAt: string
+  /** ピン留めフラグ */
+  isPinned: boolean
+  /** 最終実行URL */
+  lastExecutionUrl: string
+  /** 作成日時 */
+  createdAt: string
+  /** 更新日時 */
+  updatedAt: string
+}
+
+/**
  * セッション状態管理
  */
 export interface Session {

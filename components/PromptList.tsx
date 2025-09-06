@@ -27,24 +27,25 @@ export const PromptList: React.FC<PromptListProps> = ({
   /**
    * フィルタリング処理
    */
-  const filteredPrompts = prompts.filter((prompt) => {
-    // キーワード検索
-    if (filter.keyword) {
-      const keyword = filter.keyword.toLowerCase()
-      const nameMatch = prompt.name.toLowerCase().includes(keyword)
-      const contentMatch = prompt.content.toLowerCase().includes(keyword)
-      if (!nameMatch && !contentMatch) {
+  const filteredPrompts =
+    prompts?.filter((prompt) => {
+      // キーワード検索
+      if (filter.keyword) {
+        const keyword = filter.keyword.toLowerCase()
+        const nameMatch = prompt.name.toLowerCase().includes(keyword)
+        const contentMatch = prompt.content.toLowerCase().includes(keyword)
+        if (!nameMatch && !contentMatch) {
+          return false
+        }
+      }
+
+      // ピン留めフィルタ
+      if (filter.pinnedOnly && !prompt.isPinned) {
         return false
       }
-    }
 
-    // ピン留めフィルタ
-    if (filter.pinnedOnly && !prompt.isPinned) {
-      return false
-    }
-
-    return true
-  })
+      return true
+    }) ?? []
 
   /**
    * プロンプト展開/折りたたみ
@@ -74,6 +75,7 @@ export const PromptList: React.FC<PromptListProps> = ({
    * 相対時間の表示
    */
   const formatRelativeTime = (date: Date): string => {
+    if (!date) return "---"
     const now = new Date()
     const diff = now.getTime() - date.getTime()
     const minutes = Math.floor(diff / 60000)
@@ -99,53 +101,55 @@ export const PromptList: React.FC<PromptListProps> = ({
 
     return (
       <div
-        className={`prompt-item ${isCurrentSession ? "prompt-item-active" : ""}`}
+        className={`border border-gray-200 dark:border-gray-600 rounded-md mb-2 last:mb-0 transition-all duration-150 bg-white dark:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-500 hover:shadow-sm ${
+          isCurrentSession
+            ? "border-blue-500 dark:border-blue-400 shadow-[0_0_0_1px_rgb(59_130_246)]"
+            : ""
+        }`}
       >
-        <div className="prompt-item-header">
-          <div className="prompt-item-info">
-            <div className="prompt-item-title">
-              <span className="prompt-item-name">{prompt.name}</span>
-              {isPinned && (
-                <span className="prompt-item-badge prompt-item-badge-pinned">
-                  📌
-                </span>
-              )}
+        <div className="flex justify-between items-start p-3">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="font-medium text-gray-900 dark:text-gray-100 break-words">
+                {prompt.name}
+              </span>
+              {isPinned && <span>📌</span>}
               {isCurrentSession && (
-                <span className="prompt-item-badge prompt-item-badge-active">
+                <span className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs font-medium rounded">
                   Active
                 </span>
               )}
             </div>
-            <div className="prompt-item-meta">
+            <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
               <span>Used {prompt.executionCount} times</span>
               <span>•</span>
               <span>{formatRelativeTime(prompt.lastExecutedAt)}</span>
             </div>
           </div>
-          <div className="prompt-item-actions">
+          <div className="flex gap-1 ml-3">
             <button
-              className="prompt-item-action"
+              className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-center min-w-[24px] h-6 text-sm"
               onClick={() => onExecutePrompt(prompt.id)}
               title="Execute prompt"
             >
               ▶️
             </button>
             <button
-              className="prompt-item-action"
+              className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-center min-w-[24px] h-6 text-sm"
               onClick={() => onTogglePin(prompt.id, !prompt.isPinned)}
               title={prompt.isPinned ? "Unpin" : "Pin"}
             >
               {prompt.isPinned ? "📌" : "📍"}
             </button>
             <button
-              className="prompt-item-action"
+              className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-center min-w-[24px] h-6 text-sm"
               onClick={() => toggleExpanded(prompt.id)}
               title={isExpanded ? "Collapse" : "Expand"}
             >
               {isExpanded ? "🔼" : "🔽"}
             </button>
             <button
-              className="prompt-item-action prompt-item-action-danger"
+              className="p-1 rounded hover:bg-red-50 dark:hover:bg-red-900 transition-colors flex items-center justify-center min-w-[24px] h-6 text-sm"
               onClick={() => onDeletePrompt(prompt.id)}
               title="Delete prompt"
             >
@@ -155,13 +159,15 @@ export const PromptList: React.FC<PromptListProps> = ({
         </div>
 
         {isExpanded && (
-          <div className="prompt-item-content">
-            <pre>{prompt.content}</pre>
+          <div className="px-3 pb-3 border-t border-gray-200 dark:border-gray-600 mt-2 pt-3">
+            <pre className="m-0 font-mono text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap break-words">
+              {prompt.content}
+            </pre>
           </div>
         )}
 
         {!isExpanded && (
-          <div className="prompt-item-preview">
+          <div className="px-3 pb-3 text-sm text-gray-500 dark:text-gray-400 leading-5">
             {truncateContent(prompt.content)}
           </div>
         )}
@@ -170,25 +176,27 @@ export const PromptList: React.FC<PromptListProps> = ({
   }
 
   return (
-    <div className="prompt-list">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
       {/* 検索・フィルタUI */}
-      <div className="prompt-list-filters">
-        <div className="prompt-list-search">
+      <div className="p-4 border-b border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900">
+        <div className="mb-3">
           <input
             type="text"
             placeholder="Search prompts..."
             value={filter.keyword || ""}
             onChange={(e) => setFilter({ ...filter, keyword: e.target.value })}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-500/10 box-border"
           />
         </div>
-        <div className="prompt-list-filter-options">
-          <label className="prompt-list-checkbox">
+        <div className="flex gap-4">
+          <label className="flex items-center gap-1.5 text-sm cursor-pointer text-gray-700 dark:text-gray-300">
             <input
               type="checkbox"
               checked={filter.pinnedOnly || false}
               onChange={(e) =>
                 setFilter({ ...filter, pinnedOnly: e.target.checked })
               }
+              className="rounded"
             />
             <span>Pinned only</span>
           </label>
@@ -197,9 +205,11 @@ export const PromptList: React.FC<PromptListProps> = ({
 
       {/* ピン留めプロンプト */}
       {pinnedPrompts.length > 0 && !filter.keyword && (
-        <div className="prompt-list-section">
-          <h4 className="prompt-list-section-title">Pinned Prompts</h4>
-          <div className="prompt-list-items">
+        <div className="border-b border-gray-200 dark:border-gray-600 last:border-b-0">
+          <h4 className="flex items-center gap-2 px-4 pt-4 pb-2 m-0 text-base font-semibold text-gray-700 dark:text-gray-300">
+            Pinned Prompts
+          </h4>
+          <div className="px-4 pb-4">
             {pinnedPrompts.map((prompt) => (
               <PromptItem
                 key={`pinned-${prompt.id}`}
@@ -212,14 +222,16 @@ export const PromptList: React.FC<PromptListProps> = ({
       )}
 
       {/* すべてのプロンプト */}
-      <div className="prompt-list-section">
-        <h4 className="prompt-list-section-title">
+      <div className="border-b border-gray-200 dark:border-gray-600 last:border-b-0">
+        <h4 className="flex items-center gap-2 px-4 pt-4 pb-2 m-0 text-base font-semibold text-gray-700 dark:text-gray-300">
           {filter.keyword ? "Search Results" : "All Prompts"}
-          <span className="prompt-list-count">({filteredPrompts.length})</span>
+          <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
+            ({filteredPrompts.length})
+          </span>
         </h4>
-        <div className="prompt-list-items">
+        <div className="px-4 pb-4">
           {filteredPrompts.length === 0 ? (
-            <div className="prompt-list-empty">
+            <div className="text-center py-8 px-4 text-gray-500 dark:text-gray-400 italic">
               {filter.keyword || filter.pinnedOnly
                 ? "No prompts match your filters."
                 : "No prompts saved yet."}
@@ -231,301 +243,6 @@ export const PromptList: React.FC<PromptListProps> = ({
           )}
         </div>
       </div>
-
-      <style>{`
-        .prompt-list {
-          background: white;
-          border-radius: 8px;
-          box-shadow:
-            0 4px 6px -1px rgba(0, 0, 0, 0.1),
-            0 2px 4px -1px rgba(0, 0, 0, 0.06);
-          overflow: hidden;
-        }
-
-        .prompt-list-filters {
-          padding: 16px;
-          border-bottom: 1px solid #e5e7eb;
-          background: #f9fafb;
-        }
-
-        .prompt-list-search {
-          margin-bottom: 12px;
-        }
-
-        .prompt-list-search input {
-          width: 100%;
-          padding: 8px 12px;
-          border: 1px solid #d1d5db;
-          border-radius: 6px;
-          font-size: 14px;
-          box-sizing: border-box;
-        }
-
-        .prompt-list-search input:focus {
-          outline: none;
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-
-        .prompt-list-filter-options {
-          display: flex;
-          gap: 16px;
-        }
-
-        .prompt-list-checkbox {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          font-size: 14px;
-          cursor: pointer;
-        }
-
-        .prompt-list-section {
-          border-bottom: 1px solid #e5e7eb;
-        }
-
-        .prompt-list-section:last-child {
-          border-bottom: none;
-        }
-
-        .prompt-list-section-title {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 16px 16px 8px;
-          margin: 0;
-          font-size: 16px;
-          font-weight: 600;
-          color: #374151;
-        }
-
-        .prompt-list-count {
-          font-size: 14px;
-          font-weight: 400;
-          color: #6b7280;
-        }
-
-        .prompt-list-items {
-          padding: 0 16px 16px;
-        }
-
-        .prompt-list-empty {
-          text-align: center;
-          padding: 32px 16px;
-          color: #6b7280;
-          font-style: italic;
-        }
-
-        .prompt-item {
-          border: 1px solid #e5e7eb;
-          border-radius: 6px;
-          margin-bottom: 8px;
-          transition: all 0.15s ease;
-          background: white;
-        }
-
-        .prompt-item:last-child {
-          margin-bottom: 0;
-        }
-
-        .prompt-item:hover {
-          border-color: #d1d5db;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .prompt-item-active {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 1px #3b82f6;
-        }
-
-        .prompt-item-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          padding: 12px;
-        }
-
-        .prompt-item-info {
-          flex: 1;
-          min-width: 0;
-        }
-
-        .prompt-item-title {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          margin-bottom: 4px;
-        }
-
-        .prompt-item-name {
-          font-weight: 500;
-          color: #111827;
-          word-break: break-word;
-        }
-
-        .prompt-item-badge {
-          padding: 2px 6px;
-          border-radius: 4px;
-          font-size: 11px;
-          font-weight: 500;
-        }
-
-        .prompt-item-badge-pinned {
-          background: transparent;
-        }
-
-        .prompt-item-badge-active {
-          background: #dbeafe;
-          color: #1e40af;
-        }
-
-        .prompt-item-meta {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          font-size: 12px;
-          color: #6b7280;
-        }
-
-        .prompt-item-actions {
-          display: flex;
-          gap: 4px;
-          margin-left: 12px;
-        }
-
-        .prompt-item-action {
-          background: none;
-          border: none;
-          padding: 4px;
-          border-radius: 4px;
-          cursor: pointer;
-          font-size: 14px;
-          transition: background-color 0.15s ease;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          min-width: 24px;
-          height: 24px;
-        }
-
-        .prompt-item-action:hover {
-          background: #f3f4f6;
-        }
-
-        .prompt-item-action-danger:hover {
-          background: #fef2f2;
-        }
-
-        .prompt-item-preview {
-          padding: 0 12px 12px;
-          font-size: 13px;
-          color: #6b7280;
-          line-height: 1.4;
-        }
-
-        .prompt-item-content {
-          padding: 0 12px 12px;
-          border-top: 1px solid #e5e7eb;
-          margin-top: 8px;
-          padding-top: 12px;
-        }
-
-        .prompt-item-content pre {
-          margin: 0;
-          font-family:
-            ui-monospace, SFMono-Regular, "SF Mono", Consolas,
-            "Liberation Mono", Menlo, monospace;
-          font-size: 13px;
-          color: #111827;
-          white-space: pre-wrap;
-          word-break: break-word;
-        }
-
-        /* ダークモード対応 */
-        @media (prefers-color-scheme: dark) {
-          .prompt-list {
-            background: #1f2937;
-          }
-
-          .prompt-list-filters {
-            background: #111827;
-            border-bottom-color: #374151;
-          }
-
-          .prompt-list-search input {
-            background: #374151;
-            border-color: #4b5563;
-            color: #f9fafb;
-          }
-
-          .prompt-list-search input:focus {
-            border-color: #60a5fa;
-            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
-          }
-
-          .prompt-list-checkbox {
-            color: #d1d5db;
-          }
-
-          .prompt-list-section {
-            border-bottom-color: #374151;
-          }
-
-          .prompt-list-section-title {
-            color: #d1d5db;
-          }
-
-          .prompt-list-count {
-            color: #9ca3af;
-          }
-
-          .prompt-list-empty {
-            color: #9ca3af;
-          }
-
-          .prompt-item {
-            background: #374151;
-            border-color: #4b5563;
-          }
-
-          .prompt-item:hover {
-            border-color: #6b7280;
-          }
-
-          .prompt-item-active {
-            border-color: #60a5fa;
-            box-shadow: 0 0 0 1px #60a5fa;
-          }
-
-          .prompt-item-name {
-            color: #f9fafb;
-          }
-
-          .prompt-item-meta {
-            color: #9ca3af;
-          }
-
-          .prompt-item-action:hover {
-            background: #4b5563;
-          }
-
-          .prompt-item-action-danger:hover {
-            background: #7f1d1d;
-          }
-
-          .prompt-item-preview {
-            color: #9ca3af;
-          }
-
-          .prompt-item-content {
-            border-top-color: #4b5563;
-          }
-
-          .prompt-item-content pre {
-            color: #f9fafb;
-          }
-        }
-      `}</style>
     </div>
   )
 }

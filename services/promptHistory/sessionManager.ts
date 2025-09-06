@@ -11,6 +11,7 @@ export class SessionManager {
    * セッション開始
    */
   async startSession(promptId: string): Promise<Session | null> {
+    console.debug("Starting session with promptId:", promptId)
     try {
       await this.storage.startSession(promptId)
       return this.storage.getCurrentSession()
@@ -24,6 +25,7 @@ export class SessionManager {
    * セッション終了
    */
   async endSession(): Promise<void> {
+    console.debug("Ending current session")
     try {
       await this.storage.endSession()
     } catch (error) {

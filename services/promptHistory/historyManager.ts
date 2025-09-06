@@ -67,7 +67,11 @@ export class HistoryManager {
       await this.sessionManager.restoreSession()
 
       this.initialized = true
-      this.notify({ type: "info", message: "Prompt History initialized" })
+      this.notify({
+        type: "info",
+        message: "Prompt History initialized",
+        // duration: 2000,
+      })
     } catch (error) {
       this.handleError(
         "INIT_FAILED",
@@ -282,19 +286,19 @@ export class HistoryManager {
   /**
    * 保存ダイアログ用データ準備
    */
-  prepareSaveDialogData(): {
+  async prepareSaveDialogData(): Promise<{
     initialContent: string
     isOverwriteAvailable: boolean
     initialName?: string
-  } {
+  }> {
     this.ensureInitialized()
-    return this.storageHelper.prepareSaveDialogData(this.aiService)
+    return await this.storageHelper.prepareSaveDialogData(this.aiService)
   }
 
   /**
    * プロンプト一覧取得（ソート済み）
    */
-  getPrompts(): Prompt[] {
+  async getPrompts(): Promise<Prompt[]> {
     this.ensureInitialized()
     return this.executeManager.getPrompts()
   }
@@ -302,7 +306,7 @@ export class HistoryManager {
   /**
    * ピン留めプロンプト取得（順序保持）
    */
-  getPinnedPrompts(): Prompt[] {
+  async getPinnedPrompts(): Promise<Prompt[]> {
     this.ensureInitialized()
     return this.executeManager.getPinnedPrompts()
   }

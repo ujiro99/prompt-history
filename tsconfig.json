@@ -3,6 +3,10 @@
   "compilerOptions": {
     "allowImportingTsExtensions": true,
     "jsx": "react-jsx",
-    "lib": ["ES2021", "DOM", "DOM.Iterable", "WebWorker"]
+    "lib": ["ES2021", "DOM", "DOM.Iterable", "WebWorker"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
   }
 }
