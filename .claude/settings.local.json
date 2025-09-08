@@ -16,7 +16,11 @@
       "mcp__serena__find_symbol",
       "mcp__serena__find_file",
       "mcp__serena__search_for_pattern",
-      "Bash(pnpm eslint:*)"
+      "Bash(pnpm eslint:*)",
+      "mcp__serena__onboarding",
+      "mcp__serena__write_memory",
+      "Bash(pnpm list:*)",
+      "mcp__serena__find_referencing_symbols"
     ],
     "deny": [],
     "ask": []

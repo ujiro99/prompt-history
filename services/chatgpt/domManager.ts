@@ -46,7 +46,7 @@ export class DomManager {
    * Wait for DOM elements to be ready
    */
   async waitForElements(): Promise<void> {
-    const maxRetries = 50 // 5秒間待機
+    const maxRetries = 50 // 5 seconds max
     const retryDelay = 100
 
     for (let i = 0; i < maxRetries; i++) {

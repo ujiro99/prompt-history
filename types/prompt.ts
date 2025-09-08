@@ -61,22 +61,6 @@ export interface Session {
 }
 
 /**
- * Props for prompt save dialog
- */
-export interface SaveDialogProps {
-  /** Initial prompt name (when editing) */
-  initialName?: string
-  /** Initial prompt content */
-  initialContent: string
-  /** Whether overwrite save is available */
-  isOverwriteAvailable: boolean
-  /** Callback on save */
-  onSave: (data: SaveDialogData) => void
-  /** Callback on cancel */
-  onCancel: () => void
-}
-
-/**
  * Prompt save data
  */
 export interface SaveDialogData {
@@ -129,7 +113,7 @@ export interface AIServiceInterface {
   /** Extract current prompt content */
   extractPromptContent(): string
   /** Insert prompt content into input field */
-  injectPromptContent(content: string): void
+  injectPromptContent(content: string): Promise<void>
   /** Set up send event monitoring */
   onSend(callback: () => void): void
   /** Get service name */

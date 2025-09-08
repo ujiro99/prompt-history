@@ -27,7 +27,7 @@ export class ExecuteManager {
       }
 
       // Inject prompt into AI service
-      aiService.injectPromptContent(prompt.content)
+      await aiService.injectPromptContent(prompt.content)
 
       // Start session
       await this.sessionManager.startSession(promptId)
@@ -40,47 +40,5 @@ export class ExecuteManager {
       const err = error instanceof Error ? error : new Error("Execute failed")
       onError?.(err)
     }
-  }
-
-  /**
-   * Get prompt list (sorted)
-   */
-  async getPrompts(): Promise<Prompt[]> {
-    const prompts = await this.storage.getAllPrompts()
-    const settings = this.storage.getSettings()
-    console.debug("Loaded prompts:", prompts)
-
-    // Sort processing
-    switch (settings.defaultSortOrder) {
-      case "recent":
-        return prompts.sort(
-          (a, b) => b.lastExecutedAt.getTime() - a.lastExecutedAt.getTime(),
-        )
-      case "execution":
-        return prompts.sort((a, b) => b.executionCount - a.executionCount)
-      case "name":
-        return prompts.sort((a, b) => a.name.localeCompare(b.name))
-      default:
-        return prompts
-    }
-  }
-
-  /**
-   * Get pinned prompts (maintaining order)
-   */
-  async getPinnedPrompts(): Promise<Prompt[]> {
-    const pinnedOrder = await this.storage.getPinnedOrder()
-    const prompts = await this.storage.getAllPrompts()
-
-    return pinnedOrder
-      .map((id) => prompts.find((p) => p.id === id))
-      .filter((p): p is Prompt => Boolean(p))
-  }
-
-  /**
-   * Get settings
-   */
-  getSettings() {
-    return this.storage.getSettings()
   }
 }

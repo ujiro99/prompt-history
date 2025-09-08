@@ -77,8 +77,8 @@ export class ChatGptService implements AIServiceInterface {
   /**
    * Inject prompt content
    */
-  injectPromptContent(content: string): void {
-    this.promptManager.injectContent(content)
+  async injectPromptContent(content: string): Promise<void> {
+    return this.promptManager.injectContent(content)
   }
 
   /**

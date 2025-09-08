@@ -1,4 +1,5 @@
 import { DomManager } from "./domManager"
+import { inputContentEditable } from "../dom"
 
 /**
  * Class responsible for prompt extraction and injection
@@ -41,7 +42,7 @@ export class PromptManager {
   /**
    * Inject prompt content
    */
-  injectContent(content: string): void {
+  async injectContent(content: string): Promise<void> {
     const input = this.domManager.getTextInput()
     if (!input) {
       console.warn("ChatGPT text input not found")
@@ -58,7 +59,9 @@ export class PromptManager {
 
         // Clear existing content
         element.innerHTML = ""
-        element.textContent = content
+
+        // Set new content (preserving line breaks)
+        await inputContentEditable(element, content, 10)
 
         // Trigger input events
         this.triggerInputEvents(element)

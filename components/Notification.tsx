@@ -7,7 +7,7 @@ interface NotificationProps {
 }
 
 /**
- * 通知コンポーネント
+ * Notification component
  */
 export const Notification: React.FC<NotificationProps> = ({
   notification,
@@ -29,7 +29,7 @@ export const Notification: React.FC<NotificationProps> = ({
       setIsVisible(true)
       setIsAnimating(true)
 
-      // 自動消去タイマー
+      // Auto-dismiss timer
       if (notification.duration && notification.duration > 0) {
         const timer = setTimeout(() => {
           dismissNotification()
@@ -106,7 +106,7 @@ export const Notification: React.FC<NotificationProps> = ({
 }
 
 /**
- * 複数通知管理コンポーネント
+ * Multiple notification management component
  */
 interface NotificationManagerProps {
   notifications: NotificationData[]

@@ -18,6 +18,52 @@ export class StorageHelper {
   ) {}
 
   /**
+   * Get single prompt by ID
+   */
+  async getPrompt(promptId: string): Promise<Prompt> {
+    const prompt = await this.storage.getPrompt(promptId)
+    if (!prompt) {
+      throw new Error(`Prompt not found: ${promptId}`)
+    }
+    return prompt
+  }
+
+  /**
+   * Get prompt list (sorted)
+   */
+  async getPrompts(): Promise<Prompt[]> {
+    const prompts = await this.storage.getAllPrompts()
+    const settings = this.storage.getSettings()
+    console.debug("Loaded prompts:", prompts)
+
+    // Sort processing
+    switch (settings.defaultSortOrder) {
+      case "recent":
+        return prompts.sort(
+          (a, b) => b.lastExecutedAt.getTime() - a.lastExecutedAt.getTime(),
+        )
+      case "execution":
+        return prompts.sort((a, b) => b.executionCount - a.executionCount)
+      case "name":
+        return prompts.sort((a, b) => a.name.localeCompare(b.name))
+      default:
+        return prompts
+    }
+  }
+
+  /**
+   * Get pinned prompts (maintaining order)
+   */
+  async getPinnedPrompts(): Promise<Prompt[]> {
+    const pinnedOrder = await this.storage.getPinnedOrder()
+    const prompts = await this.storage.getAllPrompts()
+
+    return pinnedOrder
+      .map((id) => prompts.find((p) => p.id === id))
+      .filter((p): p is Prompt => Boolean(p))
+  }
+
+  /**
    * Manual prompt save
    */
   async savePromptManually(
@@ -119,6 +165,46 @@ export class StorageHelper {
       const err = error instanceof Error ? error : new Error("Auto-save failed")
       onError?.(err)
       console.warn("Auto-save failed:", error)
+    }
+  }
+
+  async updatePrompt(
+    promptId: string,
+    updates: Partial<Omit<Prompt, "id" | "createdAt">>,
+    onSuccess?: (prompt: Prompt) => void,
+    onError?: (error: Error) => void,
+  ): Promise<void> {
+    if (this.saveInProgress) {
+      const error = new Error("Save operation already in progress")
+      onError?.(error)
+      return
+    }
+
+    this.saveInProgress = true
+
+    try {
+      const prompt = await this.storage.getPrompt(promptId)
+      if (!prompt) {
+        throw new Error(`Prompt not found: ${promptId}`)
+      }
+
+      const updatedPrompt = await this.storage.updatePrompt(promptId, updates)
+
+      // Pin processing
+      if (updates.isPinned !== undefined) {
+        if (updates.isPinned) {
+          await this.storage.pinPrompt(promptId)
+        } else {
+          await this.storage.unpinPrompt(promptId)
+        }
+      }
+
+      onSuccess?.(updatedPrompt)
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error("Update failed")
+      onError?.(err)
+    } finally {
+      this.saveInProgress = false
     }
   }
 

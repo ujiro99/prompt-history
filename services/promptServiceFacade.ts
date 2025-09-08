@@ -1,5 +1,5 @@
-import { promptStorage, StorageService } from "../storage"
-import { ChatGptService } from "../chatgpt/chatGptService"
+import { promptStorage, StorageService } from "./storage"
+import { ChatGptService } from "./chatgpt/chatGptService"
 import type {
   AIServiceInterface,
   Prompt,
@@ -7,16 +7,16 @@ import type {
   SaveDialogData,
   NotificationData,
   PromptError,
-} from "../../types/prompt"
-import { SessionManager } from "./sessionManager"
-import { StorageHelper } from "./storageHelper"
-import { ExecuteManager } from "./executeManager"
+} from "../types/prompt"
+import { SessionManager } from "./promptHistory/sessionManager"
+import { StorageHelper } from "./promptHistory/storageHelper"
+import { ExecuteManager } from "./promptHistory/executeManager"
 
 /**
  * Main orchestrator for prompt history management
  */
-export class HistoryManager {
-  private static instance: HistoryManager
+export class PromptServiceFacade {
+  private static instance: PromptServiceFacade
   private aiService: AIServiceInterface | null = null
   private storage: StorageService
   private sessionManager: SessionManager
@@ -42,11 +42,11 @@ export class HistoryManager {
   /**
    * Get singleton instance
    */
-  static getInstance(): HistoryManager {
-    if (!HistoryManager.instance) {
-      HistoryManager.instance = new HistoryManager()
+  static getInstance(): PromptServiceFacade {
+    if (!PromptServiceFacade.instance) {
+      PromptServiceFacade.instance = new PromptServiceFacade()
     }
-    return HistoryManager.instance
+    return PromptServiceFacade.instance
   }
 
   /**
@@ -70,12 +70,12 @@ export class HistoryManager {
       this.notify({
         type: "info",
         message: "Prompt History initialized",
-        // duration: 2000,
+        duration: 2000,
       })
     } catch (error) {
       this.handleError(
         "INIT_FAILED",
-        "Failed to initialize prompt history manager",
+        "Failed to initialize prompt service facade",
         error,
       )
       throw error
@@ -199,6 +199,29 @@ export class HistoryManager {
     )
   }
 
+  async updatePrompt(
+    promptId: string,
+    saveData: SaveDialogData,
+  ): Promise<void> {
+    this.ensureInitialized()
+
+    return this.storageHelper.updatePrompt(
+      promptId,
+      saveData,
+      (prompt) => {
+        this.notifyPromptSave(prompt)
+        this.notify({
+          type: "success",
+          message: `Prompt "${prompt.name}" updated successfully`,
+          duration: 1000,
+        })
+      },
+      (error) => {
+        this.handleError("UPDATE_FAILED", "Failed to update prompt", error)
+      },
+    )
+  }
+
   /**
    * Auto-save prompt (on send)
    */
@@ -257,6 +280,30 @@ export class HistoryManager {
   // ===================
 
   /**
+   * Get text input from AI service.
+   * Returns null if AI service is not available.
+   */
+  getTextInput() {
+    if (!this.aiService) {
+      this.handleError("EXECUTE_FAILED", "AI service not available", null)
+      return null
+    }
+    return this.aiService.getTextInput()
+  }
+
+  /**
+   * Get prompt content from AI service.
+   * Returns empty string if AI service is not available.
+   */
+  getPromptContent(): string {
+    if (!this.aiService) {
+      this.handleError("EXECUTE_FAILED", "AI service not available", null)
+      return ""
+    }
+    return this.aiService.extractPromptContent()
+  }
+
+  /**
    * Execute prompt
    */
   async executePrompt(promptId: string): Promise<void> {
@@ -296,11 +343,19 @@ export class HistoryManager {
   }
 
   /**
+   * Get a prompt data
+   */
+  async getPrompt(promptId: string): Promise<Prompt> {
+    this.ensureInitialized()
+    return this.storageHelper.getPrompt(promptId)
+  }
+
+  /**
    * Get prompts list (sorted)
    */
   async getPrompts(): Promise<Prompt[]> {
     this.ensureInitialized()
-    return this.executeManager.getPrompts()
+    return this.storageHelper.getPrompts()
   }
 
   /**
@@ -308,7 +363,7 @@ export class HistoryManager {
    */
   async getPinnedPrompts(): Promise<Prompt[]> {
     this.ensureInitialized()
-    return this.executeManager.getPinnedPrompts()
+    return this.storageHelper.getPinnedPrompts()
   }
 
   // ===================
@@ -353,7 +408,7 @@ export class HistoryManager {
   private ensureInitialized(): void {
     if (!this.initialized) {
       throw new Error(
-        "PromptHistoryManager not initialized. Call initialize() first.",
+        "PromptServiceFacade not initialized. Call initialize() first.",
       )
     }
   }
@@ -418,7 +473,7 @@ export class HistoryManager {
       duration: 5000,
     })
 
-    console.error(`PromptHistoryManager Error [${code}]:`, message, details)
+    console.error(`PromptServiceFacade Error [${code}]:`, message, details)
   }
 
   /**
