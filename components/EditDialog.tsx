@@ -24,7 +24,7 @@ interface EditDialogProps {
   /** Whether overwrite save is available */
   isOverwriteAvailable: boolean
   /** Callback on save */
-  onSave: (data: SaveDialogData) => void
+  onSave: (data: SaveDialogData) => Promise<void>
 }
 
 /**
@@ -69,6 +69,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
       await onSave(saveData)
     } finally {
       setIsLoading(false)
+      onOpenChange(false)
     }
   }
 

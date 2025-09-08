@@ -124,11 +124,12 @@ export function InputMenu(props: Props): React.ReactElement {
   }, [])
 
   /**
-   * プロンプト保存処理
+   * Update prompt & pin it.
    */
   const handleEditPrompt = async (saveData: SaveDialogData) => {
     try {
       await serviceFacade.updatePrompt(editId!, saveData)
+      await serviceFacade.pinPrompt(editId!)
     } catch (error) {
       console.error("Save failed:", error)
     }
@@ -208,22 +209,28 @@ export function InputMenu(props: Props): React.ReactElement {
             className="max-h-80 min-w-[220px] overflow-y-auto"
             side="top"
           >
-            {props.prompts.map((prompt) => (
-              <MenuItem
-                menuType="history"
-                value={prompt.id}
-                key={prompt.id}
-                isPinned={prompt.isPinned}
-                onHover={handleItemHover}
-                onLeave={handleItemLeave}
-                onClick={handleItemClick}
-                onEdit={openEditDialog}
-                onRemove={setRemoveId}
-                onTogglePin={handleTogglePin}
-              >
-                {prompt.name}
-              </MenuItem>
-            ))}
+            {props.prompts.length > 0 ? (
+              props.prompts.map((prompt) => (
+                <MenuItem
+                  menuType="history"
+                  value={prompt.id}
+                  key={prompt.id}
+                  isPinned={prompt.isPinned}
+                  onHover={handleItemHover}
+                  onLeave={handleItemLeave}
+                  onClick={handleItemClick}
+                  onEdit={openEditDialog}
+                  onRemove={setRemoveId}
+                  onTogglePin={handleTogglePin}
+                >
+                  {prompt.name}
+                </MenuItem>
+              ))
+            ) : (
+              <div className="px-3 py-2 text-xs text-gray-500">
+                プロンプトを送信すると表示されます
+              </div>
+            )}
           </MenubarContent>
         </MenubarMenu>
 
@@ -233,22 +240,28 @@ export function InputMenu(props: Props): React.ReactElement {
             <Star size={16} className="stroke-gray-600" />
           </MenuTrigger>
           <MenubarContent side="top">
-            {props.pinnedPrompts.map((prompt) => (
-              <MenuItem
-                menuType="pinned"
-                value={prompt.id}
-                key={prompt.id}
-                isPinned={prompt.isPinned}
-                onHover={handleItemHover}
-                onLeave={handleItemLeave}
-                onClick={handleItemClick}
-                onEdit={openEditDialog}
-                onRemove={setRemoveId}
-                onTogglePin={handleTogglePin}
-              >
-                {prompt.name}
-              </MenuItem>
-            ))}
+            {props.pinnedPrompts.length > 0 ? (
+              props.pinnedPrompts.map((prompt) => (
+                <MenuItem
+                  menuType="pinned"
+                  value={prompt.id}
+                  key={prompt.id}
+                  isPinned={prompt.isPinned}
+                  onHover={handleItemHover}
+                  onLeave={handleItemLeave}
+                  onClick={handleItemClick}
+                  onEdit={openEditDialog}
+                  onRemove={setRemoveId}
+                  onTogglePin={handleTogglePin}
+                >
+                  {prompt.name}
+                </MenuItem>
+              ))
+            ) : (
+              <div className="px-3 py-2 text-xs text-gray-500 min-w-[220px]">
+                Starをつけるか手動保存すると表示されます
+              </div>
+            )}
           </MenubarContent>
         </MenubarMenu>
 
