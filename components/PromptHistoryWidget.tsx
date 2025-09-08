@@ -50,6 +50,7 @@ export const PromptHistoryWidget: React.FC = () => {
 
     return () => {
       mounted = false
+      serviceFacade.destroy()
     }
   }, [])
 
@@ -57,7 +58,11 @@ export const PromptHistoryWidget: React.FC = () => {
    * Set up event listeners
    */
   useEffect(() => {
-    const handlePromptSave = (_prompt: Prompt) => {
+    const handlePromptChange = (_prompt: Prompt) => {
+      loadPrompts() // Update prompt list
+    }
+
+    const handlePinChange = () => {
       loadPrompts() // Update prompt list
     }
 
@@ -70,14 +75,10 @@ export const PromptHistoryWidget: React.FC = () => {
     }
 
     // Register callbacks
-    serviceFacade.onPromptSave(handlePromptSave)
+    serviceFacade.onPromptChange(handlePromptChange)
+    serviceFacade.onPinChange(handlePinChange)
     serviceFacade.onNotification(handleNotification)
     serviceFacade.onError(handleError)
-
-    // Cleanup is not automatic, manual implementation required
-    return () => {
-      // Note: Implement unsubscribe functionality here if available
-    }
   }, [])
 
   /**

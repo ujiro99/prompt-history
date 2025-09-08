@@ -26,7 +26,8 @@ export class PromptServiceFacade {
 
   // Callbacks
   private onSessionChangeCallbacks: ((session: Session | null) => void)[] = []
-  private onPromptSaveCallbacks: ((prompt: Prompt) => void)[] = []
+  private onPromptChangeCallbacks: ((prompt: Prompt) => void)[] = []
+  private onPinChangeCallbacks: (() => void)[] = []
   private onNotificationCallbacks: ((
     notification: NotificationData,
   ) => void)[] = []
@@ -182,7 +183,7 @@ export class PromptServiceFacade {
     return this.storageHelper.savePromptManually(
       saveData,
       (prompt) => {
-        this.notifyPromptSave(prompt)
+        this.notifyPromptChange(prompt)
         this.notify({
           type: "success",
           message: `Prompt "${prompt.name}" saved successfully`,
@@ -209,7 +210,7 @@ export class PromptServiceFacade {
       promptId,
       saveData,
       (prompt) => {
-        this.notifyPromptSave(prompt)
+        this.notifyPromptChange(prompt)
         this.notify({
           type: "success",
           message: `Prompt "${prompt.name}" updated successfully`,
@@ -230,7 +231,7 @@ export class PromptServiceFacade {
     await this.storageHelper.handleAutoSave(
       this.aiService,
       (prompt) => {
-        this.notifyPromptSave(prompt)
+        this.notifyPromptChange(prompt)
       },
       (error) => {
         console.warn("Auto-save failed:", error)
@@ -247,6 +248,7 @@ export class PromptServiceFacade {
     await this.storageHelper.deletePrompt(
       promptId,
       (prompt) => {
+        this.notifyPromptChange(prompt)
         this.notify({
           type: "success",
           message: `Prompt "${prompt.name}" deleted`,
@@ -264,7 +266,12 @@ export class PromptServiceFacade {
    */
   async pinPrompt(promptId: string): Promise<void> {
     this.ensureInitialized()
-    await this.storageHelper.pinPrompt(promptId)
+    try {
+      await this.storageHelper.pinPrompt(promptId)
+      this.notifyPinChange()
+    } catch (error) {
+      this.handleError("PIN_FAILED", "Failed to pin prompt", error)
+    }
   }
 
   /**
@@ -272,7 +279,12 @@ export class PromptServiceFacade {
    */
   async unpinPrompt(promptId: string): Promise<void> {
     this.ensureInitialized()
-    await this.storageHelper.unpinPrompt(promptId)
+    try {
+      await this.storageHelper.unpinPrompt(promptId)
+      this.notifyPinChange()
+    } catch (error) {
+      this.handleError("UNPIN_FAILED", "Failed to unpin prompt", error)
+    }
   }
 
   // ===================
@@ -378,10 +390,17 @@ export class PromptServiceFacade {
   }
 
   /**
-   * Register prompt save notifications
+   * Register prompt change notifications
    */
-  onPromptSave(callback: (prompt: Prompt) => void): void {
-    this.onPromptSaveCallbacks.push(callback)
+  onPromptChange(callback: (prompt: Prompt) => void): void {
+    this.onPromptChangeCallbacks.push(callback)
+  }
+
+  /**
+   * Register pin change notifications
+   */
+  onPinChange(callback: () => void): void {
+    this.onPinChangeCallbacks.push(callback)
   }
 
   /**
@@ -427,14 +446,27 @@ export class PromptServiceFacade {
   }
 
   /**
-   * Notify prompt save
+   * Notify prompt change
    */
-  private notifyPromptSave(prompt: Prompt): void {
-    this.onPromptSaveCallbacks.forEach((callback) => {
+  private notifyPromptChange(prompt: Prompt): void {
+    this.onPromptChangeCallbacks.forEach((callback) => {
       try {
         callback(prompt)
       } catch (error) {
-        console.error("Prompt save callback error:", error)
+        console.error("Prompt change callback error:", error)
+      }
+    })
+  }
+
+  /**
+   * Notify pin change
+   */
+  private notifyPinChange(): void {
+    this.onPinChangeCallbacks.forEach((callback) => {
+      try {
+        callback()
+      } catch (error) {
+        console.error("Pin change callback error:", error)
       }
     })
   }
@@ -497,7 +529,8 @@ export class PromptServiceFacade {
     )
 
     this.onSessionChangeCallbacks = []
-    this.onPromptSaveCallbacks = []
+    this.onPromptChangeCallbacks = []
+    this.onPinChangeCallbacks = []
     this.onNotificationCallbacks = []
     this.onErrorCallbacks = []
 

@@ -38,7 +38,7 @@ export const MenuItemPopup = ({
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="outline-gray-200 p-0.5 rounded-md transition group/button cursor-pointer"
+          className="outline-gray-200 p-1 rounded-md transition group/button hover:bg-gray-100 cursor-pointer"
           onClick={handleClick}
         >
           <Ellipsis
