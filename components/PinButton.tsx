@@ -9,7 +9,7 @@ type PinnButtonProps = {
   size?: number
 }
 
-export const PinnButton = ({
+export const PinButton = ({
   onClick,
   isPinned,
   className,
@@ -24,7 +24,7 @@ export const PinnButton = ({
     <button
       type="button"
       className={cn(
-        "outline-gray-200 p-0.5 rounded-md transition hover:scale-125 group/pinn-button cursor-pointer",
+        "outline-gray-200 p-1 rounded-md transition hover:scale-125 hover:bg-gray-100 cursor-pointer",
         className,
       )}
       onClick={handleClick}
@@ -33,8 +33,8 @@ export const PinnButton = ({
         size={size}
         className={cn(
           isPinned
-            ? "fill-yellow-300 stroke-yellow-400 group-hover/pinn-button:fill-gray-200 group-hover/pinn-button:stroke-gray-400"
-            : "stroke-gray-400 fill-gray-100 group-hover/pinn-button:fill-yellow-300 group-hover/pinn-button:stroke-yellow-400",
+            ? "fill-yellow-300 stroke-yellow-400"
+            : "stroke-gray-400 fill-gray-100",
         )}
       />
     </button>

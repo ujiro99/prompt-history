@@ -1,6 +1,6 @@
 import React, { forwardRef, useRef, useState } from "react"
 import { MenubarItem } from "@/components/ui/menubar"
-import { PinnButton } from "./PinnButton"
+import { PinButton } from "./PinButton"
 import { MenuItemPopup } from "./MenuItemPopup"
 import { cn } from "@/lib/utils"
 
@@ -67,7 +67,7 @@ export const MenuItem = forwardRef<HTMLDivElement, MenuItemProps>(
       >
         <div className="max-w-50 truncate">{props.children}</div>
         <div className={cn("flex items-center gap-2")}>
-          <PinnButton
+          <PinButton
             onClick={() => props.onTogglePin(promptId, !props.isPinned)}
             isPinned={props.isPinned}
             size={BUTTON_SIZE}
