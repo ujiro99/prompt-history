@@ -44,7 +44,7 @@ export const PromptPreview = ({
       <PopoverAnchor virtualRef={{ current: anchorElm }} />
       <PopoverContent
         ref={setContent}
-        className="relative z-auto p-3"
+        className="relative z-auto p-4"
         side={"right"}
         align={"end"}
         sideOffset={8}

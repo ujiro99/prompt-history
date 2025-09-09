@@ -1,5 +1,5 @@
 import { DomManager } from "./domManager"
-import { inputContentEditable } from "../dom"
+import { inputContentEditable, normalizeHtmlNewlines } from "../dom"
 
 /**
  * Class responsible for prompt extraction and injection
@@ -19,9 +19,8 @@ export class PromptManager {
 
     // For contenteditable div
     if (input.getAttribute("contenteditable") === "true") {
-      const element = input as HTMLElement
       // Remove HTML tags and get plain text
-      return element.innerText || element.textContent || ""
+      return normalizeHtmlNewlines(input)
     }
 
     // For textarea
@@ -54,17 +53,11 @@ export class PromptManager {
       if (input.getAttribute("contenteditable") === "true") {
         const element = input as HTMLElement
 
-        // Set focus
-        element.focus()
-
         // Clear existing content
         element.innerHTML = ""
 
         // Set new content (preserving line breaks)
-        await inputContentEditable(element, content, 10)
-
-        // Trigger input events
-        this.triggerInputEvents(element)
+        await inputContentEditable(element, content, 20)
 
         // Move cursor to end
         this.setCursorToEnd(element)

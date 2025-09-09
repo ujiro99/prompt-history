@@ -98,14 +98,18 @@ export async function inputContentEditable(
   for (const [idx, val] of values.entries()) {
     document.execCommand("insertText", false, val)
     if (idx < values.length - 1) {
+      await sleep(interval / 2)
       await typeShiftEnter(el)
-      await sleep(interval)
+      await sleep(interval / 2)
     }
   }
   return true
 }
 
-async function typeShiftEnter(element: Element): Promise<void> {
+/**
+ * Simulate typing Shift+Enter key event on an element.
+ */
+async function typeShiftEnter(el: Element): Promise<void> {
   const down = new KeyboardEvent("keydown", {
     key: "Enter",
     code: "Enter",
@@ -117,5 +121,37 @@ async function typeShiftEnter(element: Element): Promise<void> {
     bubbles: true,
     cancelable: true,
   })
-  element.dispatchEvent(down)
+  el.dispatchEvent(down)
+}
+
+/**
+ * Normalize newlines in an HTML element.
+ * - Converts <br>, <div>, and <p> tags to '\n' and preserves text content.
+ * - Trims extra newlines at the end.
+ *
+ * @param {HTMLElement} el The HTML element to normalize.
+ * @return {string} The normalized text with '\n' for line breaks.
+ *
+ */
+export function normalizeHtmlNewlines(el: Element): string {
+  let result = ""
+  function traverse(nodes: Node[]) {
+    nodes.forEach((node) => {
+      if (node.nodeType === 3) {
+        // Text node
+        result += node.textContent
+      } else if (node.nodeName === "BR") {
+        result += "\n"
+      } else if (node.nodeName === "DIV" || node.nodeName === "P") {
+        if (result && !result.endsWith("\n")) result += "\n"
+        traverse(Array.from(node.childNodes))
+        if (!result.endsWith("\n")) result += "\n"
+      } else {
+        traverse(Array.from(node.childNodes))
+      }
+    })
+  }
+  traverse(Array.from(el.childNodes))
+  // Remove extra newlines at the end
+  return result.replace(/\n+$/g, "")
 }
