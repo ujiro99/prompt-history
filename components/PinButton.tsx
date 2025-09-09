@@ -24,7 +24,8 @@ export const PinButton = ({
     <button
       type="button"
       className={cn(
-        "outline-gray-200 p-1 rounded-md transition hover:scale-125 hover:bg-gray-100 cursor-pointer",
+        "outline-gray-200 p-2 rounded-md transition hover:bg-gray-200 cursor-pointer",
+        "group/button",
         className,
       )}
       onClick={handleClick}
@@ -32,6 +33,7 @@ export const PinButton = ({
       <Star
         size={size}
         className={cn(
+          "group-hover/button:scale-125 transition",
           isPinned
             ? "fill-yellow-300 stroke-yellow-400"
             : "stroke-gray-400 fill-gray-100",
