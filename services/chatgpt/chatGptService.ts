@@ -11,7 +11,6 @@ export class ChatGptService implements AIServiceInterface {
   private domManager: DomManager
   private promptManager: PromptManager
   private debugger: ChatGptDebugger
-  private initialized = false
 
   constructor() {
     this.domManager = new DomManager()
@@ -41,9 +40,9 @@ export class ChatGptService implements AIServiceInterface {
     }
 
     await this.domManager.waitForElements()
-    this.domManager.setupEventListeners()
+    this.domManager.setupSendEventListeners()
+    this.domManager.setupContentChangeListeners()
     this.domManager.setupDOMObserver()
-    this.initialized = true
   }
 
   /**
@@ -88,7 +87,6 @@ export class ChatGptService implements AIServiceInterface {
     // Create wrapper to check if prompt content is not empty
     const wrappedCallback = () => {
       const content = this.extractPromptContent().trim()
-      console.debug("Extracted prompt content:", content)
       if (content.length > 0) {
         callback()
       }
@@ -105,11 +103,24 @@ export class ChatGptService implements AIServiceInterface {
   }
 
   /**
+   * Set up content change monitoring
+   */
+  onContentChange(callback: (content: string) => void): void {
+    this.domManager.onContentChange(callback)
+  }
+
+  /**
+   * Remove content change monitoring
+   */
+  offContentChange(callback: () => void): void {
+    this.domManager.offContentChange(callback)
+  }
+
+  /**
    * Service cleanup
    */
   destroy(): void {
     this.domManager.destroy()
-    this.initialized = false
   }
 
   // ===================

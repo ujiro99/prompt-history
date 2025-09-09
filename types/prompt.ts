@@ -124,8 +124,12 @@ export interface AIServiceInterface {
   injectPromptContent(content: string): Promise<void>
   /** Set up send event monitoring */
   onSend(callback: () => void): void
+  /** Set up content change monitoring */
+  onContentChange(callback: (content: string) => void): void
   /** Get service name */
   getServiceName(): string
+  /** Service cleanup */
+  destroy(): void
 }
 
 /**

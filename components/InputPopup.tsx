@@ -278,13 +278,16 @@ export function InputMenu(props: Props): React.ReactElement {
 
         {/* Save Menu */}
         <MenubarMenu value={MENU.Save}>
-          <MenuTrigger onClick={openEditDialogNew}>
+          <MenuTrigger
+            disabled={!props.saveEnabled}
+            onClick={openEditDialogNew}
+          >
             <Save size={16} className="stroke-gray-600" />
           </MenuTrigger>
         </MenubarMenu>
       </Menubar>
 
-      {/* PromptDetail Overlay */}
+      {/* PromptPreview Overlay */}
       {hoveredPrompt && hoveredItem && (
         <PromptPreviewWrapper
           open={!isEmpty(selectedMenu) && hoveredItem.element != null}
@@ -307,6 +310,7 @@ export function InputMenu(props: Props): React.ReactElement {
         />
       )}
 
+      {/* Remove Prompt Dialog */}
       <RemoveDialog
         open={removeId !== null}
         onOpenChange={(val) => setRemoveId(val ? removeId : null)}
@@ -319,18 +323,16 @@ export function InputMenu(props: Props): React.ReactElement {
   )
 }
 
-function MenuTrigger(props: {
-  onMouseEnter?: () => void
-  onClick?: () => void
-  children: React.ReactNode
-}): React.ReactElement {
+function MenuTrigger(
+  props: React.ComponentProps<typeof MenubarTrigger>,
+): React.ReactElement {
   return (
     <MenubarTrigger
       className={cn(
         "p-1.5 text-xs gap-0.5 font-normal font-sans text-gray-700 cursor-pointer",
+        props.disabled && "opacity-50 pointer-events-none",
       )}
-      onMouseEnter={props.onMouseEnter}
-      onClick={props.onClick}
+      {...props}
     >
       {props.children}
     </MenubarTrigger>

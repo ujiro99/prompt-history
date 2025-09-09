@@ -155,3 +155,33 @@ export function normalizeHtmlNewlines(el: Element): string {
   // Remove extra newlines at the end
   return result.replace(/\n+$/g, "")
 }
+
+/**
+ * Extract content from input element
+ * @param {Element} element The input element to extract content from
+ * @return {string} The extracted content as plain text
+ */
+export function extractElementContent(element: Element): string {
+  if (!element) {
+    return ""
+  }
+
+  // For contenteditable div
+  if (element.getAttribute("contenteditable") === "true") {
+    return normalizeHtmlNewlines(element)
+  }
+
+  // For textarea
+  if (element.tagName.toLowerCase() === "textarea") {
+    return (element as HTMLTextAreaElement).value || ""
+  }
+
+  // For input
+  if (element.tagName.toLowerCase() === "input") {
+    return (element as HTMLInputElement).value || ""
+  }
+
+  // Fallback
+  const htmlElement = element as HTMLElement
+  return htmlElement.textContent || htmlElement.innerText || ""
+}

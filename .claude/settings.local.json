@@ -21,7 +21,9 @@
       "mcp__serena__write_memory",
       "Bash(pnpm list:*)",
       "mcp__serena__find_referencing_symbols",
-      "Bash(tsc:*)"
+      "Bash(tsc:*)",
+      "mcp__serena__insert_after_symbol",
+      "mcp__serena__replace_symbol_body"
     ],
     "deny": [],
     "ask": []

@@ -2,23 +2,23 @@ import { useState, useEffect } from "react"
 import { PromptServiceFacade } from "../services/promptServiceFacade"
 import { InputPopup } from "./InputPopup"
 import { NotificationManager } from "./Notification"
+import { isEmpty } from "@/lib/utils"
+import type { Prompt, NotificationData, PromptError } from "../types/prompt"
 
 // Singleton instance for compatibility
 const serviceFacade = PromptServiceFacade.getInstance()
-
-import type { Prompt, NotificationData, PromptError } from "../types/prompt"
 
 /**
  * Main widget for prompt history management
  */
 export const PromptHistoryWidget: React.FC = () => {
-  // State management
   const [prompts, setPrompts] = useState<Prompt[]>([])
   const [pinnedPrompts, setPinnedPrompts] = useState<Prompt[]>([])
   const [targetElement, setTargetElement] = useState<Element | null>(null)
   const [notifications, setNotifications] = useState<NotificationData[]>([])
   const [isInitializing, setIsInitializing] = useState(true)
   const [initError, setInitError] = useState<string | null>(null)
+  const [promptContent, setPromptContent] = useState<string>("")
 
   /**
    * Initialization process
@@ -74,11 +74,16 @@ export const PromptHistoryWidget: React.FC = () => {
       console.error("SessionManager error:", error)
     }
 
+    const handleContentChange = (content: string) => {
+      setPromptContent(content)
+    }
+
     // Register callbacks
     serviceFacade.onPromptChange(handlePromptChange)
     serviceFacade.onPinChange(handlePinChange)
     serviceFacade.onNotification(handleNotification)
     serviceFacade.onError(handleError)
+    serviceFacade.onContentChange(handleContentChange)
   }, [])
 
   /**
@@ -146,7 +151,7 @@ export const PromptHistoryWidget: React.FC = () => {
         targetElm={targetElement}
         prompts={prompts}
         pinnedPrompts={pinnedPrompts}
-        saveEnabled={serviceFacade.getPromptContent() !== null}
+        saveEnabled={!isEmpty(promptContent)}
       />
 
       {/* Notification system */}

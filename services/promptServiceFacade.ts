@@ -32,6 +32,7 @@ export class PromptServiceFacade {
     notification: NotificationData,
   ) => void)[] = []
   private onErrorCallbacks: ((error: PromptError) => void)[] = []
+  private onContentChangeCallbacks: ((content: string) => void)[] = []
 
   private constructor() {
     this.storage = promptStorage
@@ -107,6 +108,8 @@ export class PromptServiceFacade {
     if (this.aiService) {
       // Monitor send events (auto-save)
       this.aiService.onSend(this.handleAutoSave.bind(this))
+      // Monitor content changes
+      this.aiService.onContentChange(this.notifyContentChange.bind(this))
 
       // Monitor page navigation events
       window.addEventListener(
@@ -403,6 +406,13 @@ export class PromptServiceFacade {
     this.onErrorCallbacks.push(callback)
   }
 
+  /**
+   * Register content change notifications
+   */
+  onContentChange(callback: (content: string) => void): void {
+    this.onContentChangeCallbacks.push(callback)
+  }
+
   // ===================
   // Private Methods
   // ===================
@@ -471,6 +481,19 @@ export class PromptServiceFacade {
   }
 
   /**
+   * Notify content change
+   */
+  private notifyContentChange(content: string): void {
+    this.onContentChangeCallbacks.forEach((callback) => {
+      try {
+        callback(content)
+      } catch (error) {
+        console.error("Content change callback error:", error)
+      }
+    })
+  }
+
+  /**
    * Error handling
    */
   private handleError(code: string, message: string, details: any): void {
@@ -498,17 +521,15 @@ export class PromptServiceFacade {
    * Service cleanup
    */
   destroy(): void {
-    if (
-      this.aiService &&
-      typeof (this.aiService as any).destroy === "function"
-    ) {
-      ;(this.aiService as any).destroy()
+    if (this.aiService) {
+      this.aiService.destroy()
     }
 
     window.removeEventListener(
       "beforeunload",
       this.sessionManager.handlePageUnload.bind(this.sessionManager),
     )
+
     window.removeEventListener(
       "popstate",
       this.sessionManager.handlePageChange.bind(this.sessionManager),
@@ -519,6 +540,7 @@ export class PromptServiceFacade {
     this.onPinChangeCallbacks = []
     this.onNotificationCallbacks = []
     this.onErrorCallbacks = []
+    this.onContentChangeCallbacks = []
 
     this.aiService = null
     this.initialized = false

@@ -1,5 +1,5 @@
 import { DomManager } from "./domManager"
-import { inputContentEditable, normalizeHtmlNewlines } from "../dom"
+import { inputContentEditable, extractElementContent } from "../dom"
 
 /**
  * Class responsible for prompt extraction and injection
@@ -17,25 +17,7 @@ export class PromptManager {
       return ""
     }
 
-    // For contenteditable div
-    if (input.getAttribute("contenteditable") === "true") {
-      // Remove HTML tags and get plain text
-      return normalizeHtmlNewlines(input)
-    }
-
-    // For textarea
-    if (input.tagName.toLowerCase() === "textarea") {
-      return (input as HTMLTextAreaElement).value || ""
-    }
-
-    // For input
-    if (input.tagName.toLowerCase() === "input") {
-      return (input as HTMLInputElement).value || ""
-    }
-
-    // Fallback
-    const element = input as HTMLElement
-    return element.textContent || element.innerText || ""
+    return extractElementContent(input)
   }
 
   /**
