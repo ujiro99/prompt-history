@@ -12,6 +12,7 @@ import { MenuItem } from "./MenuItem"
 import { RemoveDialog } from "@/components/RemoveDialog"
 import { EditDialog } from "@/components/EditDialog"
 import { PromptServiceFacade } from "../services/promptServiceFacade"
+import { SaveMode } from "../types/prompt"
 import type { Prompt, SaveDialogData } from "../types/prompt"
 import { cn, isEmpty } from "@/lib/utils"
 
@@ -124,18 +125,6 @@ export function InputMenu(props: Props): React.ReactElement {
   }, [])
 
   /**
-   * Update prompt & pin it.
-   */
-  const handleEditPrompt = async (saveData: SaveDialogData) => {
-    try {
-      await serviceFacade.updatePrompt(editId!, saveData)
-      await serviceFacade.pinPrompt(editId!)
-    } catch (error) {
-      console.error("Save failed:", error)
-    }
-  }
-
-  /**
    * プロンプト削除処理
    */
   const handleDeletePrompt = async (promptId: string) => {
@@ -162,15 +151,17 @@ export function InputMenu(props: Props): React.ReactElement {
   }
 
   /**
-   * 保存ダイアログを開く
+   * 入力中のプロンプトを新規保存するダイアログを開く
    */
   const openEditDialogNew = async () => {
     const data = await serviceFacade.prepareSaveDialogData()
+    console.log("Prepared save dialog data:", data)
     setSaveDialogData({
       name: data.initialName ?? "",
       content: data.initialContent,
-      saveMode: data.isOverwriteAvailable ? "overwrite" : "new",
+      saveMode: data.isOverwriteAvailable ? SaveMode.Overwrite : SaveMode.New,
     })
+    setEditId("")
   }
 
   /**
@@ -181,9 +172,24 @@ export function InputMenu(props: Props): React.ReactElement {
     setSaveDialogData({
       name: prompt.name,
       content: prompt.content,
-      saveMode: "overwrite",
+      saveMode: SaveMode.Overwrite,
     })
     setEditId(promptId)
+  }
+
+  /**
+   * Update prompt & pin it.
+   */
+  const handleEditPrompt = async (saveData: SaveDialogData) => {
+    try {
+      if (isEmpty(editId) || saveData.saveMode === SaveMode.New) {
+        await serviceFacade.savePromptManually(saveData)
+      } else {
+        await serviceFacade.updatePrompt(editId!, saveData)
+      }
+    } catch (error) {
+      console.error("Save failed:", error)
+    }
   }
 
   const hoveredPrompt = useMemo(() => {
@@ -192,6 +198,11 @@ export function InputMenu(props: Props): React.ReactElement {
       hoveredItem.menuType === "history" ? props.prompts : props.pinnedPrompts
     return prompts.find((p) => p.id === hoveredItem.promptId) || null
   }, [hoveredItem, props.prompts, props.pinnedPrompts])
+
+  const removePrompt = useMemo(() => {
+    if (!removeId) return null
+    return props.prompts.find((p) => p.id === removeId) || null
+  }, [removeId, props.prompts])
 
   return (
     <div className="relative">
@@ -291,7 +302,7 @@ export function InputMenu(props: Props): React.ReactElement {
           onOpenChange={(val) => setEditId(val ? editId : null)}
           initialName={saveDialogData.name}
           initialContent={saveDialogData.content}
-          isOverwriteAvailable={saveDialogData.saveMode === "overwrite"}
+          displayMode={saveDialogData.saveMode}
           onSave={handleEditPrompt}
         />
       )}
@@ -302,7 +313,7 @@ export function InputMenu(props: Props): React.ReactElement {
         description={`Are you sure you want to remove? This action cannot be undone.`}
         onRemove={() => handleDeletePrompt(removeId!)}
       >
-        <span className="text-base truncate"></span>
+        <span className="text-base truncate">{removePrompt?.name}</span>
       </RemoveDialog>
     </div>
   )

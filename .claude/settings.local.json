@@ -20,7 +20,8 @@
       "mcp__serena__onboarding",
       "mcp__serena__write_memory",
       "Bash(pnpm list:*)",
-      "mcp__serena__find_referencing_symbols"
+      "mcp__serena__find_referencing_symbols",
+      "Bash(tsc:*)"
     ],
     "deny": [],
     "ask": []

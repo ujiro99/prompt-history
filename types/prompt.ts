@@ -61,6 +61,14 @@ export interface Session {
 }
 
 /**
+ * Save mode for prompt
+ */
+export enum SaveMode {
+  New = "new",
+  Overwrite = "overwrite",
+}
+
+/**
  * Prompt save data
  */
 export interface SaveDialogData {
@@ -69,7 +77,7 @@ export interface SaveDialogData {
   /** Prompt content */
   content: string
   /** Save mode */
-  saveMode: "new" | "overwrite"
+  saveMode: SaveMode
 }
 
 /**

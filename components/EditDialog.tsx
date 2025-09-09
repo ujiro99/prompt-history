@@ -1,13 +1,22 @@
 import { useState, useEffect } from "react"
+import { ChevronDown } from "lucide-react"
+import { SaveMode } from "../types/prompt"
 import type { SaveDialogData } from "../types/prompt"
 import {
   Dialog,
+  DialogTitle,
+  DialogHeader,
   DialogContent,
   DialogFooter,
-  DialogHeader,
-  DialogTitle,
 } from "@/components/ui/dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
+import { ButtonGroup } from "@/components/ui/button-group"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 
@@ -21,8 +30,8 @@ interface EditDialogProps {
   initialName?: string
   /** Initial prompt content */
   initialContent: string
-  /** Whether overwrite save is available */
-  isOverwriteAvailable: boolean
+  /** Dialog display mode */
+  displayMode: SaveMode
   /** Callback on save */
   onSave: (data: SaveDialogData) => Promise<void>
 }
@@ -35,13 +44,13 @@ export const EditDialog: React.FC<EditDialogProps> = ({
   onOpenChange,
   initialName = "",
   initialContent,
-  isOverwriteAvailable,
+  displayMode,
   onSave,
 }) => {
   const [name, setName] = useState(initialName)
   const [content, setContent] = useState(initialContent)
-  const [saveMode, setSaveMode] = useState<"new" | "overwrite">("new")
   const [isLoading, setIsLoading] = useState(false)
+  const isEdit = displayMode === SaveMode.Overwrite
 
   // Update initial values
   useEffect(() => {
@@ -52,7 +61,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
   /**
    * Save processing
    */
-  const handleSave = async () => {
+  const handleSave = async (saveMode: SaveMode) => {
     if (!name.trim()) {
       return // Do nothing if name is empty
     }
@@ -63,7 +72,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
       const saveData: SaveDialogData = {
         name: name.trim(),
         content: content.trim(),
-        saveMode,
+        saveMode: saveMode,
       }
 
       await onSave(saveData)
@@ -83,7 +92,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
       event.preventDefault()
-      handleSave()
+      handleSave(displayMode)
     }
   }
 
@@ -91,7 +100,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-md" onKeyDown={handleKeyDown}>
         <DialogHeader>
-          <DialogTitle>Edit Prompt</DialogTitle>
+          <DialogTitle>{isEdit ? "Edit Prompt" : "New Prompt"}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -131,43 +140,6 @@ export const EditDialog: React.FC<EditDialogProps> = ({
               rows={6}
             />
           </div>
-
-          {/* Save mode selection */}
-          {isOverwriteAvailable && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">
-                Save Mode
-              </label>
-              <div className="space-y-2">
-                <label className="flex items-center space-x-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    value="new"
-                    checked={saveMode === "new"}
-                    onChange={(e) =>
-                      setSaveMode(e.target.value as "new" | "overwrite")
-                    }
-                    disabled={isLoading}
-                    className="text-primary focus:ring-primary"
-                  />
-                  <span className="text-sm">Save as new prompt</span>
-                </label>
-                <label className="flex items-center space-x-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    value="overwrite"
-                    checked={saveMode === "overwrite"}
-                    onChange={(e) =>
-                      setSaveMode(e.target.value as "new" | "overwrite")
-                    }
-                    disabled={isLoading}
-                    className="text-primary focus:ring-primary"
-                  />
-                  <span className="text-sm">Overwrite current prompt</span>
-                </label>
-              </div>
-            </div>
-          )}
         </div>
 
         <DialogFooter>
@@ -178,14 +150,52 @@ export const EditDialog: React.FC<EditDialogProps> = ({
           >
             Cancel
           </Button>
-          <Button
-            onClick={handleSave}
-            disabled={isLoading || !name.trim() || !content.trim()}
-          >
-            {isLoading ? "Saving..." : "Save"}
-          </Button>
+          <ButtonGroup>
+            <Button
+              onClick={() =>
+                handleSave(isEdit ? SaveMode.Overwrite : SaveMode.New)
+              }
+              disabled={isLoading || !name.trim() || !content.trim()}
+            >
+              {isEdit
+                ? isLoading
+                  ? "Updating..."
+                  : "Update"
+                : isLoading
+                  ? "Saving..."
+                  : "Save"}
+            </Button>
+            {isEdit && (
+              <SaveAsNew
+                disabled={isLoading || !name.trim() || !content.trim()}
+                onSaveAsNew={() => handleSave(SaveMode.New)}
+                className="w-6"
+              />
+            )}
+          </ButtonGroup>
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  )
+}
+
+interface SaveAsNewProps extends React.ComponentProps<"button"> {
+  onSaveAsNew?: () => void
+}
+
+export function SaveAsNew(props: SaveAsNewProps) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger {...props} asChild>
+        <Button>
+          <ChevronDown />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56" align="start">
+        <DropdownMenuItem onClick={props.onSaveAsNew}>
+          Save as new prompt
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

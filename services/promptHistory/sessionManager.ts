@@ -14,7 +14,7 @@ export class SessionManager {
     console.debug("Starting session with promptId:", promptId)
     try {
       await this.storage.startSession(promptId)
-      return this.storage.getCurrentSession()
+      return await this.storage.getCurrentSession()
     } catch (error) {
       console.error("Failed to start session:", error)
       return null
@@ -38,7 +38,7 @@ export class SessionManager {
    */
   async restoreSession(): Promise<void> {
     try {
-      const session = this.storage.getCurrentSession()
+      const session = await this.storage.getCurrentSession()
       if (session && session.url !== window.location.href) {
         // End session if URL has changed
         await this.endSession()
@@ -51,7 +51,7 @@ export class SessionManager {
   /**
    * Get current session
    */
-  getCurrentSession(): Session | null {
+  getCurrentSession(): Promise<Session | null> {
     return this.storage.getCurrentSession()
   }
 

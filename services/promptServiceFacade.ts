@@ -154,22 +154,6 @@ export class PromptServiceFacade {
     }
   }
 
-  /**
-   * Get current session
-   */
-  getCurrentSession(): Session | null {
-    this.ensureInitialized()
-    return this.sessionManager.getCurrentSession()
-  }
-
-  /**
-   * Check if there's an active session
-   */
-  hasActiveSession(): boolean {
-    this.ensureInitialized()
-    return this.sessionManager.hasActiveSession()
-  }
-
   // ===================
   // Prompt Saving
   // ===================
@@ -182,13 +166,14 @@ export class PromptServiceFacade {
 
     return this.storageHelper.savePromptManually(
       saveData,
-      (prompt) => {
+      async (prompt) => {
         this.notifyPromptChange(prompt)
         this.notify({
           type: "success",
           message: `Prompt "${prompt.name}" saved successfully`,
           duration: 3000,
         })
+        await this.storageHelper.pinPrompt(prompt.id)
       },
       (error) => {
         this.handleError(
@@ -209,13 +194,14 @@ export class PromptServiceFacade {
     return this.storageHelper.updatePrompt(
       promptId,
       saveData,
-      (prompt) => {
+      async (prompt) => {
         this.notifyPromptChange(prompt)
         this.notify({
           type: "success",
           message: `Prompt "${prompt.name}" updated successfully`,
           duration: 1000,
         })
+        await this.storageHelper.pinPrompt(prompt.id)
       },
       (error) => {
         this.handleError("UPDATE_FAILED", "Failed to update prompt", error)

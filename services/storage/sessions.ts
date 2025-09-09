@@ -45,7 +45,7 @@ export class SessionsService {
    * Get current session
    */
   async getCurrentSession(): Promise<Session | null> {
-    return await sessionStorage.getValue()
+    return sessionStorage.getValue()
   }
 
   /**

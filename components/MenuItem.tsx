@@ -61,12 +61,12 @@ export const MenuItem = forwardRef<HTMLDivElement, MenuItemProps>(
         onClick={handleClick}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        className="relative flex justify-between p-2 text-sm font-normal font-sans text-gray-700 cursor-pointer outline-gray-300"
+        className="relative flex justify-between pl-2 pr-1 py-0.5 text-sm font-normal font-sans text-gray-700 cursor-pointer outline-gray-300"
         style={{ outlineColor: "#d1d5db" }}
         data-value={props.value}
       >
         <div className="max-w-50 truncate">{props.children}</div>
-        <div className={cn("flex items-center gap-2")}>
+        <div className={cn("flex items-center")}>
           <PinButton
             onClick={() => props.onTogglePin(promptId, !props.isPinned)}
             isPinned={props.isPinned}

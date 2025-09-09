@@ -51,6 +51,7 @@ export const MenuItemPopup = ({
         className="relative z-auto p-1 text-gray-700"
         side={"top"}
         align={"end"}
+        sideOffset={-1}
         onOpenAutoFocus={noFocus}
       >
         <div className="space-y-1">

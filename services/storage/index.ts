@@ -109,18 +109,10 @@ export class StorageService {
   }
 
   /**
-   * Get current session
-   */
-  getCurrentSession(): Session | null {
-    // Implementation for calling async methods synchronously needs adjustment as needed
-    return null
-  }
-
-  /**
    * Get current session (async version)
    */
-  async getCurrentSessionAsync(): Promise<Session | null> {
-    return await sessionsService.getCurrentSession()
+  getCurrentSession(): Promise<Session | null> {
+    return sessionsService.getCurrentSession()
   }
 
   /**

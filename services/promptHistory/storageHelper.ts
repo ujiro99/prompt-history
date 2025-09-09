@@ -83,7 +83,7 @@ export class StorageHelper {
       let savedPrompt: Prompt
 
       if (saveData.saveMode === "overwrite") {
-        const session = this.sessionManager.getCurrentSession()
+        const session = await this.sessionManager.getCurrentSession()
         if (!session?.activePromptId) {
           throw new Error("No active session for overwrite")
         }
@@ -151,7 +151,7 @@ export class StorageHelper {
       })
 
       // If session exists, also increment execution count of original prompt
-      const session = this.sessionManager.getCurrentSession()
+      const session = await this.sessionManager.getCurrentSession()
       if (session?.activePromptId) {
         await this.storage.incrementExecutionCount(
           session.activePromptId,
@@ -223,7 +223,7 @@ export class StorageHelper {
       }
 
       // End session if it's an active session
-      const session = this.sessionManager.getCurrentSession()
+      const session = await this.sessionManager.getCurrentSession()
       if (session?.activePromptId === promptId) {
         await this.sessionManager.endSession()
       }
@@ -259,13 +259,16 @@ export class StorageHelper {
     initialName?: string
   }> {
     const content = aiService?.extractPromptContent()?.trim() || ""
-    const session = this.sessionManager.getCurrentSession()
+    const session = await this.sessionManager.getCurrentSession()
+    console.log("Preparing save dialog data. Active session:", session)
     const isOverwriteAvailable = Boolean(session?.activePromptId)
 
     let initialName: string | undefined
     if (session?.activePromptId) {
       const activePrompt = await this.storage.getPrompt(session.activePromptId)
       initialName = activePrompt?.name
+    } else {
+      initialName = this.generatePromptName(content)
     }
 
     return {
