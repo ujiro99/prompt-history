@@ -18,6 +18,7 @@ type MenuItemProps = {
   onLeave: () => void
   onEdit: (promptId: string) => void
   onRemove: (promptId: string) => void
+  onCopy: (promptId: string) => void
   onTogglePin: (promptId: string, isPinned: boolean) => void
 }
 
@@ -77,6 +78,7 @@ export const MenuItem = forwardRef<HTMLDivElement, MenuItemProps>(
             forceClose={forceClose}
             onEdit={props.onEdit}
             onRemove={props.onRemove}
+            onCopy={props.onCopy}
             butttonSize={BUTTON_SIZE}
           />
         </div>

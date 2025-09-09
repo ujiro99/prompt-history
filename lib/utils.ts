@@ -9,7 +9,7 @@ export function cn(...inputs: ClassValue[]) {
  * Sleeps for a specified number of milliseconds
  */
 export function sleep(msec: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, msec))
+  return new Promise((resolve) => globalThis.setTimeout(resolve, msec))
 }
 
 /**

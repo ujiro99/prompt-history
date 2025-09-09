@@ -51,6 +51,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
   const [content, setContent] = useState(initialContent)
   const [isLoading, setIsLoading] = useState(false)
   const isEdit = displayMode === SaveMode.Overwrite
+  const isCopy = displayMode === SaveMode.Copy
 
   // Update initial values
   useEffect(() => {
@@ -100,7 +101,9 @@ export const EditDialog: React.FC<EditDialogProps> = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-md" onKeyDown={handleKeyDown}>
         <DialogHeader>
-          <DialogTitle>{isEdit ? "Edit Prompt" : "New Prompt"}</DialogTitle>
+          <DialogTitle>
+            {isEdit ? "Edit Prompt" : isCopy ? "Copy Prompt" : "New Prompt"}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -153,7 +156,13 @@ export const EditDialog: React.FC<EditDialogProps> = ({
           <ButtonGroup>
             <Button
               onClick={() =>
-                handleSave(isEdit ? SaveMode.Overwrite : SaveMode.New)
+                handleSave(
+                  isEdit
+                    ? SaveMode.Overwrite
+                    : isCopy
+                      ? SaveMode.Copy
+                      : SaveMode.New,
+                )
               }
               disabled={isLoading || !name.trim() || !content.trim()}
             >
@@ -161,11 +170,15 @@ export const EditDialog: React.FC<EditDialogProps> = ({
                 ? isLoading
                   ? "Updating..."
                   : "Update"
-                : isLoading
-                  ? "Saving..."
-                  : "Save"}
+                : isCopy
+                  ? isLoading
+                    ? "Saving..."
+                    : "Save as Copy"
+                  : isLoading
+                    ? "Saving..."
+                    : "Save"}
             </Button>
-            {isEdit && (
+            {isEdit && !isCopy && (
               <SaveAsNew
                 disabled={isLoading || !name.trim() || !content.trim()}
                 onSaveAsNew={() => handleSave(SaveMode.New)}

@@ -1,8 +1,6 @@
 import { Children, cloneElement, ReactElement, isValidElement } from "react"
 import { cn } from "@/lib/utils"
 
-interface ButtonProps extends React.ComponentProps<"button"> {}
-
 interface ButtonGroupProps {
   children: React.ReactNode
   orientation?: "horizontal" | "vertical"
@@ -17,8 +15,8 @@ export const ButtonGroup = ({
 
   // Filter out falsy values and get valid React elements
   const validChildren = Children.toArray(children).filter((child) =>
-    isValidElement<ButtonProps>(child),
-  ) as ReactElement<ButtonProps>[]
+    isValidElement<React.ComponentProps<"button">>(child),
+  ) as ReactElement<React.ComponentProps<"button">>[]
 
   const hasGroup = validChildren.length > 1
   if (!hasGroup) return <div>{children}</div>

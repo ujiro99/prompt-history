@@ -125,7 +125,7 @@ export function InputMenu(props: Props): React.ReactElement {
   }, [])
 
   /**
-   * プロンプト削除処理
+   * Delete prompt process
    */
   const handleDeletePrompt = async (promptId: string) => {
     try {
@@ -136,7 +136,7 @@ export function InputMenu(props: Props): React.ReactElement {
   }
 
   /**
-   * ピン留めトグル処理
+   * Toggle pin process
    */
   const handleTogglePin = async (promptId: string, isPinned: boolean) => {
     try {
@@ -151,7 +151,7 @@ export function InputMenu(props: Props): React.ReactElement {
   }
 
   /**
-   * 入力中のプロンプトを新規保存するダイアログを開く
+   * Open dialog to save new prompt being entered
    */
   const openEditDialogNew = async () => {
     const data = await serviceFacade.prepareSaveDialogData()
@@ -165,7 +165,7 @@ export function InputMenu(props: Props): React.ReactElement {
   }
 
   /**
-   * 保存ダイアログを開く
+   * Open save dialog
    */
   const openEditDialog = async (promptId: string) => {
     const prompt = await serviceFacade.getPrompt(promptId)
@@ -178,11 +178,28 @@ export function InputMenu(props: Props): React.ReactElement {
   }
 
   /**
+   * Open dialog to copy prompt
+   */
+  const openCopyDialog = async (promptId: string) => {
+    const prompt = await serviceFacade.getPrompt(promptId)
+    setSaveDialogData({
+      name: `Copy of ${prompt.name}`,
+      content: prompt.content,
+      saveMode: SaveMode.Copy,
+    })
+    setEditId("")
+  }
+
+  /**
    * Update prompt & pin it.
    */
   const handleEditPrompt = async (saveData: SaveDialogData) => {
     try {
-      if (isEmpty(editId) || saveData.saveMode === SaveMode.New) {
+      if (
+        isEmpty(editId) ||
+        saveData.saveMode === SaveMode.New ||
+        saveData.saveMode === SaveMode.Copy
+      ) {
         await serviceFacade.savePromptManually(saveData)
       } else {
         await serviceFacade.updatePrompt(editId!, saveData)
@@ -232,6 +249,7 @@ export function InputMenu(props: Props): React.ReactElement {
                   onClick={handleItemClick}
                   onEdit={openEditDialog}
                   onRemove={setRemoveId}
+                  onCopy={openCopyDialog}
                   onTogglePin={handleTogglePin}
                 >
                   {prompt.name}
@@ -239,7 +257,7 @@ export function InputMenu(props: Props): React.ReactElement {
               ))
             ) : (
               <div className="px-3 py-2 text-xs text-gray-500">
-                プロンプトを送信すると表示されます
+                Prompts will be displayed when you send them
               </div>
             )}
           </MenubarContent>
@@ -263,6 +281,7 @@ export function InputMenu(props: Props): React.ReactElement {
                   onClick={handleItemClick}
                   onEdit={openEditDialog}
                   onRemove={setRemoveId}
+                  onCopy={openCopyDialog}
                   onTogglePin={handleTogglePin}
                 >
                   {prompt.name}
@@ -270,7 +289,7 @@ export function InputMenu(props: Props): React.ReactElement {
               ))
             ) : (
               <div className="px-3 py-2 text-xs text-gray-500 min-w-[220px]">
-                Starをつけるか手動保存すると表示されます
+                Will be displayed when you star or manually save
               </div>
             )}
           </MenubarContent>

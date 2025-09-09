@@ -3,6 +3,7 @@ import { Ellipsis } from "lucide-react"
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
 import { RemoveButton } from "./RemoveButton"
 import { EditButton } from "./EditButton"
+import { CopyButton } from "./CopyButton"
 
 interface MenuItemPopupProps {
   promptId: string
@@ -10,6 +11,7 @@ interface MenuItemPopupProps {
   forceClose: boolean
   onEdit: (promptId: string) => void
   onRemove: (promptId: string) => void
+  onCopy: (promptId: string) => void
 }
 
 const noFocus = (e: Event) => e.preventDefault()
@@ -20,6 +22,7 @@ export const MenuItemPopup = ({
   forceClose = false,
   onEdit,
   onRemove,
+  onCopy,
 }: MenuItemPopupProps) => {
   const [open, setOpen] = useState(false)
 
@@ -58,6 +61,11 @@ export const MenuItemPopup = ({
           <EditButton
             className="w-full"
             onClick={() => onEdit(promptId)}
+            size={butttonSize}
+          />
+          <CopyButton
+            className="w-full"
+            onClick={() => onCopy(promptId)}
             size={butttonSize}
           />
           <RemoveButton

@@ -66,6 +66,7 @@ export interface Session {
 export enum SaveMode {
   New = "new",
   Overwrite = "overwrite",
+  Copy = "copy",
 }
 
 /**
