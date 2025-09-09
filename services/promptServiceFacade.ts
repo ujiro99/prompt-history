@@ -319,6 +319,7 @@ export class PromptServiceFacade {
       promptId,
       this.aiService,
       (prompt) => {
+        this.notifyPromptChange(prompt)
         this.notify({
           type: "success",
           message: `Prompt "${prompt.name}" executed`,

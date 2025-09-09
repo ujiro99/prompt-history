@@ -35,7 +35,13 @@ export class ExecuteManager {
       // Increment execution count
       await this.storage.incrementExecutionCount(promptId, window.location.href)
 
-      onSuccess?.(prompt)
+      // Get updated prompt to pass to callback
+      const updatedPrompt = await this.storage.getPrompt(promptId)
+      if (!updatedPrompt) {
+        throw new Error(`Failed to retrieve updated prompt: ${promptId}`)
+      }
+
+      onSuccess?.(updatedPrompt)
     } catch (error) {
       const err = error instanceof Error ? error : new Error("Execute failed")
       onError?.(err)
