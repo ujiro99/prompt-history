@@ -62,7 +62,7 @@ export const MenuItem = forwardRef<HTMLDivElement, MenuItemProps>(
         onClick={handleClick}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        className="relative flex justify-between pl-2 pr-1 py-0.5 text-sm font-normal font-sans text-gray-700 cursor-pointer outline-gray-300"
+        className="relative flex justify-between pl-2 pr-1 py-1 text-sm font-normal font-sans text-gray-700 cursor-pointer outline-gray-300"
         style={{ outlineColor: "#d1d5db" }}
         data-value={props.value}
       >

@@ -175,7 +175,7 @@ export class StorageService {
     return {
       autoSaveEnabled: true,
       maxPrompts: 1000,
-      defaultSortOrder: "recent",
+      defaultSortOrder: "composite",
       showNotifications: true,
     }
   }

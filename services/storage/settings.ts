@@ -36,7 +36,7 @@ export class SettingsService {
     await settingsStorage.setValue({
       autoSaveEnabled: true,
       maxPrompts: 1000,
-      defaultSortOrder: "recent",
+      defaultSortOrder: "composite",
       showNotifications: true,
     })
   }

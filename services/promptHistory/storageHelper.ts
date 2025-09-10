@@ -33,10 +33,29 @@ export class StorageHelper {
    */
   async getPrompts(): Promise<Prompt[]> {
     const prompts = await this.storage.getAllPrompts()
-    const settings = this.storage.getSettings()
-    console.debug("Loaded prompts:", prompts)
+    return this.applySort(prompts)
+  }
 
-    // Sort processing
+  /**
+   * Get pinned prompts (applying sort order)
+   */
+  async getPinnedPrompts(): Promise<Prompt[]> {
+    const pinnedOrder = await this.storage.getPinnedOrder()
+    const prompts = await this.storage.getAllPrompts()
+
+    const pinnedPrompts = pinnedOrder
+      .map((id) => prompts.find((p) => p.id === id))
+      .filter((p): p is Prompt => Boolean(p))
+
+    return this.applySort(pinnedPrompts)
+  }
+
+  /**
+   * Apply sort order to prompts array
+   */
+  private applySort(prompts: Prompt[]): Prompt[] {
+    const settings = this.storage.getSettings()
+
     switch (settings.defaultSortOrder) {
       case "recent":
         return prompts.sort(
@@ -46,21 +65,14 @@ export class StorageHelper {
         return prompts.sort((a, b) => b.executionCount - a.executionCount)
       case "name":
         return prompts.sort((a, b) => a.name.localeCompare(b.name))
+      case "composite":
+        return prompts.sort(
+          (a, b) =>
+            this.calculateCompositeScore(b) - this.calculateCompositeScore(a),
+        )
       default:
         return prompts
     }
-  }
-
-  /**
-   * Get pinned prompts (maintaining order)
-   */
-  async getPinnedPrompts(): Promise<Prompt[]> {
-    const pinnedOrder = await this.storage.getPinnedOrder()
-    const prompts = await this.storage.getAllPrompts()
-
-    return pinnedOrder
-      .map((id) => prompts.find((p) => p.id === id))
-      .filter((p): p is Prompt => Boolean(p))
   }
 
   /**
@@ -128,8 +140,6 @@ export class StorageHelper {
     onSuccess?: (prompt: Prompt) => void,
     onError?: (error: Error) => void,
   ): Promise<void> {
-    console.debug("Auto-save triggered")
-
     if (!this.storage.getSettings().autoSaveEnabled) {
       return
     }
@@ -160,7 +170,6 @@ export class StorageHelper {
       }
 
       onSuccess?.(savedPrompt)
-      console.debug("Auto-saved prompt:", savedPrompt.name)
     } catch (error) {
       const err = error instanceof Error ? error : new Error("Auto-save failed")
       onError?.(err)
@@ -276,6 +285,30 @@ export class StorageHelper {
       isOverwriteAvailable,
       initialName,
     }
+  }
+
+  /**
+   * Calculate composite score based on execution count and recency
+   */
+  private calculateCompositeScore(prompt: Prompt): number {
+    const executionWeight = 1.0
+    const recencyWeight = 0.5
+
+    // Calculate days since last execution
+    const now = new Date()
+    const lastExecutedAt = new Date(prompt.lastExecutedAt)
+    const daysDiff = Math.floor(
+      (now.getTime() - lastExecutedAt.getTime()) / (1000 * 60 * 60 * 24),
+    )
+
+    // Calculate recency score (0-100, higher is more recent)
+    const recencyScore = Math.max(0, 100 - daysDiff)
+
+    // Calculate composite score
+    const score =
+      prompt.executionCount * executionWeight + recencyScore * recencyWeight
+
+    return score
   }
 
   /**
