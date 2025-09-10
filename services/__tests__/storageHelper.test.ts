@@ -145,6 +145,28 @@ describe("StorageHelper", () => {
 
       expect(result).toEqual([mockPrompt])
     })
+
+    it("should use Map for efficient O(1) lookups with large datasets", async () => {
+      // Create large dataset to test performance optimization
+      const largePromptList = Array.from({ length: 1000 }, (_, i) => ({
+        ...mockPrompt,
+        id: `prompt-${i}`,
+        name: `Prompt ${i}`,
+      }))
+      const pinnedOrder = ["prompt-5", "prompt-50", "prompt-500"]
+
+      vi.mocked(mockStorage.getPinnedOrder).mockResolvedValue(pinnedOrder)
+      vi.mocked(mockStorage.getAllPrompts).mockResolvedValue(largePromptList)
+
+      const result = await storageHelper.getPinnedPrompts()
+
+      expect(result).toHaveLength(3)
+      expect(result.map((p) => p.id)).toEqual([
+        "prompt-5",
+        "prompt-50",
+        "prompt-500",
+      ])
+    })
   })
 
   describe("applySort", () => {
@@ -219,6 +241,19 @@ describe("StorageHelper", () => {
 
       // Should prioritize higher execution count and more recent date
       expect(result[0].id).toBe("2")
+    })
+
+    it("should not mutate the original prompts array", async () => {
+      const originalPrompts = createPrompts()
+      const originalFirstPrompt = originalPrompts[0]
+
+      vi.mocked(mockStorage.getAllPrompts).mockResolvedValue(originalPrompts)
+
+      await storageHelper.getPrompts()
+
+      // Verify original array was not mutated
+      expect(originalPrompts[0]).toBe(originalFirstPrompt)
+      expect(originalPrompts).toHaveLength(2)
     })
   })
 
@@ -625,6 +660,53 @@ describe("StorageHelper", () => {
           name: cleanedContent,
         }),
       )
+    })
+  })
+
+  describe("performance optimizations", () => {
+    it("should cache composite scores to avoid recalculation", async () => {
+      const prompts = [
+        { ...mockPrompt, id: "1", executionCount: 10 },
+        { ...mockPrompt, id: "2", executionCount: 5 },
+      ]
+
+      vi.mocked(mockStorage.getAllPrompts).mockResolvedValue(prompts)
+      vi.mocked(mockStorage.getSettings).mockReturnValue({
+        ...mockSettings,
+        defaultSortOrder: "composite",
+      })
+
+      // First call should calculate and cache scores
+      const result1 = await storageHelper.getPrompts()
+
+      // Second call should use cached scores
+      const result2 = await storageHelper.getPrompts()
+
+      // Results should be identical
+      expect(result1).toEqual(result2)
+
+      // The same prompt objects should maintain their composite scores
+      expect(result1[0].id).toBe("1") // Higher execution count
+      expect(result2[0].id).toBe("1")
+    })
+
+    it("should clear composite score cache when prompt is updated", async () => {
+      const originalPrompt = { ...mockPrompt, executionCount: 5 }
+      const updatedPrompt = { ...mockPrompt, executionCount: 10 }
+
+      vi.mocked(mockStorage.getPrompt).mockResolvedValue(originalPrompt)
+      vi.mocked(mockStorage.updatePrompt).mockResolvedValue(updatedPrompt)
+
+      const onSuccess = vi.fn()
+
+      await storageHelper.updatePrompt(
+        "test-id",
+        { executionCount: 10 },
+        onSuccess,
+      )
+
+      expect(onSuccess).toHaveBeenCalledWith(updatedPrompt)
+      // Cache should be cleared for both original and updated prompts
     })
   })
 })

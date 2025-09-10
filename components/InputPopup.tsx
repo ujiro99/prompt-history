@@ -222,11 +222,11 @@ export function InputMenu(props: Props): React.ReactElement {
   }, [removeId, props.prompts])
 
   const reversePrompts = useMemo(() => {
-    return props.prompts.reverse()
+    return [...props.prompts].reverse()
   }, [props.prompts])
 
   const reversePinnedPrompts = useMemo(() => {
-    return props.pinnedPrompts.reverse()
+    return [...props.pinnedPrompts].reverse()
   }, [props.pinnedPrompts])
 
   return (

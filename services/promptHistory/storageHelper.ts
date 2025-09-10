@@ -11,6 +11,7 @@ import { SessionManager } from "./sessionManager"
  */
 export class StorageHelper {
   private saveInProgress = false
+  private compositeScoreCache = new WeakMap<Prompt, number>()
 
   constructor(
     private storage: StorageService,
@@ -43,8 +44,11 @@ export class StorageHelper {
     const pinnedOrder = await this.storage.getPinnedOrder()
     const prompts = await this.storage.getAllPrompts()
 
+    // Create Map for O(1) lookups instead of O(n²) find operations
+    const promptMap = new Map(prompts.map((p) => [p.id, p]))
+
     const pinnedPrompts = pinnedOrder
-      .map((id) => prompts.find((p) => p.id === id))
+      .map((id) => promptMap.get(id))
       .filter((p): p is Prompt => Boolean(p))
 
     return this.applySort(pinnedPrompts)
@@ -56,22 +60,25 @@ export class StorageHelper {
   private applySort(prompts: Prompt[]): Prompt[] {
     const settings = this.storage.getSettings()
 
+    // Create a copy to avoid mutating the original array
+    const sortedPrompts = [...prompts]
+
     switch (settings.defaultSortOrder) {
       case "recent":
-        return prompts.sort(
+        return sortedPrompts.sort(
           (a, b) => b.lastExecutedAt.getTime() - a.lastExecutedAt.getTime(),
         )
       case "execution":
-        return prompts.sort((a, b) => b.executionCount - a.executionCount)
+        return sortedPrompts.sort((a, b) => b.executionCount - a.executionCount)
       case "name":
-        return prompts.sort((a, b) => a.name.localeCompare(b.name))
+        return sortedPrompts.sort((a, b) => a.name.localeCompare(b.name))
       case "composite":
-        return prompts.sort(
+        return sortedPrompts.sort(
           (a, b) =>
             this.calculateCompositeScore(b) - this.calculateCompositeScore(a),
         )
       default:
-        return prompts
+        return sortedPrompts
     }
   }
 
@@ -197,7 +204,13 @@ export class StorageHelper {
         throw new Error(`Prompt not found: ${promptId}`)
       }
 
+      // Clear cache for the original prompt before updating
+      this.clearCompositeScoreCache(prompt)
+
       const updatedPrompt = await this.storage.updatePrompt(promptId, updates)
+
+      // Clear cache for the updated prompt as well (in case it's a different object)
+      this.clearCompositeScoreCache(updatedPrompt)
 
       // Pin processing
       if (updates.isPinned !== undefined) {
@@ -289,8 +302,15 @@ export class StorageHelper {
 
   /**
    * Calculate composite score based on execution count and recency
+   * Uses memoization to avoid recalculating for the same prompt
    */
   private calculateCompositeScore(prompt: Prompt): number {
+    // Check if score is already cached
+    const cachedScore = this.compositeScoreCache.get(prompt)
+    if (cachedScore !== undefined) {
+      return cachedScore
+    }
+
     const executionWeight = 1.0
     const recencyWeight = 0.5
 
@@ -308,7 +328,18 @@ export class StorageHelper {
     const score =
       prompt.executionCount * executionWeight + recencyScore * recencyWeight
 
+    // Cache the result
+    this.compositeScoreCache.set(prompt, score)
+
     return score
+  }
+
+  /**
+   * Clear composite score cache for a specific prompt
+   * Should be called when a prompt is updated
+   */
+  private clearCompositeScoreCache(prompt: Prompt): void {
+    this.compositeScoreCache.delete(prompt)
   }
 
   /**
