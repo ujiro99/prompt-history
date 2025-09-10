@@ -221,6 +221,14 @@ export function InputMenu(props: Props): React.ReactElement {
     return props.prompts.find((p) => p.id === removeId) || null
   }, [removeId, props.prompts])
 
+  const reversePrompts = useMemo(() => {
+    return [...props.prompts].reverse()
+  }, [props.prompts])
+
+  const reversePinnedPrompts = useMemo(() => {
+    return [...props.pinnedPrompts].reverse()
+  }, [props.pinnedPrompts])
+
   return (
     <div className="relative">
       <Menubar
@@ -238,7 +246,7 @@ export function InputMenu(props: Props): React.ReactElement {
             side="top"
           >
             {props.prompts.length > 0 ? (
-              props.prompts.map((prompt) => (
+              reversePrompts.map((prompt) => (
                 <MenuItem
                   menuType="history"
                   value={prompt.id}
@@ -270,7 +278,7 @@ export function InputMenu(props: Props): React.ReactElement {
           </MenuTrigger>
           <MenubarContent side="top">
             {props.pinnedPrompts.length > 0 ? (
-              props.pinnedPrompts.map((prompt) => (
+              reversePinnedPrompts.map((prompt) => (
                 <MenuItem
                   menuType="pinned"
                   value={prompt.id}

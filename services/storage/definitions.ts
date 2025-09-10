@@ -7,7 +7,7 @@ import type { StoredPrompt, Session, AppSettings } from "../../types/prompt"
 const DEFAULT_SETTINGS: AppSettings = {
   autoSaveEnabled: true,
   maxPrompts: 1000,
-  defaultSortOrder: "recent",
+  defaultSortOrder: "composite",
   showNotifications: true,
 }
 
