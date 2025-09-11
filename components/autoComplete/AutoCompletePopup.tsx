@@ -1,27 +1,27 @@
 import React, { useEffect, useRef } from "react"
 import { AutoCompleteItem } from "./AutoCompleteItem"
-import type {
-  AutoCompleteMatch,
-  AutoCompletePosition,
-} from "../../services/autoComplete/types"
+import { useAutoComplete } from "./useAutoComplete"
+import { DomManager } from "../../services/chatgpt/domManager"
+import type { Prompt } from "../../types/prompt"
 
 interface AutoCompletePopupProps {
-  matches: AutoCompleteMatch[]
-  selectedIndex: number
-  position: AutoCompletePosition
-  onSelect: (match: AutoCompleteMatch) => void
-  onClose: () => void
-  onSelectionChange: (index: number) => void
+  domManager: DomManager
+  prompts: Prompt[]
 }
 
 export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
-  matches,
-  selectedIndex,
-  position,
-  onSelect,
-  onClose,
-  onSelectionChange,
+  domManager,
+  prompts,
 }) => {
+  const {
+    isVisible,
+    matches,
+    selectedIndex,
+    position,
+    handleSelect,
+    handleClose,
+    handleSelectionChange,
+  } = useAutoComplete({ domManager, prompts })
   const popupRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -29,21 +29,21 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
       switch (event.key) {
         case "ArrowUp":
           event.preventDefault()
-          onSelectionChange(Math.max(0, selectedIndex - 1))
+          handleSelectionChange(Math.max(0, selectedIndex - 1))
           break
         case "ArrowDown":
           event.preventDefault()
-          onSelectionChange(Math.min(matches.length - 1, selectedIndex + 1))
+          handleSelectionChange(Math.min(matches.length - 1, selectedIndex + 1))
           break
         case "Enter":
           event.preventDefault()
           if (matches[selectedIndex]) {
-            onSelect(matches[selectedIndex])
+            handleSelect(matches[selectedIndex])
           }
           break
         case "Escape":
           event.preventDefault()
-          onClose()
+          handleClose()
           break
       }
     }
@@ -53,7 +53,7 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
         popupRef.current &&
         !popupRef.current.contains(event.target as Node)
       ) {
-        onClose()
+        handleClose()
       }
     }
 
@@ -64,7 +64,7 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
       document.removeEventListener("keydown", handleKeyDown)
       document.removeEventListener("mousedown", handleClickOutside)
     }
-  }, [matches, selectedIndex, onSelect, onClose, onSelectionChange])
+  }, [matches, selectedIndex, handleSelect, handleClose, handleSelectionChange])
 
   // Adjust position if popup would go outside viewport
   const adjustedPosition = React.useMemo(() => {
@@ -89,7 +89,7 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
     return { x, y }
   }, [position])
 
-  if (matches.length === 0) {
+  if (!isVisible || matches.length === 0) {
     return null
   }
 
@@ -107,8 +107,8 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
           key={`${match.name}-${index}`}
           match={match}
           isSelected={index === selectedIndex}
-          onClick={onSelect}
-          onMouseEnter={() => onSelectionChange(index)}
+          onClick={handleSelect}
+          onMouseEnter={() => handleSelectionChange(index)}
         />
       ))}
     </div>

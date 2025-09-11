@@ -1,18 +1,17 @@
-import React, { useEffect, useState, useRef } from "react"
-import { AutoCompletePopup } from "./AutoCompletePopup"
+import { useEffect, useState, useRef } from "react"
 import { DomManager } from "../../services/chatgpt/domManager"
 import type { AutoCompleteMatch } from "../../services/autoComplete/types"
 import type { Prompt } from "../../types/prompt"
 
-interface AutoCompleteProviderProps {
+interface UseAutoCompleteOptions {
   domManager: DomManager
   prompts: Prompt[]
 }
 
-export const AutoCompleteProvider: React.FC<AutoCompleteProviderProps> = ({
+export const useAutoComplete = ({
   domManager,
   prompts,
-}) => {
+}: UseAutoCompleteOptions) => {
   const [isVisible, setIsVisible] = useState(false)
   const [matches, setMatches] = useState<AutoCompleteMatch[]>([])
   const [selectedIndex, setSelectedIndex] = useState(0)
@@ -114,18 +113,13 @@ export const AutoCompleteProvider: React.FC<AutoCompleteProviderProps> = ({
     }
   }
 
-  if (!isVisible || matches.length === 0) {
-    return null
+  return {
+    isVisible,
+    matches,
+    selectedIndex,
+    position,
+    handleSelect,
+    handleClose,
+    handleSelectionChange,
   }
-
-  return (
-    <AutoCompletePopup
-      matches={matches}
-      selectedIndex={selectedIndex}
-      position={position}
-      onSelect={handleSelect}
-      onClose={handleClose}
-      onSelectionChange={handleSelectionChange}
-    />
-  )
 }
