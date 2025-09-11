@@ -61,6 +61,7 @@ export const mockSelectionAPI = () => {
     setStart: vi.fn(),
     setEnd: vi.fn(),
     toString: vi.fn().mockReturnValue("mock text"),
+    cloneContents: vi.fn().mockReturnValue(document.createDocumentFragment()),
     endContainer: document.createTextNode("test"),
     endOffset: 0,
   }

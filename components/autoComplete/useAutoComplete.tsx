@@ -36,10 +36,10 @@ export const useAutoComplete = ({
         setMatches([])
         setSelectedIndex(0)
       },
-      onSelect: (match: AutoCompleteMatch) => {
+      onSelect: async (match: AutoCompleteMatch) => {
         const textInput = domManager.getTextInput()
         if (textInput) {
-          replaceTextAtCaret(textInput, match)
+          await replaceTextAtCaret(textInput, match)
         }
         setIsVisible(false)
         setMatches([])
@@ -85,6 +85,7 @@ export const useAutoComplete = ({
 
   const handleClose = () => {
     if (managerRef.current) {
+      console.log("Force hiding autocomplete")
       managerRef.current.forceHide()
     }
   }

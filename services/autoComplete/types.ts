@@ -19,5 +19,5 @@ export interface AutoCompletePosition {
 export interface AutoCompleteCallbacks {
   onShow: () => void
   onHide: () => void
-  onSelect: (match: AutoCompleteMatch) => void
+  onSelect: (match: AutoCompleteMatch) => Promise<void>
 }

@@ -2,7 +2,7 @@
  * Input and text replacement utilities
  */
 import { sleep } from "../../lib/utils"
-import { isEditable } from "./elementUtils"
+import { isEditable, isInput, isTextarea } from "./elementUtils"
 import { extractElementContent } from "./textUtils"
 import { setCaretPosition } from "./caretUtils"
 import type { AutoCompleteMatch } from "../autoComplete/types"
@@ -24,8 +24,19 @@ export async function inputContentEditable(
   if (!isEditable(el)) return false
   el.focus()
   const values = value.split("\n")
+
   for (const [idx, val] of values.entries()) {
-    document.execCommand("insertText", false, val)
+    const selection = window.getSelection()
+    if (selection && selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0)
+      range.deleteContents()
+      const node = document.createTextNode(val)
+      range.insertNode(node)
+      range.selectNodeContents(el)
+      range.collapse(false)
+      selection.removeAllRanges()
+      selection.addRange(range)
+    }
     if (idx < values.length - 1) {
       await sleep(interval / 2)
       await typeShiftEnter(el)
@@ -56,10 +67,10 @@ async function typeShiftEnter(el: Element): Promise<void> {
 /**
  * Replace text at caret position with selected match
  */
-export const replaceTextAtCaret = (
+export const replaceTextAtCaret = async (
   element: Element,
   match: AutoCompleteMatch,
-): void => {
+): Promise<void> => {
   if (!element) return
 
   const currentContent = extractElementContent(element)
@@ -69,20 +80,23 @@ export const replaceTextAtCaret = (
     currentContent.substring(match.matchEnd)
 
   // Set new content based on element type
-  if (element.tagName.toLowerCase() === "textarea") {
-    ;(element as HTMLTextAreaElement).value = newContent
+  if (isTextarea(element)) {
+    element.value = newContent
     const newCaretPos = match.matchStart + match.content.length
-    ;(element as HTMLTextAreaElement).selectionStart = newCaretPos
-    ;(element as HTMLTextAreaElement).selectionEnd = newCaretPos
-  } else if (element.tagName.toLowerCase() === "input") {
-    ;(element as HTMLInputElement).value = newContent
+    element.selectionStart = newCaretPos
+    element.selectionEnd = newCaretPos
+  } else if (isInput(element)) {
+    element.value = newContent
     const newCaretPos = match.matchStart + match.content.length
-    ;(element as HTMLInputElement).selectionStart = newCaretPos
-    ;(element as HTMLInputElement).selectionEnd = newCaretPos
-  } else if (element.getAttribute("contenteditable") === "true") {
-    // For contenteditable elements, we need to handle text replacement differently
+    element.selectionStart = newCaretPos
+    element.selectionEnd = newCaretPos
+  } else if (isEditable(element)) {
+    // For contenteditable elements, clear content first then input new content
     const htmlElement = element as HTMLElement
-    htmlElement.textContent = newContent
+    htmlElement.innerHTML = ""
+
+    // Use inputContentEditable to properly handle the content insertion
+    await inputContentEditable(htmlElement, newContent, 20)
 
     // Set cursor position using the utility function
     const newCaretPos = match.matchStart + match.content.length

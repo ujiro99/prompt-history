@@ -65,7 +65,6 @@ export class AutoCompleteManager {
    * Analyze input and show/hide autocomplete
    */
   private analyzeInput(content: string): void {
-    console.debug("Analyzing input for autocomplete:", content)
     if (!this.element) {
       this.hide()
       return
