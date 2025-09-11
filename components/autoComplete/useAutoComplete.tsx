@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react"
 import { DomManager } from "../../services/chatgpt/domManager"
 import { AutoCompleteManager } from "../../services/autoComplete/autoCompleteManager"
-import { replaceTextAtCaret } from "../../services/dom/textReplacement"
+import { replaceTextAtCaret } from "../../services/dom"
 import type { AutoCompleteMatch } from "../../services/autoComplete/types"
 import type { Prompt } from "../../types/prompt"
 

@@ -45,6 +45,8 @@ This is a browser extension built with WXT (Web Extension Toolkit) and React. Th
 - **Data Persistence**: WXT Storage API for cross-browser data storage
 - **Analytics**: @wxt-dev/analytics for user behavior analysis
 - **Testing**: Vitest with React Testing Library for unit testing
+  - Test files should be placed in `__tests__` directories alongside the source code
+  - Example: `services/dom/elementUtils.ts` → `services/dom/__tests__/elementUtils.test.ts`
 - **Code Quality**: ESLint with TypeScript and React rules
 - **UI Framework**: Shadcn/ui components with Tailwind CSS styling
 
