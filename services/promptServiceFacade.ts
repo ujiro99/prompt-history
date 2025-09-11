@@ -1,5 +1,6 @@
 import { promptStorage, StorageService } from "./storage"
 import { ChatGptService } from "./chatgpt/chatGptService"
+import { DomManager } from "./chatgpt/domManager"
 import type {
   AIServiceInterface,
   Prompt,
@@ -290,6 +291,14 @@ export class PromptServiceFacade {
       return null
     }
     return this.aiService.getTextInput()
+  }
+
+  /**
+   * Get DOM manager
+   */
+  getDomManager(): DomManager | null {
+    this.ensureInitialized()
+    return this.aiService?.getDomManager?.() || null
   }
 
   /**

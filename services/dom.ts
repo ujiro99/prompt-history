@@ -185,3 +185,35 @@ export function extractElementContent(element: Element): string {
   const htmlElement = element as HTMLElement
   return htmlElement.textContent || htmlElement.innerText || ""
 }
+
+/**
+ * Get caret position in text input or contenteditable element
+ */
+export function getCaretPosition(element: Element): number {
+  if (!element) {
+    return 0
+  }
+
+  // For textarea and input elements
+  if (isInputOrTextarea(element)) {
+    const inputElement = element as HTMLInputElement | HTMLTextAreaElement
+    return inputElement.selectionStart || 0
+  }
+
+  // For contenteditable elements
+  if (element.getAttribute("contenteditable") === "true") {
+    const selection = window.getSelection()
+    if (!selection || selection.rangeCount === 0) {
+      return 0
+    }
+
+    const range = selection.getRangeAt(0)
+    const preCaretRange = range.cloneRange()
+    preCaretRange.selectNodeContents(element)
+    preCaretRange.setEnd(range.endContainer, range.endOffset)
+
+    return preCaretRange.toString().length
+  }
+
+  return 0
+}

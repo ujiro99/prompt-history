@@ -129,6 +129,8 @@ export interface AIServiceInterface {
   onContentChange(callback: (content: string) => void): void
   /** Get service name */
   getServiceName(): string
+  /** Get DOM manager (for services that support it) */
+  getDomManager?(): any
   /** Service cleanup */
   destroy(): void
 }

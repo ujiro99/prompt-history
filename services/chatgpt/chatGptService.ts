@@ -53,6 +53,13 @@ export class ChatGptService implements AIServiceInterface {
   }
 
   /**
+   * Get DOM manager
+   */
+  getDomManager() {
+    return this.domManager
+  }
+
+  /**
    * Get text input element
    */
   getTextInput(): Element | null {
