@@ -200,7 +200,7 @@ export class AutoCompleteManager {
     }
 
     const rect = this.element.getBoundingClientRect()
-    const caretPos = getCaretPosition(this.element)
+    const _caretPos = getCaretPosition(this.element)
 
     // For simple implementation, position below the input element
     // In a more sophisticated implementation, you would calculate

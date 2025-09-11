@@ -1,5 +1,7 @@
 import { useEffect, useState, useRef } from "react"
 import { DomManager } from "../../services/chatgpt/domManager"
+import { AutoCompleteManager } from "../../services/autoComplete/autoCompleteManager"
+import { replaceTextAtCaret } from "../../services/dom/textReplacement"
 import type { AutoCompleteMatch } from "../../services/autoComplete/types"
 import type { Prompt } from "../../types/prompt"
 
@@ -16,22 +18,16 @@ export const useAutoComplete = ({
   const [matches, setMatches] = useState<AutoCompleteMatch[]>([])
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [position, setPosition] = useState({ x: 0, y: 0 })
-  const mountedRef = useRef(false)
+  const managerRef = useRef<AutoCompleteManager | null>(null)
 
   useEffect(() => {
-    if (mountedRef.current) {
-      return
-    }
-    mountedRef.current = true
-
-    // Setup autocomplete functionality
-    domManager.setupAutoComplete(prompts, {
+    // Create AutoCompleteManager instance
+    managerRef.current = new AutoCompleteManager({
       onShow: () => {
-        const autoCompleteManager = domManager.getAutoCompleteManager()
-        if (autoCompleteManager) {
-          setMatches(autoCompleteManager.getMatches())
-          setSelectedIndex(autoCompleteManager.getSelectedIndex())
-          setPosition(autoCompleteManager.getPopupPosition())
+        if (managerRef.current) {
+          setMatches(managerRef.current.getMatches())
+          setSelectedIndex(managerRef.current.getSelectedIndex())
+          setPosition(managerRef.current.getPopupPosition())
           setIsVisible(true)
         }
       },
@@ -41,73 +37,70 @@ export const useAutoComplete = ({
         setSelectedIndex(0)
       },
       onSelect: (match: AutoCompleteMatch) => {
-        console.log("AutoComplete selected:", match.name)
+        const textInput = domManager.getTextInput()
+        if (textInput) {
+          replaceTextAtCaret(textInput, match)
+        }
         setIsVisible(false)
         setMatches([])
         setSelectedIndex(0)
       },
-      onSelectionChange: (index: number) => {
-        setSelectedIndex(index)
-        const autoCompleteManager = domManager.getAutoCompleteManager()
-        if (autoCompleteManager) {
-          // Update internal state of AutoCompleteManager
-          if (index < autoCompleteManager.getMatches().length) {
-            for (
-              let i = autoCompleteManager.getSelectedIndex();
-              i < index;
-              i++
-            ) {
-              autoCompleteManager.selectNext()
-            }
-            for (
-              let i = autoCompleteManager.getSelectedIndex();
-              i > index;
-              i--
-            ) {
-              autoCompleteManager.selectPrevious()
-            }
-          }
-        }
-      },
     })
 
+    // Set initial prompts and element
+    managerRef.current.setPrompts(prompts)
+    managerRef.current.setElement(domManager.getTextInput())
+
+    // Listen for element changes from DomManager
+    const handleElementChange = (textInput: Element | null) => {
+      if (managerRef.current) {
+        managerRef.current.setElement(textInput)
+      }
+    }
+    domManager.onElementChange(handleElementChange)
+
+    // Listen for content changes from DomManager
+    const handleContentChange = (content: string) => {
+      if (managerRef.current) {
+        managerRef.current.handleContentChange(content)
+      }
+    }
+    domManager.onContentChange(handleContentChange)
+
     return () => {
-      // Cleanup handled by domManager.destroy()
+      domManager.offElementChange(handleElementChange)
+      domManager.offContentChange(handleContentChange)
+      if (managerRef.current) {
+        managerRef.current.destroy()
+        managerRef.current = null
+      }
     }
   }, [domManager, prompts])
 
-  // Update prompts when they change
-  useEffect(() => {
-    domManager.updateAutoCompletePrompts(prompts)
-  }, [domManager, prompts])
-
-  const handleSelect = (match: AutoCompleteMatch) => {
-    const autoCompleteManager = domManager.getAutoCompleteManager()
-    if (autoCompleteManager) {
-      autoCompleteManager.selectCurrent()
+  const handleSelect = (_match: AutoCompleteMatch) => {
+    if (managerRef.current) {
+      managerRef.current.selectCurrent()
     }
   }
 
   const handleClose = () => {
-    const autoCompleteManager = domManager.getAutoCompleteManager()
-    if (autoCompleteManager) {
-      autoCompleteManager.forceHide()
+    if (managerRef.current) {
+      managerRef.current.forceHide()
     }
   }
 
   const handleSelectionChange = (index: number) => {
     setSelectedIndex(index)
-    const autoCompleteManager = domManager.getAutoCompleteManager()
-    if (autoCompleteManager) {
+    if (managerRef.current) {
       // Sync with AutoCompleteManager's internal state
-      const currentIndex = autoCompleteManager.getSelectedIndex()
+      const currentIndex = managerRef.current.getSelectedIndex()
       if (index > currentIndex) {
         for (let i = currentIndex; i < index; i++) {
-          autoCompleteManager.selectNext()
+          managerRef.current.selectNext()
         }
       } else if (index < currentIndex) {
         for (let i = currentIndex; i > index; i--) {
-          autoCompleteManager.selectPrevious()
+          managerRef.current.selectPrevious()
         }
       }
     }

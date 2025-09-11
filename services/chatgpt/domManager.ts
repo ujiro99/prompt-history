@@ -1,8 +1,5 @@
 import { CHATGPT_SELECTORS } from "./chatGptSelectors"
 import { extractElementContent } from "../dom"
-import { AutoCompleteManager } from "../autoComplete/autoCompleteManager"
-import type { AutoCompleteMatch } from "../autoComplete/types"
-import type { Prompt } from "../../types/prompt"
 
 /**
  * Class responsible for DOM element management and event handling
@@ -10,18 +7,12 @@ import type { Prompt } from "../../types/prompt"
 export class DomManager {
   private textInput: Element | null = null
   private sendButton: Element | null = null
+  private lastContent: string = ""
   private observer: MutationObserver | null = null
   private sendCallbacks: (() => void)[] = []
   private contentChangeCallbacks: ((content: string) => void)[] = []
-  private lastContent: string = ""
   private contentChangeDebounceTimeout: number | null = null
-  private autoCompleteManager: AutoCompleteManager | null = null
-  private autoCompleteCallbacks: {
-    onShow: () => void
-    onHide: () => void
-    onSelect: (match: AutoCompleteMatch) => void
-    onSelectionChange: (index: number) => void
-  } | null = null
+  private elementChangeCallbacks: ((textInput: Element | null) => void)[] = []
 
   /**
    * Find element from multiple selectors
@@ -212,11 +203,6 @@ export class DomManager {
         console.error("Content change callback error:", error)
       }
     })
-
-    // Notify autocomplete manager of content change
-    if (this.autoCompleteManager) {
-      this.autoCompleteManager.handleContentChange(content)
-    }
   }
 
   /**
@@ -269,10 +255,8 @@ export class DomManager {
       this.textInput = newTextInput
       this.sendButton = newSendButton
 
-      // Update autocomplete manager element reference
-      if (this.autoCompleteManager) {
-        this.autoCompleteManager.setElement(this.textInput)
-      }
+      // Notify element change callbacks
+      this.fireElementChangeCallbacks(this.textInput)
 
       // Existing event listeners are automatically removed
       this.setupSendEventListeners()
@@ -315,102 +299,33 @@ export class DomManager {
   }
 
   /**
-   * Setup autocomplete functionality
+   * Set up element change monitoring
    */
-  setupAutoComplete(
-    prompts: Prompt[],
-    callbacks: {
-      onShow: () => void
-      onHide: () => void
-      onSelect: (match: AutoCompleteMatch) => void
-      onSelectionChange: (index: number) => void
-    },
-  ): void {
-    this.autoCompleteCallbacks = callbacks
-
-    this.autoCompleteManager = new AutoCompleteManager({
-      onShow: callbacks.onShow,
-      onHide: callbacks.onHide,
-      onSelect: (match: AutoCompleteMatch) => {
-        this.replaceTextAtCaret(match)
-        callbacks.onSelect(match)
-      },
-    })
-
-    this.autoCompleteManager.setPrompts(prompts)
-    this.autoCompleteManager.setElement(this.textInput)
+  onElementChange(callback: (textInput: Element | null) => void): void {
+    this.elementChangeCallbacks.push(callback)
   }
 
   /**
-   * Update autocomplete prompts
+   * Remove element change monitoring
    */
-  updateAutoCompletePrompts(prompts: Prompt[]): void {
-    if (this.autoCompleteManager) {
-      this.autoCompleteManager.setPrompts(prompts)
+  offElementChange(callback: (textInput: Element | null) => void): void {
+    const index = this.elementChangeCallbacks.indexOf(callback)
+    if (index > -1) {
+      this.elementChangeCallbacks.splice(index, 1)
     }
   }
 
   /**
-   * Get autocomplete manager
+   * Execute element change callbacks
    */
-  getAutoCompleteManager(): AutoCompleteManager | null {
-    return this.autoCompleteManager
-  }
-
-  /**
-   * Replace text at caret position with selected match
-   */
-  private replaceTextAtCaret(match: AutoCompleteMatch): void {
-    const input = this.getTextInput()
-    if (!input) return
-
-    const currentContent = extractElementContent(input)
-    const newContent =
-      currentContent.substring(0, match.matchStart) +
-      match.content +
-      currentContent.substring(match.matchEnd)
-
-    // Set new content based on element type
-    if (input.tagName.toLowerCase() === "textarea") {
-      ;(input as HTMLTextAreaElement).value = newContent
-      ;(input as HTMLTextAreaElement).selectionStart = (
-        input as HTMLTextAreaElement
-      ).selectionEnd = match.matchStart + match.content.length
-    } else if (input.tagName.toLowerCase() === "input") {
-      ;(input as HTMLInputElement).value = newContent
-      ;(input as HTMLInputElement).selectionStart = (
-        input as HTMLInputElement
-      ).selectionEnd = match.matchStart + match.content.length
-    } else if (input.getAttribute("contenteditable") === "true") {
-      // For contenteditable elements, we need to handle text replacement differently
-      const htmlElement = input as HTMLElement
-      htmlElement.textContent = newContent
-
-      // Set cursor position
-      if (window.getSelection && document.createRange) {
-        const selection = window.getSelection()
-        const range = document.createRange()
-        const textNode = htmlElement.firstChild
-
-        if (textNode) {
-          const newCaretPos = match.matchStart + match.content.length
-          range.setStart(
-            textNode,
-            Math.min(newCaretPos, textNode.textContent?.length || 0),
-          )
-          range.setEnd(
-            textNode,
-            Math.min(newCaretPos, textNode.textContent?.length || 0),
-          )
-          selection?.removeAllRanges()
-          selection?.addRange(range)
-        }
+  private fireElementChangeCallbacks(textInput: Element | null): void {
+    this.elementChangeCallbacks.forEach((callback) => {
+      try {
+        callback(textInput)
+      } catch (error) {
+        console.error("Element change callback error:", error)
       }
-    }
-
-    // Trigger input event to notify other listeners
-    const inputEvent = new Event("input", { bubbles: true })
-    input.dispatchEvent(inputEvent)
+    })
   }
 
   /**
@@ -468,15 +383,9 @@ export class DomManager {
 
     this.sendCallbacks = []
     this.contentChangeCallbacks = []
+    this.elementChangeCallbacks = []
     this.lastContent = ""
     this.textInput = null
     this.sendButton = null
-
-    // Cleanup autocomplete
-    if (this.autoCompleteManager) {
-      this.autoCompleteManager.destroy()
-      this.autoCompleteManager = null
-    }
-    this.autoCompleteCallbacks = null
   }
 }
