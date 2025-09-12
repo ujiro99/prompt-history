@@ -114,6 +114,7 @@ export class AutoCompleteManager {
         content: prompt.content,
         matchStart,
         matchEnd: caretPos,
+        searchTerm,
       }))
   }
 

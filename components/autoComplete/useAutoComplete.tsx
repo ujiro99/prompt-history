@@ -87,7 +87,6 @@ export const useAutoComplete = ({
 
   const handleClose = () => {
     if (managerRef.current) {
-      console.log("Force hiding autocomplete")
       managerRef.current.forceHide()
     }
   }

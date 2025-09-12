@@ -301,8 +301,11 @@ export class DomManager {
   /**
    * Set up element change monitoring
    */
-  onElementChange(callback: (textInput: Element | null) => void): void {
+  onElementChange(callback: (textInput: Element | null) => void): () => void {
     this.elementChangeCallbacks.push(callback)
+    return () => {
+      this.offElementChange(callback)
+    }
   }
 
   /**

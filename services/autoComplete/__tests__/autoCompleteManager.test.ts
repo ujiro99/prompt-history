@@ -81,6 +81,7 @@ describe("AutoCompleteManager", () => {
       onShow: vi.fn(),
       onHide: vi.fn(),
       onSelect: vi.fn(),
+      onSelectChange: vi.fn(),
     }
 
     // Create mock element (simplified for Node.js)

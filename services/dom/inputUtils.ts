@@ -4,7 +4,6 @@
 import { sleep } from "../../lib/utils"
 import { isEditable, isInput, isTextarea } from "./elementUtils"
 import { extractElementContent } from "./textUtils"
-import { setCaretPosition } from "./caretUtils"
 import type { AutoCompleteMatch } from "../autoComplete/types"
 
 /**
@@ -32,15 +31,19 @@ export async function inputContentEditable(
       range.deleteContents()
       const node = document.createTextNode(val)
       range.insertNode(node)
-      range.selectNodeContents(el)
-      range.collapse(false)
+
+      // Move caret to end of inserted text node
+      const lastOffset = node.length
+      range.setStart(node, lastOffset)
+      range.setEnd(node, lastOffset)
       selection.removeAllRanges()
       selection.addRange(range)
-    }
-    if (idx < values.length - 1) {
-      await sleep(interval / 2)
-      await typeShiftEnter(el)
-      await sleep(interval / 2)
+
+      if (idx < values.length - 1) {
+        await sleep(interval / 2)
+        await typeShiftEnter(el)
+        await sleep(interval / 2)
+      }
     }
   }
   return true
@@ -49,7 +52,7 @@ export async function inputContentEditable(
 /**
  * Simulate typing Shift+Enter key event on an element.
  */
-async function typeShiftEnter(el: Element): Promise<void> {
+async function typeShiftEnter(node: Node): Promise<void> {
   const down = new KeyboardEvent("keydown", {
     key: "Enter",
     code: "Enter",
@@ -61,7 +64,7 @@ async function typeShiftEnter(el: Element): Promise<void> {
     bubbles: true,
     cancelable: true,
   })
-  el.dispatchEvent(down)
+  node.dispatchEvent(down)
 }
 
 /**
@@ -93,14 +96,19 @@ export const replaceTextAtCaret = async (
   } else if (isEditable(element)) {
     // For contenteditable elements, clear content first then input new content
     const htmlElement = element as HTMLElement
-    htmlElement.innerHTML = ""
+
+    const selection = window.getSelection()
+    if (selection && selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0)
+      const start = range.startContainer.textContent?.indexOf(match.searchTerm)
+      if (start === undefined || start === -1) return
+      range.setStart(range.startContainer, start)
+      range.setEnd(range.startContainer, start + match.searchTerm.length)
+      range.deleteContents()
+    }
 
     // Use inputContentEditable to properly handle the content insertion
-    await inputContentEditable(htmlElement, newContent, 20)
-
-    // Set cursor position using the utility function
-    const newCaretPos = match.matchStart + match.content.length
-    setCaretPosition(element, newCaretPos)
+    await inputContentEditable(htmlElement, match.content, 20)
   }
 
   // Trigger input event to notify other listeners

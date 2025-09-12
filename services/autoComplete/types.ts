@@ -3,6 +3,7 @@ export interface AutoCompleteMatch {
   content: string
   matchStart: number
   matchEnd: number
+  searchTerm: string
 }
 
 export interface AutoCompleteOptions {
