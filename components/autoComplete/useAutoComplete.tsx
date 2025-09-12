@@ -16,7 +16,7 @@ export const useAutoComplete = ({
 }: UseAutoCompleteOptions) => {
   const [isVisible, setIsVisible] = useState(false)
   const [matches, setMatches] = useState<AutoCompleteMatch[]>([])
-  const [selectedIndex, setSelectedIndex] = useState(0)
+  const [selectedIndex, setSelectedIndex] = useState(-1)
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const managerRef = useRef<AutoCompleteManager | null>(null)
 
@@ -26,7 +26,6 @@ export const useAutoComplete = ({
       onShow: () => {
         if (managerRef.current) {
           setMatches(managerRef.current.getMatches())
-          setSelectedIndex(managerRef.current.getSelectedIndex())
           setPosition(managerRef.current.getPopupPosition())
           setIsVisible(true)
         }
@@ -34,7 +33,7 @@ export const useAutoComplete = ({
       onHide: () => {
         setIsVisible(false)
         setMatches([])
-        setSelectedIndex(0)
+        managerRef.current?.selectReset()
       },
       onSelect: async (match: AutoCompleteMatch) => {
         const textInput = domManager.getTextInput()
@@ -43,7 +42,10 @@ export const useAutoComplete = ({
         }
         setIsVisible(false)
         setMatches([])
-        setSelectedIndex(0)
+        managerRef.current?.selectReset()
+      },
+      onSelectChange: (index: number) => {
+        setSelectedIndex(index)
       },
     })
 
@@ -90,21 +92,16 @@ export const useAutoComplete = ({
     }
   }
 
-  const handleSelectionChange = (index: number) => {
-    setSelectedIndex(index)
-    if (managerRef.current) {
-      // Sync with AutoCompleteManager's internal state
-      const currentIndex = managerRef.current.getSelectedIndex()
-      if (index > currentIndex) {
-        for (let i = currentIndex; i < index; i++) {
-          managerRef.current.selectNext()
-        }
-      } else if (index < currentIndex) {
-        for (let i = currentIndex; i > index; i--) {
-          managerRef.current.selectPrevious()
-        }
-      }
-    }
+  const selectIndex = (index: number) => {
+    managerRef.current?.selectIndex(index)
+  }
+
+  const selectNext = () => {
+    managerRef.current?.selectNext()
+  }
+
+  const selectPrevious = () => {
+    managerRef.current?.selectPrevious()
   }
 
   return {
@@ -114,6 +111,8 @@ export const useAutoComplete = ({
     position,
     handleSelect,
     handleClose,
-    handleSelectionChange,
+    selectIndex,
+    selectNext,
+    selectPrevious,
   }
 }

@@ -1,8 +1,12 @@
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useRef, useState, useCallback } from "react"
 import { AutoCompleteItem } from "./AutoCompleteItem"
 import { useAutoComplete } from "./useAutoComplete"
 import { DomManager } from "../../services/chatgpt/domManager"
+import { Popover, PopoverContent, PopoverAnchor } from "../ui/popover"
+import { cn } from "@/lib/utils"
 import type { Prompt } from "../../types/prompt"
+
+const noFocus = (e: Event) => e.preventDefault()
 
 interface AutoCompletePopupProps {
   domManager: DomManager
@@ -20,11 +24,20 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
     position,
     handleSelect,
     handleClose,
-    handleSelectionChange,
+    selectIndex,
+    selectNext,
+    selectPrevious,
   } = useAutoComplete({ domManager, prompts })
   const popupRef = useRef<HTMLDivElement>(null)
+  const anchorRef = useRef<HTMLDivElement>(null)
   const [isFocused, setIsFocused] = useState(false)
   const [userInteracted, setUserInteracted] = useState(false)
+
+  const handlePopupClose = useCallback(() => {
+    handleClose()
+    setUserInteracted(false)
+    setIsFocused(false)
+  }, [handleClose])
 
   useEffect(() => {
     // Only add event listeners when popup is visible
@@ -38,15 +51,13 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
         switch (event.key) {
           case "ArrowUp":
             event.preventDefault()
-            handleSelectionChange(Math.max(0, selectedIndex - 1))
+            selectPrevious()
             break
           case "ArrowDown":
             event.preventDefault()
-            handleSelectionChange(
-              Math.min(matches.length - 1, selectedIndex + 1),
-            )
+            selectNext()
             break
-          case "Enter":
+          case "Tab":
             event.preventDefault()
             event.stopPropagation()
             if (matches[selectedIndex]) {
@@ -56,51 +67,42 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
         }
       }
 
+      // If popup is visible but not focused, focus it on any key press except modifier keys
+      if (isVisible && !isFocused) {
+        switch (event.key) {
+          case "ArrowUp":
+          case "ArrowDown":
+          case "ArrowLeft":
+          case "ArrowRight":
+            handlePopupClose()
+            break
+          case "Tab":
+            event.preventDefault()
+            event.stopPropagation()
+            popupRef.current?.focus()
+            selectNext()
+            break
+        }
+      }
+
       // Allwais listen for Ctrl+N/P and Escape
       if (event.ctrlKey && event.key === "n") {
         event.preventDefault()
-        handleSelectionChange(Math.min(matches.length - 1, selectedIndex + 1))
+        selectNext()
         setUserInteracted(true)
       } else if (event.ctrlKey && event.key === "p") {
         event.preventDefault()
-        handleSelectionChange(Math.max(0, selectedIndex - 1))
+        selectPrevious()
         setUserInteracted(true)
       } else if (event.key === "Escape") {
         event.preventDefault()
-        handleClose()
-        setUserInteracted(false)
+        handlePopupClose()
       }
-    }
-
-    const handleClickOutside = (event: MouseEvent) => {
-      const path = event.composedPath()
-      const actualTarget = path[0]
-      if (
-        popupRef.current &&
-        !popupRef.current.contains(actualTarget as Node)
-      ) {
-        console.log("Click outside detected", actualTarget)
-        handleClose()
-      }
-    }
-
-    const handleDocumentSelectionChange = () => {
-      // Hide popup when caret moves or text is selected
-      handleClose()
-      setUserInteracted(false)
     }
 
     document.addEventListener("keydown", handleKeyDown)
-    document.addEventListener("mousedown", handleClickOutside)
-    document.addEventListener("selectionchange", handleDocumentSelectionChange)
-
     return () => {
       document.removeEventListener("keydown", handleKeyDown)
-      document.removeEventListener("mousedown", handleClickOutside)
-      document.removeEventListener(
-        "selectionchange",
-        handleDocumentSelectionChange,
-      )
     }
   }, [
     isVisible,
@@ -109,58 +111,74 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
     matches,
     selectedIndex,
     handleSelect,
-    handleClose,
-    handleSelectionChange,
+    handlePopupClose,
+    selectNext,
+    selectPrevious,
   ])
 
-  // Adjust position if popup would go outside viewport
-  const adjustedPosition = React.useMemo(() => {
-    if (!popupRef.current) return position
-
-    const rect = popupRef.current.getBoundingClientRect()
-    const viewportWidth = window.innerWidth
-    const viewportHeight = window.innerHeight
-
-    let { x, y } = position
-
-    // Adjust horizontal position
-    if (x + rect.width > viewportWidth) {
-      x = Math.max(0, viewportWidth - rect.width - 10)
+  // Update anchor position when position changes
+  useEffect(() => {
+    if (anchorRef.current && isVisible) {
+      anchorRef.current.style.left = `${position.x}px`
+      anchorRef.current.style.top = `${position.y}px`
     }
-
-    // Adjust vertical position
-    if (y + rect.height > viewportHeight) {
-      y = Math.max(0, y - rect.height - 40) // Position above input
-    }
-
-    return { x, y }
-  }, [position])
+  }, [position, isVisible])
 
   if (!isVisible || matches.length === 0) {
     return null
   }
 
   return (
-    <div
-      ref={popupRef}
-      tabIndex={-1}
-      onFocus={() => setIsFocused(true)}
-      onBlur={() => setIsFocused(false)}
-      className="fixed z-50 bg-white border border-gray-200 rounded-lg shadow-lg max-w-md w-80 max-h-60 overflow-y-auto"
-      style={{
-        left: `${adjustedPosition.x}px`,
-        top: `${adjustedPosition.y}px`,
-      }}
-    >
-      {matches.map((match, index) => (
-        <AutoCompleteItem
-          key={`${match.name}-${index}`}
-          match={match}
-          isSelected={index === selectedIndex}
-          onClick={handleSelect}
-          onMouseEnter={() => handleSelectionChange(index)}
-        />
-      ))}
-    </div>
+    <>
+      {/* Invisible anchor element positioned at the desired location */}
+      <div
+        ref={anchorRef}
+        className="fixed w-0 h-0 pointer-events-none"
+        style={{
+          left: `${position.x}px`,
+          top: `${position.y}px`,
+          zIndex: -1,
+        }}
+      />
+
+      <Popover open={isVisible}>
+        <PopoverAnchor asChild>
+          <div
+            className="fixed w-0 h-0 pointer-events-none"
+            style={{
+              left: `${position.x}px`,
+              top: `${position.y}px`,
+            }}
+          />
+        </PopoverAnchor>
+        <PopoverContent
+          ref={popupRef}
+          className={cn(
+            "min-w-60 max-w-md p-0 border border-gray-200 shadow-lg overflow-hidden",
+            isFocused && "ring-2 ring-blue-500",
+          )}
+          align="start"
+          side="bottom"
+          sideOffset={5}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          onEscapeKeyDown={handlePopupClose}
+          onOpenAutoFocus={noFocus}
+          tabIndex={0}
+        >
+          <div className="max-h-60 overflow-y-auto">
+            {matches.map((match, index) => (
+              <AutoCompleteItem
+                key={`${match.name}-${index}`}
+                match={match}
+                isSelected={index === selectedIndex}
+                onClick={handleSelect}
+                onMouseEnter={() => selectIndex(index)}
+              />
+            ))}
+          </div>
+        </PopoverContent>
+      </Popover>
+    </>
   )
 }

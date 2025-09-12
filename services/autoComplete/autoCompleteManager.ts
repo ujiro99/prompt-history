@@ -7,6 +7,8 @@ import type {
   AutoCompleteCallbacks,
 } from "./types"
 
+const NO_SELECTED_INDEX = -1
+
 export class AutoCompleteManager {
   private element: Element | null = null
   private prompts: Prompt[] = []
@@ -15,7 +17,7 @@ export class AutoCompleteManager {
   private debounceTimeout: number | null = null
   private isVisible = false
   private currentMatches: AutoCompleteMatch[] = []
-  private selectedIndex = 0
+  private selectedIndex = NO_SELECTED_INDEX
 
   constructor(
     callbacks: AutoCompleteCallbacks,
@@ -24,7 +26,7 @@ export class AutoCompleteManager {
     this.callbacks = callbacks
     this.options = {
       maxMatches: 5,
-      debounceMs: 200,
+      debounceMs: 100,
       minSearchLength: 3,
       ...options,
     }
@@ -49,6 +51,7 @@ export class AutoCompleteManager {
    * Handle content change in the input element
    */
   handleContentChange(content: string): void {
+    console.debug("Handling content change:", content)
     // Clear existing timeout
     if (this.debounceTimeout !== null) {
       clearTimeout(this.debounceTimeout)
@@ -120,7 +123,8 @@ export class AutoCompleteManager {
   private show(matches: AutoCompleteMatch[]): void {
     console.debug("Showing autocomplete with matches:", matches)
     this.currentMatches = matches
-    this.selectedIndex = 0
+    this.selectedIndex = NO_SELECTED_INDEX
+    this.notifySelectChange()
 
     if (!this.isVisible) {
       this.isVisible = true
@@ -136,7 +140,8 @@ export class AutoCompleteManager {
     if (this.isVisible) {
       this.isVisible = false
       this.currentMatches = []
-      this.selectedIndex = 0
+      this.selectedIndex = NO_SELECTED_INDEX
+      this.notifySelectChange()
       this.callbacks.onHide()
     }
   }
@@ -161,6 +166,7 @@ export class AutoCompleteManager {
   selectPrevious(): void {
     if (this.currentMatches.length === 0) return
     this.selectedIndex = Math.max(0, this.selectedIndex - 1)
+    this.notifySelectChange()
   }
 
   /**
@@ -172,6 +178,7 @@ export class AutoCompleteManager {
       this.currentMatches.length - 1,
       this.selectedIndex + 1,
     )
+    this.notifySelectChange()
   }
 
   /**
@@ -188,6 +195,33 @@ export class AutoCompleteManager {
     const selectedMatch = this.currentMatches[this.selectedIndex]
     this.callbacks.onSelect(selectedMatch)
     this.hide()
+  }
+
+  /**
+   * Reset selection index
+   */
+  selectReset(): void {
+    this.selectedIndex = NO_SELECTED_INDEX
+    this.notifySelectChange()
+  }
+
+  /**
+   * Select specific index
+   */
+  selectIndex(index: number): void {
+    if (index < 0 || index >= this.currentMatches.length) {
+      console.warn("Index out of bounds:", index)
+      return
+    }
+    this.selectedIndex = index
+    this.notifySelectChange()
+  }
+
+  /**
+   * Notify selection change
+   */
+  notifySelectChange(): void {
+    this.callbacks.onSelectChange(this.selectedIndex)
   }
 
   /**

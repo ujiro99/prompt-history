@@ -20,4 +20,5 @@ export interface AutoCompleteCallbacks {
   onShow: () => void
   onHide: () => void
   onSelect: (match: AutoCompleteMatch) => Promise<void>
+  onSelectChange: (index: number) => void
 }
