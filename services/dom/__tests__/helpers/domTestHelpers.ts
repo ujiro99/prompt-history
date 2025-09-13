@@ -64,6 +64,17 @@ export const mockSelectionAPI = () => {
     cloneContents: vi.fn().mockReturnValue(document.createDocumentFragment()),
     endContainer: document.createTextNode("test"),
     endOffset: 0,
+    getBoundingClientRect: vi.fn().mockReturnValue({
+      left: 0,
+      top: 0,
+      right: 0,
+      bottom: 0,
+      width: 0,
+      height: 0,
+    }),
+    collapse: vi.fn(),
+    insertNode: vi.fn(),
+    deleteContents: vi.fn(),
   }
 
   const mockSelection = {

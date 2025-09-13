@@ -22,9 +22,14 @@ export const AutoCompleteItem: React.FC<AutoCompleteItemProps> = ({
     onClick(match)
   }
 
-  const name1 = match.name.slice(0, match.matchStart)
-  const name2 = match.name.slice(match.matchStart, match.matchEnd)
-  const name3 = match.name.slice(match.matchEnd)
+  // Highlight the matched part of the name
+  const start = match.name
+    .toLowerCase()
+    .lastIndexOf(match.searchTerm.toLowerCase())
+  const end = start + match.searchTerm.length
+  const name1 = match.name.slice(0, start)
+  const name2 = match.name.slice(start, end)
+  const name3 = match.name.slice(end)
 
   return (
     <button

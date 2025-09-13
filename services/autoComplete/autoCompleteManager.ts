@@ -1,4 +1,4 @@
-import { getCaretPosition } from "../dom"
+import { getCaretPosition, getCaretCoordinates } from "../dom"
 import type { Prompt } from "../../types/prompt"
 import type {
   AutoCompleteMatch,
@@ -101,6 +101,9 @@ export class AutoCompleteManager {
       return []
     }
 
+    // Calculate the position of the search term in the input
+    const inputMatchStart = caretPos - searchTerm.length
+
     // Filter prompts by case-insensitive partial match
     return this.prompts
       .filter((prompt) =>
@@ -108,14 +111,11 @@ export class AutoCompleteManager {
       )
       .slice(0, this.options.maxMatches)
       .map((prompt) => {
-        const matchStart = prompt.name
-          .toLowerCase()
-          .lastIndexOf(searchTerm.toLowerCase())
         return {
           name: prompt.name,
           content: prompt.content,
-          matchStart,
-          matchEnd: matchStart + searchTerm.length,
+          matchStart: inputMatchStart,
+          matchEnd: caretPos,
           searchTerm,
         }
       })
@@ -129,11 +129,8 @@ export class AutoCompleteManager {
     this.currentMatches = matches
     this.selectedIndex = NO_SELECTED_INDEX
     this.notifySelectChange()
-
-    if (!this.isVisible) {
-      this.isVisible = true
-      this.callbacks.onShow()
-    }
+    this.isVisible = true
+    this.callbacks.onShow()
   }
 
   /**
@@ -236,12 +233,18 @@ export class AutoCompleteManager {
       return { x: 0, y: 0 }
     }
 
-    const rect = this.element.getBoundingClientRect()
-    const _caretPos = getCaretPosition(this.element)
+    // Try to get precise caret coordinates
+    const coords = getCaretCoordinates(this.element)
+    if (coords) {
+      // Position popup below the caret with a small offset
+      return {
+        x: coords.x,
+        y: coords.y + coords.height + 4,
+      }
+    }
 
-    // For simple implementation, position below the input element
-    // In a more sophisticated implementation, you would calculate
-    // the exact caret position within the element
+    // Fallback to positioning below the input element
+    const rect = this.element.getBoundingClientRect()
     return {
       x: rect.left,
       y: rect.bottom + 2,
