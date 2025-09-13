@@ -3,6 +3,7 @@ import { PromptServiceFacade } from "../services/promptServiceFacade"
 import { NotificationManager } from "./Notification"
 import { InputPopup } from "./inputMenu/InputPopup"
 import { AutoCompletePopup } from "./autoComplete/AutoCompletePopup"
+import { CaretProvider } from "@/contexts/CaretContext"
 import { isEmpty } from "@/lib/utils"
 import type { Prompt, NotificationData, PromptError } from "../types/prompt"
 
@@ -56,6 +57,8 @@ export const PromptHistoryWidget: React.FC = () => {
           // Load initial data
           loadPrompts()
           setTargetElement(serviceFacade.getTextInput())
+          serviceFacade.onElementChange(setTargetElement)
+
           setIsInitializing(false)
         }
       } catch (error) {
@@ -146,7 +149,7 @@ export const PromptHistoryWidget: React.FC = () => {
   }
 
   return (
-    <>
+    <CaretProvider inputElement={targetElement}>
       <InputPopup
         targetElm={targetElement}
         prompts={prompts}
@@ -167,6 +170,6 @@ export const PromptHistoryWidget: React.FC = () => {
           prompts={prompts}
         />
       )}
-    </>
+    </CaretProvider>
   )
 }

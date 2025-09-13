@@ -127,6 +127,8 @@ export interface AIServiceInterface {
   onSend(callback: () => void): void
   /** Set up content change monitoring */
   onContentChange(callback: (content: string) => void): void
+  /** Set up Input element change monitoring */
+  onElementChange(callback: (element: Element | null) => void): void
   /** Get service name */
   getServiceName(): string
   /** Get DOM manager (for services that support it) */

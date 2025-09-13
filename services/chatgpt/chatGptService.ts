@@ -114,6 +114,14 @@ export class ChatGptService implements AIServiceInterface {
   }
 
   /**
+   * Set up element change monitoring.
+   * Returns an unsubscribe function.
+   */
+  onElementChange(callback: (textInput: Element | null) => void): () => void {
+    return this.domManager.onElementChange(callback)
+  }
+
+  /**
    * Service cleanup
    */
   destroy(): void {

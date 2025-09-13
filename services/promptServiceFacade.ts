@@ -429,6 +429,21 @@ export class PromptServiceFacade {
     this.onContentChangeCallbacks.push(callback)
   }
 
+  /**
+   * Register element change notifications
+   */
+  onElementChange(callback: (textInput: Element | null) => void): void {
+    if (this.aiService) {
+      return this.aiService.onElementChange(callback)
+    } else {
+      this.handleError(
+        "ELEMENT_CHANGE_FAILED",
+        "AI service not available for element change monitoring",
+        null,
+      )
+    }
+  }
+
   // ===================
   // Private Methods
   // ===================
