@@ -19,7 +19,7 @@ export async function inputContentEditable(
   el: HTMLElement,
   value: string,
   interval: number,
-  nodeAtCaret?: Node,
+  nodeAtCaret?: Node | null,
 ): Promise<boolean> {
   if (!isEditable(el)) return false
   el.focus()
@@ -78,7 +78,7 @@ async function typeShiftEnter(node: Node): Promise<void> {
 export const replaceTextAtCaret = async (
   element: Element,
   match: AutoCompleteMatch,
-  nodeAtCaret?: Node | null,
+  nodeAtCaret: Node | null,
 ): Promise<void> => {
   if (!element) return
 
@@ -106,15 +106,16 @@ export const replaceTextAtCaret = async (
     // Select and delete the matched text.
     if (nodeAtCaret) {
       const start = nodeAtCaret.textContent?.lastIndexOf(match.searchTerm)
-      if (start === undefined || start === -1) return
-      const range = document.createRange()
-      range.setStart(nodeAtCaret, start)
-      range.setEnd(nodeAtCaret, start + match.searchTerm.length)
-      range.deleteContents()
-
-      // Use inputContentEditable to properly handle the content insertion.
-      await inputContentEditable(htmlElement, match.content, 20, nodeAtCaret)
+      if (start != null && start > -1) {
+        const range = document.createRange()
+        range.setStart(nodeAtCaret, start)
+        range.setEnd(nodeAtCaret, start + match.searchTerm.length)
+        range.deleteContents()
+      }
     }
+
+    // Use inputContentEditable to properly handle the content insertion.
+    await inputContentEditable(htmlElement, match.content, 20, nodeAtCaret)
   }
 
   // Trigger input event to notify other listeners.

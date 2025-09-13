@@ -121,8 +121,6 @@ export interface AIServiceInterface {
   getSendButton(): Element | null
   /** Extract current prompt content */
   extractPromptContent(): string
-  /** Insert prompt content into input field */
-  injectPromptContent(content: string): Promise<void>
   /** Set up send event monitoring */
   onSend(callback: () => void): void
   /** Set up content change monitoring */

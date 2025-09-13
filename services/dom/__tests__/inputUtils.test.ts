@@ -33,7 +33,7 @@ describe("inputUtils", () => {
     it("should return false for non-editable elements", async () => {
       const div = document.createElement("div")
 
-      const result = await inputContentEditable(div, "test", 100)
+      const result = await inputContentEditable(div, "test", 100, null)
       expect(result).toBe(false)
     })
 
@@ -42,7 +42,7 @@ describe("inputUtils", () => {
       const focusSpy = vi.spyOn(editable, "focus")
       mockExecCommand()
 
-      await inputContentEditable(editable, "test", 100)
+      await inputContentEditable(editable, "test", 100, null)
 
       expect(focusSpy).toHaveBeenCalled()
     })
@@ -51,7 +51,12 @@ describe("inputUtils", () => {
       const editable = createMockContentEditable()
       mockSelectionAPI()
 
-      const result = await inputContentEditable(editable, "Hello World", 100)
+      const result = await inputContentEditable(
+        editable,
+        "Hello World",
+        100,
+        null,
+      )
 
       expect(result).toBe(true)
       // Verify that getSelection was called
@@ -67,6 +72,7 @@ describe("inputUtils", () => {
         editable,
         "Line 1\nLine 2\nLine 3",
         100,
+        null,
       )
 
       expect(result).toBe(true)
@@ -96,7 +102,7 @@ describe("inputUtils", () => {
       const editable = createMockContentEditable()
       mockSelectionAPI()
 
-      const result = await inputContentEditable(editable, "", 100)
+      const result = await inputContentEditable(editable, "", 100, null)
 
       expect(result).toBe(true)
       // Verify that getSelection was called even for empty text
@@ -108,7 +114,7 @@ describe("inputUtils", () => {
       mockSelectionAPI()
       const dispatchEventSpy = vi.spyOn(editable, "dispatchEvent")
 
-      const result = await inputContentEditable(editable, "\n\n", 100)
+      const result = await inputContentEditable(editable, "\n\n", 100, null)
 
       expect(result).toBe(true)
 
@@ -127,10 +133,10 @@ describe("inputUtils", () => {
       const match = createMockAutoCompleteMatch()
 
       await expect(
-        replaceTextAtCaret(null as any, match),
+        replaceTextAtCaret(null as any, match, null),
       ).resolves.toBeUndefined()
       await expect(
-        replaceTextAtCaret(undefined as any, match),
+        replaceTextAtCaret(undefined as any, match, null),
       ).resolves.toBeUndefined()
     })
 
@@ -142,7 +148,7 @@ describe("inputUtils", () => {
         content: "replacement",
       })
 
-      await replaceTextAtCaret(input, match)
+      await replaceTextAtCaret(input, match, null)
 
       expect(input.value).toBe("Hello replacement world")
       expect(input.selectionStart).toBe(17) // 6 + 11 (length of 'replacement')
@@ -157,7 +163,7 @@ describe("inputUtils", () => {
         content: "replacement",
       })
 
-      await replaceTextAtCaret(textarea, match)
+      await replaceTextAtCaret(textarea, match, null)
 
       expect(textarea.value).toBe("Multi\nline\nreplacement\ntext")
       expect(textarea.selectionStart).toBe(22) // 11 + 11 (length of 'replacement')
@@ -192,7 +198,7 @@ describe("inputUtils", () => {
         content: "replacement",
       })
 
-      await replaceTextAtCaret(input, match)
+      await replaceTextAtCaret(input, match, null)
 
       expect(dispatchEventSpy).toHaveBeenCalled()
       const event = dispatchEventSpy.mock.calls[0][0] as Event
@@ -209,7 +215,7 @@ describe("inputUtils", () => {
         content: "new",
       })
 
-      await replaceTextAtCaret(input, match)
+      await replaceTextAtCaret(input, match, null)
 
       expect(input.value).toBe("new content")
       expect(input.selectionStart).toBe(3)
@@ -224,7 +230,7 @@ describe("inputUtils", () => {
         content: "ending",
       })
 
-      await replaceTextAtCaret(input, match)
+      await replaceTextAtCaret(input, match, null)
 
       expect(input.value).toBe("test ending")
       expect(input.selectionStart).toBe(11)
@@ -239,7 +245,7 @@ describe("inputUtils", () => {
         content: "completely new text",
       })
 
-      await replaceTextAtCaret(input, match)
+      await replaceTextAtCaret(input, match, null)
 
       expect(input.value).toBe("completely new text")
       expect(input.selectionStart).toBe(19)
@@ -254,7 +260,7 @@ describe("inputUtils", () => {
         content: "",
       })
 
-      await replaceTextAtCaret(input, match)
+      await replaceTextAtCaret(input, match, null)
 
       expect(input.value).toBe(" content")
       expect(input.selectionStart).toBe(0)
@@ -269,7 +275,7 @@ describe("inputUtils", () => {
         content: " inserted",
       })
 
-      await replaceTextAtCaret(input, match)
+      await replaceTextAtCaret(input, match, null)
 
       expect(input.value).toBe("test inserted content")
       // happy-dom may calculate selection position differently
@@ -293,7 +299,9 @@ describe("inputUtils", () => {
         content: "replacement",
       })
 
-      await expect(replaceTextAtCaret(editable, match)).resolves.not.toThrow()
+      await expect(
+        replaceTextAtCaret(editable, match, null),
+      ).resolves.not.toThrow()
 
       // Restore getSelection
       Object.defineProperty(window, "getSelection", {
@@ -324,7 +332,9 @@ describe("inputUtils", () => {
         content: "replacement",
       })
 
-      await expect(replaceTextAtCaret(editable, match)).resolves.not.toThrow()
+      await expect(
+        replaceTextAtCaret(editable, match, null),
+      ).resolves.not.toThrow()
 
       // Restore originals
       Object.defineProperty(window, "getSelection", {

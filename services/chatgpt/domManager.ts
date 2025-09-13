@@ -80,6 +80,17 @@ export class DomManager {
   }
 
   /**
+   * Get current content from input element
+   */
+  getCurrentContent(): string {
+    const input = this.getTextInput()
+    if (!input) {
+      return ""
+    }
+    return extractElementContent(input)
+  }
+
+  /**
    * Get send button element
    */
   getSendButton(): Element | null {
@@ -174,18 +185,6 @@ export class DomManager {
       this.lastContent = currentContent
       this.fireContentChangeCallbacks(currentContent)
     }
-  }
-
-  /**
-   * Get current content from input element
-   */
-  private getCurrentContent(): string {
-    const input = this.getTextInput()
-    if (!input) {
-      return ""
-    }
-
-    return extractElementContent(input)
   }
 
   /**

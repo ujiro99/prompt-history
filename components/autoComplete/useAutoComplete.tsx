@@ -1,9 +1,12 @@
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState, useRef, useMemo } from "react"
 import { DomManager } from "../../services/chatgpt/domManager"
+import { PromptServiceFacade } from "@/services/promptServiceFacade"
 import { AutoCompleteManager } from "../../services/autoComplete/autoCompleteManager"
-import { replaceTextAtCaret } from "../../services/dom"
+import { useCaretNode } from "../../hooks/useCaretNode"
 import type { AutoCompleteMatch } from "../../services/autoComplete/types"
 import type { Prompt } from "../../types/prompt"
+
+const serviceFacade = PromptServiceFacade.getInstance()
 
 interface UseAutoCompleteOptions {
   domManager: DomManager
@@ -19,11 +22,10 @@ export const useAutoComplete = ({
   const [selectedIndex, setSelectedIndex] = useState(-1)
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const managerRef = useRef<AutoCompleteManager | null>(null)
-  const [nodeAtCaret, setNodeAtCaret] = useState<Node | null>(null)
+  const { nodeAtCaret } = useCaretNode()
 
-  useEffect(() => {
-    // Create AutoCompleteManager instance
-    managerRef.current = new AutoCompleteManager({
+  const callbacks = useMemo(
+    () => ({
       onShow: () => {
         if (managerRef.current) {
           setMatches(managerRef.current.getMatches())
@@ -37,10 +39,7 @@ export const useAutoComplete = ({
         managerRef.current?.selectReset()
       },
       onSelect: async (match: AutoCompleteMatch) => {
-        const textInput = domManager.getTextInput()
-        if (textInput) {
-          await replaceTextAtCaret(textInput, match, nodeAtCaret)
-        }
+        await serviceFacade.executePrompt(match.id, nodeAtCaret, match)
         setIsVisible(false)
         setMatches([])
         managerRef.current?.selectReset()
@@ -48,11 +47,16 @@ export const useAutoComplete = ({
       onSelectChange: (index: number) => {
         setSelectedIndex(index)
       },
-    })
+    }),
+    [nodeAtCaret],
+  )
 
-    // Set initial prompts and element
-    managerRef.current.setPrompts(prompts)
-    managerRef.current.setElement(domManager.getTextInput())
+  useEffect(() => {
+    managerRef.current = new AutoCompleteManager()
+  }, [])
+
+  useEffect(() => {
+    managerRef.current?.setElement(domManager.getTextInput())
 
     // Listen for element changes from DomManager
     const handleElementChange = (textInput: Element | null) => {
@@ -78,22 +82,15 @@ export const useAutoComplete = ({
         managerRef.current = null
       }
     }
-  }, [domManager, prompts, nodeAtCaret])
+  }, [domManager])
 
   useEffect(() => {
-    // Update node at caret for replaceTextAtCaret.
-    const updateNode = () => {
-      const selection = document.getSelection()
-      if (selection && selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0)
-        setNodeAtCaret(range.startContainer)
-      }
-    }
-    document.addEventListener("selectionchange", updateNode)
-    return () => {
-      document.removeEventListener("selectionchange", updateNode)
-    }
+    managerRef.current?.setPrompts(prompts)
   }, [prompts])
+
+  useEffect(() => {
+    managerRef.current?.setCallbacks(callbacks)
+  }, [callbacks])
 
   const handleSelect = (_match: AutoCompleteMatch) => {
     if (managerRef.current) {

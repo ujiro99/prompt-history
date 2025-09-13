@@ -1,4 +1,6 @@
 export interface AutoCompleteMatch {
+  // Prompt id
+  id: string
   // Prompt name
   name: string
   // Content of prompt to insert when selected

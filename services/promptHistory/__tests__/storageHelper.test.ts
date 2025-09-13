@@ -38,7 +38,6 @@ const createMockAIService = (): AIServiceInterface => ({
   isSupported: vi.fn(),
   getTextInput: vi.fn(),
   getSendButton: vi.fn(),
-  injectPromptContent: vi.fn(),
   onSend: vi.fn(),
   onContentChange: vi.fn(),
   getServiceName: vi.fn(),

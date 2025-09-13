@@ -13,23 +13,26 @@ export class AutoCompleteManager {
   private element: Element | null = null
   private prompts: Prompt[] = []
   private options: AutoCompleteOptions
-  private callbacks: AutoCompleteCallbacks
+  private callbacks: AutoCompleteCallbacks = {} as AutoCompleteCallbacks
   private debounceTimeout: number | null = null
   private isVisible = false
   private currentMatches: AutoCompleteMatch[] = []
   private selectedIndex = NO_SELECTED_INDEX
 
-  constructor(
-    callbacks: AutoCompleteCallbacks,
-    options: Partial<AutoCompleteOptions> = {},
-  ) {
-    this.callbacks = callbacks
+  constructor(options: Partial<AutoCompleteOptions> = {}) {
     this.options = {
       maxMatches: 5,
       debounceMs: 100,
       minSearchLength: 3,
       ...options,
     }
+  }
+
+  /**
+   * Set callback handlers
+   */
+  setCallbacks(callbacks: AutoCompleteCallbacks): void {
+    this.callbacks = callbacks
   }
 
   /**
@@ -112,6 +115,7 @@ export class AutoCompleteManager {
       .slice(0, this.options.maxMatches)
       .map((prompt) => {
         return {
+          id: prompt.id,
           name: prompt.name,
           content: prompt.content,
           matchStart: inputMatchStart,
@@ -274,6 +278,7 @@ export class AutoCompleteManager {
       this.debounceTimeout = null
     }
     this.hide()
+    this.callbacks = {} as AutoCompleteCallbacks
     this.element = null
     this.prompts = []
     this.currentMatches = []
