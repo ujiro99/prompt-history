@@ -125,6 +125,7 @@ export const setCaretPosition = (
  * Create a mock AutoCompleteMatch for testing text replacement
  */
 export const createMockAutoCompleteMatch = (overrides = {}) => ({
+  id: "test-prompt",
   name: "Test Prompt",
   content: "Test content for replacement",
   matchStart: 0,

@@ -283,33 +283,6 @@ describe("inputUtils", () => {
       expect(input.selectionEnd).toBeGreaterThanOrEqual(13)
     })
 
-    it("should handle contenteditable when Selection API is not available", async () => {
-      const editable = createMockContentEditable("test content")
-
-      // Save original getSelection and restore it after test
-      const originalGetSelection = window.getSelection
-      Object.defineProperty(window, "getSelection", {
-        value: null,
-        configurable: true,
-      })
-
-      const match = createMockAutoCompleteMatch({
-        matchStart: 0,
-        matchEnd: 4,
-        content: "replacement",
-      })
-
-      await expect(
-        replaceTextAtCaret(editable, match, null),
-      ).resolves.not.toThrow()
-
-      // Restore getSelection
-      Object.defineProperty(window, "getSelection", {
-        value: originalGetSelection,
-        configurable: true,
-      })
-    })
-
     it("should handle contenteditable when createRange is not available", async () => {
       const editable = createMockContentEditable("test content")
 

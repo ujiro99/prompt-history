@@ -96,7 +96,7 @@ describe("AutoCompleteManager", () => {
     }
 
     // Create manager instance
-    manager = new AutoCompleteManager(mockCallbacks)
+    manager = new AutoCompleteManager()
     manager.setElement(mockElement)
     manager.setPrompts(mockPrompts)
   })
@@ -181,7 +181,7 @@ describe("AutoCompleteManager", () => {
 
     it("should respect maximum matches limit", () => {
       // Create manager with maxMatches = 1
-      const limitedManager = new AutoCompleteManager(mockCallbacks, {
+      const limitedManager = new AutoCompleteManager({
         maxMatches: 1,
       })
       limitedManager.setPrompts(mockPrompts)
@@ -319,6 +319,7 @@ describe("AutoCompleteManager", () => {
       vi.mocked(getCaretPosition).mockReturnValue(5)
 
       // Trigger content change
+      manager.setCallbacks(mockCallbacks)
       manager.handleContentChange("hello")
 
       // Wait for debounce
@@ -333,6 +334,7 @@ describe("AutoCompleteManager", () => {
 
       // First, show autocomplete to ensure it's visible
       vi.mocked(getCaretPosition).mockReturnValue(5)
+      manager.setCallbacks(mockCallbacks)
       manager.handleContentChange("hello")
       await new Promise((resolve) => setTimeout(resolve, 250))
 
@@ -350,6 +352,7 @@ describe("AutoCompleteManager", () => {
       vi.mocked(getCaretPosition).mockReturnValue(5)
 
       // First, show autocomplete to ensure it's visible
+      manager.setCallbacks(mockCallbacks)
       manager.handleContentChange("hello")
       await new Promise((resolve) => setTimeout(resolve, 250))
 
