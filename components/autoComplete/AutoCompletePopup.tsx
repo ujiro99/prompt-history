@@ -34,8 +34,6 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
   const [isFocused, setIsFocused] = useState(false)
   const [userInteracted, setUserInteracted] = useState(false)
 
-  console.log("AutoCompletePopup render", isVisible, isFocused, userInteracted)
-
   // Close popup and reset states
   const handlePopupClose = useCallback(() => {
     handleClose()
