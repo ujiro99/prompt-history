@@ -206,7 +206,6 @@ export class PromptServiceFacade {
           message: `Prompt "${prompt.name}" updated successfully`,
           duration: 1000,
         })
-        await this.storageHelper.pinPrompt(prompt.id)
       },
       (error) => {
         this.handleError("UPDATE_FAILED", "Failed to update prompt", error)

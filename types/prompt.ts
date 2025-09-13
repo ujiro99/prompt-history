@@ -79,6 +79,8 @@ export interface SaveDialogData {
   content: string
   /** Save mode */
   saveMode: SaveMode
+  /** Pin flag */
+  isPinned: boolean
 }
 
 /**

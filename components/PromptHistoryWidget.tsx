@@ -22,6 +22,27 @@ export const PromptHistoryWidget: React.FC = () => {
   const [promptContent, setPromptContent] = useState<string>("")
 
   /**
+   * Load prompt list
+   */
+  const loadPrompts = async () => {
+    try {
+      const [allPrompts, pinned] = await Promise.all([
+        serviceFacade.getPrompts(),
+        serviceFacade.getPinnedPrompts(),
+      ])
+      setPrompts(allPrompts)
+      setPinnedPrompts(pinned)
+    } catch (error) {
+      console.error("Failed to load prompts:", error)
+      addNotification({
+        type: "error",
+        message: "Failed to load prompts",
+        duration: 3000,
+      })
+    }
+  }
+
+  /**
    * Initialization process
    */
   useEffect(() => {
@@ -82,32 +103,10 @@ export const PromptHistoryWidget: React.FC = () => {
     // Register callbacks
     serviceFacade.onPromptChange(handlePromptChange)
     serviceFacade.onPinChange(handlePinChange)
+    serviceFacade.onContentChange(handleContentChange)
     serviceFacade.onNotification(handleNotification)
     serviceFacade.onError(handleError)
-    serviceFacade.onContentChange(handleContentChange)
   }, [])
-
-  /**
-   * Load prompt list
-   */
-  const loadPrompts = async () => {
-    try {
-      const [allPrompts, pinned] = await Promise.all([
-        serviceFacade.getPrompts(),
-        serviceFacade.getPinnedPrompts(),
-      ])
-
-      setPrompts(allPrompts)
-      setPinnedPrompts(pinned)
-    } catch (error) {
-      console.error("Failed to load prompts:", error)
-      addNotification({
-        type: "error",
-        message: "Failed to load prompts",
-        duration: 3000,
-      })
-    }
-  }
 
   /**
    * Add notification

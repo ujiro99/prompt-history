@@ -74,6 +74,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
         name: name.trim(),
         content: content.trim(),
         saveMode: saveMode,
+        isPinned: true,
       }
 
       await onSave(saveData)
