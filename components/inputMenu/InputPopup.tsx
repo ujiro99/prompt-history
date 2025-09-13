@@ -1,20 +1,20 @@
 import React, { useState, useRef, useCallback, useMemo } from "react"
 import { History, Star, Save } from "lucide-react"
-import { Popover, PopoverContent, PopoverAnchor } from "./ui/popover"
+import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/popover"
 import {
   Menubar,
   MenubarContent,
   MenubarMenu,
   MenubarTrigger,
 } from "@/components/ui/menubar"
-import { useCaretNode } from "../hooks/useCaretNode"
+import { useCaretNode } from "@/hooks/useCaretNode"
 import { PromptPreview } from "./PromptPreview"
 import { MenuItem } from "./MenuItem"
-import { RemoveDialog } from "@/components/RemoveDialog"
-import { EditDialog } from "@/components/EditDialog"
-import { PromptServiceFacade } from "../services/promptServiceFacade"
-import { SaveMode } from "../types/prompt"
-import type { Prompt, SaveDialogData } from "../types/prompt"
+import { RemoveDialog } from "@/components/inputMenu/controller/RemoveDialog"
+import { EditDialog } from "@/components/inputMenu/controller/EditDialog"
+import { PromptServiceFacade } from "@/services/promptServiceFacade"
+import { SaveMode } from "@/types/prompt"
+import type { Prompt, SaveDialogData } from "@/types/prompt"
 import { cn, isEmpty } from "@/lib/utils"
 
 const serviceFacade = PromptServiceFacade.getInstance()

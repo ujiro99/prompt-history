@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { ChevronDown } from "lucide-react"
-import { SaveMode } from "../types/prompt"
-import type { SaveDialogData } from "../types/prompt"
+import { SaveMode } from "@/types/prompt"
+import type { SaveDialogData } from "@/types/prompt"
 import {
   Dialog,
   DialogTitle,
