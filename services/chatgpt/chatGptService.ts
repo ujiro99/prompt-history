@@ -50,13 +50,6 @@ export class ChatGptService implements AIServiceInterface {
   }
 
   /**
-   * Get DOM manager
-   */
-  getDomManager() {
-    return this.domManager
-  }
-
-  /**
    * Get text input element
    */
   getTextInput(): Element | null {
@@ -80,7 +73,7 @@ export class ChatGptService implements AIServiceInterface {
   /**
    * Set up send event monitoring
    */
-  onSend(callback: () => void): void {
+  onSend(callback: () => void): () => void {
     // Create wrapper to check if prompt content is not empty
     const wrappedCallback = () => {
       const content = this.extractPromptContent().trim()
@@ -88,8 +81,7 @@ export class ChatGptService implements AIServiceInterface {
         callback()
       }
     }
-
-    this.domManager.onSend(wrappedCallback)
+    return this.domManager.onSend(wrappedCallback)
   }
 
   /**
@@ -102,8 +94,8 @@ export class ChatGptService implements AIServiceInterface {
   /**
    * Set up content change monitoring
    */
-  onContentChange(callback: (content: string) => void): void {
-    this.domManager.onContentChange(callback)
+  onContentChange(callback: (content: string) => void): () => void {
+    return this.domManager.onContentChange(callback)
   }
 
   /**

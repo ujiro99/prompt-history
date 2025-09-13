@@ -266,8 +266,11 @@ export class DomManager {
   /**
    * Set up send event monitoring
    */
-  onSend(callback: () => void): void {
+  onSend(callback: () => void): () => void {
     this.sendCallbacks.push(callback)
+    return () => {
+      this.offSend(callback)
+    }
   }
 
   /**
@@ -283,8 +286,11 @@ export class DomManager {
   /**
    * Set up content change monitoring
    */
-  onContentChange(callback: (content: string) => void): void {
+  onContentChange(callback: (content: string) => void): () => void {
     this.contentChangeCallbacks.push(callback)
+    return () => {
+      this.offContentChange(callback)
+    }
   }
 
   /**

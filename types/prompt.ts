@@ -124,15 +124,13 @@ export interface AIServiceInterface {
   /** Extract current prompt content */
   extractPromptContent(): string
   /** Set up send event monitoring */
-  onSend(callback: () => void): void
+  onSend(callback: () => void): () => void
   /** Set up content change monitoring */
-  onContentChange(callback: (content: string) => void): void
+  onContentChange(callback: (content: string) => void): () => void
   /** Set up Input element change monitoring */
-  onElementChange(callback: (element: Element | null) => void): void
+  onElementChange(callback: (element: Element | null) => void): () => void
   /** Get service name */
   getServiceName(): string
-  /** Get DOM manager (for services that support it) */
-  getDomManager?(): any
   /** Service cleanup */
   destroy(): void
 }

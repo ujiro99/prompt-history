@@ -1,6 +1,5 @@
 import { promptStorage, StorageService } from "./storage"
 import { ChatGptService } from "./chatgpt/chatGptService"
-import { DomManager } from "./chatgpt/domManager"
 import type {
   AIServiceInterface,
   Prompt,
@@ -34,7 +33,6 @@ export class PromptServiceFacade {
     notification: NotificationData,
   ) => void)[] = []
   private onErrorCallbacks: ((error: PromptError) => void)[] = []
-  private onContentChangeCallbacks: ((content: string) => void)[] = []
 
   private constructor() {
     this.storage = promptStorage
@@ -110,8 +108,6 @@ export class PromptServiceFacade {
     if (this.aiService) {
       // Monitor send events (auto-save)
       this.aiService.onSend(this.handleAutoSave.bind(this))
-      // Monitor content changes
-      this.aiService.onContentChange(this.notifyContentChange.bind(this))
 
       // Monitor page navigation events
       window.addEventListener(
@@ -294,14 +290,6 @@ export class PromptServiceFacade {
   }
 
   /**
-   * Get DOM manager
-   */
-  getDomManager(): DomManager | null {
-    this.ensureInitialized()
-    return this.aiService?.getDomManager?.() || null
-  }
-
-  /**
    * Get prompt content from AI service.
    * Returns empty string if AI service is not available.
    */
@@ -425,14 +413,23 @@ export class PromptServiceFacade {
   /**
    * Register content change notifications
    */
-  onContentChange(callback: (content: string) => void): void {
-    this.onContentChangeCallbacks.push(callback)
+  onContentChange(callback: (content: string) => void): () => void {
+    if (this.aiService) {
+      return this.aiService.onContentChange(callback)
+    } else {
+      this.handleError(
+        "CONTENT_CHANGE_FAILED",
+        "AI service not available for element change monitoring",
+        null,
+      )
+    }
+    return () => {}
   }
 
   /**
    * Register element change notifications
    */
-  onElementChange(callback: (textInput: Element | null) => void): void {
+  onElementChange(callback: (textInput: Element | null) => void): () => void {
     if (this.aiService) {
       return this.aiService.onElementChange(callback)
     } else {
@@ -442,6 +439,7 @@ export class PromptServiceFacade {
         null,
       )
     }
+    return () => {}
   }
 
   // ===================
@@ -512,19 +510,6 @@ export class PromptServiceFacade {
   }
 
   /**
-   * Notify content change
-   */
-  private notifyContentChange(content: string): void {
-    this.onContentChangeCallbacks.forEach((callback) => {
-      try {
-        callback(content)
-      } catch (error) {
-        console.error("Content change callback error:", error)
-      }
-    })
-  }
-
-  /**
    * Error handling
    */
   private handleError(code: string, message: string, details: any): void {
@@ -571,7 +556,6 @@ export class PromptServiceFacade {
     this.onPinChangeCallbacks = []
     this.onNotificationCallbacks = []
     this.onErrorCallbacks = []
-    this.onContentChangeCallbacks = []
 
     this.aiService = null
     this.initialized = false
