@@ -16,16 +16,23 @@ export const AutoCompleteItem: React.FC<AutoCompleteItemProps> = ({
   onClick,
   onMouseEnter,
 }) => {
+  const handleClick = (e: React.SyntheticEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    onClick(match)
+  }
+
   return (
-    <div
+    <button
+      type="button"
       className={cn(
-        "px-3 py-1.5 text-sm cursor-pointer border-b border-gray-100 last:border-b-0 transition",
+        "w-full text-left px-3 py-1.5 text-sm cursor-pointer border-b border-gray-100 last:border-b-0 transition",
         "flex items-center space-x-1",
         isSelected
           ? "bg-gray-50 text-gray-800 px-2"
           : "bg-white text-gray-800 hover:bg-gray-50",
       )}
-      onClick={() => onClick(match)}
+      onClick={handleClick}
       onMouseEnter={onMouseEnter}
     >
       {isSelected && <ChevronRight size={18} className="text-gray-500" />}
@@ -35,6 +42,6 @@ export const AutoCompleteItem: React.FC<AutoCompleteItemProps> = ({
           {match.content}
         </div>
       </div>
-    </div>
+    </button>
   )
 }

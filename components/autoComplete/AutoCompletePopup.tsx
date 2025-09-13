@@ -34,6 +34,8 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
   const [isFocused, setIsFocused] = useState(false)
   const [userInteracted, setUserInteracted] = useState(false)
 
+  console.log("AutoCompletePopup render", isVisible, isFocused, userInteracted)
+
   // Close popup and reset states
   const handlePopupClose = useCallback(() => {
     handleClose()
@@ -43,9 +45,7 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
 
   const handleOpenChange = useCallback(
     (open: boolean) => {
-      if (!open) {
-        handlePopupClose()
-      }
+      if (!open) handlePopupClose()
     },
     [handlePopupClose],
   )
@@ -97,6 +97,7 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
           case "ArrowDown":
           case "ArrowLeft":
           case "ArrowRight":
+          case "Enter":
             handlePopupClose()
             break
           case "Tab":
@@ -176,7 +177,6 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
         onBlur={() => setIsFocused(false)}
         onEscapeKeyDown={handleEscapeDown}
         onOpenAutoFocus={noFocus}
-        tabIndex={0}
       >
         <div className="max-h-60 overflow-y-auto">
           {matches.map((match, index) => (

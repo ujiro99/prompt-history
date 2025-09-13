@@ -19,6 +19,7 @@ export const useAutoComplete = ({
   const [selectedIndex, setSelectedIndex] = useState(-1)
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const managerRef = useRef<AutoCompleteManager | null>(null)
+  const [nodeAtCaret, setNodeAtCaret] = useState<Node | null>(null)
 
   useEffect(() => {
     // Create AutoCompleteManager instance
@@ -38,7 +39,7 @@ export const useAutoComplete = ({
       onSelect: async (match: AutoCompleteMatch) => {
         const textInput = domManager.getTextInput()
         if (textInput) {
-          await replaceTextAtCaret(textInput, match)
+          await replaceTextAtCaret(textInput, match, nodeAtCaret)
         }
         setIsVisible(false)
         setMatches([])
@@ -77,7 +78,22 @@ export const useAutoComplete = ({
         managerRef.current = null
       }
     }
-  }, [domManager, prompts])
+  }, [domManager, prompts, nodeAtCaret])
+
+  useEffect(() => {
+    // Update node at caret for replaceTextAtCaret.
+    const updateNode = () => {
+      const selection = document.getSelection()
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0)
+        setNodeAtCaret(range.startContainer)
+      }
+    }
+    document.addEventListener("selectionchange", updateNode)
+    return () => {
+      document.removeEventListener("selectionchange", updateNode)
+    }
+  }, [prompts])
 
   const handleSelect = (_match: AutoCompleteMatch) => {
     if (managerRef.current) {

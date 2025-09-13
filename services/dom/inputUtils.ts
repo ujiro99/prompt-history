@@ -19,6 +19,7 @@ export async function inputContentEditable(
   el: HTMLElement,
   value: string,
   interval: number,
+  nodeAtCaret?: Node,
 ): Promise<boolean> {
   if (!isEditable(el)) return false
   el.focus()
@@ -28,7 +29,11 @@ export async function inputContentEditable(
     const selection = window.getSelection()
     if (selection && selection.rangeCount > 0) {
       const range = selection.getRangeAt(0)
-      range.deleteContents()
+      if (nodeAtCaret) {
+        range.setStart(nodeAtCaret, nodeAtCaret.textContent?.length || 0)
+        range.setEnd(nodeAtCaret, nodeAtCaret.textContent?.length || 0)
+        nodeAtCaret = undefined // Only use nodeAtCaret for the first insertion
+      }
       const node = document.createTextNode(val)
       range.insertNode(node)
 
@@ -73,6 +78,7 @@ async function typeShiftEnter(node: Node): Promise<void> {
 export const replaceTextAtCaret = async (
   element: Element,
   match: AutoCompleteMatch,
+  nodeAtCaret?: Node | null,
 ): Promise<void> => {
   if (!element) return
 
@@ -94,24 +100,24 @@ export const replaceTextAtCaret = async (
     element.selectionStart = newCaretPos
     element.selectionEnd = newCaretPos
   } else if (isEditable(element)) {
-    // For contenteditable elements, clear content first then input new content
+    // For contenteditable elements, clear content first then input new content.
     const htmlElement = element as HTMLElement
 
-    const selection = window.getSelection()
-    if (selection && selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0)
-      const start = range.startContainer.textContent?.indexOf(match.searchTerm)
+    // Select and delete the matched text.
+    if (nodeAtCaret) {
+      const start = nodeAtCaret.textContent?.lastIndexOf(match.searchTerm)
       if (start === undefined || start === -1) return
-      range.setStart(range.startContainer, start)
-      range.setEnd(range.startContainer, start + match.searchTerm.length)
+      const range = document.createRange()
+      range.setStart(nodeAtCaret, start)
+      range.setEnd(nodeAtCaret, start + match.searchTerm.length)
       range.deleteContents()
-    }
 
-    // Use inputContentEditable to properly handle the content insertion
-    await inputContentEditable(htmlElement, match.content, 20)
+      // Use inputContentEditable to properly handle the content insertion.
+      await inputContentEditable(htmlElement, match.content, 20, nodeAtCaret)
+    }
   }
 
-  // Trigger input event to notify other listeners
+  // Trigger input event to notify other listeners.
   const inputEvent = new Event("input", { bubbles: true })
   element.dispatchEvent(inputEvent)
 }

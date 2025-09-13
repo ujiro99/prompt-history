@@ -118,6 +118,7 @@ export const createMockAutoCompleteMatch = (overrides = {}) => ({
   content: "Test content for replacement",
   matchStart: 0,
   matchEnd: 4,
+  searchTerm: "Test",
   ...overrides,
 })
 
