@@ -30,8 +30,12 @@ export async function inputContentEditable(
     if (selection && selection.rangeCount > 0) {
       const range = selection.getRangeAt(0)
       if (nodeAtCaret) {
-        range.setStart(nodeAtCaret, nodeAtCaret.textContent?.length || 0)
-        range.setEnd(nodeAtCaret, nodeAtCaret.textContent?.length || 0)
+        let node = nodeAtCaret
+        if (node.nodeType === 1) {
+          node = node.childNodes[0]
+        }
+        range.setStart(node, nodeAtCaret.textContent?.length || 0)
+        range.setEnd(node, nodeAtCaret.textContent?.length || 0)
         nodeAtCaret = undefined // Only use nodeAtCaret for the first insertion
       }
       const node = document.createTextNode(val)
@@ -107,9 +111,13 @@ export const replaceTextAtCaret = async (
     if (nodeAtCaret) {
       const start = nodeAtCaret.textContent?.lastIndexOf(match.searchTerm)
       if (start != null && start > -1) {
+        let node = nodeAtCaret
+        if (node.nodeType === 1) {
+          node = node.childNodes[0]
+        }
         const range = document.createRange()
-        range.setStart(nodeAtCaret, start)
-        range.setEnd(nodeAtCaret, start + match.searchTerm.length)
+        range.setStart(node, start)
+        range.setEnd(node, start + match.searchTerm.length)
         range.deleteContents()
       }
     }

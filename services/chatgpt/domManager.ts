@@ -347,8 +347,12 @@ export class DomManager {
    * Handle key down
    */
   private handleKeyDown(event: KeyboardEvent): void {
-    // Send with Ctrl+Enter or Cmd+Enter
-    if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+    // Send with Ctrl+Enter or Cmd+Enter, but not during IME composition
+    if (
+      event.key === "Enter" &&
+      (event.ctrlKey || event.metaKey) &&
+      !event.isComposing
+    ) {
       this.fireSendCallbacks()
     }
   }

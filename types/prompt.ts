@@ -148,6 +148,18 @@ export interface ChatGPTSelectors {
 }
 
 /**
+ * DOM selectors for Google Gemini service
+ */
+export interface GeminiSelectors {
+  /** Text input selectors (fallback array) */
+  textInput: string[]
+  /** Send button selectors (fallback array) */
+  sendButton: string[]
+  /** Chat history selectors (fallback array) */
+  chatHistory: string[]
+}
+
+/**
  * Data for prompt list display
  */
 export interface PromptListItem {

@@ -1,5 +1,4 @@
 import { promptStorage, StorageService } from "./storage"
-import { ChatGptService } from "./chatgpt/chatGptService"
 import type {
   AIServiceInterface,
   Prompt,
@@ -88,17 +87,28 @@ export class PromptServiceFacade {
    * Initialize AI service
    */
   private async initializeAIService(): Promise<void> {
-    const service = new ChatGptService()
+    // Import both services dynamically to avoid loading unnecessary code
+    const { ChatGptService } = await import("./chatgpt/chatGptService")
+    const { GeminiService } = await import("./gemini/geminiService")
 
-    if (service.isSupported()) {
-      try {
-        await service.initialize()
-        this.aiService = service
-        console.log("ChatGPT service initialized")
-      } catch (error) {
-        console.warn("Failed to initialize ChatGPT service:", error)
+    // Try each service in order
+    const services = [new ChatGptService(), new GeminiService()]
+
+    for (const service of services) {
+      if (service.isSupported()) {
+        try {
+          await service.initialize()
+          this.aiService = service
+          return
+        } catch (error) {
+          console.warn(
+            `Failed to initialize ${service.getServiceName()} service:`,
+            error,
+          )
+        }
       }
     }
+    console.log("No supported AI service found on this page")
   }
 
   /**

@@ -51,7 +51,7 @@ export function InputPopup(props: Props): React.ReactElement {
     <Popover open={true}>
       <PopoverAnchor virtualRef={{ current: targetElm }} />
       <PopoverContent
-        className="z-auto p-0 border-0"
+        className="p-0 border-0"
         side={"top"}
         align={"end"}
         sideOffset={8}
