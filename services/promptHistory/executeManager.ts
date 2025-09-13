@@ -1,6 +1,8 @@
 import type { Prompt, AIServiceInterface } from "../../types/prompt"
 import type { StorageService } from "../storage"
 import { SessionManager } from "./sessionManager"
+import { replaceTextAtCaret } from "@/services/dom/inputUtils"
+import type { AutoCompleteMatch } from "@/services/autoComplete/types"
 
 /**
  * Class responsible for prompt execution and UI support processing (Storage read operations)
@@ -17,6 +19,8 @@ export class ExecuteManager {
   async executePrompt(
     promptId: string,
     aiService: AIServiceInterface,
+    nodeAtCaret: Node | null,
+    match?: AutoCompleteMatch,
     onSuccess?: (prompt: Prompt) => void,
     onError?: (error: Error) => void,
   ): Promise<void> {
@@ -27,7 +31,19 @@ export class ExecuteManager {
       }
 
       // Inject prompt into AI service
-      await aiService.injectPromptContent(prompt.content)
+      const textInput = aiService.getTextInput()
+      if (textInput) {
+        const _match =
+          match ??
+          ({
+            name: prompt.name,
+            content: prompt.content,
+            matchStart: 0,
+            matchEnd: prompt.content.length,
+            searchTerm: "",
+          } as AutoCompleteMatch)
+        await replaceTextAtCaret(textInput, _match, nodeAtCaret)
+      }
 
       // Start session
       await this.sessionManager.startSession(promptId)

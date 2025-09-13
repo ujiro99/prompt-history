@@ -7,11 +7,12 @@ import { extractElementContent } from "../dom"
 export class DomManager {
   private textInput: Element | null = null
   private sendButton: Element | null = null
+  private lastContent: string = ""
   private observer: MutationObserver | null = null
   private sendCallbacks: (() => void)[] = []
   private contentChangeCallbacks: ((content: string) => void)[] = []
-  private lastContent: string = ""
   private contentChangeDebounceTimeout: number | null = null
+  private elementChangeCallbacks: ((textInput: Element | null) => void)[] = []
 
   /**
    * Find element from multiple selectors
@@ -76,6 +77,17 @@ export class DomManager {
       this.textInput = this.findElement(CHATGPT_SELECTORS.textInput)
     }
     return this.textInput
+  }
+
+  /**
+   * Get current content from input element
+   */
+  getCurrentContent(): string {
+    const input = this.getTextInput()
+    if (!input) {
+      return ""
+    }
+    return extractElementContent(input)
   }
 
   /**
@@ -176,18 +188,6 @@ export class DomManager {
   }
 
   /**
-   * Get current content from input element
-   */
-  private getCurrentContent(): string {
-    const input = this.getTextInput()
-    if (!input) {
-      return ""
-    }
-
-    return extractElementContent(input)
-  }
-
-  /**
    * Execute content change callbacks
    */
   private fireContentChangeCallbacks(content: string): void {
@@ -254,6 +254,9 @@ export class DomManager {
       this.textInput = newTextInput
       this.sendButton = newSendButton
 
+      // Notify element change callbacks
+      this.fireElementChangeCallbacks(this.textInput)
+
       // Existing event listeners are automatically removed
       this.setupSendEventListeners()
       this.setupContentChangeListeners()
@@ -292,6 +295,39 @@ export class DomManager {
     if (index > -1) {
       this.contentChangeCallbacks.splice(index, 1)
     }
+  }
+
+  /**
+   * Set up element change monitoring
+   */
+  onElementChange(callback: (textInput: Element | null) => void): () => void {
+    this.elementChangeCallbacks.push(callback)
+    return () => {
+      this.offElementChange(callback)
+    }
+  }
+
+  /**
+   * Remove element change monitoring
+   */
+  offElementChange(callback: (textInput: Element | null) => void): void {
+    const index = this.elementChangeCallbacks.indexOf(callback)
+    if (index > -1) {
+      this.elementChangeCallbacks.splice(index, 1)
+    }
+  }
+
+  /**
+   * Execute element change callbacks
+   */
+  private fireElementChangeCallbacks(textInput: Element | null): void {
+    this.elementChangeCallbacks.forEach((callback) => {
+      try {
+        callback(textInput)
+      } catch (error) {
+        console.error("Element change callback error:", error)
+      }
+    })
   }
 
   /**
@@ -349,6 +385,7 @@ export class DomManager {
 
     this.sendCallbacks = []
     this.contentChangeCallbacks = []
+    this.elementChangeCallbacks = []
     this.lastContent = ""
     this.textInput = null
     this.sendButton = null

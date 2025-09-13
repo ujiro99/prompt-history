@@ -1,5 +1,6 @@
 import { promptStorage, StorageService } from "./storage"
 import { ChatGptService } from "./chatgpt/chatGptService"
+import { DomManager } from "./chatgpt/domManager"
 import type {
   AIServiceInterface,
   Prompt,
@@ -11,6 +12,7 @@ import type {
 import { SessionManager } from "./promptHistory/sessionManager"
 import { StorageHelper } from "./promptHistory/storageHelper"
 import { ExecuteManager } from "./promptHistory/executeManager"
+import type { AutoCompleteMatch } from "@/services/autoComplete/types"
 
 /**
  * Main orchestrator for prompt history management
@@ -293,6 +295,14 @@ export class PromptServiceFacade {
   }
 
   /**
+   * Get DOM manager
+   */
+  getDomManager(): DomManager | null {
+    this.ensureInitialized()
+    return this.aiService?.getDomManager?.() || null
+  }
+
+  /**
    * Get prompt content from AI service.
    * Returns empty string if AI service is not available.
    */
@@ -307,7 +317,11 @@ export class PromptServiceFacade {
   /**
    * Execute prompt
    */
-  async executePrompt(promptId: string): Promise<void> {
+  async executePrompt(
+    promptId: string,
+    nodeAtCaret: Node | null,
+    match?: AutoCompleteMatch,
+  ): Promise<void> {
     this.ensureInitialized()
 
     if (!this.aiService) {
@@ -318,6 +332,8 @@ export class PromptServiceFacade {
     await this.executeManager.executePrompt(
       promptId,
       this.aiService,
+      nodeAtCaret,
+      match,
       (prompt) => {
         this.notifyPromptChange(prompt)
         this.notify({

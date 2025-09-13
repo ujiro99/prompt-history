@@ -1,14 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { StorageHelper } from "../promptHistory/storageHelper"
-import { SaveMode } from "../../types/prompt"
-import type { StorageService } from "../storage"
-import type { SessionManager } from "../promptHistory/sessionManager"
+import { StorageHelper } from "../storageHelper"
+import { SaveMode } from "@/types/prompt"
+import type { StorageService } from "@/services/storage"
+import type { SessionManager } from "@/services/promptHistory/sessionManager"
 import type {
   Prompt,
   SaveDialogData,
   AIServiceInterface,
   AppSettings,
-} from "../../types/prompt"
+} from "@/types/prompt"
 
 // Mock dependencies
 const createMockStorageService = (): StorageService =>
@@ -38,7 +38,6 @@ const createMockAIService = (): AIServiceInterface => ({
   isSupported: vi.fn(),
   getTextInput: vi.fn(),
   getSendButton: vi.fn(),
-  injectPromptContent: vi.fn(),
   onSend: vi.fn(),
   onContentChange: vi.fn(),
   getServiceName: vi.fn(),

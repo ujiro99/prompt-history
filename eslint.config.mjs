@@ -71,6 +71,8 @@ export default [
   {
     files: [
       "components/**/*.{js,jsx,ts,tsx}",
+      "contexts/**/*.{js,jsx,ts,tsx}",
+      "hooks/**/*.{js,jsx,ts,tsx}",
       "entrypoints/content*.{js,ts,jsx,tsx}",
       "src/components/**/*.{js,jsx,ts,tsx}",
     ],
@@ -102,6 +104,23 @@ export default [
       },
     },
   },
+  // Configuration for service files (browser + WebExtension environment)
+  {
+    files: [
+      "services/**/*.{js,jsx,ts,tsx}",
+      "src/services/**/*.{js,jsx,ts,tsx}",
+    ],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        // Additional browser globals needed for services
+        EventListener: "readonly",
+        // WebExtension globals
+        browser: "readonly",
+        chrome: "readonly",
+      },
+    },
+  },
   // Configuration for config files (Node.js environment)
   {
     files: [
@@ -120,23 +139,6 @@ export default [
     },
     rules: {
       "no-console": "off", // Allow console in config files
-    },
-  },
-  // Configuration for service files (browser + WebExtension environment)
-  {
-    files: [
-      "services/**/*.{js,jsx,ts,tsx}",
-      "src/services/**/*.{js,jsx,ts,tsx}",
-    ],
-    languageOptions: {
-      globals: {
-        ...globals.browser,
-        // Additional browser globals needed for services
-        EventListener: "readonly",
-        // WebExtension globals
-        browser: "readonly",
-        chrome: "readonly",
-      },
     },
   },
   // Configuration for type files

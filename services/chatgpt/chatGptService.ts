@@ -1,6 +1,5 @@
 import type { AIServiceInterface } from "../../types/prompt"
 import { DomManager } from "./domManager"
-import { PromptManager } from "./promptManager"
 import { ChatGptDebugger } from "./chatGptDebugger"
 
 /**
@@ -9,12 +8,10 @@ import { ChatGptDebugger } from "./chatGptDebugger"
  */
 export class ChatGptService implements AIServiceInterface {
   private domManager: DomManager
-  private promptManager: PromptManager
   private debugger: ChatGptDebugger
 
   constructor() {
     this.domManager = new DomManager()
-    this.promptManager = new PromptManager(this.domManager)
     this.debugger = new ChatGptDebugger()
   }
 
@@ -53,6 +50,13 @@ export class ChatGptService implements AIServiceInterface {
   }
 
   /**
+   * Get DOM manager
+   */
+  getDomManager() {
+    return this.domManager
+  }
+
+  /**
    * Get text input element
    */
   getTextInput(): Element | null {
@@ -70,14 +74,7 @@ export class ChatGptService implements AIServiceInterface {
    * Extract prompt content
    */
   extractPromptContent(): string {
-    return this.promptManager.extractContent()
-  }
-
-  /**
-   * Inject prompt content
-   */
-  async injectPromptContent(content: string): Promise<void> {
-    return this.promptManager.injectContent(content)
+    return this.domManager.getCurrentContent()
   }
 
   /**

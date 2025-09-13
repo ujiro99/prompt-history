@@ -1,8 +1,13 @@
 import { PromptHistoryWidget } from "../../components/PromptHistoryWidget"
+import { CaretProvider } from "../../contexts/CaretContext"
 import "./App.css"
 
 function App() {
-  return <PromptHistoryWidget />
+  return (
+    <CaretProvider>
+      <PromptHistoryWidget />
+    </CaretProvider>
+  )
 }
 
 export default App

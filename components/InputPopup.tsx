@@ -7,6 +7,7 @@ import {
   MenubarMenu,
   MenubarTrigger,
 } from "@/components/ui/menubar"
+import { useCaretNode } from "../hooks/useCaretNode"
 import { PromptPreview } from "./PromptPreview"
 import { MenuItem } from "./MenuItem"
 import { RemoveDialog } from "@/components/RemoveDialog"
@@ -69,6 +70,7 @@ export function InputMenu(props: Props): React.ReactElement {
   const [saveDialogData, setSaveDialogData] = useState<SaveDialogData | null>(
     null,
   )
+  const { nodeAtCaret } = useCaretNode()
 
   const handleMenuEnter = (val: MENU) => {
     setSelectedMenu(val)
@@ -110,19 +112,22 @@ export function InputMenu(props: Props): React.ReactElement {
     setHoveredItem(null)
   }, [])
 
-  const handleItemClick = useCallback((promptId: string) => {
-    // Clear hoveredItem immediately when item is clicked
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current)
-    }
-    setHoveredItem(null)
+  const handleItemClick = useCallback(
+    (promptId: string) => {
+      // Clear hoveredItem immediately when item is clicked
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current)
+      }
+      setHoveredItem(null)
 
-    try {
-      serviceFacade.executePrompt(promptId)
-    } catch (error) {
-      console.error("Execute failed:", error)
-    }
-  }, [])
+      try {
+        serviceFacade.executePrompt(promptId, nodeAtCaret)
+      } catch (error) {
+        console.error("Execute failed:", error)
+      }
+    },
+    [nodeAtCaret],
+  )
 
   /**
    * Delete prompt process

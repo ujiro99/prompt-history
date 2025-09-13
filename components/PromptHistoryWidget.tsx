@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { PromptServiceFacade } from "../services/promptServiceFacade"
 import { InputPopup } from "./InputPopup"
 import { NotificationManager } from "./Notification"
+import { AutoCompletePopup } from "./autoComplete/AutoCompletePopup"
 import { isEmpty } from "@/lib/utils"
 import type { Prompt, NotificationData, PromptError } from "../types/prompt"
 
@@ -159,6 +160,14 @@ export const PromptHistoryWidget: React.FC = () => {
         notifications={notifications}
         onDismiss={removeNotification}
       />
+
+      {/* AutoComplete functionality */}
+      {serviceFacade.getDomManager() && (
+        <AutoCompletePopup
+          domManager={serviceFacade.getDomManager()!}
+          prompts={prompts}
+        />
+      )}
     </>
   )
 }

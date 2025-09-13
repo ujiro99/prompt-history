@@ -45,6 +45,8 @@
 - **データ永続化**: クロスブラウザデータストレージ用のWXT Storage API
 - **分析**: ユーザー行動分析用の@wxt-dev/analytics
 - **テスト**: React Testing Libraryを使用したVitestによるユニットテスト
+  - テストファイルはソースコードと同じ場所の`__tests__`ディレクトリに配置する
+  - 例: `services/dom/elementUtils.ts` → `services/dom/__tests__/elementUtils.test.ts`
 - **コード品質**: TypeScriptとReactルールを使用したESLint
 - **UIフレームワーク**: Tailwind CSSスタイリングを使用したShadcn/uiコンポーネント
 
