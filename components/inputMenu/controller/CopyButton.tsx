@@ -36,7 +36,7 @@ export const CopyButton = ({
         )}
         size={size}
       />
-      Copy prompt
+      Copy
     </button>
   )
 }

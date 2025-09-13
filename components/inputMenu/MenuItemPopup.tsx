@@ -1,9 +1,13 @@
 import { useState, useEffect } from "react"
 import { Ellipsis } from "lucide-react"
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
-import { RemoveButton } from "./RemoveButton"
-import { EditButton } from "./EditButton"
-import { CopyButton } from "./CopyButton"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { RemoveButton } from "./controller/RemoveButton"
+import { EditButton } from "./controller/EditButton"
+import { CopyButton } from "./controller/CopyButton"
 
 interface MenuItemPopupProps {
   promptId: string
@@ -51,7 +55,7 @@ export const MenuItemPopup = ({
         </button>
       </PopoverTrigger>
       <PopoverContent
-        className="relative z-auto p-1 text-gray-700"
+        className="relative p-1 text-gray-700"
         side={"top"}
         align={"end"}
         sideOffset={-1}

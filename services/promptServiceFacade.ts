@@ -206,7 +206,6 @@ export class PromptServiceFacade {
           message: `Prompt "${prompt.name}" updated successfully`,
           duration: 1000,
         })
-        await this.storageHelper.pinPrompt(prompt.id)
       },
       (error) => {
         this.handleError("UPDATE_FAILED", "Failed to update prompt", error)
@@ -428,6 +427,21 @@ export class PromptServiceFacade {
    */
   onContentChange(callback: (content: string) => void): void {
     this.onContentChangeCallbacks.push(callback)
+  }
+
+  /**
+   * Register element change notifications
+   */
+  onElementChange(callback: (textInput: Element | null) => void): void {
+    if (this.aiService) {
+      return this.aiService.onElementChange(callback)
+    } else {
+      this.handleError(
+        "ELEMENT_CHANGE_FAILED",
+        "AI service not available for element change monitoring",
+        null,
+      )
+    }
   }
 
   // ===================

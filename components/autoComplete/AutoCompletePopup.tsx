@@ -140,6 +140,10 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
 
   // Update anchor position when position changes
   useEffect(() => {
+    if (!isVisible) {
+      setIsFocused(false)
+      setUserInteracted(false)
+    }
     if (anchorRef.current && isVisible) {
       anchorRef.current.style.left = `${position.x}px`
       anchorRef.current.style.top = `${position.y}px`

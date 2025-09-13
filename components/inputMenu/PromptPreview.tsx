@@ -1,7 +1,7 @@
 import { useState } from "react"
-import { Popover, PopoverContent, PopoverAnchor } from "./ui/popover"
-import { BridgeArea } from "./BridgeArea"
-import type { Prompt } from "../types/prompt"
+import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/popover"
+import { BridgeArea } from "../BridgeArea"
+import type { Prompt } from "@/types/prompt"
 
 interface PromptDetailProps {
   open: boolean
@@ -62,12 +62,7 @@ export const PromptPreview = ({
           </div>
         </div>
         {content && (
-          <BridgeArea
-            className="z-auto"
-            fromElm={anchorElm}
-            toElm={content}
-            isHorizontal={true}
-          />
+          <BridgeArea fromElm={anchorElm} toElm={content} isHorizontal={true} />
         )}
       </PopoverContent>
     </Popover>

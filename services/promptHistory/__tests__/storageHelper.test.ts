@@ -40,6 +40,7 @@ const createMockAIService = (): AIServiceInterface => ({
   getSendButton: vi.fn(),
   onSend: vi.fn(),
   onContentChange: vi.fn(),
+  onElementChange: vi.fn(),
   getServiceName: vi.fn(),
   destroy: vi.fn(),
 })
@@ -261,6 +262,7 @@ describe("StorageHelper", () => {
       name: "New Prompt",
       content: "New content",
       saveMode: SaveMode.New,
+      isPinned: false,
     }
 
     it("should save new prompt successfully", async () => {

@@ -1,6 +1,6 @@
 import React, { forwardRef, useRef, useState } from "react"
 import { MenubarItem } from "@/components/ui/menubar"
-import { PinButton } from "./PinButton"
+import { PinButton } from "./controller/PinButton"
 import { MenuItemPopup } from "./MenuItemPopup"
 import { cn } from "@/lib/utils"
 
