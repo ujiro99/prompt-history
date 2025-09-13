@@ -36,7 +36,7 @@ export const EditButton = ({
         )}
         size={size}
       />
-      Edit prompt
+      Edit
     </button>
   )
 }

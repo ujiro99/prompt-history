@@ -34,7 +34,7 @@ export const RemoveButton = ({
         )}
         size={size}
       />
-      Remove prompt
+      Remove
     </button>
   )
 }
