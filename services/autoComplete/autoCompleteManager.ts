@@ -101,21 +101,24 @@ export class AutoCompleteManager {
       return []
     }
 
-    const matchStart = caretPos - searchTerm.length
-
     // Filter prompts by case-insensitive partial match
     return this.prompts
       .filter((prompt) =>
         prompt.name.toLowerCase().includes(searchTerm.toLowerCase()),
       )
       .slice(0, this.options.maxMatches)
-      .map((prompt) => ({
-        name: prompt.name,
-        content: prompt.content,
-        matchStart,
-        matchEnd: caretPos,
-        searchTerm,
-      }))
+      .map((prompt) => {
+        const matchStart = prompt.name
+          .toLowerCase()
+          .lastIndexOf(searchTerm.toLowerCase())
+        return {
+          name: prompt.name,
+          content: prompt.content,
+          matchStart,
+          matchEnd: matchStart + searchTerm.length,
+          searchTerm,
+        }
+      })
   }
 
   /**

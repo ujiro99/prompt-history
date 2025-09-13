@@ -1,5 +1,5 @@
 import React from "react"
-import { ChevronRight } from "lucide-react"
+import { ChevronRight, CornerDownLeft } from "lucide-react"
 import type { AutoCompleteMatch } from "../../services/autoComplete/types"
 import { cn } from "@/lib/utils"
 
@@ -22,6 +22,10 @@ export const AutoCompleteItem: React.FC<AutoCompleteItemProps> = ({
     onClick(match)
   }
 
+  const name1 = match.name.slice(0, match.matchStart)
+  const name2 = match.name.slice(match.matchStart, match.matchEnd)
+  const name3 = match.name.slice(match.matchEnd)
+
   return (
     <button
       type="button"
@@ -37,11 +41,21 @@ export const AutoCompleteItem: React.FC<AutoCompleteItemProps> = ({
     >
       {isSelected && <ChevronRight size={18} className="text-gray-500" />}
       <div className="w-full overflow-hidden">
-        <div className="font-medium truncate">{match.name}</div>
+        <p className="truncate font-light">
+          {name1}
+          <span className="font-medium bg-amber-100 px-1 rounded">{name2}</span>
+          {name3}
+        </p>
         <div className="text-xs text-gray-500 truncate mt-0.5">
           {match.content}
         </div>
       </div>
+      {isSelected && (
+        <div className="text-xs text-gray-500 flex items-center space-x-0.5">
+          <span className="rounded px-1 py-0.5 bg-gray-100">Tab</span>
+          <CornerDownLeft className="text-gray-400" size={14} />
+        </div>
+      )}
     </button>
   )
 }
