@@ -167,11 +167,11 @@ export function InputMenu(props: Props): React.ReactElement {
    */
   const openEditDialogNew = async () => {
     const data = await serviceFacade.prepareSaveDialogData()
-    console.log("Prepared save dialog data:", data)
     setSaveDialogData({
       name: data.initialName ?? "",
       content: data.initialContent,
       saveMode: data.isOverwriteAvailable ? SaveMode.Overwrite : SaveMode.New,
+      isPinned: true,
     })
     setEditId("")
   }
@@ -185,6 +185,7 @@ export function InputMenu(props: Props): React.ReactElement {
       name: prompt.name,
       content: prompt.content,
       saveMode: SaveMode.Overwrite,
+      isPinned: prompt.isPinned,
     })
     setEditId(promptId)
   }
@@ -198,6 +199,7 @@ export function InputMenu(props: Props): React.ReactElement {
       name: `Copy of ${prompt.name}`,
       content: prompt.content,
       saveMode: SaveMode.Copy,
+      isPinned: prompt.isPinned,
     })
     setEditId("")
   }
