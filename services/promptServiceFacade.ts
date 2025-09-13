@@ -10,6 +10,7 @@ import type {
 import { SessionManager } from "./promptHistory/sessionManager"
 import { StorageHelper } from "./promptHistory/storageHelper"
 import { ExecuteManager } from "./promptHistory/executeManager"
+import { AiServices } from "@/services/aiService"
 import type { AutoCompleteMatch } from "@/services/autoComplete/types"
 
 /**
@@ -87,18 +88,13 @@ export class PromptServiceFacade {
    * Initialize AI service
    */
   private async initializeAIService(): Promise<void> {
-    // Import both services dynamically to avoid loading unnecessary code
-    const { ChatGptService } = await import("./chatgpt/chatGptService")
-    const { GeminiService } = await import("./gemini/geminiService")
-
     // Try each service in order
-    const services = [new ChatGptService(), new GeminiService()]
-
-    for (const service of services) {
+    for (const service of AiServices) {
       if (service.isSupported()) {
         try {
           await service.initialize()
           this.aiService = service
+          console.log(`${service.getServiceName()} service initialized`)
           return
         } catch (error) {
           console.warn(

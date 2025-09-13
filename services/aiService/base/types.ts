@@ -1,0 +1,55 @@
+/**
+ * Configuration interface for AI service implementations
+ */
+export interface AIServiceConfig {
+  /** Service display name */
+  serviceName: string
+
+  /** DOM selectors for finding elements */
+  selectors: {
+    textInput: string[]
+    sendButton: string[]
+    chatHistory: string[]
+  }
+
+  /** Function to extract content from text input element */
+  extractContent: (element: Element) => string
+
+  /** Keyboard event handlers */
+  keyHandlers: {
+    shouldTriggerSend: (event: KeyboardEvent) => boolean
+  }
+
+  /** Debounce time for content change events (ms) */
+  debounceTime: number
+
+  /** Supported domains/hostnames */
+  supportedDomains: string[]
+
+  /** Custom domain/path checker function (optional) */
+  isSupported?: (hostname: string, pathname: string) => boolean
+}
+
+/**
+ * Interface for DOM element information (debugging)
+ */
+export interface ElementInfo {
+  found: boolean
+  selector?: string
+  tagName?: string
+}
+
+/**
+ * Debug information about detected elements
+ */
+export interface ServiceElementInfo {
+  textInput: ElementInfo
+  sendButton: ElementInfo
+}
+
+/**
+ * Callback types for DOM manager events
+ */
+export type SendCallback = () => void
+export type ContentChangeCallback = (content: string) => void
+export type ElementChangeCallback = (element: Element | null) => void

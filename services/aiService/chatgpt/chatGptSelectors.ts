@@ -1,16 +1,13 @@
-import type { ChatGPTSelectors } from "../../types/prompt"
-
 /**
  * DOM selector definitions for ChatGPT
  */
-export const CHATGPT_SELECTORS: ChatGPTSelectors = {
+export const CHATGPT_SELECTORS = {
   textInput: [
     // New UI
     "#prompt-textarea",
     '[data-testid="prompt-textarea"]',
     // Old UI, fallback
     'textarea[placeholder*="Message"]',
-    'textarea[placeholder*="メッセージ"]',
     'div[contenteditable="true"][data-id*="prompt"]',
     'div[contenteditable="true"]',
     // Additional fallbacks
@@ -21,7 +18,7 @@ export const CHATGPT_SELECTORS: ChatGPTSelectors = {
     // New UI
     '[data-testid="send-button"]',
     'button[aria-label*="Send"]',
-    'button[aria-label*="送信"]',
+    '[data-testid="composer-speech-button"]',
     // SVG icon based
     'button svg[data-icon="paper-plane"]',
     'button svg[data-icon="arrow-up"]',

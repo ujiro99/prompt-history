@@ -84,101 +84,6 @@ export class GeminiDebugger {
   }
 
   /**
-   * Get detailed information about detected elements
-   */
-  getElementInfo(): {
-    textInput: { found: boolean; selector?: string; tagName?: string }
-    sendButton: { found: boolean; selector?: string; tagName?: string }
-  } {
-    const textInputInfo = this.findElementInfo(GEMINI_SELECTORS.textInput)
-    const sendButtonInfo = this.findElementInfo(GEMINI_SELECTORS.sendButton)
-
-    return {
-      textInput: textInputInfo,
-      sendButton: sendButtonInfo,
-    }
-  }
-
-  /**
-   * Find element and return info
-   */
-  private findElementInfo(selectors: string[]): {
-    found: boolean
-    selector?: string
-    tagName?: string
-  } {
-    for (const selector of selectors) {
-      try {
-        const element = document.querySelector(selector)
-        if (element && this.isElementVisible(element)) {
-          return {
-            found: true,
-            selector,
-            tagName: element.tagName,
-          }
-        }
-      } catch (_error) {
-        // Invalid selector, skip
-      }
-    }
-
-    return { found: false }
-  }
-
-  /**
-   * Monitor DOM changes for debugging
-   */
-  monitorDOMChanges(): void {
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.type === "childList") {
-          mutation.addedNodes.forEach((node) => {
-            if (node instanceof Element) {
-              this.checkForRelevantElements(node)
-            }
-          })
-        }
-      })
-    })
-
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-    })
-
-    console.log("🔍 Gemini DOM monitor started")
-  }
-
-  /**
-   * Check if added element matches our selectors
-   */
-  private checkForRelevantElements(element: Element): void {
-    // Check against text input selectors
-    for (const selector of GEMINI_SELECTORS.textInput) {
-      try {
-        if (element.matches(selector)) {
-          console.log("📝 New text input detected:", selector, element)
-          break
-        }
-      } catch {
-        // Invalid selector for matches()
-      }
-    }
-
-    // Check against send button selectors
-    for (const selector of GEMINI_SELECTORS.sendButton) {
-      try {
-        if (element.matches(selector)) {
-          console.log("🚀 New send button detected:", selector, element)
-          break
-        }
-      } catch {
-        // Invalid selector for matches()
-      }
-    }
-  }
-
-  /**
    * Log current page state for debugging
    */
   logPageState(): void {
@@ -186,10 +91,6 @@ export class GeminiDebugger {
 
     console.log("URL:", window.location.href)
     console.log("Title:", document.title)
-
-    const info = this.getElementInfo()
-    console.log("Text Input:", info.textInput)
-    console.log("Send Button:", info.sendButton)
 
     // Check for common Gemini elements
     const geminiElements = {

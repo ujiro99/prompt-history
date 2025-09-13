@@ -1,35 +1,36 @@
-import type { AIServiceInterface } from "../../types/prompt"
-import { DomManager } from "./domManager"
-import { GeminiDebugger } from "./geminiDebugger"
+import type { AIServiceInterface } from "../../../types/prompt"
+import type { AIServiceConfig, ServiceElementInfo } from "./types"
+import type { BaseDomManager } from "./BaseDomManager"
 
 /**
- * Google Gemini AI service implementation
+ * Base class for AI service implementations
+ * Provides common functionality and delegates DOM operations to a DomManager
  */
-export class GeminiService implements AIServiceInterface {
-  private domManager: DomManager
-  private debugger: GeminiDebugger
+export abstract class BaseAIService implements AIServiceInterface {
+  protected domManager: BaseDomManager
+  protected config: AIServiceConfig
 
-  constructor() {
-    this.domManager = new DomManager()
-    this.debugger = new GeminiDebugger()
+  constructor(domManager: BaseDomManager, config: AIServiceConfig) {
+    this.domManager = domManager
+    this.config = config
   }
 
   /**
-   * Check if current site is Google Gemini
+   * Check if current site is supported by this service
    */
   isSupported(): boolean {
     const hostname = window.location.hostname
     const pathname = window.location.pathname
 
-    console.log("GeminiService: Checking support for hostname", hostname)
+    // Use custom checker if provided
+    if (this.config.isSupported) {
+      return this.config.isSupported(hostname, pathname)
+    }
 
-    return (
-      hostname === "gemini.google.com" ||
-      hostname === "bard.google.com" || // Old Bard domain
-      hostname === "aistudio.google.com" ||
-      (hostname.endsWith(".google.com") && pathname.includes("gemini")) ||
-      hostname === "ujiro99.github.io" // For testing
-    )
+    // Default domain matching
+    return this.config.supportedDomains.some((domain) => {
+      return hostname === domain || hostname.endsWith(`.${domain}`)
+    })
   }
 
   /**
@@ -37,7 +38,9 @@ export class GeminiService implements AIServiceInterface {
    */
   async initialize(): Promise<void> {
     if (!this.isSupported()) {
-      throw new Error("Gemini service is not supported on this site")
+      throw new Error(
+        `${this.config.serviceName} service is not supported on this site`,
+      )
     }
 
     await this.domManager.waitForElements()
@@ -50,7 +53,7 @@ export class GeminiService implements AIServiceInterface {
    * Get service name
    */
   getServiceName(): string {
-    return "Gemini"
+    return this.config.serviceName
   }
 
   /**
@@ -131,17 +134,12 @@ export class GeminiService implements AIServiceInterface {
   /**
    * Get information about currently detected elements
    */
-  getElementInfo(): {
-    textInput: { found: boolean; selector?: string; tagName?: string }
-    sendButton: { found: boolean; selector?: string; tagName?: string }
-  } {
-    return this.debugger.getElementInfo()
+  getElementInfo(): ServiceElementInfo {
+    return this.domManager.getElementInfo()
   }
 
   /**
-   * Run selector tests
+   * Run selector tests (to be implemented by subclasses if needed)
    */
-  testSelectors(): void {
-    this.debugger.testSelectors()
-  }
+  abstract testSelectors(): void
 }

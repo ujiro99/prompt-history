@@ -1,9 +1,7 @@
-import type { GeminiSelectors } from "../../types/prompt"
-
 /**
  * DOM selector definitions for Google Gemini
  */
-export const GEMINI_SELECTORS: GeminiSelectors = {
+export const GEMINI_SELECTORS = {
   textInput: [
     // Primary selectors for Gemini input
     '.ql-editor[contenteditable="true"]',
