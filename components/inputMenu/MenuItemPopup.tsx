@@ -55,7 +55,7 @@ export const MenuItemPopup = ({
         </button>
       </PopoverTrigger>
       <PopoverContent
-        className="relative z-auto p-1 text-gray-700"
+        className="relative p-1 text-gray-700"
         side={"top"}
         align={"end"}
         sideOffset={-1}

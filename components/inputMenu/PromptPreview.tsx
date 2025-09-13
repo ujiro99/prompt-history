@@ -62,12 +62,7 @@ export const PromptPreview = ({
           </div>
         </div>
         {content && (
-          <BridgeArea
-            className="z-auto"
-            fromElm={anchorElm}
-            toElm={content}
-            isHorizontal={true}
-          />
+          <BridgeArea fromElm={anchorElm} toElm={content} isHorizontal={true} />
         )}
       </PopoverContent>
     </Popover>

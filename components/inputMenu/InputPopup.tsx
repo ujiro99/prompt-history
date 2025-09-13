@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback, useMemo } from "react"
 import { History, Star, Save } from "lucide-react"
 import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/popover"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   Menubar,
   MenubarContent,
@@ -12,6 +13,7 @@ import { PromptPreview } from "./PromptPreview"
 import { MenuItem } from "./MenuItem"
 import { RemoveDialog } from "@/components/inputMenu/controller/RemoveDialog"
 import { EditDialog } from "@/components/inputMenu/controller/EditDialog"
+import { BridgeArea } from "@/components/BridgeArea"
 import { PromptServiceFacade } from "@/services/promptServiceFacade"
 import { SaveMode } from "@/types/prompt"
 import type { Prompt, SaveDialogData } from "@/types/prompt"
@@ -70,6 +72,11 @@ export function InputMenu(props: Props): React.ReactElement {
   const [saveDialogData, setSaveDialogData] = useState<SaveDialogData | null>(
     null,
   )
+  const historyAnchorRef = useRef<HTMLButtonElement>(null)
+  const historyContentRef = useRef<HTMLDivElement>(null)
+  const pinnedAnchorRef = useRef<HTMLButtonElement>(null)
+  const pinnedContentRef = useRef<HTMLDivElement>(null)
+
   const { nodeAtCaret } = useCaretNode()
 
   const handleMenuEnter = (val: MENU) => {
@@ -243,67 +250,98 @@ export function InputMenu(props: Props): React.ReactElement {
       >
         {/* History Menu */}
         <MenubarMenu value={MENU.History}>
-          <MenuTrigger onMouseEnter={() => handleMenuEnter(MENU.History)}>
+          <MenuTrigger
+            ref={historyAnchorRef}
+            onMouseEnter={() => handleMenuEnter(MENU.History)}
+          >
             <History size={16} className="stroke-gray-600" />
           </MenuTrigger>
-          <MenubarContent
-            className="max-h-80 min-w-[220px] overflow-y-auto"
-            side="top"
-          >
+          <MenubarContent side="top" ref={historyContentRef}>
             {props.prompts.length > 0 ? (
-              reversePrompts.map((prompt) => (
-                <MenuItem
-                  menuType="history"
-                  value={prompt.id}
-                  key={prompt.id}
-                  isPinned={prompt.isPinned}
-                  onHover={handleItemHover}
-                  onLeave={handleItemLeave}
-                  onClick={handleItemClick}
-                  onEdit={openEditDialog}
-                  onRemove={setRemoveId}
-                  onCopy={openCopyDialog}
-                  onTogglePin={handleTogglePin}
-                >
-                  {prompt.name}
-                </MenuItem>
-              ))
+              <ScrollArea
+                className={cn(
+                  "min-w-[220px]",
+                  props.prompts.length > 8 && "h-80",
+                )}
+              >
+                {reversePrompts.map((prompt) => (
+                  <MenuItem
+                    menuType="history"
+                    value={prompt.id}
+                    key={prompt.id}
+                    isPinned={prompt.isPinned}
+                    onHover={handleItemHover}
+                    onLeave={handleItemLeave}
+                    onClick={handleItemClick}
+                    onEdit={openEditDialog}
+                    onRemove={setRemoveId}
+                    onCopy={openCopyDialog}
+                    onTogglePin={handleTogglePin}
+                  >
+                    {prompt.name}
+                  </MenuItem>
+                ))}
+              </ScrollArea>
             ) : (
               <div className="px-3 py-2 text-xs text-gray-500">
                 Prompts will be displayed when you send them
               </div>
+            )}
+            {historyAnchorRef.current && historyContentRef.current && (
+              <BridgeArea
+                fromElm={historyAnchorRef.current}
+                toElm={historyContentRef.current}
+                isHorizontal={false}
+              />
             )}
           </MenubarContent>
         </MenubarMenu>
 
         {/* Pinned Menu */}
         <MenubarMenu value={MENU.Pinned}>
-          <MenuTrigger onMouseEnter={() => handleMenuEnter(MENU.Pinned)}>
+          <MenuTrigger
+            onMouseEnter={() => handleMenuEnter(MENU.Pinned)}
+            ref={pinnedAnchorRef}
+          >
             <Star size={16} className="stroke-gray-600" />
           </MenuTrigger>
-          <MenubarContent side="top">
+          <MenubarContent side="top" ref={pinnedContentRef}>
             {props.pinnedPrompts.length > 0 ? (
-              reversePinnedPrompts.map((prompt) => (
-                <MenuItem
-                  menuType="pinned"
-                  value={prompt.id}
-                  key={prompt.id}
-                  isPinned={prompt.isPinned}
-                  onHover={handleItemHover}
-                  onLeave={handleItemLeave}
-                  onClick={handleItemClick}
-                  onEdit={openEditDialog}
-                  onRemove={setRemoveId}
-                  onCopy={openCopyDialog}
-                  onTogglePin={handleTogglePin}
-                >
-                  {prompt.name}
-                </MenuItem>
-              ))
+              <ScrollArea
+                className={cn(
+                  "min-w-[220px]",
+                  props.pinnedPrompts.length > 8 && "h-80",
+                )}
+              >
+                {reversePinnedPrompts.map((prompt) => (
+                  <MenuItem
+                    menuType="pinned"
+                    value={prompt.id}
+                    key={prompt.id}
+                    isPinned={prompt.isPinned}
+                    onHover={handleItemHover}
+                    onLeave={handleItemLeave}
+                    onClick={handleItemClick}
+                    onEdit={openEditDialog}
+                    onRemove={setRemoveId}
+                    onCopy={openCopyDialog}
+                    onTogglePin={handleTogglePin}
+                  >
+                    {prompt.name}
+                  </MenuItem>
+                ))}
+              </ScrollArea>
             ) : (
               <div className="px-3 py-2 text-xs text-gray-500 min-w-[220px]">
                 Will be displayed when you star or manually save
               </div>
+            )}
+            {pinnedAnchorRef.current && pinnedContentRef.current && (
+              <BridgeArea
+                fromElm={pinnedAnchorRef.current}
+                toElm={pinnedContentRef.current}
+                isHorizontal={false}
+              />
             )}
           </MenubarContent>
         </MenubarMenu>
