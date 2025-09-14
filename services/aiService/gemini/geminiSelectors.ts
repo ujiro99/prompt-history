@@ -21,14 +21,4 @@ export const GEMINI_SELECTORS = {
     "button.send-button",
     "button:has(mat-icon)",
   ],
-  chatHistory: [
-    // Conversation elements
-    ".conversation-turn",
-    ".message-content",
-    '[data-test-id="conversation-turn"]',
-    ".model-response-text",
-    ".user-query-text",
-    "message-content",
-    '[role="presentation"]',
-  ],
 }

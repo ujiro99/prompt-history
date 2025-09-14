@@ -20,11 +20,6 @@ export class GeminiDebugger {
     this.testSelectorGroup(GEMINI_SELECTORS.sendButton, "Send Button")
     console.groupEnd()
 
-    // Test chat history selectors
-    console.group("Chat History Selectors:")
-    this.testSelectorGroup(GEMINI_SELECTORS.chatHistory, "Chat History")
-    console.groupEnd()
-
     console.groupEnd()
   }
 

@@ -28,11 +28,4 @@ export const CHATGPT_SELECTORS = {
     "button:has(svg)",
     "button:last-child",
   ],
-  chatHistory: [
-    '[data-testid="conversation-turn"]',
-    ".conversation-turn",
-    "[data-message-author-role]",
-    ".group.w-full",
-    '[role="presentation"]',
-  ],
 }

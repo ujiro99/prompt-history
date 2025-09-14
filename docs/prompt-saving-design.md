@@ -111,8 +111,6 @@ const SELECTORS = {
     'button[aria-label*="Send"]',
     'button svg[data-icon="paper-plane"]',
   ],
-  // チャット履歴
-  chatHistory: ['[data-testid="conversation-turn"]', ".conversation-turn"],
 }
 ```
 

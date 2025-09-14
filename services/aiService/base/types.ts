@@ -9,7 +9,6 @@ export interface AIServiceConfig {
   selectors: {
     textInput: string[]
     sendButton: string[]
-    chatHistory: string[]
   }
 
   /** Function to extract content from text input element */

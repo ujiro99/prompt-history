@@ -143,8 +143,6 @@ export interface ChatGPTSelectors {
   textInput: string[]
   /** Send button selectors (fallback array) */
   sendButton: string[]
-  /** Chat history selectors (fallback array) */
-  chatHistory: string[]
 }
 
 /**
@@ -155,8 +153,6 @@ export interface GeminiSelectors {
   textInput: string[]
   /** Send button selectors (fallback array) */
   sendButton: string[]
-  /** Chat history selectors (fallback array) */
-  chatHistory: string[]
 }
 
 /**

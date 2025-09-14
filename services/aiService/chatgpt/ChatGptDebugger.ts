@@ -20,11 +20,6 @@ export class ChatGptDebugger {
     this.testSelectorGroup(CHATGPT_SELECTORS.sendButton, "Send Button")
     console.groupEnd()
 
-    // Test chat history selectors
-    console.group("Chat History Selectors:")
-    this.testSelectorGroup(CHATGPT_SELECTORS.chatHistory, "Chat History")
-    console.groupEnd()
-
     console.groupEnd()
   }
 
