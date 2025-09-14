@@ -136,26 +136,6 @@ export interface AIServiceInterface {
 }
 
 /**
- * DOM selector definitions for ChatGPT
- */
-export interface ChatGPTSelectors {
-  /** Text input selectors (fallback array) */
-  textInput: string[]
-  /** Send button selectors (fallback array) */
-  sendButton: string[]
-}
-
-/**
- * DOM selectors for Google Gemini service
- */
-export interface GeminiSelectors {
-  /** Text input selectors (fallback array) */
-  textInput: string[]
-  /** Send button selectors (fallback array) */
-  sendButton: string[]
-}
-
-/**
  * Data for prompt list display
  */
 export interface PromptListItem {
