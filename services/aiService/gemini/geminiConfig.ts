@@ -30,6 +30,6 @@ export const GEMINI_CONFIG: AIServiceConfig = {
     return (
       hostname === "gemini.google.com" ||
       (hostname.endsWith(".google.com") && pathname.includes("gemini"))
-    ) // For testing
+    )
   },
 }

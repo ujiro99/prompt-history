@@ -14,10 +14,11 @@ export const CHATGPT_CONFIG: AIServiceConfig = {
 
   keyHandlers: {
     shouldTriggerSend: (event: KeyboardEvent): boolean => {
-      // Send with Ctrl+Enter or Cmd+Enter, but not during IME composition
+      // Send with Enter (but not Shift+Enter or Ctrl+Enter), and not during IME composition
       return (
         event.key === "Enter" &&
-        (event.ctrlKey || event.metaKey) &&
+        !event.shiftKey &&
+        !event.ctrlKey &&
         !event.isComposing
       )
     },
