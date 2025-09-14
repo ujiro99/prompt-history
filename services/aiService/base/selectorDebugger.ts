@@ -1,23 +1,36 @@
-import { CHATGPT_DEFINITIONS as DEFINITIONS } from "./chatGptDefinitions"
+/**
+ * Selector debug configuration interface
+ */
+export interface SelectorDebugConfig {
+  serviceName: string
+  textInputSelectors: string[]
+  sendButtonSelectors: string[]
+}
 
 /**
- * Debugging utilities for ChatGPT service
+ * Selector debugger for testing AI service DOM selectors
  */
-export class ChatGptDebugger {
+export class SelectorDebugger {
+  private config: SelectorDebugConfig
+
+  constructor(config: SelectorDebugConfig) {
+    this.config = config
+  }
+
   /**
-   * Test all selectors and report results
+   * Test all selectors for this service
    */
   testSelectors(): void {
-    console.group("🔍 ChatGPT Selector Test Results")
+    console.group(`🔍 ${this.config.serviceName} Selector Test Results`)
 
     // Test text input selectors
     console.group("Text Input Selectors:")
-    this.testSelectorGroup(DEFINITIONS.selectors.textInput, "Text Input")
+    this.testSelectorGroup(this.config.textInputSelectors, "Text Input")
     console.groupEnd()
 
     // Test send button selectors
     console.group("Send Button Selectors:")
-    this.testSelectorGroup(DEFINITIONS.selectors.sendButton, "Send Button")
+    this.testSelectorGroup(this.config.sendButtonSelectors, "Send Button")
     console.groupEnd()
 
     console.groupEnd()
@@ -76,27 +89,5 @@ export class ChatGptDebugger {
       style.visibility !== "hidden" &&
       parseFloat(style.opacity) > 0
     )
-  }
-
-  /**
-   * Log current page state for debugging
-   */
-  logPageState(): void {
-    console.group("📊 ChatGPT Page State")
-
-    console.log("URL:", window.location.href)
-    console.log("Title:", document.title)
-
-    // Check for common ChatGPT elements
-    const chatgptElements = {
-      "Main container": document.querySelector(".main-container"),
-      "Input area": document.querySelector("#prompt-textarea"),
-      Messages: document.querySelectorAll('[data-testid="conversation-turn"]')
-        .length,
-      "Send button": document.querySelector('[data-testid="send-button"]'),
-    }
-
-    console.table(chatgptElements)
-    console.groupEnd()
   }
 }

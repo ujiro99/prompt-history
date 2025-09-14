@@ -1,16 +1,21 @@
 import { BaseAIService } from "../base/BaseAIService"
-import { ChatGptDebugger } from "./chatGptDebugger"
+import { SelectorDebugger } from "../base/selectorDebugger"
 import { CHATGPT_CONFIG } from "./chatGptConfig"
+import { CHATGPT_DEFINITIONS } from "./chatGptDefinitions"
 
 /**
  * ChatGPT AI service implementation
  */
 export class ChatGptService extends BaseAIService {
-  private debugger: ChatGptDebugger
+  private debugger: SelectorDebugger
 
   constructor() {
     super(CHATGPT_CONFIG)
-    this.debugger = new ChatGptDebugger()
+    this.debugger = new SelectorDebugger({
+      serviceName: "ChatGPT",
+      textInputSelectors: CHATGPT_DEFINITIONS.selectors.textInput,
+      sendButtonSelectors: CHATGPT_DEFINITIONS.selectors.sendButton,
+    })
   }
 
   /**
