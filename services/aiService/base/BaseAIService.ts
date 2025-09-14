@@ -1,18 +1,27 @@
 import type { AIServiceInterface } from "../../../types/prompt"
 import type { AIServiceConfig, ServiceElementInfo } from "./types"
-import type { BaseDomManager } from "./BaseDomManager"
+import { DomManager } from "../base/domManager"
 
 /**
  * Base class for AI service implementations
  * Provides common functionality and delegates DOM operations to a DomManager
  */
 export abstract class BaseAIService implements AIServiceInterface {
-  protected domManager: BaseDomManager
+  protected domManager: DomManager
   protected config: AIServiceConfig
 
-  constructor(domManager: BaseDomManager, config: AIServiceConfig) {
-    this.domManager = domManager
+  constructor(config: AIServiceConfig) {
+    this.domManager = new DomManager(config)
     this.config = config
+
+    if (
+      typeof window !== "undefined" &&
+      process.env.NODE_ENV !== "production" &&
+      config.isSupported(window.location.hostname, window.location.pathname)
+    ) {
+      console.debug(`Initialized ${config.serviceName}`)
+      ;(window as any).promptHistoryDebug = this
+    }
   }
 
   /**
@@ -23,14 +32,7 @@ export abstract class BaseAIService implements AIServiceInterface {
     const pathname = window.location.pathname
 
     // Use custom checker if provided
-    if (this.config.isSupported) {
-      return this.config.isSupported(hostname, pathname)
-    }
-
-    // Default domain matching
-    return this.config.supportedDomains.some((domain) => {
-      return hostname === domain || hostname.endsWith(`.${domain}`)
-    })
+    return this.config.isSupported(hostname, pathname)
   }
 
   /**

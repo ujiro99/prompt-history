@@ -10,7 +10,7 @@ import type {
  * Base class for DOM management across AI services
  * Provides common functionality for element detection, event handling, and lifecycle management
  */
-export class BaseDomManager {
+export class DomManager {
   protected textInput: Element | null = null
   protected sendButton: Element | null = null
   protected lastContent: string = ""

@@ -1,5 +1,4 @@
 import { BaseAIService } from "../base/BaseAIService"
-import { GeminiDomManager } from "./GeminiDomManager"
 import { GeminiDebugger } from "./GeminiDebugger"
 import { GEMINI_CONFIG } from "./geminiConfig"
 
@@ -10,7 +9,7 @@ export class GeminiService extends BaseAIService {
   private debugger: GeminiDebugger
 
   constructor() {
-    super(new GeminiDomManager(), GEMINI_CONFIG)
+    super(GEMINI_CONFIG)
     this.debugger = new GeminiDebugger()
   }
 

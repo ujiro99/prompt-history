@@ -23,16 +23,14 @@ export const CHATGPT_CONFIG: AIServiceConfig = {
     },
   },
 
-  debounceTime: 200,
-
-  supportedDomains: ["chatgpt.com", "chat.openai.com"],
+  debounceTime: 100,
 
   isSupported: (hostname: string, _pathname: string): boolean => {
     return (
       hostname === "chatgpt.com" ||
       hostname === "chat.openai.com" ||
       hostname.endsWith(".openai.com") ||
-      hostname === "ujiro99.github.io"
-    ) // For testing
+      hostname === "ujiro99.github.io" // For testing
+    )
   },
 }

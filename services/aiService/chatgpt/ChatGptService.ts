@@ -1,5 +1,4 @@
 import { BaseAIService } from "../base/BaseAIService"
-import { ChatGptDomManager } from "./ChatGptDomManager"
 import { ChatGptDebugger } from "./ChatGptDebugger"
 import { CHATGPT_CONFIG } from "./chatGptConfig"
 
@@ -10,7 +9,7 @@ export class ChatGptService extends BaseAIService {
   private debugger: ChatGptDebugger
 
   constructor() {
-    super(new ChatGptDomManager(), CHATGPT_CONFIG)
+    super(CHATGPT_CONFIG)
     this.debugger = new ChatGptDebugger()
   }
 
