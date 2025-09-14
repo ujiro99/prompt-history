@@ -157,6 +157,16 @@ export class StorageHelper {
         return
       }
 
+      // Check for existing prompts with the same content
+      const existingPrompts = await this.storage.getAllPrompts()
+      const duplicateExists = existingPrompts.some(
+        (prompt) => prompt.content === content,
+      )
+
+      if (duplicateExists) {
+        return // Skip saving if duplicate content already exists
+      }
+
       // Save as new prompt (regardless of session state)
       const savedPrompt = await this.storage.savePrompt({
         name: this.generatePromptName(content),

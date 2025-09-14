@@ -34,8 +34,10 @@ export async function inputContentEditable(
         if (node.nodeType === 1) {
           node = node.childNodes[0]
         }
-        range.setStart(node, nodeAtCaret.textContent?.length || 0)
-        range.setEnd(node, nodeAtCaret.textContent?.length || 0)
+        if (node.nodeType === 3) {
+          range.setStart(node, nodeAtCaret.textContent?.length || 0)
+          range.setEnd(node, nodeAtCaret.textContent?.length || 0)
+        }
         nodeAtCaret = undefined // Only use nodeAtCaret for the first insertion
       }
       const node = document.createTextNode(val)
