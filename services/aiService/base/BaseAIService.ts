@@ -1,4 +1,7 @@
-import type { AIServiceInterface } from "../../../types/prompt"
+import type {
+  AIServiceInterface,
+  PopupPlacement,
+} from "../../../types/aiService"
 import type { AIServiceConfig, ServiceElementInfo } from "./types"
 import { DomManager } from "../base/domManager"
 
@@ -70,6 +73,13 @@ export abstract class BaseAIService implements AIServiceInterface {
    */
   getSendButton(): Element | null {
     return this.domManager.getSendButton()
+  }
+
+  /**
+   * Get popup placement details
+   */
+  getPopupPlacement(): PopupPlacement {
+    return this.config.popupPlacement
   }
 
   /**

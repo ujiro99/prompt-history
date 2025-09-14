@@ -8,7 +8,9 @@ import { extractElementContent } from "../../dom"
 export const GEMINI_CONFIG: AIServiceConfig = {
   serviceName: "Gemini",
 
-  selectors: GEMINI_DEFINITIONS,
+  selectors: GEMINI_DEFINITIONS.selectors,
+
+  popupPlacement: GEMINI_DEFINITIONS.popupPlacement,
 
   extractContent: extractElementContent,
 

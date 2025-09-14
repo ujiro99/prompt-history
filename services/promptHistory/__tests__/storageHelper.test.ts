@@ -3,12 +3,8 @@ import { StorageHelper } from "../storageHelper"
 import { SaveMode } from "@/types/prompt"
 import type { StorageService } from "@/services/storage"
 import type { SessionManager } from "@/services/promptHistory/sessionManager"
-import type {
-  Prompt,
-  SaveDialogData,
-  AIServiceInterface,
-  AppSettings,
-} from "@/types/prompt"
+import type { AIServiceInterface } from "@/types/aiService"
+import type { Prompt, SaveDialogData, AppSettings } from "@/types/prompt"
 
 // Mock dependencies
 const createMockStorageService = (): StorageService =>
@@ -42,6 +38,7 @@ const createMockAIService = (): AIServiceInterface => ({
   onContentChange: vi.fn(),
   onElementChange: vi.fn(),
   getServiceName: vi.fn(),
+  getPopupPlacement: vi.fn(),
   destroy: vi.fn(),
 })
 

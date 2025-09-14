@@ -1,6 +1,6 @@
 import { promptStorage, StorageService } from "./storage"
+import type { AIServiceInterface, PopupPlacement } from "../types/aiService"
 import type {
-  AIServiceInterface,
   Prompt,
   Session,
   SaveDialogData,
@@ -305,6 +305,18 @@ export class PromptServiceFacade {
       return ""
     }
     return this.aiService.extractPromptContent()
+  }
+
+  /**
+   * Get popup placement details from AI service.
+   * Returns default placement if AI service is not available.
+   */
+  getPopupPlacement(): PopupPlacement {
+    if (!this.aiService) {
+      this.handleError("EXECUTE_FAILED", "AI service not available", null)
+      return { sideOffset: 10, alignOffset: 0 }
+    }
+    return this.aiService.getPopupPlacement()
   }
 
   /**

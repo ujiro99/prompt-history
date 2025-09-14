@@ -47,14 +47,17 @@ export function InputPopup(props: Props): React.ReactElement {
   const { targetElm } = props
   if (targetElm == null) return <></>
 
+  const popupPlacement = serviceFacade.getPopupPlacement()
+
   return (
     <Popover open={true}>
       <PopoverAnchor virtualRef={{ current: targetElm }} />
       <PopoverContent
         className="p-0 border-0"
         side={"top"}
+        sideOffset={popupPlacement.sideOffset}
         align={"end"}
-        sideOffset={8}
+        alignOffset={popupPlacement.alignOffset}
         onOpenAutoFocus={noFocus}
       >
         <InputMenu {...props} />

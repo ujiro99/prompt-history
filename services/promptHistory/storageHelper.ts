@@ -1,8 +1,5 @@
-import type {
-  Prompt,
-  SaveDialogData,
-  AIServiceInterface,
-} from "../../types/prompt"
+import type { AIServiceInterface } from "../../types/aiService"
+import type { Prompt, SaveDialogData } from "../../types/prompt"
 import type { StorageService } from "../storage"
 import { SessionManager } from "./sessionManager"
 

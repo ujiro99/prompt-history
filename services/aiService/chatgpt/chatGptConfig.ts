@@ -8,7 +8,9 @@ import { extractElementContent } from "../../dom"
 export const CHATGPT_CONFIG: AIServiceConfig = {
   serviceName: "ChatGPT",
 
-  selectors: CHATGPT_DEFINITIONS,
+  selectors: CHATGPT_DEFINITIONS.selectors,
+
+  popupPlacement: CHATGPT_DEFINITIONS.popupPlacement,
 
   extractContent: extractElementContent,
 

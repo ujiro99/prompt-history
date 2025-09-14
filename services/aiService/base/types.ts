@@ -1,3 +1,5 @@
+import { PopupPlacement } from "@/types/aiService"
+
 /**
  * Configuration interface for AI service implementations
  */
@@ -10,6 +12,9 @@ export interface AIServiceConfig {
     textInput: string[]
     sendButton: string[]
   }
+
+  /** InputPopup placement details */
+  popupPlacement: PopupPlacement
 
   /** Function to extract content from text input element */
   extractContent: (element: Element) => string
