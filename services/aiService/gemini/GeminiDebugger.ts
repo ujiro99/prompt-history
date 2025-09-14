@@ -1,4 +1,4 @@
-import { GEMINI_SELECTORS } from "./geminiSelectors"
+import { GEMINI_DEFINITIONS } from "./geminiDefinitions"
 
 /**
  * Debugging utilities for Google Gemini service
@@ -12,12 +12,12 @@ export class GeminiDebugger {
 
     // Test text input selectors
     console.group("Text Input Selectors:")
-    this.testSelectorGroup(GEMINI_SELECTORS.textInput, "Text Input")
+    this.testSelectorGroup(GEMINI_DEFINITIONS.textInput, "Text Input")
     console.groupEnd()
 
     // Test send button selectors
     console.group("Send Button Selectors:")
-    this.testSelectorGroup(GEMINI_SELECTORS.sendButton, "Send Button")
+    this.testSelectorGroup(GEMINI_DEFINITIONS.sendButton, "Send Button")
     console.groupEnd()
 
     console.groupEnd()

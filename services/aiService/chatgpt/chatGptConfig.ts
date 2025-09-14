@@ -1,5 +1,5 @@
 import type { AIServiceConfig } from "../base/types"
-import { CHATGPT_SELECTORS } from "./chatGptSelectors"
+import { CHATGPT_DEFINITIONS } from "./chatGptDefinitions"
 import { extractElementContent } from "../../dom"
 
 /**
@@ -8,7 +8,7 @@ import { extractElementContent } from "../../dom"
 export const CHATGPT_CONFIG: AIServiceConfig = {
   serviceName: "ChatGPT",
 
-  selectors: CHATGPT_SELECTORS,
+  selectors: CHATGPT_DEFINITIONS,
 
   extractContent: extractElementContent,
 

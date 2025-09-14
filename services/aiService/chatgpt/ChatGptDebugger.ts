@@ -1,4 +1,4 @@
-import { CHATGPT_SELECTORS } from "./chatGptSelectors"
+import { CHATGPT_DEFINITIONS } from "./chatGptDefinitions"
 
 /**
  * Debugging utilities for ChatGPT service
@@ -12,12 +12,12 @@ export class ChatGptDebugger {
 
     // Test text input selectors
     console.group("Text Input Selectors:")
-    this.testSelectorGroup(CHATGPT_SELECTORS.textInput, "Text Input")
+    this.testSelectorGroup(CHATGPT_DEFINITIONS.textInput, "Text Input")
     console.groupEnd()
 
     // Test send button selectors
     console.group("Send Button Selectors:")
-    this.testSelectorGroup(CHATGPT_SELECTORS.sendButton, "Send Button")
+    this.testSelectorGroup(CHATGPT_DEFINITIONS.sendButton, "Send Button")
     console.groupEnd()
 
     console.groupEnd()

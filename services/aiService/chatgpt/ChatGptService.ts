@@ -1,5 +1,5 @@
 import { BaseAIService } from "../base/BaseAIService"
-import { ChatGptDebugger } from "./ChatGptDebugger"
+import { ChatGptDebugger } from "./chatGptDebugger"
 import { CHATGPT_CONFIG } from "./chatGptConfig"
 
 /**

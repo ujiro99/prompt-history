@@ -1,7 +1,7 @@
 /**
- * DOM selector definitions for ChatGPT
+ * Definitions for ChatGPT
  */
-export const CHATGPT_SELECTORS = {
+export const CHATGPT_DEFINITIONS = {
   textInput: [
     // New UI
     "#prompt-textarea",
@@ -28,4 +28,8 @@ export const CHATGPT_SELECTORS = {
     "button:has(svg)",
     "button:last-child",
   ],
+  popupPlacement: {
+    alignOffset: 0,
+    sideOffset: 8,
+  },
 }

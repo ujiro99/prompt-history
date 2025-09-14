@@ -1,7 +1,7 @@
 /**
- * DOM selector definitions for Google Gemini
+ * Definitions for Google Gemini
  */
-export const GEMINI_SELECTORS = {
+export const GEMINI_DEFINITIONS = {
   textInput: [
     // Primary selectors for Gemini input
     '.ql-editor[contenteditable="true"]',
@@ -21,4 +21,8 @@ export const GEMINI_SELECTORS = {
     "button.send-button",
     "button:has(mat-icon)",
   ],
+  popupPlacement: {
+    alignOffset: 0,
+    sideOffset: 8,
+  },
 }

@@ -1,5 +1,5 @@
 import type { AIServiceConfig } from "../base/types"
-import { GEMINI_SELECTORS } from "./geminiSelectors"
+import { GEMINI_DEFINITIONS } from "./geminiDefinitions"
 import { extractElementContent } from "../../dom"
 
 /**
@@ -8,7 +8,7 @@ import { extractElementContent } from "../../dom"
 export const GEMINI_CONFIG: AIServiceConfig = {
   serviceName: "Gemini",
 
-  selectors: GEMINI_SELECTORS,
+  selectors: GEMINI_DEFINITIONS,
 
   extractContent: extractElementContent,
 

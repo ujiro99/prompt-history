@@ -2,7 +2,7 @@
  * AI Service exports
  */
 
-import { ChatGptService } from "./chatgpt/ChatGptService"
-import { GeminiService } from "./gemini/GeminiService"
+import { ChatGptService } from "./chatgpt/chatGptService"
+import { GeminiService } from "./gemini/geminiService"
 
 export const AiServices = [new ChatGptService(), new GeminiService()]

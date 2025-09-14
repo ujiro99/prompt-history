@@ -1,5 +1,5 @@
 import { BaseAIService } from "../base/BaseAIService"
-import { GeminiDebugger } from "./GeminiDebugger"
+import { GeminiDebugger } from "./geminiDebugger"
 import { GEMINI_CONFIG } from "./geminiConfig"
 
 /**
