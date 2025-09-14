@@ -1,5 +1,6 @@
 import { defineConfig } from "wxt"
 import tailwindcss from "@tailwindcss/vite"
+import removeConsole from "vite-plugin-remove-console"
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
@@ -11,7 +12,14 @@ export default defineConfig({
   webExt: {
     startUrls: ["https://ujiro99.github.io/selection-command/en/test"],
   },
-  vite: () => ({
-    plugins: [tailwindcss()],
+  vite: (configEnv) => ({
+    plugins: [
+      tailwindcss(),
+      configEnv.mode === "production"
+        ? removeConsole({
+            includes: ["log", "debug"],
+          })
+        : null,
+    ],
   }),
 })
