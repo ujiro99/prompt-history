@@ -395,6 +395,7 @@ describe("StorageHelper", () => {
       const content = "This is a test prompt content"
       vi.mocked(mockAIService.extractPromptContent).mockReturnValue(content)
       vi.mocked(mockStorage.savePrompt).mockResolvedValue(mockPrompt)
+      vi.mocked(mockStorage.getAllPrompts).mockResolvedValue([mockPrompt])
 
       const onSuccess = vi.fn()
 
@@ -412,7 +413,7 @@ describe("StorageHelper", () => {
     })
 
     it("should increment execution count of active prompt", async () => {
-      const content = "Test content"
+      const content = "Test content for active prompt"
       const session = {
         activePromptId: "active-id",
         url: "test",
@@ -420,6 +421,7 @@ describe("StorageHelper", () => {
       }
 
       vi.mocked(mockAIService.extractPromptContent).mockReturnValue(content)
+      vi.mocked(mockStorage.getAllPrompts).mockResolvedValue([mockPrompt])
       vi.mocked(mockStorage.savePrompt).mockResolvedValue(mockPrompt)
       vi.mocked(mockSessionManager.getCurrentSession).mockResolvedValue(session)
 
@@ -628,6 +630,7 @@ describe("StorageHelper", () => {
         "This is a very long content that exceeds the maximum length limit of 50 characters"
       const expectedTruncated = longContent.substring(0, 47) + "..."
 
+      vi.mocked(mockStorage.getAllPrompts).mockResolvedValue([mockPrompt])
       const mockAIService = createMockAIService()
       vi.mocked(mockAIService.extractPromptContent).mockReturnValue(longContent)
       vi.mocked(mockStorage.savePrompt).mockResolvedValue(mockPrompt)
@@ -645,6 +648,7 @@ describe("StorageHelper", () => {
       const messyContent = "  Content   with   multiple    spaces  \n\n  "
       const cleanedContent = "Content with multiple spaces"
 
+      vi.mocked(mockStorage.getAllPrompts).mockResolvedValue([mockPrompt])
       const mockAIService = createMockAIService()
       vi.mocked(mockAIService.extractPromptContent).mockReturnValue(
         messyContent,
