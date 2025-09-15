@@ -68,8 +68,8 @@ The extension uses a modular architecture for supporting different AI services:
   - Event handling for send actions and content changes
   - Configuration-driven approach for service-specific behaviors
 - **Service Implementations**: Each AI service extends the base class
-  - ChatGPT: Supports chat.openai.com with specific DOM selectors
-  - Gemini: Supports gemini.google.com with Gemini-specific configurations
+  - ChatGPT: Supports chat.openai.com
+  - Gemini: Supports gemini.google.com
 - **Extensibility**: New AI services can be easily added by:
   1. Creating service-specific configuration and definitions
   2. Extending `BaseAIService` with service-specific logic

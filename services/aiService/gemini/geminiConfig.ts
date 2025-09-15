@@ -2,6 +2,8 @@ import type { AIServiceConfig } from "../base/types"
 import { GEMINI_DEFINITIONS } from "./geminiDefinitions"
 import { extractElementContent } from "../../dom"
 
+export const supportHosts = ["gemini.google.com"]
+
 /**
  * Configuration for Gemini service
  */
@@ -28,10 +30,7 @@ export const GEMINI_CONFIG: AIServiceConfig = {
 
   debounceTime: 100,
 
-  isSupported: (hostname: string, pathname: string): boolean => {
-    return (
-      hostname === "gemini.google.com" ||
-      (hostname.endsWith(".google.com") && pathname.includes("gemini"))
-    )
+  isSupported: (hostname: string, _pathname: string): boolean => {
+    return supportHosts.includes(hostname)
   },
 }

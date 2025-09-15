@@ -1,22 +1,18 @@
 import type { AIServiceConfig } from "../base/types"
-import { CHATGPT_DEFINITIONS } from "./chatGptDefinitions"
+import { PERPLEXITY_DEFINITIONS } from "./perplexityDefinitions"
 import { extractElementContent } from "../../dom"
 
-export const supportHosts = [
-  "chatgpt.com",
-  "openai.com",
-  "ujiro99.github.io", // For testing
-]
+export const supportHosts = ["perplexity.ai", "www.perplexity.ai"]
 
 /**
- * Configuration for ChatGPT service
+ * Configuration for Perplexity AI service
  */
-export const CHATGPT_CONFIG: AIServiceConfig = {
-  serviceName: "ChatGPT",
+export const PERPLEXITY_CONFIG: AIServiceConfig = {
+  serviceName: "Perplexity",
 
-  selectors: CHATGPT_DEFINITIONS.selectors,
+  selectors: PERPLEXITY_DEFINITIONS.selectors,
 
-  popupPlacement: CHATGPT_DEFINITIONS.popupPlacement,
+  popupPlacement: PERPLEXITY_DEFINITIONS.popupPlacement,
 
   extractContent: extractElementContent,
 

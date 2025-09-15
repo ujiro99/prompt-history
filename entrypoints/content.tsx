@@ -1,15 +1,12 @@
 import ReactDOM from "react-dom/client"
 import App from "./content/App.tsx"
 import "./content/App.css"
+import { supportHosts } from "@/services/aiService"
+
+const matches = supportHosts.map((hostname) => `https://${hostname}/*`)
 
 export default defineContentScript({
-  matches: [
-    "https://chatgpt.com/*",
-    "https://chat.openai.com/*",
-    "https://*.openai.com/*",
-    "https://gemini.google.com/*",
-    "https://ujiro99.github.io/selection-command/*",
-  ],
+  matches,
   cssInjectionMode: "ui",
   runAt: "document_end",
 

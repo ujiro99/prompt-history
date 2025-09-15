@@ -10,7 +10,7 @@ import type {
 import { SessionManager } from "./promptHistory/sessionManager"
 import { StorageHelper } from "./promptHistory/storageHelper"
 import { ExecuteManager } from "./promptHistory/executeManager"
-import { AiServices } from "@/services/aiService"
+import { getAiServices } from "@/services/aiService"
 import type { AutoCompleteMatch } from "@/services/autoComplete/types"
 
 /**
@@ -89,7 +89,7 @@ export class PromptServiceFacade {
    */
   private async initializeAIService(): Promise<void> {
     // Try each service in order
-    for (const service of AiServices) {
+    for (const service of getAiServices()) {
       if (service.isSupported()) {
         try {
           await service.initialize()
