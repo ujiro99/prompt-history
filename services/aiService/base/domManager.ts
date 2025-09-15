@@ -14,7 +14,8 @@ export class DomManager {
   protected textInput: Element | null = null
   protected sendButton: Element | null = null
   protected lastContent: string = ""
-  protected observer: MutationObserver | null = null
+  protected inputObserver: MutationObserver | null = null
+  protected domObserver: MutationObserver | null = null
 
   protected sendCallbacks: Set<SendCallback> = new Set()
   protected contentChangeCallbacks: Set<ContentChangeCallback> = new Set()
@@ -165,12 +166,18 @@ export class DomManager {
       this.textInput!.addEventListener(eventType, this.handleContentChange)
     })
 
+    // Destruction of previous observer if any
+    if (this.inputObserver) {
+      this.inputObserver.disconnect()
+      this.inputObserver = null
+    }
+
     // Also monitor DOM changes for dynamic content
-    const observer = new MutationObserver(() => {
+    this.inputObserver = new MutationObserver(() => {
       this.handleContentChange()
     })
 
-    observer.observe(this.textInput, {
+    this.inputObserver.observe(this.textInput, {
       childList: true,
       subtree: true,
       characterData: true,
@@ -185,7 +192,7 @@ export class DomManager {
    * Set up DOM observer for element changes
    */
   setupDOMObserver(): void {
-    this.observer = new MutationObserver(() => {
+    this.domObserver = new MutationObserver(() => {
       // Check if elements still exist and are valid
       const newTextInput = this.findElement(this.config.selectors.textInput)
       const newSendButton = this.findElement(this.config.selectors.sendButton)
@@ -220,7 +227,7 @@ export class DomManager {
       }
     })
 
-    this.observer.observe(document.body, {
+    this.domObserver.observe(document.body, {
       childList: true,
       subtree: true,
       attributes: true,
@@ -364,9 +371,13 @@ export class DomManager {
     }
 
     // Disconnect observer
-    if (this.observer) {
-      this.observer.disconnect()
-      this.observer = null
+    if (this.domObserver) {
+      this.domObserver.disconnect()
+      this.domObserver = null
+    }
+    if (this.inputObserver) {
+      this.inputObserver.disconnect()
+      this.inputObserver = null
     }
 
     // Clear timeouts
