@@ -31,7 +31,7 @@ export const CHATGPT_CONFIG: AIServiceConfig = {
   isSupported: (hostname: string, _pathname: string): boolean => {
     return (
       hostname === "chatgpt.com" ||
-      hostname === "chat.openai.com" ||
+      hostname === "openai.com" ||
       hostname.endsWith(".openai.com") ||
       hostname === "ujiro99.github.io" // For testing
     )

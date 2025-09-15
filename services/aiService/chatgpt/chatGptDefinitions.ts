@@ -7,6 +7,8 @@ export const CHATGPT_DEFINITIONS = {
       // New UI
       "#prompt-textarea",
       '[data-testid="prompt-textarea"]',
+      // openai.com
+      "#main form textarea",
       // Old UI, fallback
       'textarea[placeholder*="Message"]',
       'div[contenteditable="true"][data-id*="prompt"]',
@@ -20,6 +22,8 @@ export const CHATGPT_DEFINITIONS = {
       '[data-testid="send-button"]',
       'button[aria-label*="Send"]',
       '[data-testid="composer-speech-button"]',
+      // openai.com
+      "button[type='submit']",
       // SVG icon based
       'button svg[data-icon="paper-plane"]',
       'button svg[data-icon="arrow-up"]',
