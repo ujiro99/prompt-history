@@ -28,6 +28,26 @@ This is a browser extension built with WXT (Web Extension Toolkit) and React. Th
 - `src/` - Source code directory
   - `components/` - React UI components
   - `services/` - Core business logic services
+    - `aiService/` - AI service integrations
+      - `base/` - Abstract base class and common utilities
+        - `BaseAIService.ts` - Abstract base class for AI service implementations
+        - `domManager.ts` - DOM manipulation and event handling
+        - `types.ts` - Common type definitions for AI services
+        - `selectorDebugger.ts` - Debug utilities for DOM selectors
+        - `__tests__/` - Unit tests for base functionality
+      - `chatgpt/` - ChatGPT specific implementation
+        - `chatGptService.ts` - ChatGPT service implementation
+        - `chatGptConfig.ts` - ChatGPT-specific configuration
+        - `chatGptDefinitions.ts` - ChatGPT DOM selectors and settings
+      - `gemini/` - Google Gemini specific implementation
+        - `geminiService.ts` - Gemini service implementation
+        - `geminiConfig.ts` - Gemini-specific configuration
+        - `geminiDefinitions.ts` - Gemini DOM selectors and settings
+      - `index.ts` - Exports all available AI services
+    - `autoComplete/` - Auto-completion functionality
+    - `dom/` - DOM utility functions
+    - `promptHistory/` - Prompt history management
+    - `storage/` - Data persistence services
   - `types/` - TypeScript type definitions
   - `utils/` - Utility functions
 - `public/` - Static assets and icons
@@ -38,6 +58,22 @@ This is a browser extension built with WXT (Web Extension Toolkit) and React. Th
 
 - Background script handles extension lifecycle
 - Content script injects UI widgets into AI service pages
+
+**AI Service Architecture**:
+
+The extension uses a modular architecture for supporting different AI services:
+
+- **Base Layer**: `BaseAIService` abstract class provides common functionality
+  - DOM element detection and management via `DomManager`
+  - Event handling for send actions and content changes
+  - Configuration-driven approach for service-specific behaviors
+- **Service Implementations**: Each AI service extends the base class
+  - ChatGPT: Supports chat.openai.com with specific DOM selectors
+  - Gemini: Supports gemini.google.com with Gemini-specific configurations
+- **Extensibility**: New AI services can be easily added by:
+  1. Creating service-specific configuration and definitions
+  2. Extending `BaseAIService` with service-specific logic
+  3. Adding the service to the exports in `services/aiService/index.ts`
 
 **Technology Stack**:
 

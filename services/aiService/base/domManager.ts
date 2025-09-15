@@ -459,11 +459,6 @@ export class DomManager {
         console.error("Error in content change callback:", error)
       }
     })
-
-    console.debug(`${this.config.serviceName} content changed:`, {
-      length: content.length,
-      preview: content.substring(0, 50),
-    })
   }
 
   /**
