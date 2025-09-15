@@ -19,6 +19,7 @@ export abstract class BaseAIService implements AIServiceInterface {
 
     if (
       typeof window !== "undefined" &&
+      // eslint-disable-next-line no-undef
       process.env.NODE_ENV !== "production" &&
       config.isSupported(window.location.hostname, window.location.pathname)
     ) {
