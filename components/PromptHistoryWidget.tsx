@@ -58,6 +58,7 @@ export const PromptHistoryWidget: React.FC = () => {
           loadPrompts()
           setTargetElement(serviceFacade.getTextInput())
           serviceFacade.onElementChange(setTargetElement)
+          serviceFacade.onContentChange(setPromptContent)
 
           setIsInitializing(false)
         }
@@ -99,14 +100,9 @@ export const PromptHistoryWidget: React.FC = () => {
       console.error("SessionManager error:", error)
     }
 
-    const handleContentChange = (content: string) => {
-      setPromptContent(content)
-    }
-
     // Register callbacks
     serviceFacade.onPromptChange(handlePromptChange)
     serviceFacade.onPinChange(handlePinChange)
-    serviceFacade.onContentChange(handleContentChange)
     serviceFacade.onNotification(handleNotification)
     serviceFacade.onError(handleError)
   }, [])
@@ -164,12 +160,7 @@ export const PromptHistoryWidget: React.FC = () => {
       />
 
       {/* AutoComplete functionality */}
-      {serviceFacade.getDomManager() && (
-        <AutoCompletePopup
-          domManager={serviceFacade.getDomManager()!}
-          prompts={prompts}
-        />
-      )}
+      <AutoCompletePopup prompts={prompts} />
     </CaretProvider>
   )
 }

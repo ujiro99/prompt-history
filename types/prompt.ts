@@ -112,44 +112,6 @@ export interface AppSettings {
 }
 
 /**
- * AI service abstraction interface
- */
-export interface AIServiceInterface {
-  /** Check if this service is supported */
-  isSupported(): boolean
-  /** Get text input element */
-  getTextInput(): Element | null
-  /** Get send button element */
-  getSendButton(): Element | null
-  /** Extract current prompt content */
-  extractPromptContent(): string
-  /** Set up send event monitoring */
-  onSend(callback: () => void): void
-  /** Set up content change monitoring */
-  onContentChange(callback: (content: string) => void): void
-  /** Set up Input element change monitoring */
-  onElementChange(callback: (element: Element | null) => void): void
-  /** Get service name */
-  getServiceName(): string
-  /** Get DOM manager (for services that support it) */
-  getDomManager?(): any
-  /** Service cleanup */
-  destroy(): void
-}
-
-/**
- * DOM selector definitions for ChatGPT
- */
-export interface ChatGPTSelectors {
-  /** Text input selectors (fallback array) */
-  textInput: string[]
-  /** Send button selectors (fallback array) */
-  sendButton: string[]
-  /** Chat history selectors (fallback array) */
-  chatHistory: string[]
-}
-
-/**
  * Data for prompt list display
  */
 export interface PromptListItem {

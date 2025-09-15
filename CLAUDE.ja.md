@@ -28,6 +28,26 @@
 - `src/` - ソースコードディレクトリ
   - `components/` - React UIコンポーネント
   - `services/` - コアビジネスロジックサービス
+    - `aiService/` - AIサービス統合
+      - `base/` - 抽象基底クラスと共通ユーティリティ
+        - `BaseAIService.ts` - AIサービス実装の抽象基底クラス
+        - `domManager.ts` - DOM操作とイベント処理
+        - `types.ts` - AIサービス共通の型定義
+        - `selectorDebugger.ts` - DOMセレクターのデバッグユーティリティ
+        - `__tests__/` - 基本機能のユニットテスト
+      - `chatgpt/` - ChatGPT固有の実装
+        - `chatGptService.ts` - ChatGPTサービス実装
+        - `chatGptConfig.ts` - ChatGPT固有の設定
+        - `chatGptDefinitions.ts` - ChatGPTのDOMセレクターと設定
+      - `gemini/` - Google Gemini固有の実装
+        - `geminiService.ts` - Geminiサービス実装
+        - `geminiConfig.ts` - Gemini固有の設定
+        - `geminiDefinitions.ts` - GeminiのDOMセレクターと設定
+      - `index.ts` - 利用可能なすべてのAIサービスをエクスポート
+    - `autoComplete/` - 自動補完機能
+    - `dom/` - DOMユーティリティ関数
+    - `promptHistory/` - プロンプト履歴管理
+    - `storage/` - データ永続化サービス
   - `types/` - TypeScript型定義
   - `utils/` - ユーティリティ関数
 - `public/` - 静的アセットとアイコン
@@ -38,6 +58,22 @@
 
 - バックグラウンドスクリプトが拡張機能のライフサイクルを処理
 - コンテンツスクリプトがAIサービスページにUIウィジェットを注入
+
+**AIサービスアーキテクチャ**:
+
+拡張機能は異なるAIサービスをサポートするためのモジュラーアーキテクチャを使用しています：
+
+- **基盤レイヤー**: `BaseAIService`抽象クラスが共通機能を提供
+  - `DomManager`を介したDOM要素の検出と管理
+  - 送信アクションとコンテンツ変更のイベント処理
+  - サービス固有の動作に対する設定駆動アプローチ
+- **サービス実装**: 各AIサービスが基底クラスを拡張
+  - ChatGPT: 特定のDOMセレクターでchat.openai.comをサポート
+  - Gemini: Gemini固有の設定でgemini.google.comをサポート
+- **拡張性**: 新しいAIサービスは以下の手順で簡単に追加可能：
+  1. サービス固有の設定と定義の作成
+  2. サービス固有のロジックで`BaseAIService`を拡張
+  3. `services/aiService/index.ts`のエクスポートにサービスを追加
 
 **技術スタック**:
 

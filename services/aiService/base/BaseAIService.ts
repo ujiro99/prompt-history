@@ -1,31 +1,42 @@
-import type { AIServiceInterface } from "../../types/prompt"
-import { DomManager } from "./domManager"
-import { ChatGptDebugger } from "./chatGptDebugger"
+import type {
+  AIServiceInterface,
+  PopupPlacement,
+} from "../../../types/aiService"
+import type { AIServiceConfig, ServiceElementInfo } from "./types"
+import { DomManager } from "../base/domManager"
 
 /**
- * Service implementation for ChatGPT
- * Orchestrates managers and implements AIServiceInterface
+ * Base class for AI service implementations
+ * Provides common functionality and delegates DOM operations to a DomManager
  */
-export class ChatGptService implements AIServiceInterface {
-  private domManager: DomManager
-  private debugger: ChatGptDebugger
+export abstract class BaseAIService implements AIServiceInterface {
+  protected domManager: DomManager
+  protected config: AIServiceConfig
 
-  constructor() {
-    this.domManager = new DomManager()
-    this.debugger = new ChatGptDebugger()
+  constructor(config: AIServiceConfig) {
+    this.domManager = new DomManager(config)
+    this.config = config
+
+    if (
+      typeof window !== "undefined" &&
+      // eslint-disable-next-line no-undef
+      process.env.NODE_ENV !== "production" &&
+      config.isSupported(window.location.hostname, window.location.pathname)
+    ) {
+      console.debug(`Initialized ${config.serviceName}`)
+      ;(window as any).promptHistoryDebug = this
+    }
   }
 
   /**
-   * Check if current site is ChatGPT
+   * Check if current site is supported by this service
    */
   isSupported(): boolean {
     const hostname = window.location.hostname
-    return (
-      hostname === "chatgpt.com" ||
-      hostname === "chat.openai.com" ||
-      hostname.endsWith(".openai.com") ||
-      hostname === "ujiro99.github.io"
-    )
+    const pathname = window.location.pathname
+
+    // Use custom checker if provided
+    return this.config.isSupported(hostname, pathname)
   }
 
   /**
@@ -33,7 +44,9 @@ export class ChatGptService implements AIServiceInterface {
    */
   async initialize(): Promise<void> {
     if (!this.isSupported()) {
-      throw new Error("ChatGPT service is not supported on this site")
+      throw new Error(
+        `${this.config.serviceName} service is not supported on this site`,
+      )
     }
 
     await this.domManager.waitForElements()
@@ -46,14 +59,7 @@ export class ChatGptService implements AIServiceInterface {
    * Get service name
    */
   getServiceName(): string {
-    return "ChatGPT"
-  }
-
-  /**
-   * Get DOM manager
-   */
-  getDomManager() {
-    return this.domManager
+    return this.config.serviceName
   }
 
   /**
@@ -71,6 +77,13 @@ export class ChatGptService implements AIServiceInterface {
   }
 
   /**
+   * Get popup placement details
+   */
+  getPopupPlacement(): PopupPlacement {
+    return this.config.popupPlacement
+  }
+
+  /**
    * Extract prompt content
    */
   extractPromptContent(): string {
@@ -80,7 +93,7 @@ export class ChatGptService implements AIServiceInterface {
   /**
    * Set up send event monitoring
    */
-  onSend(callback: () => void): void {
+  onSend(callback: () => void): () => void {
     // Create wrapper to check if prompt content is not empty
     const wrappedCallback = () => {
       const content = this.extractPromptContent().trim()
@@ -88,8 +101,7 @@ export class ChatGptService implements AIServiceInterface {
         callback()
       }
     }
-
-    this.domManager.onSend(wrappedCallback)
+    return this.domManager.onSend(wrappedCallback)
   }
 
   /**
@@ -102,8 +114,8 @@ export class ChatGptService implements AIServiceInterface {
   /**
    * Set up content change monitoring
    */
-  onContentChange(callback: (content: string) => void): void {
-    this.domManager.onContentChange(callback)
+  onContentChange(callback: (content: string) => void): () => void {
+    return this.domManager.onContentChange(callback)
   }
 
   /**
@@ -135,17 +147,12 @@ export class ChatGptService implements AIServiceInterface {
   /**
    * Get information about currently detected elements
    */
-  getElementInfo(): {
-    textInput: { found: boolean; selector?: string; tagName?: string }
-    sendButton: { found: boolean; selector?: string; tagName?: string }
-  } {
-    return this.debugger.getElementInfo()
+  getElementInfo(): ServiceElementInfo {
+    return this.domManager.getElementInfo()
   }
 
   /**
-   * Run selector tests
+   * Run selector tests (to be implemented by subclasses if needed)
    */
-  testSelectors(): void {
-    this.debugger.testSelectors()
-  }
+  abstract testSelectors(): void
 }

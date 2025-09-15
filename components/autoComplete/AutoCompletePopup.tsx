@@ -1,20 +1,20 @@
 import React, { useEffect, useRef, useState, useCallback } from "react"
+import { PromptServiceFacade } from "@/services/promptServiceFacade"
 import { AutoCompleteItem } from "./AutoCompleteItem"
 import { useAutoComplete } from "./useAutoComplete"
-import { DomManager } from "../../services/chatgpt/domManager"
 import { Popover, PopoverContent, PopoverAnchor } from "../ui/popover"
 import { cn } from "@/lib/utils"
 import type { Prompt } from "../../types/prompt"
 
+const serviceFacade = PromptServiceFacade.getInstance()
+
 const noFocus = (e: Event) => e.preventDefault()
 
 interface AutoCompletePopupProps {
-  domManager: DomManager
   prompts: Prompt[]
 }
 
 export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
-  domManager,
   prompts,
 }) => {
   const {
@@ -27,7 +27,7 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
     selectIndex,
     selectNext,
     selectPrevious,
-  } = useAutoComplete({ domManager, prompts })
+  } = useAutoComplete({ prompts })
   const inputRef = useRef<HTMLElement>(null)
   const popupRef = useRef<HTMLDivElement>(null)
   const anchorRef = useRef<HTMLDivElement>(null)
@@ -54,11 +54,11 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
   }, [])
 
   useEffect(() => {
-    inputRef.current = domManager.getTextInput() as HTMLElement
-    return domManager.onElementChange((textInput: Element | null) => {
+    inputRef.current = serviceFacade.getTextInput() as HTMLElement
+    return serviceFacade.onElementChange((textInput: Element | null) => {
       inputRef.current = textInput as HTMLElement
     })
-  }, [domManager])
+  }, [])
 
   useEffect(() => {
     // Only add event listeners when popup is visible

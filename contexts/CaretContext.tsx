@@ -26,6 +26,8 @@ export const CaretProvider: React.FC<CaretProviderProps> = ({
       const range = selection.getRangeAt(0)
       if (inputElement && inputElement.contains(range.startContainer)) {
         setNodeAtCaret(range.startContainer)
+      } else {
+        setNodeAtCaret(null)
       }
     }
 

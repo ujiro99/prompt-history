@@ -1,8 +1,5 @@
-import type {
-  Prompt,
-  SaveDialogData,
-  AIServiceInterface,
-} from "../../types/prompt"
+import type { AIServiceInterface } from "../../types/aiService"
+import type { Prompt, SaveDialogData } from "../../types/prompt"
 import type { StorageService } from "../storage"
 import { SessionManager } from "./sessionManager"
 
@@ -155,6 +152,16 @@ export class StorageHelper {
       const content = aiService.extractPromptContent()?.trim()
       if (!content || content.length === 0) {
         return
+      }
+
+      // Check for existing prompts with the same content
+      const existingPrompts = await this.storage.getAllPrompts()
+      const duplicateExists = existingPrompts.some(
+        (prompt) => prompt.content === content,
+      )
+
+      if (duplicateExists) {
+        return // Skip saving if duplicate content already exists
       }
 
       // Save as new prompt (regardless of session state)

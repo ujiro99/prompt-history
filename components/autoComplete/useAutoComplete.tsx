@@ -1,5 +1,4 @@
 import { useEffect, useState, useRef, useMemo } from "react"
-import { DomManager } from "../../services/chatgpt/domManager"
 import { PromptServiceFacade } from "@/services/promptServiceFacade"
 import { AutoCompleteManager } from "../../services/autoComplete/autoCompleteManager"
 import { useCaretNode } from "../../hooks/useCaretNode"
@@ -9,14 +8,10 @@ import type { Prompt } from "../../types/prompt"
 const serviceFacade = PromptServiceFacade.getInstance()
 
 interface UseAutoCompleteOptions {
-  domManager: DomManager
   prompts: Prompt[]
 }
 
-export const useAutoComplete = ({
-  domManager,
-  prompts,
-}: UseAutoCompleteOptions) => {
+export const useAutoComplete = ({ prompts }: UseAutoCompleteOptions) => {
   const [isVisible, setIsVisible] = useState(false)
   const [matches, setMatches] = useState<AutoCompleteMatch[]>([])
   const [selectedIndex, setSelectedIndex] = useState(-1)
@@ -56,7 +51,7 @@ export const useAutoComplete = ({
   }, [])
 
   useEffect(() => {
-    managerRef.current?.setElement(domManager.getTextInput())
+    managerRef.current?.setElement(serviceFacade.getTextInput())
 
     // Listen for element changes from DomManager
     const handleElementChange = (textInput: Element | null) => {
@@ -64,7 +59,7 @@ export const useAutoComplete = ({
         managerRef.current.setElement(textInput)
       }
     }
-    domManager.onElementChange(handleElementChange)
+    const offElementChange = serviceFacade.onElementChange(handleElementChange)
 
     // Listen for content changes from DomManager
     const handleContentChange = (content: string) => {
@@ -72,17 +67,17 @@ export const useAutoComplete = ({
         managerRef.current.handleContentChange(content)
       }
     }
-    domManager.onContentChange(handleContentChange)
+    const offContentChange = serviceFacade.onContentChange(handleContentChange)
 
     return () => {
-      domManager.offElementChange(handleElementChange)
-      domManager.offContentChange(handleContentChange)
+      offElementChange()
+      offContentChange()
       if (managerRef.current) {
         managerRef.current.destroy()
         managerRef.current = null
       }
     }
-  }, [domManager])
+  }, [])
 
   useEffect(() => {
     managerRef.current?.setPrompts(prompts)

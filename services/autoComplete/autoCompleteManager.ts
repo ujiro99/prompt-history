@@ -39,7 +39,6 @@ export class AutoCompleteManager {
    * Set the target input element
    */
   setElement(element: Element | null): void {
-    console.debug("Setting autocomplete element:", element)
     this.element = element
   }
 
@@ -54,7 +53,6 @@ export class AutoCompleteManager {
    * Handle content change in the input element
    */
   handleContentChange(content: string): void {
-    console.debug("Handling content change:", content)
     // Clear existing timeout
     if (this.debounceTimeout !== null) {
       clearTimeout(this.debounceTimeout)
@@ -129,7 +127,6 @@ export class AutoCompleteManager {
    * Show autocomplete popup
    */
   private show(matches: AutoCompleteMatch[]): void {
-    console.debug("Showing autocomplete with matches:", matches)
     this.currentMatches = matches
     this.selectedIndex = NO_SELECTED_INDEX
     this.notifySelectChange()
@@ -141,7 +138,6 @@ export class AutoCompleteManager {
    * Hide autocomplete popup
    */
   private hide(): void {
-    console.debug("Hiding autocomplete")
     if (this.isVisible) {
       this.isVisible = false
       this.currentMatches = []
