@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename)
 async function globalSetup(_config: FullConfig) {
   console.log("🚀 Starting global setup...")
 
-  // 拡張機能のビルドチェック
+  // Check extension build
   const extensionPath = path.join(__dirname, "../../.output/chrome-mv3")
 
   if (!fs.existsSync(extensionPath)) {
@@ -26,7 +26,7 @@ async function globalSetup(_config: FullConfig) {
     console.log("✅ Extension found at:", extensionPath)
   }
 
-  // 環境変数の設定
+  // Set environment variables
   process.env.EXTENSION_PATH = extensionPath
 
   console.log("✅ Global setup completed")

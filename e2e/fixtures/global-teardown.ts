@@ -3,8 +3,8 @@ import { FullConfig } from "@playwright/test"
 async function globalTeardown(_config: FullConfig) {
   console.log("🧹 Starting global teardown...")
 
-  // クリーンアップ処理
-  // 必要に応じて、テスト用の一時ファイルやデータのクリーンアップを行う
+  // Cleanup process
+  // Clean up temporary files and data for testing as needed
 
   console.log("✅ Global teardown completed")
 }

@@ -11,15 +11,15 @@ export const getServiceWorker = async (context: BrowserContext) => {
 export class StorageHelpers {
   constructor(private context: BrowserContext) {}
 
-  // 拡張機能のローカルストレージからデータを取得
+  // Get data from extension local storage
   async getExtensionData<T>(key: string): Promise<T> {
-    // Service Workerを取得
+    // Get Service Worker
     const serviceWorker = await getServiceWorker(this.context)
 
-    // chrome.storage API（local）に値を保存する
+    // Save value to chrome.storage API (local)
     return await serviceWorker.evaluate(
       ({ key }) => {
-        // Chrome拡張機能のstorageAPIを使用
+        // Use Chrome extension storage API
         if (typeof chrome !== "undefined" && chrome.storage) {
           return new Promise((resolve, reject) => {
             chrome.storage.local.get(
@@ -40,7 +40,7 @@ export class StorageHelpers {
     )
   }
 
-  // 拡張機能のローカルストレージにデータを設定
+  // Set data to extension local storage
   async setExtensionData(key: string, value: unknown): Promise<void> {
     const serviceWorker = await getServiceWorker(this.context)
 
@@ -63,18 +63,18 @@ export class StorageHelpers {
     )
   }
 
-  // プロンプト履歴データを取得
+  // Get prompt history data
   async getPromptHistory(): Promise<StoredPrompt[]> {
     const history =
       await this.getExtensionData<Record<string, StoredPrompt>>("prompts")
     if (history) {
-      // オブジェクトを配列に変換
+      // Convert object to array
       return Object.values(history)
     }
     return history || []
   }
 
-  // プロンプト履歴データを設定
+  // Set prompt history data
   async setPromptHistory(prompts: StoredPrompt[]): Promise<void> {
     const data = prompts.reduce(
       (acc, prompt) => {
@@ -86,7 +86,7 @@ export class StorageHelpers {
     await this.setExtensionData("prompts", data)
   }
 
-  // ストレージをクリア
+  // Clear storage
   async clearExtensionData(): Promise<void> {
     const serviceWorker = await getServiceWorker(this.context)
     await serviceWorker.evaluate(() => {
@@ -98,13 +98,13 @@ export class StorageHelpers {
     })
   }
 
-  // 特定のキーが存在するかチェック
+  // Check if specific key exists
   async hasExtensionData(key: string): Promise<boolean> {
     const data = await this.getExtensionData(key)
     return data !== null && data !== undefined
   }
 
-  // ストレージのサイズを取得
+  // Get storage size
   async getStorageSize(): Promise<number> {
     const serviceWorker = await getServiceWorker(this.context)
     return await serviceWorker.evaluate(() => {
@@ -115,7 +115,7 @@ export class StorageHelpers {
           })
         })
       }
-      // localStorageのサイズ計算
+      // Calculate localStorage size
       let totalSize = 0
       for (const key in localStorage) {
         if (Object.prototype.hasOwnProperty.call(localStorage, key)) {
@@ -126,7 +126,7 @@ export class StorageHelpers {
     })
   }
 
-  // テスト用のモックデータを作成
+  // Create mock data for testing
   async createMockPromptHistory(count = 5): Promise<StoredPrompt[]> {
     const mockData = Array.from({ length: count }, (_, i) => ({
       id: `mock-${i + 1}`,

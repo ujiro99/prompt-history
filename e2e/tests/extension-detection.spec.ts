@@ -15,19 +15,19 @@ test.describe("Extension Detection Tests", () => {
   test("should detect extension injection on TestPage", async ({
     extensionId,
   }) => {
-    // 拡張機能IDが取得できることを確認
+    // Confirm that extension ID can be retrieved
     expect(extensionId).toBeTruthy()
-    expect(extensionId).toMatch(/^[a-z]{32}$/) // Chrome拡張機能IDの形式
+    expect(extensionId).toMatch(/^[a-z]{32}$/) // Chrome extension ID format
 
-    // Testページに移動
+    // Navigate to Test page
     await testPage.navigate()
     await testPage.waitForServiceReady()
 
-    // 拡張機能のコンテンツスクリプトが注入されているかチェック
+    // Check if extension content script is injected
     const isInjected = await testPage.checkContentScriptInjection()
     expect(isInjected).toBeTruthy()
 
-    // ページに拡張機能のDOMがあるかチェック
+    // Check if extension DOM exists on page
     const extensionElementsPresent =
       await testPage.checkExtensionElementsPresence()
     if (extensionElementsPresent.err) {
@@ -44,20 +44,20 @@ test.describe("Extension Detection Tests", () => {
     await testPage.navigate()
     await testPage.waitForServiceReady()
 
-    // ストレージにテストデータを保存
+    // Save test data to storage
     const storageHelpers = new StorageHelpers(context)
     const testData = { test: "extension-storage", timestamp: Date.now() }
     await storageHelpers.setExtensionData("testKey", testData)
 
-    // データが正しく保存されたかチェック
+    // Check if data was saved correctly
     const retrievedData = await storageHelpers.getExtensionData("testKey")
     expect(retrievedData).toEqual(testData)
 
-    // キーの存在確認
+    // Confirm key exists
     const hasData = await storageHelpers.hasExtensionData("testKey")
     expect(hasData).toBe(true)
 
-    // 存在しないキーのテスト
+    // Test non-existent key
     const hasNonExistentData =
       await storageHelpers.hasExtensionData("nonExistentKey")
     expect(hasNonExistentData).toBe(false)
@@ -67,21 +67,21 @@ test.describe("Extension Detection Tests", () => {
     await testPage.navigate()
     await testPage.waitForServiceReady()
 
-    // プロンプト履歴の初期化
+    // Initialize prompt history
     const storageHelpers = new StorageHelpers(context)
     await storageHelpers.clearExtensionData()
 
-    // モックデータの作成
+    // Create mock data
     const mockHistory = await storageHelpers.createMockPromptHistory(3)
     expect(mockHistory).toHaveLength(3)
 
-    // プロンプト履歴の取得
+    // Get prompt history
     const retrievedHistory = await storageHelpers.getPromptHistory()
     expect(retrievedHistory).toEqual(mockHistory)
     expect(retrievedHistory[0].name).toContain("Mock prompt 1")
     expect(retrievedHistory[2].name).toContain("Mock prompt 3")
 
-    // 履歴のクリア
+    // Clear history
     await storageHelpers.clearExtensionData()
     const emptyHistory = await storageHelpers.getPromptHistory()
     expect(emptyHistory).toEqual([])
@@ -91,7 +91,7 @@ test.describe("Extension Detection Tests", () => {
     page,
     extensionId,
   }) => {
-    // マニフェスト情報にアクセス可能かテスト
+    // Test if manifest information is accessible
     const manifestUrl = `chrome-extension://${extensionId}/manifest.json`
 
     try {
@@ -116,7 +116,7 @@ test.describe("Extension Detection Tests", () => {
     await testPage.waitForServiceReady()
     const sw = await getServiceWorker(context)
 
-    // 拡張機能が必要な権限を持っているかチェック
+    // Check if extension has required permissions
     const hasStoragePermission = await sw.evaluate(() => {
       return typeof chrome !== "undefined" && !!chrome.storage
     })

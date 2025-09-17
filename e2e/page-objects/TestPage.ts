@@ -11,12 +11,12 @@ export class TestPage extends BasePage {
   }
 
   async waitForServiceReady(): Promise<void> {
-    // 入力欄が表示されるまで待機
+    // Wait until input field is displayed
     await this.page.waitForSelector(selectors.textInput[3], {
       timeout: 5000,
     })
 
-    // Shadow hostが存在するまで待機
+    // Wait until shadow host exists
     await this.page.waitForSelector("prompt-history-ui", {
       timeout: 5000,
       state: "attached",
@@ -24,7 +24,7 @@ export class TestPage extends BasePage {
   }
 
   getServiceSpecificSelectors(): Selectors {
-    // より特定的なセレクタを優先使用
+    // Use more specific selectors with priority
     return {
       promptInput: selectors.textInput[3],
       sendButton: selectors.sendButton[7],

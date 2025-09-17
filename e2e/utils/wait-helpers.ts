@@ -3,11 +3,11 @@ import { Page, Locator, expect } from "@playwright/test"
 export class WaitHelpers {
   constructor(private page: Page) {}
 
-  // 拡張機能がコンテンツスクリプトを注入するまで待機
+  // Wait until extension injects content script
   async waitForContentScriptInjection(timeout = 10000): Promise<void> {
     await this.page.waitForFunction(
       () => {
-        // 拡張機能がグローバル変数を設定しているかチェック
+        // Check if extension has set global variables
         return (
           typeof (window as Window & { promptHistoryExtension?: unknown })
             .promptHistoryExtension !== "undefined" ||
@@ -18,7 +18,7 @@ export class WaitHelpers {
     )
   }
 
-  // 特定の要素が表示されるまで待機（複数セレクタ対応）
+  // Wait until specific element is displayed (multiple selectors supported)
   async waitForAnyElement(
     selectors: string[],
     timeout = 5000,
@@ -35,7 +35,7 @@ export class WaitHelpers {
     return Promise.any(promises)
   }
 
-  // 要素がクリック可能になるまで待機
+  // Wait until element becomes clickable
   async waitForClickable(selector: string, timeout = 5000): Promise<Locator> {
     const element = this.page.locator(selector)
     await expect(element).toBeVisible({ timeout })
@@ -43,13 +43,13 @@ export class WaitHelpers {
     return element
   }
 
-  // ページのロードが完了するまで待機
+  // Wait until page load completes
   async waitForPageLoad(): Promise<void> {
     await this.page.waitForLoadState("networkidle")
     await this.page.waitForLoadState("domcontentloaded")
   }
 
-  // 指定した条件が満たされるまで待機
+  // Wait until specified condition is met
   async waitForCondition(
     condition: () => Promise<boolean>,
     timeout = 5000,
@@ -65,7 +65,7 @@ export class WaitHelpers {
     throw new Error(`Condition not met within ${timeout}ms`)
   }
 
-  // 拡張機能のUI要素が表示されるまで待機
+  // Wait until extension UI elements are displayed
   async waitForExtensionUI(timeout = 5000): Promise<void> {
     const extensionSelectors = [
       '[data-testid="prompt-history-trigger"]',
@@ -77,7 +77,7 @@ export class WaitHelpers {
     try {
       await this.waitForAnyElement(extensionSelectors, timeout)
     } catch {
-      // 拡張機能のUI要素が見つからない場合は警告のみ
+      // Only warning if extension UI elements are not found
       // Extension UI elements not found within timeout
     }
   }

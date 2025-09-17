@@ -112,51 +112,51 @@ test.describe("UI Components Tests", () => {
 
     await autocompletePopup.waitForDisplay()
 
-    // Tabキーでフォーカス
+    // Focus with Tab key
     await autocompletePopup.pressTab() // 1
 
-    // 下キーでナビゲーション
+    // Navigate with down arrow key
     await autocompletePopup.pressArrowDown() // 2
     await autocompletePopup.pressArrowDown() // 3
 
-    // 上キーでナビゲーション
+    // Navigate with up arrow key
     await autocompletePopup.pressArrowUp() // 2
 
-    // アクティブなアイテムが存在することを確認
+    // Confirm that active item exists
     const activeItem = await autocompletePopup.getActiveItem()
     expect(activeItem).toBeTruthy()
 
-    // Tabキーで選択
+    // Select with Tab key
     await autocompletePopup.pressTab()
 
-    // プロンプト入力フィールドの値を確認
+    // Check the value of prompt input field
     const promptInput = await testPage.getPromptInput()
     const inputValue = await promptInput.textContent()
     expect(inputValue).toBe("Mock prompt 2 for testing")
 
-    // ポップアップが閉じることを確認
+    // Confirm that popup is closed
     const isVisible = await autocompletePopup.isVisible()
     expect(isVisible).toBe(false)
   })
 
   test("should handle prompt input and save storage integration", async ({}) => {
-    // プロンプト入力とストレージ統合のテスト
+    // Test prompt input and storage integration
     const testPrompt = "This is a test prompt for storage integration"
 
-    // プロンプト入力
+    // Prompt input
     await testPage.typePrompt(testPrompt)
 
-    // プロンプト入力フィールドの値を確認
+    // Check the value of prompt input field
     const promptInput = await testPage.getPromptInput()
     const inputValue = await promptInput.textContent()
 
     expect(inputValue).toBe(testPrompt)
 
-    // 送信ボタンをクリック
+    // Click send button
     const sendButton = await testPage.getSendButton()
     await sendButton.click()
 
-    // 送信後にストレージに保存されること
+    // Confirm data is saved to storage after sending
     const retrievedHistory = await storageHelpers.getPromptHistory()
     expect(Object.keys(retrievedHistory).length).toBeGreaterThan(0)
     for (const key in retrievedHistory) {
@@ -168,34 +168,34 @@ test.describe("UI Components Tests", () => {
   })
 
   test("should persist data across page reloads", async () => {
-    // ページリロード後のデータ永続性テスト
+    // Test data persistence after page reload
     const testData = {
       prompt: "Test prompt for persistence",
       timestamp: Date.now(),
     }
 
-    // テストデータを保存
+    // Save test data
     await storageHelpers.setExtensionData("persistenceTest", testData)
 
-    // ページをリロード
+    // Reload page
     await testPage.pageInstance.reload()
     await testPage.waitForServiceReady()
 
-    // データが保持されているか確認
+    // Confirm data is retained
     const retrievedData =
       await storageHelpers.getExtensionData("persistenceTest")
     expect(retrievedData).toEqual(testData)
   })
 
   test("should handle multiple tabs correctly", async ({ context }) => {
-    // 複数タブでの動作確認
+    // Test behavior with multiple tabs
     const testPrompt1 = "Prompt from tab 1"
     const testPrompt2 = "Prompt from tab 2"
 
-    // 最初のタブでプロンプト入力
+    // Input prompt in first tab
     await testPage.typePrompt(testPrompt1)
 
-    // 2番目のタブを作成
+    // Create second tab
     const page2 = await context.newPage()
     const testPage2 = new TestPage(page2)
     const storageHelpers2 = new StorageHelpers(page2.context())
@@ -203,17 +203,17 @@ test.describe("UI Components Tests", () => {
     await testPage2.navigate()
     await testPage2.waitForServiceReady()
 
-    // 2番目のタブでプロンプト入力
+    // Input prompt in second tab
     await testPage2.typePrompt(testPrompt2)
 
-    // 両方のタブで拡張機能が動作していることを確認
+    // Confirm extension works in both tabs
     const input1Value = await (await testPage.getPromptInput()).textContent()
     const input2Value = await (await testPage2.getPromptInput()).textContent()
 
     expect(input1Value).toBe(testPrompt1)
     expect(input2Value).toBe(testPrompt2)
 
-    // ストレージが共有されていることを確認
+    // Confirm storage is shared
     await storageHelpers.setExtensionData("tabTest", "shared-data")
     const sharedData = await storageHelpers2.getExtensionData("tabTest")
     expect(sharedData).toBe("shared-data")
@@ -222,9 +222,9 @@ test.describe("UI Components Tests", () => {
   })
 
   test("should handle edge cases gracefully", async () => {
-    // エッジケースの処理テスト
+    // Test edge case handling
 
-    // 非常に長いテキストの入力
+    // Input very long text
     const longText = "A".repeat(5000)
     await testPage.typePrompt(longText)
 
@@ -232,7 +232,7 @@ test.describe("UI Components Tests", () => {
     const inputValue = await promptInput.textContent()
     expect(inputValue?.length).toBe(5000)
 
-    // 特殊文字を含むテキスト
+    // Text with special characters
     const specialChars = '!@#$%^&*()_+-=[]{}|;":,./<>?`~'
     await testPage.typePrompt(specialChars)
 
@@ -240,7 +240,7 @@ test.describe("UI Components Tests", () => {
     expect(specialValue).toContain("!@#$")
     expect(specialValue).toContain('%^&*()_+-=[]{}|;":,./<>?`~')
 
-    // 空文字列の処理
+    // Handle empty string
     await testPage.typePrompt("")
     const emptyValue = await promptInput.textContent()
     expect(emptyValue).toBe("")

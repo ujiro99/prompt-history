@@ -19,19 +19,19 @@ test.describe("ChatGPT Extension Tests", () => {
     page,
     extensionId,
   }) => {
-    // 1. ChatGPTページへの訪問
+    // 1. Visit ChatGPT page
     await chatGPTPage.navigate()
-    // ページが正常に読み込まれたことを確認
+    // Confirm page loaded successfully
     await expect(page).toHaveTitle(/ChatGPT/)
 
-    // 2. 拡張機能のロード確認
+    // 2. Confirm extension loaded
     // Extension ID logged for debugging
     expect(extensionId).toBeTruthy()
 
-    // 3. コンテンツスクリプトの動作確認
+    // 3. Confirm content script operation
     await chatGPTPage.waitForServiceReady()
 
-    // 4. 入力欄と送信ボタンの検出確認
+    // 4. Confirm detection of input field and send button
     const promptInput = await chatGPTPage.getPromptInput()
     const sendButton = await chatGPTPage.getSendButton()
 
@@ -41,39 +41,39 @@ test.describe("ChatGPT Extension Tests", () => {
     // should verify autocomplete behavior
     await storageHelpers.createMockPromptHistory(5)
 
-    // プロンプト入力を開始
+    // Start prompt input
     await chatGPTPage.typePrompt("prompt")
 
-    // 5. オートコンプリートポップアップが表示されるかチェック
+    // 5. Check if autocomplete popup is displayed
     const autocompletePopup = await chatGPTPage.getAutocompletePopup()
     await autocompletePopup.waitForDisplay()
 
-    // 下へナビゲーション
+    // Navigate down
     await autocompletePopup.pressCtrlN() // 1
     await autocompletePopup.pressCtrlN() // 2
 
-    // 上へナビゲーション
+    // Navigate up
     await autocompletePopup.pressCtrlP() // 1
 
-    // アクティブなアイテムが存在するまで待機
+    // Wait until active item exists
     await autocompletePopup.waitActiveItem()
 
-    // Tabキーで選択
+    // Select with Tab key
     await autocompletePopup.pressTab()
 
-    // 6. プロンプト入力フィールドの値を確認
+    // 6. Check the value of prompt input field
     let inputValue = await promptInput.textContent()
     expect(inputValue).toBe("Mock prompt 1 for testing")
 
-    // ポップアップが閉じることを確認
+    // Confirm that popup is closed
     const isVisible = await autocompletePopup.isVisible()
     expect(isVisible).toBe(false)
 
-    // 入力欄をクリア
+    // Clear input field
     await chatGPTPage.typePrompt("")
-    await page.waitForTimeout(500) // 良く失敗するので、少し待つ
+    await page.waitForTimeout(500) // Wait a bit as this often fails
     await promptInput.clear()
-    await promptInput.press("Control+A") // よく失敗するので、念のため複数回実行
+    await promptInput.press("Control+A") // Execute multiple times as this often fails
     await promptInput.press("Delete")
     await waitHelpers.waitForCondition(
       async () => {
@@ -86,26 +86,26 @@ test.describe("ChatGPT Extension Tests", () => {
     inputValue = await promptInput.textContent()
     expect(inputValue?.trim()).toBe("")
 
-    // トリガー要素を探してホバー/クリック
+    // Find trigger element and hover/click
     const inputPopup = await chatGPTPage.getInputPopup()
     const triggerElement = await inputPopup.getHistoryTrigger()
     expect(await triggerElement.count()).toBeGreaterThan(0)
     await triggerElement.hover()
 
-    // 7. 履歴リストが表示されることを確認
+    // 7. Confirm that history list is displayed
     const historyList = await inputPopup.getHistoryList()
     const isVisibleList = await historyList.isVisible()
     expect(isVisibleList).toBe(true)
 
-    // 8. 履歴アイテムが表示されることを確認
+    // 8. Confirm that history items are displayed
     const historyItems = await inputPopup.getHistoryItems()
     expect(historyItems.length).toBeGreaterThan(0)
 
-    // 最初(直近)の履歴アイテムを選択
+    // Select the first (most recent) history item
     await inputPopup.selectHistoryItem(0)
 
-    // 9. プロンプト入力フィールドの値を確認
+    // 9. Check the value of prompt input field
     inputValue = await promptInput.textContent()
-    expect(inputValue).toBe("Mock prompt 5 for testing") // 直近の履歴が入力されるはず
+    expect(inputValue).toBe("Mock prompt 5 for testing") // Most recent history should be input
   })
 })

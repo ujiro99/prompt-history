@@ -20,9 +20,9 @@ export abstract class BasePage {
     return this.page
   }
 
-  // 共通メソッド
+  // Common methods
   async waitForExtensionLoad(): Promise<void> {
-    // 拡張機能のコンテンツスクリプトが注入されるまで待機
+    // Wait until extension content script is injected
     await this.page.waitForSelector("prompt-history-ui", {
       timeout: 5000,
       state: "attached",
@@ -30,9 +30,9 @@ export abstract class BasePage {
   }
 
   async checkContentScriptInjection(): Promise<boolean> {
-    // コンテンツスクリプトが注入されているかチェック
+    // Check if content script is injected
     return await this.page.evaluate(() => {
-      // 拡張機能がコンテンツスクリプトでDOM要素を追加したかを確認
+      // Check if extension added DOM elements via content script
       return document.querySelector("prompt-history-ui") != null
     })
   }
@@ -45,7 +45,7 @@ export abstract class BasePage {
   async getSendButton(): Promise<Locator> {
     const selectors = this.getServiceSpecificSelectors()
 
-    // 複数のセレクタから最初に見つかったものを返す
+    // Return the first found from multiple selectors
     const selectorList = selectors.sendButton.split(", ")
     for (const selector of selectorList) {
       const element = this.page.locator(selector.trim())
@@ -55,26 +55,26 @@ export abstract class BasePage {
       }
     }
 
-    // すべてのセレクタで見つからない場合はフォールバック
+    // Fallback if not found with all selectors
     return this.page.locator(selectors.sendButton)
   }
 
   async typePrompt(text: string): Promise<void> {
     const input = await this.getPromptInput()
 
-    // contenteditable要素か通常のinput/textarea要素かを判定
+    // Determine if contenteditable element or regular input/textarea element
     const tagName = await input.evaluate((el) => el.tagName.toLowerCase())
     const isContentEditable = await input.evaluate(
       (el) => el.getAttribute("contenteditable") === "true",
     )
 
     if (isContentEditable || tagName === "div") {
-      // contenteditable要素の場合はクリックしてからテキストを入力
+      // For contenteditable elements, click first then input text
       await input.click()
       await input.fill("")
       await input.fill(text)
     } else {
-      // 通常のinput/textarea要素
+      // Regular input/textarea elements
       await input.fill(text)
     }
   }
@@ -85,12 +85,12 @@ export abstract class BasePage {
   }
 
   async verifyHistoryStorage(): Promise<boolean> {
-    // ストレージAPIを通じて履歴が保存されているか確認
-    // 初期実装では簡易的なチェック
+    // Check if history is saved via storage API
+    // Simple check in initial implementation
     return true
   }
 
-  // UI要素の取得
+  // Get UI elements
   async getInputPopup(): Promise<InputPopup> {
     return new InputPopup(this.page)
   }
@@ -106,14 +106,14 @@ export abstract class BasePage {
         return { ret: false, err: "Shadow host not found" }
       }
 
-      // Shadow rootにアクセス
+      // Access shadow root
       const shadowRoot =
         (shadowHost as any).shadowRoot || (shadowHost as any).__wxtShadowRoot
       if (!shadowRoot) {
         return { ret: false, err: "Shadow root not found" }
       }
 
-      // Shadow DOM内で要素を探す
+      // Search for elements within Shadow DOM
       const extensionElements = [
         `[data-testid="${testIds.inputPopup.popup}"]`,
         `[data-testid="${testIds.inputPopup.historyTrigger}"]`,
@@ -134,7 +134,7 @@ export abstract class BasePage {
     return result
   }
 
-  // 抽象メソッド（サービス固有実装）
+  // Abstract methods (service-specific implementation)
   abstract getServiceSpecificSelectors(): Selectors
   abstract waitForServiceReady(): Promise<void>
 }
