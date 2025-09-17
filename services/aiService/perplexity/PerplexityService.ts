@@ -9,6 +9,9 @@ import { PERPLEXITY_DEFINITIONS } from "./perplexityDefinitions"
 export class PerplexityService extends BaseAIService {
   private debugger: SelectorDebugger
 
+  // Perplexity requires legacy mode for execCommand to insert text
+  legacyMode = true
+
   constructor() {
     super(PERPLEXITY_CONFIG)
     this.debugger = new SelectorDebugger({

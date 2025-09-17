@@ -40,6 +40,7 @@ const createMockAIService = (): AIServiceInterface => ({
   getServiceName: vi.fn(),
   getPopupPlacement: vi.fn(),
   destroy: vi.fn(),
+  legacyMode: false,
 })
 
 // Test data

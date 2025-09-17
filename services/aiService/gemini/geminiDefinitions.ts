@@ -17,6 +17,8 @@ export const GEMINI_DEFINITIONS = {
       "button.send-button",
       // Icon-based selectors
       'button mat-icon:has-text("send")',
+      // Voice input button (if applicable)
+      "speech-dictation-mic-button",
       // Fallbacks
       'button[type="submit"]',
       "button.send-button",

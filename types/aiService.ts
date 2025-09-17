@@ -24,6 +24,8 @@ export interface AIServiceInterface {
   getPopupPlacement(): PopupPlacement
   /** Service cleanup */
   destroy(): void
+  /** Legacy mode flag */
+  legacyMode: boolean
 }
 
 export interface PopupPlacement {

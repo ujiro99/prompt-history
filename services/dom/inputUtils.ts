@@ -20,15 +20,24 @@ export async function inputContentEditable(
   value: string,
   interval: number,
   nodeAtCaret?: Node | null,
+  legacyMode = false,
 ): Promise<boolean> {
   if (!isEditable(el)) return false
   el.focus()
   const values = value.split("\n")
 
   for (const [idx, val] of values.entries()) {
+    let range: Range
     const selection = window.getSelection()
-    if (selection && selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0)
+    if (selection) {
+      if (selection.rangeCount > 0) {
+        range = selection.getRangeAt(0)
+      } else {
+        range = document.createRange()
+      }
+
+      // If nodeAtCaret is provided, set the range to the end of that node
+      // to insert text at the caret position.
       if (nodeAtCaret) {
         let node = nodeAtCaret
         if (node.nodeType === 1) {
@@ -40,17 +49,26 @@ export async function inputContentEditable(
         }
         nodeAtCaret = undefined // Only use nodeAtCaret for the first insertion
       }
-      const node = document.createTextNode(val)
-      range.insertNode(node)
 
-      // Move caret to end of inserted text node
-      const lastOffset = node.length
-      range.setStart(node, lastOffset)
-      range.setEnd(node, lastOffset)
-      selection.removeAllRanges()
-      selection.addRange(range)
+      if (legacyMode) {
+        // Legacy mode when insertNode does not work correctly
+        // Used in Perplexy AI's chat input field
+        document.execCommand("insertText", false, val)
+      } else {
+        // Insert text node at caret position
+        const node = document.createTextNode(val)
+        range.insertNode(node)
+
+        // Move caret to end of inserted text node
+        const lastOffset = node.length
+        range.setStart(node, lastOffset)
+        range.setEnd(node, lastOffset)
+        selection.removeAllRanges()
+        selection.addRange(range)
+      }
 
       if (idx < values.length - 1) {
+        // For all but the last line, simulate Shift+Enter for line break
         await sleep(interval / 2)
         await typeShiftEnter(el)
         await sleep(interval / 2)
@@ -85,6 +103,7 @@ export const replaceTextAtCaret = async (
   element: Element,
   match: AutoCompleteMatch,
   nodeAtCaret: Node | null,
+  legacyMode = false,
 ): Promise<void> => {
   if (!element) return
 
@@ -125,7 +144,13 @@ export const replaceTextAtCaret = async (
     }
 
     // Use inputContentEditable to properly handle the content insertion.
-    await inputContentEditable(htmlElement, match.content, 20, nodeAtCaret)
+    await inputContentEditable(
+      htmlElement,
+      match.content,
+      20,
+      nodeAtCaret,
+      legacyMode,
+    )
   }
 
   // Trigger input event to notify other listeners.

@@ -43,7 +43,12 @@ export class ExecuteManager {
             matchEnd: prompt.content.length,
             searchTerm: "",
           } as AutoCompleteMatch)
-        await replaceTextAtCaret(textInput, _match, nodeAtCaret)
+        await replaceTextAtCaret(
+          textInput,
+          _match,
+          nodeAtCaret,
+          aiService.legacyMode,
+        )
       }
 
       // Start session
