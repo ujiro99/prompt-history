@@ -117,7 +117,7 @@ export const BridgeArea = (props: Props) => {
         toElm.removeEventListener(event, handleAnimationEnd)
       })
     }
-  }, [fromElm, toElm])
+  }, [fromElm, toElm, startAnimationMonitoring])
 
   if (!from || !to) {
     return null

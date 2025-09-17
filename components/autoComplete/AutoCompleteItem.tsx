@@ -2,6 +2,7 @@ import React from "react"
 import { ChevronRight, CornerDownLeft } from "lucide-react"
 import type { AutoCompleteMatch } from "../../services/autoComplete/types"
 import { cn } from "@/lib/utils"
+import { TestIds } from "@/components/const"
 
 interface AutoCompleteItemProps {
   match: AutoCompleteMatch
@@ -38,11 +39,12 @@ export const AutoCompleteItem: React.FC<AutoCompleteItemProps> = ({
         "w-full text-left px-3 py-1.5 text-sm cursor-pointer border-b border-gray-100 last:border-b-0 transition",
         "flex items-center space-x-1",
         isSelected
-          ? "bg-gray-50 text-gray-800 px-2"
+          ? "bg-gray-50 text-gray-800 px-2 active"
           : "bg-white text-gray-800 hover:bg-gray-50",
       )}
       onClick={handleClick}
       onMouseEnter={onMouseEnter}
+      data-testid={TestIds.autocomplete.item}
     >
       {isSelected && <ChevronRight size={18} className="text-gray-500" />}
       <div className="w-full overflow-hidden">

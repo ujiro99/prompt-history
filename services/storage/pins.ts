@@ -70,6 +70,14 @@ export class PinsService {
   }
 
   /**
+   * Watch pinned order changes
+   * Returns an unsubscribe function
+   */
+  watchPinnedOrder(callback: (pinned: string[]) => void): () => void {
+    return pinnedOrderStorage.watch(callback)
+  }
+
+  /**
    * Cleanup pinned order when prompt is deleted
    */
   async cleanupPinnedOrder(deletedPromptId: string): Promise<void> {

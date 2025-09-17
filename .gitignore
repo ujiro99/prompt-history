@@ -28,3 +28,7 @@ web-ext.config.ts
 
 # Environment variables
 .env*
+
+# e2e test
+test-results
+playwright-report

@@ -4,24 +4,17 @@
 export const CHATGPT_DEFINITIONS = {
   selectors: {
     textInput: [
-      // New UI
       "#prompt-textarea",
       '[data-testid="prompt-textarea"]',
       // openai.com
       "#main form textarea",
-      // Old UI, fallback
-      'textarea[placeholder*="Message"]',
-      'div[contenteditable="true"][data-id*="prompt"]',
-      'div[contenteditable="true"]',
-      // Additional fallbacks
-      "textarea",
-      '[role="textbox"]',
+      // test page
+      'div[contenteditable="true"].ql-editor',
     ],
     sendButton: [
-      // New UI
       '[data-testid="send-button"]',
-      'button[aria-label*="Send"]',
       '[data-testid="composer-speech-button"]',
+      '[id="composer-submit-button"]',
       // openai.com
       "button[type='submit']",
       // SVG icon based
