@@ -4,6 +4,7 @@ import removeConsole from "vite-plugin-remove-console"
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
+  srcDir: "src",
   modules: ["@wxt-dev/module-react", "@wxt-dev/i18n/module"],
   manifest: {
     permissions: ["storage"],
