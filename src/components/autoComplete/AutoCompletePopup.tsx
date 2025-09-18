@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState, useCallback } from "react"
+import { cn } from "@/lib/utils"
 import { PromptServiceFacade } from "@/services/promptServiceFacade"
 import { AutoCompleteItem } from "./AutoCompleteItem"
 import { useAutoComplete } from "./useAutoComplete"
 import { Popover, PopoverContent, PopoverAnchor } from "../ui/popover"
-import { cn } from "@/lib/utils"
-import type { Prompt } from "../../types/prompt"
 import { TestIds } from "@/components/const"
+import { Key } from "@/components/Key"
+import type { Prompt } from "../../types/prompt"
 
 const serviceFacade = PromptServiceFacade.getInstance()
 
@@ -170,7 +171,7 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
       <PopoverContent
         ref={popupRef}
         className={cn(
-          "min-w-60 max-w-md p-0 border border-gray-200 shadow-lg overflow-hidden",
+          "min-w-64 max-w-md p-0 border border-gray-200 shadow-lg overflow-hidden",
           "focus-visible:ring-1 focus-visible:ring-gray-400",
         )}
         align="start"
@@ -182,7 +183,7 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
         onOpenAutoFocus={noFocus}
         data-testid={TestIds.autocomplete.popup}
       >
-        <div className="max-h-60 overflow-y-auto">
+        <div>
           {matches.map((match, index) => (
             <AutoCompleteItem
               key={`${match.name}-${index}`}
@@ -192,6 +193,27 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
               onMouseEnter={() => selectIndex(index)}
             />
           ))}
+        </div>
+        <div className="flex justify-end p-2 py-1.5 text-xs text-gray-500 border-t gap-1">
+          {!isFocused && !userInteracted ? (
+            <p className="inline">
+              <Key className="text-[10px]">Tab</Key> <span>focus,</span>
+            </p>
+          ) : null}
+          <p className="inline">
+            <Key className="text-[10px]">Ctrl + P</Key>
+            <span className="mx-0.5">/</span>
+            <Key className="text-[10px]">Ctrl + N</Key>
+            {isFocused && (
+              <>
+                <span className="mx-0.5">/</span>
+                <Key className="text-[10px]">↑</Key>
+                <span className="mx-0.5">/</span>
+                <Key className="text-[10px]">↓</Key>
+              </>
+            )}{" "}
+            to navigate
+          </p>
         </div>
       </PopoverContent>
     </Popover>
