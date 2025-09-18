@@ -13,6 +13,9 @@ export abstract class BaseAIService implements AIServiceInterface {
   protected domManager: DomManager
   protected config: AIServiceConfig
 
+  // Legacy mode flag (if true, uses execCommand for text insertion)
+  public legacyMode = false
+
   constructor(config: AIServiceConfig) {
     this.domManager = new DomManager(config)
     this.config = config

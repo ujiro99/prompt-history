@@ -52,6 +52,26 @@ export class StorageHelper {
   }
 
   /**
+   * Watch prompt list changes (sorted)
+   */
+  watchPrompts(onChange: (prompts: Prompt[]) => void): () => void {
+    return this.storage.watchPrompts((prompts) => {
+      const sorted = this.applySort(prompts)
+      onChange(sorted)
+    })
+  }
+
+  /**
+   * Watch pinned prompts changes (sorted)
+   */
+  watchPinnedPrompts(onChange: (_prompts: Prompt[]) => void): () => void {
+    return this.storage.watchPinnedOrder(async () => {
+      const pinnedPrompts = await this.getPinnedPrompts()
+      onChange(pinnedPrompts)
+    })
+  }
+
+  /**
    * Apply sort order to prompts array
    */
   private applySort(prompts: Prompt[]): Prompt[] {

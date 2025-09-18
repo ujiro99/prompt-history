@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx pretty-quick"
+            "command": "npx pretty-quick --staged || true"
           }
         ]
       }

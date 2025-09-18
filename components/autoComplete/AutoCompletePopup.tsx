@@ -5,6 +5,7 @@ import { useAutoComplete } from "./useAutoComplete"
 import { Popover, PopoverContent, PopoverAnchor } from "../ui/popover"
 import { cn } from "@/lib/utils"
 import type { Prompt } from "../../types/prompt"
+import { TestIds } from "@/components/const"
 
 const serviceFacade = PromptServiceFacade.getInstance()
 
@@ -179,6 +180,7 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
         onBlur={() => setIsFocused(false)}
         onEscapeKeyDown={handleEscapeDown}
         onOpenAutoFocus={noFocus}
+        data-testid={TestIds.autocomplete.popup}
       >
         <div className="max-h-60 overflow-y-auto">
           {matches.map((match, index) => (

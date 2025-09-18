@@ -163,6 +163,35 @@ export default [
       "@typescript-eslint/no-explicit-any": "off",
     },
   },
+  // Configuration for e2e test files
+  {
+    files: ["e2e/**/*.{js,ts,jsx,tsx}"],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        ...globals.browser,
+        // Playwright globals
+        test: "readonly",
+        expect: "readonly",
+        // Browser globals needed for page.evaluate
+        console: "readonly",
+        window: "readonly",
+        document: "readonly",
+        localStorage: "readonly",
+        Window: "readonly",
+        // Chrome extension APIs
+        chrome: "readonly",
+        process: "readonly",
+      },
+    },
+    rules: {
+      "no-console": "off",
+      "@typescript-eslint/no-explicit-any": "off",
+      "react-hooks/rules-of-hooks": "off", // Playwright fixtures use 'use'
+      "no-undef": "off", // Page.evaluate runs in browser context
+      "no-empty-pattern": "off", // Ignore empty destructuring in test fixtures
+    },
+  },
   {
     ignores: [
       "node_modules/**",

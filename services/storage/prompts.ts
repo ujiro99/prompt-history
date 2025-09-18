@@ -141,6 +141,19 @@ export class PromptsService {
   }
 
   /**
+   * Watch for changes in prompts
+   * Returns an unsubscribe function
+   */
+  watchPrompts(callback: (prompts: Prompt[]) => void): () => void {
+    return promptsStorage.watch((newValue) => {
+      const prompts = Object.values(newValue).map((stored) =>
+        this.fromStoredPrompt(stored),
+      )
+      callback(prompts)
+    })
+  }
+
+  /**
    * Increment prompt execution count
    */
   async incrementExecutionCount(id: string, url: string): Promise<void> {

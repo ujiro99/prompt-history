@@ -28,15 +28,6 @@ export class StorageService {
     return StorageService.instance
   }
 
-  /**
-   * Initialize storage service
-   * WXT Storage is automatically initialized, so this method is a dummy for compatibility
-   */
-  async initialize(): Promise<void> {
-    // WXT Storage is automatically initialized, so do nothing
-    // Method for maintaining compatibility with existing code
-  }
-
   // ===================
   // Prompt operations
   // ===================
@@ -88,6 +79,15 @@ export class StorageService {
    */
   async incrementExecutionCount(id: string, url: string): Promise<void> {
     return await promptsService.incrementExecutionCount(id, url)
+  }
+
+  /**
+   * Watch prompts for changes
+   * @param callback Callback function to receive updated prompts
+   * @returns Unsubscribe function
+   */
+  watchPrompts(callback: (prompts: Prompt[]) => void): () => void {
+    return promptsService.watchPrompts(callback)
   }
 
   // ===================
@@ -160,6 +160,15 @@ export class StorageService {
    */
   async updatePinnedOrder(order: string[]): Promise<void> {
     return await pinsService.updatePinnedOrder(order)
+  }
+
+  /**
+   * Watch pinned order for changes
+   * @param callback Callback function to receive updated pinned order
+   * @returns Unsubscribe function
+   */
+  watchPinnedOrder(callback: (order: string[]) => void): () => void {
+    return pinsService.watchPinnedOrder(callback)
   }
 
   // ===================
@@ -276,11 +285,3 @@ export class StorageService {
     }
   }
 }
-
-/**
- * Singleton instance of storage service
- */
-export const promptStorage = StorageService.getInstance()
-
-// Export individual services as well
-export { promptsService, sessionsService, pinsService, settingsService }

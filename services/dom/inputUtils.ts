@@ -20,44 +20,92 @@ export async function inputContentEditable(
   value: string,
   interval: number,
   nodeAtCaret?: Node | null,
+  legacyMode = false,
 ): Promise<boolean> {
   if (!isEditable(el)) return false
   el.focus()
   const values = value.split("\n")
 
   for (const [idx, val] of values.entries()) {
-    const selection = window.getSelection()
-    if (selection && selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0)
-      if (nodeAtCaret) {
-        let node = nodeAtCaret
-        if (node.nodeType === 1) {
-          node = node.childNodes[0]
+    if (legacyMode) {
+      // Legacy mode when insertNode does not work correctly
+      // Used in perplexy.ai's chat input field
+      document.execCommand("insertText", false, val)
+    } else {
+      const selection = window.getSelection()
+      if (selection) {
+        let range: Range
+        if (selection.rangeCount > 0) {
+          range = selection.getRangeAt(0)
+        } else {
+          // In gemini, rangeCount is 0 initially.
+          range = document.createRange()
         }
-        if (node.nodeType === 3) {
-          range.setStart(node, nodeAtCaret.textContent?.length || 0)
-          range.setEnd(node, nodeAtCaret.textContent?.length || 0)
+
+        // If nodeAtCaret is provided, set the range to the end of that node
+        // to insert text at the caret position.
+        if (nodeAtCaret && el.contains(nodeAtCaret)) {
+          let n = nodeAtCaret
+          if (n.nodeType === 1) {
+            n = n.childNodes[0]
+          }
+          if (n.nodeType === 3) {
+            range.setStart(n, nodeAtCaret.textContent?.length || 0)
+            range.setEnd(n, nodeAtCaret.textContent?.length || 0)
+          }
+          nodeAtCaret = undefined // Only use nodeAtCaret for the first insertion
         }
-        nodeAtCaret = undefined // Only use nodeAtCaret for the first insertion
-      }
-      const node = document.createTextNode(val)
-      range.insertNode(node)
 
-      // Move caret to end of inserted text node
-      const lastOffset = node.length
-      range.setStart(node, lastOffset)
-      range.setEnd(node, lastOffset)
-      selection.removeAllRanges()
-      selection.addRange(range)
+        // Insert text node at caret position
+        const node = document.createTextNode(val)
+        range.insertNode(node)
 
-      if (idx < values.length - 1) {
-        await sleep(interval / 2)
-        await typeShiftEnter(el)
-        await sleep(interval / 2)
+        // Move caret to end of inserted text node
+        const lastOffset = node.length
+        range.setStart(node, lastOffset)
+        range.setEnd(node, lastOffset)
+        selection.removeAllRanges()
+        selection.addRange(range)
       }
+    }
+
+    if (idx < values.length - 1) {
+      // For all but the last line, simulate Shift+Enter for line break
+      await sleep(interval / 2)
+      await typeShiftEnter(el)
+      await sleep(interval / 2)
     }
   }
   return true
+}
+
+/**
+ * Delete the matched search term at caret position
+ */
+async function deleteTextAtCaret(
+  element: Element,
+  match: AutoCompleteMatch,
+  nodeAtCaret: Node | null,
+): Promise<void> {
+  if (nodeAtCaret) {
+    const start = nodeAtCaret.textContent?.lastIndexOf(match.searchTerm)
+    if (start != null && start > -1) {
+      let node = nodeAtCaret
+      if (node.nodeType === 1) {
+        node = node.childNodes[0]
+      }
+      const range = document.createRange()
+      range.setStart(node, start)
+      range.setEnd(node, start + match.searchTerm.length)
+      range.deleteContents()
+
+      // Trigger input event to notify ai service.
+      const inputEvent = new Event("input", { bubbles: true })
+      element.dispatchEvent(inputEvent)
+
+      await sleep(20) // Wait a bit for execCommand to complete
+    }
+  }
 }
 
 /**
@@ -85,6 +133,7 @@ export const replaceTextAtCaret = async (
   element: Element,
   match: AutoCompleteMatch,
   nodeAtCaret: Node | null,
+  legacyMode = false,
 ): Promise<void> => {
   if (!element) return
 
@@ -109,23 +158,17 @@ export const replaceTextAtCaret = async (
     // For contenteditable elements, clear content first then input new content.
     const htmlElement = element as HTMLElement
 
-    // Select and delete the matched text.
-    if (nodeAtCaret) {
-      const start = nodeAtCaret.textContent?.lastIndexOf(match.searchTerm)
-      if (start != null && start > -1) {
-        let node = nodeAtCaret
-        if (node.nodeType === 1) {
-          node = node.childNodes[0]
-        }
-        const range = document.createRange()
-        range.setStart(node, start)
-        range.setEnd(node, start + match.searchTerm.length)
-        range.deleteContents()
-      }
-    }
+    // Delete the matched text.
+    await deleteTextAtCaret(element, match, nodeAtCaret)
 
     // Use inputContentEditable to properly handle the content insertion.
-    await inputContentEditable(htmlElement, match.content, 20, nodeAtCaret)
+    await inputContentEditable(
+      htmlElement,
+      match.content,
+      20,
+      nodeAtCaret,
+      legacyMode,
+    )
   }
 
   // Trigger input event to notify other listeners.

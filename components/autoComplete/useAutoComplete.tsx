@@ -35,6 +35,13 @@ export const useAutoComplete = ({ prompts }: UseAutoCompleteOptions) => {
       },
       onSelect: async (match: AutoCompleteMatch) => {
         await serviceFacade.executePrompt(match.id, nodeAtCaret, match)
+
+        // Refocus the text input after executing the prompt
+        const textInput = serviceFacade.getTextInput() as HTMLElement
+        if (textInput) {
+          textInput.focus()
+        }
+
         setIsVisible(false)
         setMatches([])
         managerRef.current?.selectReset()

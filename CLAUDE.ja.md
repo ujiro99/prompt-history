@@ -68,8 +68,8 @@
   - 送信アクションとコンテンツ変更のイベント処理
   - サービス固有の動作に対する設定駆動アプローチ
 - **サービス実装**: 各AIサービスが基底クラスを拡張
-  - ChatGPT: 特定のDOMセレクターでchat.openai.comをサポート
-  - Gemini: Gemini固有の設定でgemini.google.comをサポート
+  - ChatGPT: chat.openai.comをサポート
+  - Gemini: gemini.google.comをサポート
 - **拡張性**: 新しいAIサービスは以下の手順で簡単に追加可能：
   1. サービス固有の設定と定義の作成
   2. サービス固有のロジックで`BaseAIService`を拡張

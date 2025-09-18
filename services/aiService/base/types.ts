@@ -9,7 +9,9 @@ export interface AIServiceConfig {
 
   /** DOM selectors for finding elements */
   selectors: {
+    /** Possible selectors for the text input element */
     textInput: string[]
+    /** Possible selectors for the send button element */
     sendButton: string[]
   }
 
@@ -27,7 +29,7 @@ export interface AIServiceConfig {
   /** Debounce time for content change events (ms) */
   debounceTime: number
 
-  /** Custom domain/path checker function (optional) */
+  /** Domain checker function */
   isSupported: (hostname: string, pathname: string) => boolean
 }
 

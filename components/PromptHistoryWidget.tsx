@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { PromptServiceFacade } from "../services/promptServiceFacade"
 import { NotificationManager } from "./Notification"
 import { InputPopup } from "./inputMenu/InputPopup"
@@ -6,6 +6,7 @@ import { AutoCompletePopup } from "./autoComplete/AutoCompletePopup"
 import { CaretProvider } from "@/contexts/CaretContext"
 import { isEmpty } from "@/lib/utils"
 import type { Prompt, NotificationData, PromptError } from "../types/prompt"
+import { TestIds } from "@/components/const"
 
 // Singleton instance for compatibility
 const serviceFacade = PromptServiceFacade.getInstance()
@@ -25,7 +26,7 @@ export const PromptHistoryWidget: React.FC = () => {
   /**
    * Load prompt list
    */
-  const loadPrompts = async () => {
+  const loadPrompts = useCallback(async () => {
     try {
       const [allPrompts, pinned] = await Promise.all([
         serviceFacade.getPrompts(),
@@ -41,7 +42,7 @@ export const PromptHistoryWidget: React.FC = () => {
         duration: 3000,
       })
     }
-  }
+  }, [])
 
   /**
    * Initialization process
@@ -78,17 +79,13 @@ export const PromptHistoryWidget: React.FC = () => {
       mounted = false
       serviceFacade.destroy()
     }
-  }, [])
+  }, [loadPrompts])
 
   /**
    * Set up event listeners
    */
   useEffect(() => {
-    const handlePromptChange = (_prompt: Prompt) => {
-      loadPrompts() // Update prompt list
-    }
-
-    const handlePinChange = () => {
+    const handlePromptChange = () => {
       loadPrompts() // Update prompt list
     }
 
@@ -101,11 +98,10 @@ export const PromptHistoryWidget: React.FC = () => {
     }
 
     // Register callbacks
-    serviceFacade.onPromptChange(handlePromptChange)
-    serviceFacade.onPinChange(handlePinChange)
+    serviceFacade.onPromptOrPinChange(handlePromptChange)
     serviceFacade.onNotification(handleNotification)
     serviceFacade.onError(handleError)
-  }, [])
+  }, [loadPrompts])
 
   /**
    * Add notification
@@ -124,7 +120,10 @@ export const PromptHistoryWidget: React.FC = () => {
   // Display during initialization
   if (isInitializing) {
     return (
-      <div className="flex items-center justify-center p-5 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+      <div
+        className="flex items-center justify-center p-5 bg-white dark:bg-gray-800 rounded-lg shadow-lg"
+        data-testid={TestIds.widget.loading}
+      >
         <div className="text-gray-500 dark:text-gray-300 text-sm">
           Loading...
         </div>
@@ -135,7 +134,10 @@ export const PromptHistoryWidget: React.FC = () => {
   // Display initialization error
   if (initError) {
     return (
-      <div className="p-3 bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 rounded-lg text-red-800 dark:text-red-200">
+      <div
+        className="p-3 bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 rounded-lg text-red-800 dark:text-red-200"
+        data-testid={TestIds.widget.error}
+      >
         <div className="flex items-center gap-2 text-sm">
           <span>❌</span>
           <span>Failed to initialize: {initError}</span>

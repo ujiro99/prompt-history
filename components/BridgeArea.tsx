@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 
 type Props = {
   fromElm: HTMLElement
@@ -25,7 +25,7 @@ export const BridgeArea = (props: Props) => {
   })
 
   // Function to check if positions have changed
-  const checkPositionChange = () => {
+  const checkPositionChange = useCallback(() => {
     const currentFrom = fromElm.getBoundingClientRect()
     const currentTo = toElm.getBoundingClientRect()
 
@@ -41,32 +41,32 @@ export const BridgeArea = (props: Props) => {
       lastPositions.current = { from: currentFrom, to: currentTo }
       setRenderTrigger((prev) => prev + 1)
     }
-  }
+  }, [fromElm, toElm])
 
   // Animation monitoring function
-  const monitorPosition = () => {
+  const monitorPosition = useCallback(() => {
     if (isMonitoringAnimation.current) {
       checkPositionChange()
       animationFrameId.current = requestAnimationFrame(monitorPosition)
     }
-  }
+  }, [checkPositionChange])
 
   // Start animation monitoring
-  const startAnimationMonitoring = () => {
+  const startAnimationMonitoring = useCallback(() => {
     if (!isMonitoringAnimation.current) {
       isMonitoringAnimation.current = true
       monitorPosition()
     }
-  }
+  }, [monitorPosition])
 
   // Stop animation monitoring
-  const stopAnimationMonitoring = () => {
+  const stopAnimationMonitoring = useCallback(() => {
     isMonitoringAnimation.current = false
     if (animationFrameId.current) {
       cancelAnimationFrame(animationFrameId.current)
       animationFrameId.current = null
     }
-  }
+  }, [])
 
   useEffect(() => {
     resizeObserver.current = new ResizeObserver(() => {
@@ -117,7 +117,7 @@ export const BridgeArea = (props: Props) => {
         toElm.removeEventListener(event, handleAnimationEnd)
       })
     }
-  }, [fromElm, toElm])
+  }, [fromElm, toElm, startAnimationMonitoring, stopAnimationMonitoring])
 
   if (!from || !to) {
     return null

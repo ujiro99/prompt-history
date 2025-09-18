@@ -18,6 +18,7 @@ import { PromptServiceFacade } from "@/services/promptServiceFacade"
 import { SaveMode } from "@/types/prompt"
 import type { Prompt, SaveDialogData } from "@/types/prompt"
 import { cn, isEmpty } from "@/lib/utils"
+import { TestIds } from "@/components/const"
 
 const serviceFacade = PromptServiceFacade.getInstance()
 
@@ -59,6 +60,7 @@ export function InputPopup(props: Props): React.ReactElement {
         align={"end"}
         alignOffset={popupPlacement.alignOffset}
         onOpenAutoFocus={noFocus}
+        data-testid={TestIds.inputPopup.popup}
       >
         <InputMenu {...props} />
       </PopoverContent>
@@ -258,10 +260,15 @@ export function InputMenu(props: Props): React.ReactElement {
           <MenuTrigger
             ref={historyAnchorRef}
             onMouseEnter={() => handleMenuEnter(MENU.History)}
+            data-testid={TestIds.inputPopup.historyTrigger}
           >
             <History size={16} className="stroke-gray-600" />
           </MenuTrigger>
-          <MenubarContent side="top" ref={historyContentRef}>
+          <MenubarContent
+            side="top"
+            ref={historyContentRef}
+            data-testid={TestIds.inputPopup.historyList}
+          >
             {props.prompts.length > 0 ? (
               <ScrollArea
                 className={cn(
@@ -307,10 +314,15 @@ export function InputMenu(props: Props): React.ReactElement {
           <MenuTrigger
             onMouseEnter={() => handleMenuEnter(MENU.Pinned)}
             ref={pinnedAnchorRef}
+            data-testid={TestIds.inputPopup.pinnedTrigger}
           >
             <Star size={16} className="stroke-gray-600" />
           </MenuTrigger>
-          <MenubarContent side="top" ref={pinnedContentRef}>
+          <MenubarContent
+            side="top"
+            ref={pinnedContentRef}
+            data-testid={TestIds.inputPopup.pinnedList}
+          >
             {props.pinnedPrompts.length > 0 ? (
               <ScrollArea
                 className={cn(
@@ -331,6 +343,7 @@ export function InputMenu(props: Props): React.ReactElement {
                     onRemove={setRemoveId}
                     onCopy={openCopyDialog}
                     onTogglePin={handleTogglePin}
+                    data-testid={TestIds.inputPopup.pinnedItem}
                   >
                     {prompt.name}
                   </MenuItem>
@@ -356,6 +369,7 @@ export function InputMenu(props: Props): React.ReactElement {
           <MenuTrigger
             disabled={!props.saveEnabled}
             onClick={openEditDialogNew}
+            data-testid={TestIds.inputPopup.editTrigger}
           >
             <Save size={16} className="stroke-gray-600" />
           </MenuTrigger>

@@ -2,6 +2,12 @@ import type { AIServiceConfig } from "../base/types"
 import { CHATGPT_DEFINITIONS } from "./chatGptDefinitions"
 import { extractElementContent } from "../../dom"
 
+export const supportHosts = [
+  "chatgpt.com",
+  "openai.com",
+  "ujiro99.github.io", // For testing
+]
+
 /**
  * Configuration for ChatGPT service
  */
@@ -29,11 +35,6 @@ export const CHATGPT_CONFIG: AIServiceConfig = {
   debounceTime: 100,
 
   isSupported: (hostname: string, _pathname: string): boolean => {
-    return (
-      hostname === "chatgpt.com" ||
-      hostname === "chat.openai.com" ||
-      hostname.endsWith(".openai.com") ||
-      hostname === "ujiro99.github.io" // For testing
-    )
+    return supportHosts.includes(hostname)
   },
 }

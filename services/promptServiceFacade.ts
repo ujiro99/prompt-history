@@ -1,4 +1,4 @@
-import { promptStorage, StorageService } from "./storage"
+import { StorageService } from "./storage"
 import type { AIServiceInterface, PopupPlacement } from "../types/aiService"
 import type {
   Prompt,
@@ -10,7 +10,7 @@ import type {
 import { SessionManager } from "./promptHistory/sessionManager"
 import { StorageHelper } from "./promptHistory/storageHelper"
 import { ExecuteManager } from "./promptHistory/executeManager"
-import { AiServices } from "@/services/aiService"
+import { getAiServices } from "@/services/aiService"
 import type { AutoCompleteMatch } from "@/services/autoComplete/types"
 
 /**
@@ -19,7 +19,6 @@ import type { AutoCompleteMatch } from "@/services/autoComplete/types"
 export class PromptServiceFacade {
   private static instance: PromptServiceFacade
   private aiService: AIServiceInterface | null = null
-  private storage: StorageService
   private sessionManager: SessionManager
   private storageHelper: StorageHelper
   private executeManager: ExecuteManager
@@ -27,18 +26,17 @@ export class PromptServiceFacade {
 
   // Callbacks
   private onSessionChangeCallbacks: ((session: Session | null) => void)[] = []
-  private onPromptChangeCallbacks: ((prompt: Prompt) => void)[] = []
-  private onPinChangeCallbacks: (() => void)[] = []
+  private promptUnwatchs: (() => void)[] = []
   private onNotificationCallbacks: ((
     notification: NotificationData,
   ) => void)[] = []
   private onErrorCallbacks: ((error: PromptError) => void)[] = []
 
   private constructor() {
-    this.storage = promptStorage
-    this.sessionManager = new SessionManager(this.storage)
-    this.storageHelper = new StorageHelper(this.storage, this.sessionManager)
-    this.executeManager = new ExecuteManager(this.storage, this.sessionManager)
+    const storage = StorageService.getInstance()
+    this.sessionManager = new SessionManager(storage)
+    this.storageHelper = new StorageHelper(storage, this.sessionManager)
+    this.executeManager = new ExecuteManager(storage, this.sessionManager)
   }
 
   /**
@@ -56,9 +54,6 @@ export class PromptServiceFacade {
    */
   async initialize(): Promise<void> {
     try {
-      // Initialize storage service
-      await this.storage.initialize()
-
       // Initialize AI service (only if supported)
       await this.initializeAIService()
 
@@ -89,7 +84,7 @@ export class PromptServiceFacade {
    */
   private async initializeAIService(): Promise<void> {
     // Try each service in order
-    for (const service of AiServices) {
+    for (const service of getAiServices()) {
       if (service.isSupported()) {
         try {
           await service.initialize()
@@ -174,7 +169,6 @@ export class PromptServiceFacade {
     return this.storageHelper.savePromptManually(
       saveData,
       async (prompt) => {
-        this.notifyPromptChange(prompt)
         this.notify({
           type: "success",
           message: `Prompt "${prompt.name}" saved successfully`,
@@ -202,7 +196,6 @@ export class PromptServiceFacade {
       promptId,
       saveData,
       async (prompt) => {
-        this.notifyPromptChange(prompt)
         this.notify({
           type: "success",
           message: `Prompt "${prompt.name}" updated successfully`,
@@ -223,7 +216,7 @@ export class PromptServiceFacade {
     await this.storageHelper.handleAutoSave(
       this.aiService,
       (prompt) => {
-        this.notifyPromptChange(prompt)
+        console.debug("Auto-saved success:", prompt.name)
       },
       (error) => {
         console.warn("Auto-save failed:", error)
@@ -240,7 +233,6 @@ export class PromptServiceFacade {
     await this.storageHelper.deletePrompt(
       promptId,
       (prompt) => {
-        this.notifyPromptChange(prompt)
         this.notify({
           type: "success",
           message: `Prompt "${prompt.name}" deleted`,
@@ -260,7 +252,6 @@ export class PromptServiceFacade {
     this.ensureInitialized()
     try {
       await this.storageHelper.pinPrompt(promptId)
-      this.notifyPinChange()
     } catch (error) {
       this.handleError("PIN_FAILED", "Failed to pin prompt", error)
     }
@@ -273,7 +264,6 @@ export class PromptServiceFacade {
     this.ensureInitialized()
     try {
       await this.storageHelper.unpinPrompt(promptId)
-      this.notifyPinChange()
     } catch (error) {
       this.handleError("UNPIN_FAILED", "Failed to unpin prompt", error)
     }
@@ -340,7 +330,6 @@ export class PromptServiceFacade {
       nodeAtCaret,
       match,
       (prompt) => {
-        this.notifyPromptChange(prompt)
         this.notify({
           type: "success",
           message: `Prompt "${prompt.name}" executed`,
@@ -401,17 +390,13 @@ export class PromptServiceFacade {
   }
 
   /**
-   * Register prompt change notifications
+   * Register prompt or pin change notifications
    */
-  onPromptChange(callback: (prompt: Prompt) => void): void {
-    this.onPromptChangeCallbacks.push(callback)
-  }
-
-  /**
-   * Register pin change notifications
-   */
-  onPinChange(callback: () => void): void {
-    this.onPinChangeCallbacks.push(callback)
+  onPromptOrPinChange(callback: () => void): void {
+    this.promptUnwatchs.push(
+      this.storageHelper.watchPrompts(callback),
+      this.storageHelper.watchPinnedPrompts(callback),
+    )
   }
 
   /**
@@ -489,32 +474,6 @@ export class PromptServiceFacade {
   }
 
   /**
-   * Notify prompt change
-   */
-  private notifyPromptChange(prompt: Prompt): void {
-    this.onPromptChangeCallbacks.forEach((callback) => {
-      try {
-        callback(prompt)
-      } catch (error) {
-        console.error("Prompt change callback error:", error)
-      }
-    })
-  }
-
-  /**
-   * Notify pin change
-   */
-  private notifyPinChange(): void {
-    this.onPinChangeCallbacks.forEach((callback) => {
-      try {
-        callback()
-      } catch (error) {
-        console.error("Pin change callback error:", error)
-      }
-    })
-  }
-
-  /**
    * Send notification
    */
   private notify(notification: NotificationData): void {
@@ -569,9 +528,10 @@ export class PromptServiceFacade {
       this.sessionManager.handlePageChange.bind(this.sessionManager),
     )
 
+    this.promptUnwatchs.forEach((unwatch) => unwatch())
+    this.promptUnwatchs = []
+
     this.onSessionChangeCallbacks = []
-    this.onPromptChangeCallbacks = []
-    this.onPinChangeCallbacks = []
     this.onNotificationCallbacks = []
     this.onErrorCallbacks = []
 

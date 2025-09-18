@@ -3,6 +3,7 @@ import { MenubarItem } from "@/components/ui/menubar"
 import { PinButton } from "./controller/PinButton"
 import { MenuItemPopup } from "./MenuItemPopup"
 import { cn } from "@/lib/utils"
+import { TestIds } from "@/components/const"
 
 type MenuItemProps = {
   children: React.ReactNode
@@ -65,6 +66,7 @@ export const MenuItem = forwardRef<HTMLDivElement, MenuItemProps>(
         className="relative flex justify-between pl-2 pr-1 py-1 text-sm font-normal font-sans text-gray-700 cursor-pointer outline-gray-300"
         style={{ outlineColor: "#d1d5db" }}
         data-value={props.value}
+        data-testid={TestIds.inputPopup.historyItem}
       >
         <div className="max-w-50 truncate">{props.children}</div>
         <div className={cn("flex items-center")}>

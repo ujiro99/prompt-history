@@ -119,6 +119,7 @@ export function getCaretCoordinates(element: Element): CaretCoordinates | null {
     // Get position of the caret span
     const spanRect = caretSpan.getBoundingClientRect()
     const inputRect = inputElement.getBoundingClientRect()
+    const mirrorRect = mirror.getBoundingClientRect()
 
     // Account for scroll position in the input
     let scrollLeft = 0
@@ -133,14 +134,8 @@ export function getCaretCoordinates(element: Element): CaretCoordinates | null {
     document.body.removeChild(mirror)
 
     // Calculate final position relative to input element
-    const x =
-      inputRect.left +
-      (spanRect.left - mirror.getBoundingClientRect().left) -
-      scrollLeft
-    const y =
-      inputRect.top +
-      (spanRect.top - mirror.getBoundingClientRect().top) -
-      scrollTop
+    const x = inputRect.left + (spanRect.left - mirrorRect.left) - scrollLeft
+    const y = inputRect.top + (spanRect.top - mirrorRect.top) - scrollTop
 
     return {
       x: x,
