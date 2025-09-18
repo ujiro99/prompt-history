@@ -1,5 +1,5 @@
 import { BasePage, Selectors } from "./BasePage"
-import { GEMINI_DEFINITIONS } from "../../services/aiService/gemini/geminiDefinitions"
+import { GEMINI_DEFINITIONS } from "@/services/aiService/gemini/geminiDefinitions"
 
 const selectors = GEMINI_DEFINITIONS.selectors
 

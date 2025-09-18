@@ -1,5 +1,5 @@
 import { BasePage, Selectors } from "./BasePage"
-import { PERPLEXITY_DEFINITIONS } from "../../services/aiService/perplexity/perplexityDefinitions"
+import { PERPLEXITY_DEFINITIONS } from "@/services/aiService/perplexity/perplexityDefinitions"
 
 const selectors = PERPLEXITY_DEFINITIONS.selectors
 
