@@ -8,11 +8,6 @@ export default defineConfig({
     environment: "node",
     mockReset: true,
     restoreMocks: true,
-    exclude: [
-      "**/node_modules/**",
-      "**/dist/**",
-      "**/e2e/**",
-      "**/.{git,svn}/**"
-    ]
+    exclude: ["**/node_modules/**", "**/dist/**", "**/e2e/**", "**/.{git}/**"],
   },
 })
