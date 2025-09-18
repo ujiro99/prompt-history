@@ -103,12 +103,16 @@ export interface StorageData {
 export interface AppSettings {
   /** Enable/disable auto-save feature */
   autoSaveEnabled: boolean
+  /** Enable/disable auto-complete feature */
+  autoCompleteEnabled?: boolean
   /** Maximum number of stored prompts */
   maxPrompts: number
   /** Default sort order */
   defaultSortOrder: "recent" | "execution" | "name" | "composite"
   /** Notification display setting */
   showNotifications: boolean
+  /** Enable/disable minimal mode */
+  minimalMode?: boolean
 }
 
 /**

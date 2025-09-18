@@ -82,7 +82,7 @@ describe("StorageHelper", () => {
     storageHelper = new StorageHelper(mockStorage, mockSessionManager)
 
     // Setup default mocks
-    vi.mocked(mockStorage.getSettings).mockReturnValue(mockSettings)
+    vi.mocked(mockStorage.getSettings).mockResolvedValue(mockSettings)
   })
 
   describe("getPrompt", () => {
@@ -188,7 +188,7 @@ describe("StorageHelper", () => {
     it("should sort by recent execution date", async () => {
       const prompts = createPrompts()
       vi.mocked(mockStorage.getAllPrompts).mockResolvedValue(prompts)
-      vi.mocked(mockStorage.getSettings).mockReturnValue({
+      vi.mocked(mockStorage.getSettings).mockResolvedValue({
         ...mockSettings,
         defaultSortOrder: "recent",
       })
@@ -202,7 +202,7 @@ describe("StorageHelper", () => {
     it("should sort by execution count", async () => {
       const prompts = createPrompts()
       vi.mocked(mockStorage.getAllPrompts).mockResolvedValue(prompts)
-      vi.mocked(mockStorage.getSettings).mockReturnValue({
+      vi.mocked(mockStorage.getSettings).mockResolvedValue({
         ...mockSettings,
         defaultSortOrder: "execution",
       })
@@ -216,7 +216,7 @@ describe("StorageHelper", () => {
     it("should sort by name alphabetically", async () => {
       const prompts = createPrompts()
       vi.mocked(mockStorage.getAllPrompts).mockResolvedValue(prompts)
-      vi.mocked(mockStorage.getSettings).mockReturnValue({
+      vi.mocked(mockStorage.getSettings).mockResolvedValue({
         ...mockSettings,
         defaultSortOrder: "name",
       })
@@ -230,7 +230,7 @@ describe("StorageHelper", () => {
     it("should sort by composite score", async () => {
       const prompts = createPrompts()
       vi.mocked(mockStorage.getAllPrompts).mockResolvedValue(prompts)
-      vi.mocked(mockStorage.getSettings).mockReturnValue({
+      vi.mocked(mockStorage.getSettings).mockResolvedValue({
         ...mockSettings,
         defaultSortOrder: "composite",
       })
@@ -374,7 +374,7 @@ describe("StorageHelper", () => {
     })
 
     it("should not save when auto-save is disabled", async () => {
-      vi.mocked(mockStorage.getSettings).mockReturnValue({
+      vi.mocked(mockStorage.getSettings).mockResolvedValue({
         ...mockSettings,
         autoSaveEnabled: false,
       })
@@ -674,7 +674,7 @@ describe("StorageHelper", () => {
       ]
 
       vi.mocked(mockStorage.getAllPrompts).mockResolvedValue(prompts)
-      vi.mocked(mockStorage.getSettings).mockReturnValue({
+      vi.mocked(mockStorage.getSettings).mockResolvedValue({
         ...mockSettings,
         defaultSortOrder: "composite",
       })

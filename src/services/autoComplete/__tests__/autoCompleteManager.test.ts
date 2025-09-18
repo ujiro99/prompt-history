@@ -323,7 +323,7 @@ describe("AutoCompleteManager", () => {
       manager.handleContentChange("hello")
 
       // Wait for debounce
-      await new Promise((resolve) => setTimeout(resolve, 250))
+      await new Promise((resolve) => setTimeout(resolve, 100))
 
       expect(mockCallbacks.onShow).toHaveBeenCalled()
     })
@@ -336,14 +336,13 @@ describe("AutoCompleteManager", () => {
       vi.mocked(getCaretPosition).mockReturnValue(5)
       manager.setCallbacks(mockCallbacks)
       manager.handleContentChange("hello")
-      await new Promise((resolve) => setTimeout(resolve, 250))
+      await new Promise((resolve) => setTimeout(resolve, 100))
 
       // Then test hiding with no matches
       vi.mocked(getCaretPosition).mockReturnValue(11)
       manager.handleContentChange("nonexistent")
 
-      await new Promise((resolve) => setTimeout(resolve, 250))
-
+      await new Promise((resolve) => setTimeout(resolve, 100))
       expect(mockCallbacks.onHide).toHaveBeenCalled()
     })
 
@@ -354,13 +353,13 @@ describe("AutoCompleteManager", () => {
       // First, show autocomplete to ensure it's visible
       manager.setCallbacks(mockCallbacks)
       manager.handleContentChange("hello")
-      await new Promise((resolve) => setTimeout(resolve, 250))
+      await new Promise((resolve) => setTimeout(resolve, 100))
 
       // Then set element to null and test
       manager.setElement(null)
       manager.handleContentChange("hello")
 
-      await new Promise((resolve) => setTimeout(resolve, 250))
+      await new Promise((resolve) => setTimeout(resolve, 100))
 
       expect(mockCallbacks.onHide).toHaveBeenCalled()
     })
