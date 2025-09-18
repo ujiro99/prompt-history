@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { CircleCheck, CircleOff, CircleAlert } from "lucide-react"
+import { cn } from "@/lib/utils"
 import type { NotificationData } from "../types/prompt"
 
 interface NotificationProps {
@@ -16,6 +17,7 @@ export const Notification: React.FC<NotificationProps> = ({
 }) => {
   const [isVisible, setIsVisible] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
+  const dismissTORef = useRef<number | null>(null)
 
   const dismissNotification = useCallback(() => {
     setIsAnimating(false)
@@ -31,12 +33,14 @@ export const Notification: React.FC<NotificationProps> = ({
       setIsAnimating(true)
 
       // Auto-dismiss timer
-      if (notification.duration && notification.duration > 0) {
-        const timer = setTimeout(() => {
+      if (
+        notification.duration &&
+        notification.duration > 0 &&
+        dismissTORef.current == null
+      ) {
+        dismissTORef.current = window.setTimeout(() => {
           dismissNotification()
         }, notification.duration)
-
-        return () => clearTimeout(timer)
       }
     } else {
       dismissNotification()
@@ -66,11 +70,12 @@ export const Notification: React.FC<NotificationProps> = ({
 
   return (
     <div
-      className={`sm:left-auto sm:w-auto w-[calc(100%-1.25rem)] transition-all duration-500 ease-out ${
+      className={cn(
+        "sm:left-auto sm:w-auto w-[calc(100%-1.25rem)] transition-all duration-500 ease-out",
         isAnimating
           ? "translate-x-0 opacity-100 pointer-events-auto"
-          : "translate-x-1/2 opacity-0 pointer-events-none"
-      }`}
+          : "translate-x-1/2 opacity-0 pointer-events-none",
+      )}
     >
       <div className="flex items-center justify-end gap-2 flex-1 min-w-0 text-gray-800 dark:text-gray-200">
         <span className="flex-shrink-0 text-base">
@@ -89,7 +94,7 @@ export const Notification: React.FC<NotificationProps> = ({
  */
 interface NotificationManagerProps {
   notifications: NotificationData[]
-  onDismiss: (index: number) => void
+  onDismiss: (notification: NotificationData) => void
 }
 
 export const NotificationManager: React.FC<NotificationManagerProps> = ({
@@ -105,7 +110,7 @@ export const NotificationManager: React.FC<NotificationManagerProps> = ({
         >
           <Notification
             notification={notification}
-            onDismiss={() => onDismiss(index)}
+            onDismiss={() => onDismiss(notification)}
           />
         </div>
       ))}

@@ -24,6 +24,20 @@ export const PromptHistoryWidget: React.FC = () => {
   const [promptContent, setPromptContent] = useState<string>("")
 
   /**
+   * Add notification
+   */
+  const addNotification = useCallback((notification: NotificationData) => {
+    setNotifications((prev) => [...prev, notification])
+  }, [])
+
+  /**
+   * Remove notification
+   */
+  const removeNotification = useCallback((notification: NotificationData) => {
+    setNotifications((prev) => prev.filter((n) => n !== notification))
+  }, [])
+
+  /**
    * Load prompt list
    */
   const loadPrompts = useCallback(async () => {
@@ -42,7 +56,7 @@ export const PromptHistoryWidget: React.FC = () => {
         duration: 3000,
       })
     }
-  }, [])
+  }, [addNotification])
 
   /**
    * Initialization process
@@ -101,21 +115,7 @@ export const PromptHistoryWidget: React.FC = () => {
     serviceFacade.onPromptOrPinChange(handlePromptChange)
     serviceFacade.onNotification(handleNotification)
     serviceFacade.onError(handleError)
-  }, [loadPrompts])
-
-  /**
-   * Add notification
-   */
-  const addNotification = (notification: NotificationData) => {
-    setNotifications((prev) => [...prev, notification])
-  }
-
-  /**
-   * Remove notification
-   */
-  const removeNotification = (index: number) => {
-    setNotifications((prev) => prev.filter((_, i) => i !== index))
-  }
+  }, [loadPrompts, addNotification])
 
   // Display during initialization
   if (isInitializing) {
