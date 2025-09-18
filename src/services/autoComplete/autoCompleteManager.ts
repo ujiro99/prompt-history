@@ -139,10 +139,10 @@ export class AutoCompleteManager {
    */
   private hide(): void {
     if (this.isVisible) {
-      this.isVisible = false
       this.currentMatches = []
       this.selectedIndex = NO_SELECTED_INDEX
       this.notifySelectChange()
+      this.isVisible = false
       this.callbacks.onHide()
     }
   }
@@ -249,13 +249,6 @@ export class AutoCompleteManager {
       x: rect.left,
       y: rect.bottom + 2,
     }
-  }
-
-  /**
-   * Check if autocomplete is visible
-   */
-  isAutoCompleteVisible(): boolean {
-    return this.isVisible
   }
 
   /**

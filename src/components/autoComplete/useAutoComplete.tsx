@@ -29,9 +29,9 @@ export const useAutoComplete = ({ prompts }: UseAutoCompleteOptions) => {
         }
       },
       onHide: () => {
-        setIsVisible(false)
         setMatches([])
         managerRef.current?.selectReset()
+        setIsVisible(false)
       },
       onSelect: async (match: AutoCompleteMatch) => {
         await serviceFacade.executePrompt(match.id, nodeAtCaret, match)
@@ -42,7 +42,6 @@ export const useAutoComplete = ({ prompts }: UseAutoCompleteOptions) => {
           textInput.focus()
         }
 
-        setIsVisible(false)
         setMatches([])
         managerRef.current?.selectReset()
       },
