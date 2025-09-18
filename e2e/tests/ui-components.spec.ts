@@ -1,14 +1,17 @@
 import { test, expect } from "../fixtures/extension"
 import { TestPage } from "../page-objects/TestPage"
 import { StorageHelpers } from "../utils/storage-helpers"
+import { WaitHelpers } from "../utils/wait-helpers"
 
 test.describe("UI Components Tests", () => {
   let testPage: TestPage
   let storageHelpers: StorageHelpers
+  let waitHelpers: WaitHelpers
 
   test.beforeEach(async ({ page }) => {
     testPage = new TestPage(page)
     storageHelpers = new StorageHelpers(page.context())
+    waitHelpers = new WaitHelpers(page)
 
     // テスト前にストレージをクリア
     await page.goto(TestPage.url)
@@ -89,6 +92,10 @@ test.describe("UI Components Tests", () => {
 
     // プロンプト入力フィールドの値を確認
     const promptInput = await testPage.getPromptInput()
+    await waitHelpers.waitForCondition(async () => {
+      const val = await promptInput.textContent()
+      return val === "Mock prompt 1 for testing"
+    })
     const inputValue = await promptInput.textContent()
     expect(inputValue).toBe("Mock prompt 1 for testing")
 
@@ -131,6 +138,10 @@ test.describe("UI Components Tests", () => {
 
     // Check the value of prompt input field
     const promptInput = await testPage.getPromptInput()
+    await waitHelpers.waitForCondition(async () => {
+      const val = await promptInput.textContent()
+      return val === "Mock prompt 2 for testing"
+    })
     const inputValue = await promptInput.textContent()
     expect(inputValue).toBe("Mock prompt 2 for testing")
 

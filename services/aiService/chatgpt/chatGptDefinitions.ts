@@ -17,6 +17,8 @@ export const CHATGPT_DEFINITIONS = {
       '[id="composer-submit-button"]',
       // openai.com
       "button[type='submit']",
+      // test page
+      'form button[type="submit"]',
     ],
   },
   popupPlacement: {

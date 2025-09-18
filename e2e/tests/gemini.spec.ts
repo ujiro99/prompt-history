@@ -62,6 +62,10 @@ test.describe("Gemini Extension Tests", () => {
     await autocompletePopup.pressTab()
 
     // 6. Check the value of prompt input field
+    await waitHelpers.waitForCondition(async () => {
+      const val = await promptInput.textContent()
+      return val === "Mock prompt 1 for testing"
+    })
     let inputValue = await promptInput.textContent()
     expect(inputValue).toBe("Mock prompt 1 for testing")
 
@@ -75,14 +79,10 @@ test.describe("Gemini Extension Tests", () => {
     await promptInput.clear()
     await promptInput.press("Control+A") // Execute multiple times as this often fails
     await promptInput.press("Delete")
-    await waitHelpers.waitForCondition(
-      async () => {
-        const val = await promptInput.textContent()
-        return val?.trim() === ""
-      },
-      2000,
-      20,
-    )
+    await waitHelpers.waitForCondition(async () => {
+      const val = await promptInput.textContent()
+      return val?.trim() === ""
+    })
     inputValue = await promptInput.textContent()
     expect(inputValue?.trim()).toBe("")
 
@@ -105,6 +105,10 @@ test.describe("Gemini Extension Tests", () => {
     await inputPopup.selectHistoryItem(0)
 
     // 9. Check the value of prompt input field
+    await waitHelpers.waitForCondition(async () => {
+      const val = await promptInput.textContent()
+      return val === "Mock prompt 5 for testing"
+    })
     inputValue = await promptInput.textContent()
     expect(inputValue).toBe("Mock prompt 5 for testing") // Most recent history should be input
   })

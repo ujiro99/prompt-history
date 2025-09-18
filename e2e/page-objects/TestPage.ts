@@ -27,7 +27,7 @@ export class TestPage extends BasePage {
     // Use more specific selectors with priority
     return {
       promptInput: selectors.textInput[3],
-      sendButton: selectors.sendButton[7],
+      sendButton: selectors.sendButton[4],
     }
   }
 }
