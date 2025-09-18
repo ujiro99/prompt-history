@@ -6,7 +6,7 @@ export const PERPLEXITY_DEFINITIONS = {
     textInput: ["div#ask-input"],
     sendButton: [
       'button[data-testid="submit-button"]',
-      'button[type="button"]',
+      'button[type="button"]:has(svg.tabler-icon)',
     ],
   },
   popupPlacement: {

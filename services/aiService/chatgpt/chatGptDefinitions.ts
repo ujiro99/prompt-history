@@ -17,14 +17,6 @@ export const CHATGPT_DEFINITIONS = {
       '[id="composer-submit-button"]',
       // openai.com
       "button[type='submit']",
-      // SVG icon based
-      'button svg[data-icon="paper-plane"]',
-      'button svg[data-icon="arrow-up"]',
-      'button path[d*="M2.963"]', // Path of send icon
-      // Fallbacks
-      'form button[type="submit"]',
-      "button:has(svg)",
-      "button:last-child",
     ],
   },
   popupPlacement: {
