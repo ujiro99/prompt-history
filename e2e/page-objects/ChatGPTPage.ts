@@ -1,5 +1,5 @@
 import { BasePage, Selectors } from "./BasePage"
-import { CHATGPT_DEFINITIONS } from "../../services/aiService/chatgpt/chatGptDefinitions"
+import { CHATGPT_DEFINITIONS } from "@/services/aiService/chatgpt/chatGptDefinitions"
 
 const selectors = CHATGPT_DEFINITIONS.selectors
 

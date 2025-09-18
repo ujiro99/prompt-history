@@ -69,13 +69,7 @@ export default [
   },
   // Configuration for React components and content scripts (browser environment)
   {
-    files: [
-      "components/**/*.{js,jsx,ts,tsx}",
-      "contexts/**/*.{js,jsx,ts,tsx}",
-      "hooks/**/*.{js,jsx,ts,tsx}",
-      "entrypoints/content*.{js,ts,jsx,tsx}",
-      "src/components/**/*.{js,jsx,ts,tsx}",
-    ],
+    files: ["src/**/*.{js,jsx,ts,tsx}"],
     languageOptions: {
       globals: {
         ...globals.browser,
@@ -92,7 +86,7 @@ export default [
   },
   // Configuration for background scripts (WebExtension environment)
   {
-    files: ["entrypoints/background*.{js,ts}"],
+    files: ["src/entrypoints/background*.{js,ts}"],
     languageOptions: {
       globals: {
         console: "readonly",
@@ -104,23 +98,6 @@ export default [
       },
     },
   },
-  // Configuration for service files (browser + WebExtension environment)
-  {
-    files: [
-      "services/**/*.{js,jsx,ts,tsx}",
-      "src/services/**/*.{js,jsx,ts,tsx}",
-    ],
-    languageOptions: {
-      globals: {
-        ...globals.browser,
-        // Additional browser globals needed for services
-        EventListener: "readonly",
-        // WebExtension globals
-        browser: "readonly",
-        chrome: "readonly",
-      },
-    },
-  },
   // Configuration for config files (Node.js environment)
   {
     files: [
@@ -128,7 +105,7 @@ export default [
       "vitest.config.{js,ts}",
       "wxt.config.{js,ts}",
       "tailwind.config.{js,ts}",
-      "app.config.{js,ts}",
+      "src/app.config.{js,ts}",
     ],
     languageOptions: {
       globals: {
@@ -139,15 +116,6 @@ export default [
     },
     rules: {
       "no-console": "off", // Allow console in config files
-    },
-  },
-  // Configuration for type files
-  {
-    files: ["types/**/*.{js,jsx,ts,tsx}", "src/types/**/*.{js,jsx,ts,tsx}"],
-    languageOptions: {
-      globals: {
-        ...globals.browser,
-      },
     },
   },
   // Configuration for test files
