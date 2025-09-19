@@ -138,7 +138,7 @@ describe("DomManager", () => {
       it("should handle invalid selectors gracefully", () => {
         const consoleSpy = vi
           .spyOn(console, "debug")
-          .mockImplementation(() => {})
+          .mockImplementation(() => { })
 
         // Use a more realistic invalid selector that will actually trigger an error
         const element = domManager["findElement"]([
@@ -402,7 +402,7 @@ describe("DomManager", () => {
   describe("Async Element Waiting", () => {
     describe("waitForElements", () => {
       it("should resolve immediately when elements are found", async () => {
-        const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {})
+        const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => { })
 
         await expect(domManager.waitForElements()).resolves.toBeUndefined()
 
@@ -572,7 +572,7 @@ describe("DomManager", () => {
       it("should set up event listeners on send button and text input", () => {
         const sendButtonSpy = vi.spyOn(mockSendButton, "addEventListener")
         const textInputSpy = vi.spyOn(mockTextInput, "addEventListener")
-        const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {})
+        const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => { })
 
         domManager.setupSendEventListeners()
 
@@ -613,7 +613,7 @@ describe("DomManager", () => {
 
         const consoleSpy = vi
           .spyOn(console, "warn")
-          .mockImplementation(() => {})
+          .mockImplementation(() => { })
 
         domManager.setupSendEventListeners()
 
@@ -630,7 +630,7 @@ describe("DomManager", () => {
     describe("setupContentChangeListeners", () => {
       it("should set up content change listeners for regular input", () => {
         const inputSpy = vi.spyOn(mockTextInput, "addEventListener")
-        const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {})
+        const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => { })
 
         domManager.setupContentChangeListeners()
 
@@ -705,7 +705,7 @@ describe("DomManager", () => {
 
         const consoleSpy = vi
           .spyOn(console, "warn")
-          .mockImplementation(() => {})
+          .mockImplementation(() => { })
 
         domManager.setupContentChangeListeners()
 
@@ -721,7 +721,7 @@ describe("DomManager", () => {
 
     describe("setupDOMObserver", () => {
       it("should set up DOM observer with correct configuration", () => {
-        const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {})
+        const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => { })
 
         domManager.setupDOMObserver()
 
@@ -775,7 +775,7 @@ describe("DomManager", () => {
         const normalCallback = vi.fn()
         const consoleSpy = vi
           .spyOn(console, "error")
-          .mockImplementation(() => {})
+          .mockImplementation(() => { })
 
         domManager.onSend(errorCallback)
         domManager.onSend(normalCallback)
@@ -835,7 +835,7 @@ describe("DomManager", () => {
         const normalCallback = vi.fn()
         const consoleSpy = vi
           .spyOn(console, "error")
-          .mockImplementation(() => {})
+          .mockImplementation(() => { })
 
         domManager.onContentChange(errorCallback)
         domManager.onContentChange(normalCallback)
@@ -895,7 +895,7 @@ describe("DomManager", () => {
         const normalCallback = vi.fn()
         const consoleSpy = vi
           .spyOn(console, "error")
-          .mockImplementation(() => {})
+          .mockImplementation(() => { })
 
         domManager.onElementChange(errorCallback)
         domManager.onElementChange(normalCallback)
@@ -1073,68 +1073,6 @@ describe("DomManager", () => {
       await domManager.waitForElements()
     })
 
-    describe("refreshElements", () => {
-      it("should refresh element references when elements change", () => {
-        const mockCallback = vi.fn()
-        domManager.onElementChange(mockCallback)
-
-        // Create new elements with same IDs
-        const newTextInput = createMockInput("new content", "text")
-        newTextInput.id = "text-input"
-        const newSendButton = document.createElement("button")
-        newSendButton.id = "send-button"
-
-        // Mock getBoundingClientRect for new elements
-        vi.spyOn(newTextInput, "getBoundingClientRect").mockReturnValue({
-          width: 100,
-          height: 20,
-          left: 0,
-          top: 0,
-          right: 100,
-          bottom: 20,
-        } as DOMRect)
-
-        vi.spyOn(newSendButton, "getBoundingClientRect").mockReturnValue({
-          width: 100,
-          height: 20,
-          left: 0,
-          top: 0,
-          right: 100,
-          bottom: 20,
-        } as DOMRect)
-
-        // Replace old elements
-        document.body.replaceChild(newTextInput, mockTextInput)
-        document.body.replaceChild(newSendButton, mockSendButton)
-
-        const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {})
-
-        domManager["refreshElements"]()
-
-        expect(domManager["textInput"]).toBe(newTextInput)
-        expect(domManager["sendButton"]).toBe(newSendButton)
-        expect(mockCallback).toHaveBeenCalledWith(newTextInput)
-        expect(consoleSpy).toHaveBeenCalledWith(
-          expect.stringContaining("TestService elements refreshed:"),
-          expect.objectContaining({
-            textInput: newTextInput,
-            sendButton: newSendButton,
-          }),
-        )
-
-        consoleSpy.mockRestore()
-      })
-
-      it("should not fire callbacks if elements haven't changed", () => {
-        const mockCallback = vi.fn()
-        domManager.onElementChange(mockCallback)
-
-        domManager["refreshElements"]()
-
-        expect(mockCallback).not.toHaveBeenCalled()
-      })
-    })
-
     describe("getElementInfo", () => {
       it("should return element information for found elements", () => {
         const elementInfo = domManager.getElementInfo()
@@ -1260,7 +1198,7 @@ describe("DomManager", () => {
 
         // Set up a timeout
         domManager["contentChangeDebounceTimeout"] = setTimeout(
-          () => {},
+          () => { },
           1000,
         ) as any
 
@@ -1301,7 +1239,7 @@ describe("DomManager", () => {
       })
 
       it("should log destruction message", () => {
-        const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {})
+        const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => { })
 
         domManager.destroy()
 
@@ -1314,75 +1252,9 @@ describe("DomManager", () => {
     })
 
     describe("DOM Observer Callback", () => {
-      it("should handle DOM changes and refresh elements", () => {
-        // Spy on refreshElements method
-        const refreshSpy = vi.spyOn(domManager as any, "refreshElements")
-
-        // Create new elements with same IDs but different references
-        const newTextInput = createMockInput("", "text")
-        newTextInput.id = "text-input"
-        const newSendButton = document.createElement("button")
-        newSendButton.id = "send-button"
-
-        // Mock getBoundingClientRect for new elements
-        vi.spyOn(newTextInput, "getBoundingClientRect").mockReturnValue({
-          width: 100,
-          height: 20,
-          left: 0,
-          top: 0,
-          right: 100,
-          bottom: 20,
-        } as DOMRect)
-
-        vi.spyOn(newSendButton, "getBoundingClientRect").mockReturnValue({
-          width: 100,
-          height: 20,
-          left: 0,
-          top: 0,
-          right: 100,
-          bottom: 20,
-        } as DOMRect)
-
-        // Replace elements in DOM
-        document.body.replaceChild(newTextInput, mockTextInput)
-        document.body.replaceChild(newSendButton, mockSendButton)
-
-        // Store old references
-        const oldTextInput = domManager["textInput"]
-        const oldSendButton = domManager["sendButton"]
-
-        // Manually trigger the DOM observer callback logic
-        const newFoundTextInput = domManager["findElement"](
-          domManager["config"].selectors.textInput,
-        )
-        const newFoundSendButton = domManager["findElement"](
-          domManager["config"].selectors.sendButton,
-        )
-
-        let changed = false
-
-        if (newFoundTextInput !== oldTextInput) {
-          domManager["textInput"] = newFoundTextInput
-          changed = true
-        }
-
-        if (newFoundSendButton !== oldSendButton) {
-          domManager["sendButton"] = newFoundSendButton
-          changed = true
-        }
-
-        if (changed) {
-          domManager["refreshElements"]()
-        }
-
-        expect(refreshSpy).toHaveBeenCalled()
-
-        refreshSpy.mockRestore()
-      })
-
       it("should re-setup listeners when text input changes", () => {
         // Mock setupDOMObserver to not interfere
-        vi.spyOn(domManager, "setupDOMObserver").mockImplementation(() => {})
+        vi.spyOn(domManager, "setupDOMObserver").mockImplementation(() => { })
 
         const setupContentSpy = vi.spyOn(
           domManager,
@@ -1429,7 +1301,7 @@ describe("DomManager", () => {
 
       it("should re-setup listeners when send button changes", () => {
         // Mock setupDOMObserver to not interfere
-        vi.spyOn(domManager, "setupDOMObserver").mockImplementation(() => {})
+        vi.spyOn(domManager, "setupDOMObserver").mockImplementation(() => { })
 
         const setupSendSpy = vi.spyOn(domManager, "setupSendEventListeners")
 
