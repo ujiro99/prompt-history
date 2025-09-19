@@ -44,7 +44,7 @@ export const PromptPreview = ({
       <PopoverAnchor virtualRef={{ current: anchorElm }} />
       <PopoverContent
         ref={setContent}
-        className="relative z-auto p-4"
+        className="relative z-auto p-4 pb-3 max-w-lg"
         side={"right"}
         align={"end"}
         sideOffset={8}
@@ -55,7 +55,7 @@ export const PromptPreview = ({
             {prompt.content}
           </p>
           <hr />
-          <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+          <div className="flex items-center justify-end gap-1.5 text-xs text-gray-500 dark:text-gray-400">
             <span>Used {prompt.executionCount} times</span>
             <span>•</span>
             <span>{formatRelativeTime(prompt.lastExecutedAt)}</span>

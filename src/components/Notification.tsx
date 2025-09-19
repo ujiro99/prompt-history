@@ -72,17 +72,17 @@ export const Notification: React.FC<NotificationProps> = ({
   return (
     <div
       className={cn(
-        "sm:left-auto sm:w-auto w-[calc(100%-1.25rem)] transition-all duration-500 ease-out",
+        "sm:left-auto sm:w-64 w-[calc(100%-1.25rem)] transition-all duration-500 ease-out",
         isAnimating
           ? "translate-x-0 opacity-100 pointer-events-auto"
           : "translate-x-1/2 opacity-0 pointer-events-none",
       )}
     >
-      <div className="flex items-center justify-end gap-2 flex-1 min-w-0 text-gray-800 dark:text-gray-200">
-        <span className="flex-shrink-0 text-base">
+      <div className="flex items-start justify-end gap-1 flex-1 min-w-0 text-gray-800 dark:text-gray-200">
+        <span className="mt-1 flex-shrink-0 text-base">
           {getIcon(notification.type)}
         </span>
-        <span className="text-sm break-words leading-5">
+        <span className="text-sm leading-5 text-right truncate">
           {notification.message}
         </span>
       </div>
@@ -103,11 +103,11 @@ export const NotificationManager: React.FC<NotificationManagerProps> = ({
   onDismiss,
 }) => {
   return (
-    <div className="fixed bottom-10 right-8 opacity-60 pointer-events-none select-none space-y-2 z-[10001]">
+    <div className="fixed bottom-10 right-4 opacity-60 pointer-events-none select-none space-y-2 z-[10001]">
       {notifications.map((notification) => (
         <div
           key={notification.id}
-          className="sm:left-auto sm:w-auto w-[calc(100%-1.25rem)]"
+          className="sm:left-auto sm:w-64 w-[calc(100%-1.25rem)]"
         >
           <Notification notification={notification} onDismiss={onDismiss} />
         </div>
