@@ -36,7 +36,7 @@ export const EditButton = ({
         )}
         size={size}
       />
-      Edit
+      {i18n.t("buttons.edit")}
     </button>
   )
 }

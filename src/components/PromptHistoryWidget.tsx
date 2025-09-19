@@ -53,7 +53,7 @@ export const PromptHistoryWidget: React.FC = () => {
       addNotification({
         id: uuid(),
         type: "error",
-        message: "Failed to load prompts",
+        message: i18n.t("status.failedToLoadPrompts"),
         duration: 3000,
       })
     }
@@ -81,7 +81,9 @@ export const PromptHistoryWidget: React.FC = () => {
       } catch (error) {
         if (mounted) {
           setInitError(
-            error instanceof Error ? error.message : "Initialization failed",
+            error instanceof Error
+              ? error.message
+              : i18n.t("status.initializationFailed"),
           )
           setIsInitializing(false)
         }
@@ -126,7 +128,7 @@ export const PromptHistoryWidget: React.FC = () => {
         data-testid={TestIds.widget.loading}
       >
         <div className="text-gray-500 dark:text-gray-300 text-sm">
-          Loading...
+          {i18n.t("status.loading")}
         </div>
       </div>
     )

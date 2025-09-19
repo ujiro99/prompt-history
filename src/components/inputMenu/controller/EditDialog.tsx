@@ -103,7 +103,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
       <DialogContent className="w-md" onKeyDown={handleKeyDown}>
         <DialogHeader>
           <DialogTitle>
-            {isEdit ? "Edit Prompt" : isCopy ? "Copy Prompt" : "New Prompt"}
+            {isEdit ? i18n.t("dialogs.edit.title") : isCopy ? i18n.t("dialogs.copy.title") : i18n.t("dialogs.save.title")}
           </DialogTitle>
         </DialogHeader>
 
@@ -114,14 +114,14 @@ export const EditDialog: React.FC<EditDialogProps> = ({
               htmlFor="prompt-name"
               className="text-sm font-medium text-foreground"
             >
-              Name
+              {i18n.t("common.name")}
             </label>
             <Input
               id="prompt-name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Enter prompt name..."
+              placeholder={i18n.t("placeholders.enterPromptName")}
               disabled={isLoading}
               autoFocus
             />
@@ -133,13 +133,13 @@ export const EditDialog: React.FC<EditDialogProps> = ({
               htmlFor="prompt-content"
               className="text-sm font-medium text-foreground"
             >
-              Content
+              {i18n.t("common.content")}
             </label>
             <Textarea
               id="prompt-content"
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="Enter prompt content..."
+              placeholder={i18n.t("placeholders.enterPromptContent")}
               disabled={isLoading}
               rows={6}
             />
@@ -152,7 +152,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
             onClick={handleCancel}
             disabled={isLoading}
           >
-            Cancel
+            {i18n.t("common.cancel")}
           </Button>
           <ButtonGroup>
             <Button
@@ -169,15 +169,15 @@ export const EditDialog: React.FC<EditDialogProps> = ({
             >
               {isEdit
                 ? isLoading
-                  ? "Updating..."
-                  : "Update"
+                  ? i18n.t("status.updating")
+                  : i18n.t("common.update")
                 : isCopy
                   ? isLoading
-                    ? "Saving..."
-                    : "Save as Copy"
+                    ? i18n.t("status.saving")
+                    : i18n.t("buttons.saveAsCopy")
                   : isLoading
-                    ? "Saving..."
-                    : "Save"}
+                    ? i18n.t("status.saving")
+                    : i18n.t("common.save")}
             </Button>
             {isEdit && !isCopy && (
               <SaveAsNew
@@ -207,7 +207,7 @@ export function SaveAsNew(props: SaveAsNewProps) {
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="start">
         <DropdownMenuItem onClick={props.onSaveAsNew}>
-          Save as new prompt
+          {i18n.t("buttons.saveAsNew")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

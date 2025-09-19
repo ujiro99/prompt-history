@@ -36,7 +36,7 @@ export const CopyButton = ({
         )}
         size={size}
       />
-      Copy
+      {i18n.t("buttons.copy")}
     </button>
   )
 }

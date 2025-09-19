@@ -25,17 +25,17 @@ export const PromptPreview = ({
    * Display relative time
    */
   const formatRelativeTime = (date: Date): string => {
-    if (!date) return "---"
+    if (!date) return i18n.t("time.unknown")
     const now = new Date()
     const diff = now.getTime() - date.getTime()
     const minutes = Math.floor(diff / 60000)
     const hours = Math.floor(minutes / 60)
     const days = Math.floor(hours / 24)
 
-    if (minutes < 1) return "Just now"
-    if (minutes < 60) return `${minutes}m ago`
-    if (hours < 24) return `${hours}h ago`
-    if (days < 7) return `${days}d ago`
+    if (minutes < 1) return i18n.t("time.justNow")
+    if (minutes < 60) return i18n.t("time.minutesAgo", [`${minutes}`])
+    if (hours < 24) return i18n.t("time.hoursAgo", [`${hours}`])
+    if (days < 7) return i18n.t("time.daysAgo", [`${days}`])
     return date.toLocaleDateString()
   }
 
@@ -56,7 +56,7 @@ export const PromptPreview = ({
           </p>
           <hr />
           <div className="flex items-center justify-end gap-1.5 text-xs text-gray-500 dark:text-gray-400">
-            <span>Used {prompt.executionCount} times</span>
+            <span>{i18n.t("preview.usedTimes", [`${prompt.executionCount}`])}</span>
             <span>•</span>
             <span>{formatRelativeTime(prompt.lastExecutedAt)}</span>
           </div>
