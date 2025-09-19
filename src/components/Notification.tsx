@@ -4,8 +4,8 @@ import { cn } from "@/lib/utils"
 import type { NotificationData } from "../types/prompt"
 
 interface NotificationProps {
-  notification: NotificationData | null
-  onDismiss: () => void
+  notification: NotificationData
+  onDismiss: (id: string) => void
 }
 
 /**
@@ -23,27 +23,28 @@ export const Notification: React.FC<NotificationProps> = ({
     setIsAnimating(false)
     setTimeout(() => {
       setIsVisible(false)
-      onDismiss()
+      onDismiss(notification.id)
     }, 500) // wait for animation to finish
-  }, [onDismiss])
+  }, [onDismiss, notification.id])
 
   useEffect(() => {
-    if (notification) {
+    if (notification && dismissTORef.current == null) {
       setIsVisible(true)
       setIsAnimating(true)
 
       // Auto-dismiss timer
-      if (
-        notification.duration &&
-        notification.duration > 0 &&
-        dismissTORef.current == null
-      ) {
+      if (notification.duration && notification.duration > 0) {
         dismissTORef.current = window.setTimeout(() => {
           dismissNotification()
         }, notification.duration)
       }
-    } else {
-      dismissNotification()
+    }
+
+    return () => {
+      if (dismissTORef.current) {
+        clearTimeout(dismissTORef.current)
+        dismissTORef.current = null
+      }
     }
   }, [notification, dismissNotification])
 
@@ -94,7 +95,7 @@ export const Notification: React.FC<NotificationProps> = ({
  */
 interface NotificationManagerProps {
   notifications: NotificationData[]
-  onDismiss: (notification: NotificationData) => void
+  onDismiss: (id: string) => void
 }
 
 export const NotificationManager: React.FC<NotificationManagerProps> = ({
@@ -103,15 +104,12 @@ export const NotificationManager: React.FC<NotificationManagerProps> = ({
 }) => {
   return (
     <div className="fixed bottom-10 right-8 opacity-60 pointer-events-none select-none space-y-2 z-[10001]">
-      {notifications.map((notification, index) => (
+      {notifications.map((notification) => (
         <div
-          key={index}
+          key={notification.id}
           className="sm:left-auto sm:w-auto w-[calc(100%-1.25rem)]"
         >
-          <Notification
-            notification={notification}
-            onDismiss={() => onDismiss(notification)}
-          />
+          <Notification notification={notification} onDismiss={onDismiss} />
         </div>
       ))}
     </div>

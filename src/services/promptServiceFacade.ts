@@ -11,6 +11,7 @@ import { SessionManager } from "./promptHistory/sessionManager"
 import { StorageHelper } from "./promptHistory/storageHelper"
 import { ExecuteManager } from "./promptHistory/executeManager"
 import { getAiServices } from "@/services/aiService"
+import { uuid } from "@/lib/utils"
 import type { AutoCompleteMatch } from "@/services/autoComplete/types"
 
 /**
@@ -65,6 +66,7 @@ export class PromptServiceFacade {
 
       this.initialized = true
       this.notify({
+        id: uuid(),
         type: "info",
         message: "Prompt History initialized",
         duration: 2000,
@@ -170,9 +172,10 @@ export class PromptServiceFacade {
       saveData,
       async (prompt) => {
         this.notify({
+          id: uuid(),
           type: "success",
           message: `Prompt "${prompt.name}" saved successfully`,
-          duration: 3000,
+          duration: 2000,
         })
         await this.storageHelper.pinPrompt(prompt.id)
       },
@@ -197,9 +200,10 @@ export class PromptServiceFacade {
       saveData,
       async (prompt) => {
         this.notify({
+          id: uuid(),
           type: "success",
           message: `Prompt "${prompt.name}" updated successfully`,
-          duration: 1000,
+          duration: 2000,
         })
       },
       (error) => {
@@ -234,6 +238,7 @@ export class PromptServiceFacade {
       promptId,
       (prompt) => {
         this.notify({
+          id: uuid(),
           type: "success",
           message: `Prompt "${prompt.name}" deleted`,
           duration: 2000,
@@ -331,6 +336,7 @@ export class PromptServiceFacade {
       match,
       (prompt) => {
         this.notify({
+          id: uuid(),
           type: "success",
           message: `Prompt "${prompt.name}" executed`,
           duration: 2000,
@@ -426,7 +432,7 @@ export class PromptServiceFacade {
         null,
       )
     }
-    return () => {}
+    return () => { }
   }
 
   /**
@@ -442,7 +448,7 @@ export class PromptServiceFacade {
         null,
       )
     }
-    return () => {}
+    return () => { }
   }
 
   // ===================
@@ -502,6 +508,7 @@ export class PromptServiceFacade {
 
     // User notification
     this.notify({
+      id: uuid(),
       type: "error",
       message: message,
       duration: 5000,

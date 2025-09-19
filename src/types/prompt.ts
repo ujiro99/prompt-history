@@ -160,6 +160,8 @@ export interface PromptError {
  * Notification information
  */
 export interface NotificationData {
+  /** Unique identifier (UUID) */
+  id: string
   /** Notification type */
   type: "success" | "error" | "info" | "warning"
   /** Notification message */

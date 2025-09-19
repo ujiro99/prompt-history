@@ -8,7 +8,7 @@ export const GEMINI_DEFINITIONS = {
       // Primary send button selectors
       "button.send-button",
       // Icon-based selectors
-      'button mat-icon:has-text("send")',
+      'button mat-icon[fonticon="send"]',
       // Voice input button (if applicable)
       "speech-dictation-mic-button",
     ],

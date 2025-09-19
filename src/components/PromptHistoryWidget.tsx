@@ -4,7 +4,7 @@ import { NotificationManager } from "./Notification"
 import { InputPopup } from "./inputMenu/InputPopup"
 import { AutoCompletePopup } from "./autoComplete/AutoCompletePopup"
 import { CaretProvider } from "@/contexts/CaretContext"
-import { isEmpty } from "@/lib/utils"
+import { isEmpty, uuid } from "@/lib/utils"
 import type { Prompt, NotificationData, PromptError } from "../types/prompt"
 import { TestIds } from "@/components/const"
 
@@ -33,8 +33,8 @@ export const PromptHistoryWidget: React.FC = () => {
   /**
    * Remove notification
    */
-  const removeNotification = useCallback((notification: NotificationData) => {
-    setNotifications((prev) => prev.filter((n) => n !== notification))
+  const removeNotification = useCallback((id: string) => {
+    setNotifications((prev) => prev.filter((n) => n.id !== id))
   }, [])
 
   /**
@@ -51,6 +51,7 @@ export const PromptHistoryWidget: React.FC = () => {
     } catch (error) {
       console.error("Failed to load prompts:", error)
       addNotification({
+        id: uuid(),
         type: "error",
         message: "Failed to load prompts",
         duration: 3000,
