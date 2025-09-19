@@ -36,6 +36,7 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
   const [isFocused, setIsFocused] = useState(false)
   const [userInteracted, setUserInteracted] = useState(false)
 
+  const currentMatch = matches[selectedIndex]
   const isSingleMatch = matches.length === 1
 
   // Close popup and reset states
@@ -66,51 +67,97 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
 
   useEffect(() => {
     // Only add event listeners when popup is visible
-    if (!isVisible) {
-      return
+    if (!isVisible) return
+    if (!isFocused && !userInteracted) return
+
+    const handleKeyDownActive = (event: KeyboardEvent) => {
+      // When popup is active: Tab key is active.
+      switch (event.key) {
+        case "Tab":
+          event.preventDefault()
+          event.stopPropagation()
+          if (currentMatch) {
+            handleSelect(currentMatch)
+          }
+          break
+      }
     }
 
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (isFocused || userInteracted) {
-        // When popup is focused: Arrow keys, Enter, and Escape are active
-        switch (event.key) {
-          case "ArrowUp":
-            event.preventDefault()
-            selectPrevious()
-            break
-          case "ArrowDown":
-            event.preventDefault()
-            selectNext()
-            break
-          case "Tab":
-            event.preventDefault()
-            event.stopPropagation()
-            if (matches[selectedIndex]) {
-              handleSelect(matches[selectedIndex])
-            }
-            break
-        }
-      }
+    document.addEventListener("keydown", handleKeyDownActive, true)
+    return () => {
+      document.removeEventListener("keydown", handleKeyDownActive, true)
+    }
+  }, [isVisible, isFocused, userInteracted, currentMatch, handleSelect])
 
-      // If popup is visible but not focused, focus it on any key press except modifier keys
-      if (isVisible && !isFocused) {
-        switch (event.key) {
-          case "ArrowUp":
-          case "ArrowDown":
-          case "ArrowLeft":
-          case "ArrowRight":
-          case "Enter":
-            handlePopupClose()
-            break
-          case "Tab":
-            event.preventDefault()
-            event.stopPropagation()
-            popupRef.current?.focus()
-            selectNext()
-            break
-        }
-      }
+  useEffect(() => {
+    // Only add event listeners when popup is visible
+    if (!isVisible || !isFocused) return
 
+    const handleKeyDownFocus = (event: KeyboardEvent) => {
+      // When popup is focused: Arrow keys are active
+      switch (event.key) {
+        case "ArrowUp":
+          event.preventDefault()
+          selectPrevious()
+          break
+        case "ArrowDown":
+          event.preventDefault()
+          selectNext()
+          break
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDownFocus, true)
+    return () => {
+      document.removeEventListener("keydown", handleKeyDownFocus, true)
+    }
+  }, [isVisible, isFocused, selectNext, selectPrevious])
+
+  useEffect(() => {
+    if (!isVisible || isFocused) return
+
+    const handleKeyDownNotFocus = (event: KeyboardEvent) => {
+      // If popup is visible but not focused,
+      // focus it on any key press except modifier keys
+      switch (event.key) {
+        case "ArrowUp":
+        case "ArrowDown":
+        case "ArrowLeft":
+        case "ArrowRight":
+          handlePopupClose()
+          break
+        case "Enter":
+          if (!event.isComposing) handlePopupClose()
+          break
+        case "Tab":
+          event.preventDefault()
+          event.stopPropagation()
+          popupRef.current?.focus()
+          if (selectedIndex < 0) {
+            selectIndex(0)
+          }
+          break
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDownNotFocus, true)
+    return () => {
+      document.removeEventListener("keydown", handleKeyDownNotFocus, true)
+    }
+  }, [
+    isVisible,
+    isFocused,
+    selectedIndex,
+    handlePopupClose,
+    selectIndex,
+    selectNext,
+    selectPrevious,
+  ])
+
+  useEffect(() => {
+    if (!isVisible) return
+
+    const handleKeyDownAlways = (event: KeyboardEvent) => {
       // Allwais listen for Ctrl+N/P and Escape
       if (event.ctrlKey && event.key === "n") {
         event.preventDefault()
@@ -125,22 +172,11 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
         handlePopupClose()
       }
     }
-
-    document.addEventListener("keydown", handleKeyDown, true)
+    document.addEventListener("keydown", handleKeyDownAlways, true)
     return () => {
-      document.removeEventListener("keydown", handleKeyDown, true)
+      document.removeEventListener("keydown", handleKeyDownAlways, true)
     }
-  }, [
-    isVisible,
-    isFocused,
-    userInteracted,
-    matches,
-    selectedIndex,
-    handleSelect,
-    handlePopupClose,
-    selectNext,
-    selectPrevious,
-  ])
+  }, [isVisible, handlePopupClose, selectNext, selectPrevious])
 
   // Update anchor position when position changes
   useEffect(() => {
