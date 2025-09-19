@@ -36,6 +36,8 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
   const [isFocused, setIsFocused] = useState(false)
   const [userInteracted, setUserInteracted] = useState(false)
 
+  const isSingleMatch = matches.length === 1
+
   // Close popup and reset states
   const handlePopupClose = useCallback(() => {
     handleClose()
@@ -194,26 +196,29 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
             />
           ))}
         </div>
-        <div className="flex justify-end p-2 py-1.5 text-xs text-gray-500 border-t gap-1">
-          {!isFocused && !userInteracted ? (
+        <div className="flex justify-end p-2 py-1.5 text-xs text-gray-500 border-t gap-1 empty:hidden">
+          {(!isFocused && !userInteracted) || (!isFocused && isSingleMatch) ? (
             <p className="inline">
-              <Key className="text-[10px]">Tab</Key> <span>focus,</span>
+              <Key className="text-[10px]">Tab</Key> <span>to focus</span>
+              {!isSingleMatch ? <span>,</span> : null}
             </p>
           ) : null}
-          <p className="inline">
-            <Key className="text-[10px]">Ctrl + P</Key>
-            <span className="mx-0.5">/</span>
-            <Key className="text-[10px]">Ctrl + N</Key>
-            {isFocused && (
-              <>
-                <span className="mx-0.5">/</span>
-                <Key className="text-[10px]">↑</Key>
-                <span className="mx-0.5">/</span>
-                <Key className="text-[10px]">↓</Key>
-              </>
-            )}{" "}
-            to navigate
-          </p>
+          {isSingleMatch ? null : (
+            <p className="inline">
+              <Key className="text-[10px]">Ctrl + P</Key>
+              <span className="mx-0.5">/</span>
+              <Key className="text-[10px]">Ctrl + N</Key>
+              {isFocused && (
+                <>
+                  <span className="mx-0.5">/</span>
+                  <Key className="text-[10px]">↑</Key>
+                  <span className="mx-0.5">/</span>
+                  <Key className="text-[10px]">↓</Key>
+                </>
+              )}{" "}
+              to move
+            </p>
+          )}
         </div>
       </PopoverContent>
     </Popover>
