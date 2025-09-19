@@ -183,9 +183,9 @@ export class AutoCompleteManager {
   }
 
   /**
-   * Select current highlighted match
+   * Execute current highlighted match
    */
-  selectCurrent(): void {
+  execute(): void {
     if (
       this.currentMatches.length === 0 ||
       this.selectedIndex >= this.currentMatches.length
@@ -194,7 +194,7 @@ export class AutoCompleteManager {
     }
 
     const selectedMatch = this.currentMatches[this.selectedIndex]
-    this.callbacks.onSelect(selectedMatch)
+    this.callbacks.onExecute(selectedMatch)
     this.hide()
   }
 

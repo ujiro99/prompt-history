@@ -33,7 +33,7 @@ export const useAutoComplete = ({ prompts }: UseAutoCompleteOptions) => {
         managerRef.current?.selectReset()
         setIsVisible(false)
       },
-      onSelect: async (match: AutoCompleteMatch) => {
+      onExecute: async (match: AutoCompleteMatch) => {
         await serviceFacade.executePrompt(match.id, nodeAtCaret, match)
 
         // Refocus the text input after executing the prompt
@@ -95,7 +95,7 @@ export const useAutoComplete = ({ prompts }: UseAutoCompleteOptions) => {
 
   const handleSelect = (_match: AutoCompleteMatch) => {
     if (managerRef.current) {
-      managerRef.current.selectCurrent()
+      managerRef.current.execute()
     }
   }
 

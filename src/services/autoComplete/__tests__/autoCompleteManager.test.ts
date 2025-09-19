@@ -80,7 +80,7 @@ describe("AutoCompleteManager", () => {
     mockCallbacks = {
       onShow: vi.fn(),
       onHide: vi.fn(),
-      onSelect: vi.fn(),
+      onExecute: vi.fn(),
       onSelectChange: vi.fn(),
     }
 
