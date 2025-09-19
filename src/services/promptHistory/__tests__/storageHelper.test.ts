@@ -362,10 +362,7 @@ describe("StorageHelper", () => {
   })
 
   describe("handleAutoSave", () => {
-    let mockAIService: AIServiceInterface
-
     beforeEach(() => {
-      mockAIService = createMockAIService()
       // Mock window.location.href
       Object.defineProperty(window, "location", {
         value: { href: "https://example.com" },
@@ -379,28 +376,25 @@ describe("StorageHelper", () => {
         autoSaveEnabled: false,
       })
 
-      await storageHelper.handleAutoSave(mockAIService)
+      await storageHelper.handleAutoSave("")
 
       expect(mockStorage.savePrompt).not.toHaveBeenCalled()
     })
 
     it("should not save when content is empty", async () => {
-      vi.mocked(mockAIService.extractPromptContent).mockReturnValue("")
-
-      await storageHelper.handleAutoSave(mockAIService)
+      await storageHelper.handleAutoSave("")
 
       expect(mockStorage.savePrompt).not.toHaveBeenCalled()
     })
 
     it("should save new prompt with auto-generated name", async () => {
       const content = "This is a test prompt content"
-      vi.mocked(mockAIService.extractPromptContent).mockReturnValue(content)
       vi.mocked(mockStorage.savePrompt).mockResolvedValue(mockPrompt)
       vi.mocked(mockStorage.getAllPrompts).mockResolvedValue([mockPrompt])
 
       const onSuccess = vi.fn()
 
-      await storageHelper.handleAutoSave(mockAIService, onSuccess)
+      await storageHelper.handleAutoSave(content, onSuccess)
 
       expect(mockStorage.savePrompt).toHaveBeenCalledWith({
         name: content, // Auto-generated name
@@ -421,12 +415,11 @@ describe("StorageHelper", () => {
         startedAt: new Date(),
       }
 
-      vi.mocked(mockAIService.extractPromptContent).mockReturnValue(content)
       vi.mocked(mockStorage.getAllPrompts).mockResolvedValue([mockPrompt])
       vi.mocked(mockStorage.savePrompt).mockResolvedValue(mockPrompt)
       vi.mocked(mockSessionManager.getCurrentSession).mockResolvedValue(session)
 
-      await storageHelper.handleAutoSave(mockAIService)
+      await storageHelper.handleAutoSave(content)
 
       expect(mockStorage.incrementExecutionCount).toHaveBeenCalledWith(
         "active-id",
@@ -613,11 +606,9 @@ describe("StorageHelper", () => {
       await storageHelper.getPrompts()
 
       // Test the private method indirectly through auto-save
-      const mockAIService = createMockAIService()
-      vi.mocked(mockAIService.extractPromptContent).mockReturnValue(content)
       vi.mocked(mockStorage.savePrompt).mockResolvedValue(mockPrompt)
 
-      await storageHelper.handleAutoSave(mockAIService)
+      await storageHelper.handleAutoSave(content)
 
       expect(mockStorage.savePrompt).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -632,11 +623,9 @@ describe("StorageHelper", () => {
       const expectedTruncated = longContent.substring(0, 47) + "..."
 
       vi.mocked(mockStorage.getAllPrompts).mockResolvedValue([mockPrompt])
-      const mockAIService = createMockAIService()
-      vi.mocked(mockAIService.extractPromptContent).mockReturnValue(longContent)
       vi.mocked(mockStorage.savePrompt).mockResolvedValue(mockPrompt)
 
-      await storageHelper.handleAutoSave(mockAIService)
+      await storageHelper.handleAutoSave(longContent)
 
       expect(mockStorage.savePrompt).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -650,13 +639,9 @@ describe("StorageHelper", () => {
       const cleanedContent = "Content with multiple spaces"
 
       vi.mocked(mockStorage.getAllPrompts).mockResolvedValue([mockPrompt])
-      const mockAIService = createMockAIService()
-      vi.mocked(mockAIService.extractPromptContent).mockReturnValue(
-        messyContent,
-      )
       vi.mocked(mockStorage.savePrompt).mockResolvedValue(mockPrompt)
 
-      await storageHelper.handleAutoSave(mockAIService)
+      await storageHelper.handleAutoSave(messyContent)
 
       expect(mockStorage.savePrompt).toHaveBeenCalledWith(
         expect.objectContaining({

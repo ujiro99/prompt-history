@@ -160,21 +160,20 @@ export class StorageHelper {
    * Auto prompt save (on send)
    */
   async handleAutoSave(
-    aiService: AIServiceInterface,
+    content: string,
     onSuccess?: (prompt: Prompt) => void,
     onError?: (error: Error) => void,
   ): Promise<void> {
-    const settings = await this.storage.getSettings()
-    if (!settings.autoSaveEnabled) {
+    if (!content || content.length === 0) {
       return
     }
 
-    try {
-      const content = aiService.extractPromptContent()?.trim()
-      if (!content || content.length === 0) {
+    const settings = await this.storage.getSettings()
+    if (!settings.autoSaveEnabled) {
         return
       }
 
+    try {
       // Check for existing prompts with the same content
       const existingPrompts = await this.storage.getAllPrompts()
       const duplicateExists = existingPrompts.some(

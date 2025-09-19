@@ -1082,11 +1082,13 @@ describe("DomManager", () => {
             found: true,
             selector: "#text-input",
             tagName: "INPUT",
+            element: mockTextInput,
           },
           sendButton: {
             found: true,
             selector: "#send-button",
             tagName: "BUTTON",
+            element: mockSendButton,
           },
         })
       })

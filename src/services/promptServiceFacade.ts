@@ -23,6 +23,7 @@ export class PromptServiceFacade {
   private sessionManager: SessionManager
   private storageHelper: StorageHelper
   private executeManager: ExecuteManager
+  private promptContent: string = ""
   private initialized = false
 
   // Callbacks
@@ -111,6 +112,11 @@ export class PromptServiceFacade {
     if (this.aiService) {
       // Monitor send events (auto-save)
       this.aiService.onSend(this.handleAutoSave.bind(this))
+
+      // Monitor content changes
+      this.aiService.onContentChange((content) => {
+        this.promptContent = content
+      })
 
       // Monitor page navigation events
       window.addEventListener(
@@ -218,7 +224,7 @@ export class PromptServiceFacade {
   private async handleAutoSave(): Promise<void> {
     if (!this.aiService) return
     await this.storageHelper.handleAutoSave(
-      this.aiService,
+      this.promptContent,
       (prompt) => {
         console.debug("Auto-saved success:", prompt.name)
       },
@@ -288,18 +294,6 @@ export class PromptServiceFacade {
       return null
     }
     return this.aiService.getTextInput()
-  }
-
-  /**
-   * Get prompt content from AI service.
-   * Returns empty string if AI service is not available.
-   */
-  getPromptContent(): string {
-    if (!this.aiService) {
-      this.handleError("EXECUTE_FAILED", "AI service not available", null)
-      return ""
-    }
-    return this.aiService.extractPromptContent()
   }
 
   /**

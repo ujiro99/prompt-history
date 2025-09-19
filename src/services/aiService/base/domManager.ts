@@ -309,6 +309,7 @@ export class DomManager {
             found: true,
             selector,
             tagName: element.tagName,
+            element,
           }
         }
       } catch {
@@ -464,7 +465,6 @@ export class DomManager {
         console.error("Error in send callback:", error)
       }
     })
-
     console.debug(`${this.config.serviceName} send event fired`)
   }
 }

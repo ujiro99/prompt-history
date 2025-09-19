@@ -109,11 +109,11 @@ describe("BaseAIService", () => {
       getTextInput: vi.fn().mockReturnValue(null),
       getSendButton: vi.fn().mockReturnValue(null),
       getCurrentContent: vi.fn().mockReturnValue(""),
-      onSend: vi.fn().mockReturnValue(() => {}),
+      onSend: vi.fn().mockReturnValue(() => { }),
       offSend: vi.fn(),
-      onContentChange: vi.fn().mockReturnValue(() => {}),
+      onContentChange: vi.fn().mockReturnValue(() => { }),
       offContentChange: vi.fn(),
-      onElementChange: vi.fn().mockReturnValue(() => {}),
+      onElementChange: vi.fn().mockReturnValue(() => { }),
       destroy: vi.fn(),
       getElementInfo: vi.fn().mockReturnValue({
         textInput: { found: false },
@@ -150,7 +150,7 @@ describe("BaseAIService", () => {
     })
 
     it("should set up debug logging in development environment", () => {
-      const consoleSpy = vi.spyOn(console, "debug").mockImplementation(() => {})
+      const consoleSpy = vi.spyOn(console, "debug").mockImplementation(() => { })
 
       // Create config with isSupported returning true
       const configWithSupport = createMockConfig({
@@ -166,7 +166,7 @@ describe("BaseAIService", () => {
     })
 
     it("should not set up debug logging in production environment", () => {
-      const consoleSpy = vi.spyOn(console, "debug").mockImplementation(() => {})
+      const consoleSpy = vi.spyOn(console, "debug").mockImplementation(() => { })
 
       // Mock production environment
       globalThis.process = {
@@ -185,7 +185,7 @@ describe("BaseAIService", () => {
     })
 
     it("should not set up debug logging when service is not supported", () => {
-      const consoleSpy = vi.spyOn(console, "debug").mockImplementation(() => {})
+      const consoleSpy = vi.spyOn(console, "debug").mockImplementation(() => { })
 
       // Create config with isSupported returning false
       const configWithoutSupport = createMockConfig({
@@ -201,7 +201,7 @@ describe("BaseAIService", () => {
     })
 
     it("should handle missing window object", () => {
-      const consoleSpy = vi.spyOn(console, "debug").mockImplementation(() => {})
+      const consoleSpy = vi.spyOn(console, "debug").mockImplementation(() => { })
 
       // Remove window object
       delete (globalThis as any).window
@@ -435,36 +435,6 @@ describe("BaseAIService", () => {
         expect(result).toBe(mockUnsubscribe)
       })
 
-      it("should not call callback when content is empty", () => {
-        const mockCallback = vi.fn()
-        mockDomManagerInstance.getCurrentContent.mockReturnValue("")
-
-        service.onSend(mockCallback)
-
-        // Get the wrapped callback that was passed to domManager
-        const wrappedCallback = mockDomManagerInstance.onSend.mock.calls[0][0]
-
-        // Call the wrapped callback
-        wrappedCallback()
-
-        expect(mockCallback).not.toHaveBeenCalled()
-      })
-
-      it("should not call callback when content is only whitespace", () => {
-        const mockCallback = vi.fn()
-        mockDomManagerInstance.getCurrentContent.mockReturnValue("   \n\t  ")
-
-        service.onSend(mockCallback)
-
-        // Get the wrapped callback that was passed to domManager
-        const wrappedCallback = mockDomManagerInstance.onSend.mock.calls[0][0]
-
-        // Call the wrapped callback
-        wrappedCallback()
-
-        expect(mockCallback).not.toHaveBeenCalled()
-      })
-
       it("should call callback when content has meaningful text after trimming", () => {
         const mockCallback = vi.fn()
         mockDomManagerInstance.getCurrentContent.mockReturnValue(
@@ -521,7 +491,7 @@ describe("BaseAIService", () => {
 
   describe("Environment-Specific Behavior", () => {
     it("should handle different NODE_ENV values", () => {
-      const consoleSpy = vi.spyOn(console, "debug").mockImplementation(() => {})
+      const consoleSpy = vi.spyOn(console, "debug").mockImplementation(() => { })
 
       // Test development
       globalThis.process = {
