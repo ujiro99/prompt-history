@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button"
 import { ButtonGroup } from "@/components/ui/button-group"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { useContainer } from "@/hooks/useContainer"
 
 /**
  * Props for prompt edit dialog
@@ -52,6 +53,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
   const [isLoading, setIsLoading] = useState(false)
   const isEdit = displayMode === SaveMode.Overwrite
   const isCopy = displayMode === SaveMode.Copy
+  const { container } = useContainer()
 
   // Update initial values
   useEffect(() => {
@@ -100,10 +102,18 @@ export const EditDialog: React.FC<EditDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-md" onKeyDown={handleKeyDown}>
+      <DialogContent
+        className="w-md"
+        onKeyDown={handleKeyDown}
+        container={container}
+      >
         <DialogHeader>
           <DialogTitle>
-            {isEdit ? "Edit Prompt" : isCopy ? "Copy Prompt" : "New Prompt"}
+            {isEdit
+              ? i18n.t("dialogs.edit.title")
+              : isCopy
+                ? i18n.t("dialogs.copy.title")
+                : i18n.t("dialogs.save.title")}
           </DialogTitle>
         </DialogHeader>
 
@@ -114,14 +124,17 @@ export const EditDialog: React.FC<EditDialogProps> = ({
               htmlFor="prompt-name"
               className="text-sm font-medium text-foreground"
             >
-              Name
+              {i18n.t("common.name")}
             </label>
+            <p className="text-xs text-muted-foreground">
+              {i18n.t("common.nameDescription")}
+            </p>
             <Input
               id="prompt-name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Enter prompt name..."
+              placeholder={i18n.t("placeholders.enterPromptName")}
               disabled={isLoading}
               autoFocus
             />
@@ -133,13 +146,16 @@ export const EditDialog: React.FC<EditDialogProps> = ({
               htmlFor="prompt-content"
               className="text-sm font-medium text-foreground"
             >
-              Content
+              {i18n.t("common.prompt")}
             </label>
+            <p className="text-xs text-muted-foreground">
+              {i18n.t("common.promptDescription")}
+            </p>
             <Textarea
               id="prompt-content"
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="Enter prompt content..."
+              placeholder={i18n.t("placeholders.enterPromptContent")}
               disabled={isLoading}
               rows={6}
             />
@@ -152,7 +168,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
             onClick={handleCancel}
             disabled={isLoading}
           >
-            Cancel
+            {i18n.t("common.cancel")}
           </Button>
           <ButtonGroup>
             <Button
@@ -169,15 +185,15 @@ export const EditDialog: React.FC<EditDialogProps> = ({
             >
               {isEdit
                 ? isLoading
-                  ? "Updating..."
-                  : "Update"
+                  ? i18n.t("status.updating")
+                  : i18n.t("common.update")
                 : isCopy
                   ? isLoading
-                    ? "Saving..."
-                    : "Save as Copy"
+                    ? i18n.t("status.saving")
+                    : i18n.t("buttons.saveAsCopy")
                   : isLoading
-                    ? "Saving..."
-                    : "Save"}
+                    ? i18n.t("status.saving")
+                    : i18n.t("common.save")}
             </Button>
             {isEdit && !isCopy && (
               <SaveAsNew
@@ -207,7 +223,7 @@ export function SaveAsNew(props: SaveAsNewProps) {
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="start">
         <DropdownMenuItem onClick={props.onSaveAsNew}>
-          Save as new prompt
+          {i18n.t("buttons.saveAsNew")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -11,6 +11,7 @@ import { SessionManager } from "./promptHistory/sessionManager"
 import { StorageHelper } from "./promptHistory/storageHelper"
 import { ExecuteManager } from "./promptHistory/executeManager"
 import { getAiServices } from "@/services/aiService"
+import { uuid } from "@/lib/utils"
 import type { AutoCompleteMatch } from "@/services/autoComplete/types"
 
 /**
@@ -22,6 +23,7 @@ export class PromptServiceFacade {
   private sessionManager: SessionManager
   private storageHelper: StorageHelper
   private executeManager: ExecuteManager
+  private promptContent: string = ""
   private initialized = false
 
   // Callbacks
@@ -65,6 +67,7 @@ export class PromptServiceFacade {
 
       this.initialized = true
       this.notify({
+        id: uuid(),
         type: "info",
         message: "Prompt History initialized",
         duration: 2000,
@@ -109,6 +112,11 @@ export class PromptServiceFacade {
     if (this.aiService) {
       // Monitor send events (auto-save)
       this.aiService.onSend(this.handleAutoSave.bind(this))
+
+      // Monitor content changes
+      this.aiService.onContentChange((content) => {
+        this.promptContent = content
+      })
 
       // Monitor page navigation events
       window.addEventListener(
@@ -170,9 +178,10 @@ export class PromptServiceFacade {
       saveData,
       async (prompt) => {
         this.notify({
+          id: uuid(),
           type: "success",
           message: `Prompt "${prompt.name}" saved successfully`,
-          duration: 3000,
+          duration: 2000,
         })
         await this.storageHelper.pinPrompt(prompt.id)
       },
@@ -197,9 +206,10 @@ export class PromptServiceFacade {
       saveData,
       async (prompt) => {
         this.notify({
+          id: uuid(),
           type: "success",
           message: `Prompt "${prompt.name}" updated successfully`,
-          duration: 1000,
+          duration: 2000,
         })
       },
       (error) => {
@@ -214,7 +224,7 @@ export class PromptServiceFacade {
   private async handleAutoSave(): Promise<void> {
     if (!this.aiService) return
     await this.storageHelper.handleAutoSave(
-      this.aiService,
+      this.promptContent,
       (prompt) => {
         console.debug("Auto-saved success:", prompt.name)
       },
@@ -234,6 +244,7 @@ export class PromptServiceFacade {
       promptId,
       (prompt) => {
         this.notify({
+          id: uuid(),
           type: "success",
           message: `Prompt "${prompt.name}" deleted`,
           duration: 2000,
@@ -286,18 +297,6 @@ export class PromptServiceFacade {
   }
 
   /**
-   * Get prompt content from AI service.
-   * Returns empty string if AI service is not available.
-   */
-  getPromptContent(): string {
-    if (!this.aiService) {
-      this.handleError("EXECUTE_FAILED", "AI service not available", null)
-      return ""
-    }
-    return this.aiService.extractPromptContent()
-  }
-
-  /**
    * Get popup placement details from AI service.
    * Returns default placement if AI service is not available.
    */
@@ -331,6 +330,7 @@ export class PromptServiceFacade {
       match,
       (prompt) => {
         this.notify({
+          id: uuid(),
           type: "success",
           message: `Prompt "${prompt.name}" executed`,
           duration: 2000,
@@ -426,7 +426,7 @@ export class PromptServiceFacade {
         null,
       )
     }
-    return () => {}
+    return () => { }
   }
 
   /**
@@ -442,7 +442,7 @@ export class PromptServiceFacade {
         null,
       )
     }
-    return () => {}
+    return () => { }
   }
 
   // ===================
@@ -502,6 +502,7 @@ export class PromptServiceFacade {
 
     // User notification
     this.notify({
+      id: uuid(),
       type: "error",
       message: message,
       duration: 5000,

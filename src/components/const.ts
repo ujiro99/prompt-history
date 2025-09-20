@@ -1,6 +1,7 @@
 // for data-testid attributes
 export const TestIds = {
   widget: {
+    container: "widget-container",
     loading: "widget-loading",
     error: "widget-error",
   },

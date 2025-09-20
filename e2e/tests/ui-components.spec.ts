@@ -150,7 +150,9 @@ test.describe("UI Components Tests", () => {
     expect(isVisible).toBe(false)
   })
 
-  test("should handle prompt input and save storage integration", async ({}) => {
+  test("should handle prompt input and save storage integration", async ({
+    page,
+  }) => {
     // Test prompt input and storage integration
     const testPrompt = "This is a test prompt for storage integration"
 
@@ -162,6 +164,8 @@ test.describe("UI Components Tests", () => {
     const inputValue = await promptInput.textContent()
 
     expect(inputValue).toBe(testPrompt)
+    // Wait for a short time to ensure any async operations complete
+    await page.waitForTimeout(100)
 
     // Click send button
     const sendButton = await testPage.getSendButton()
@@ -169,7 +173,7 @@ test.describe("UI Components Tests", () => {
 
     // Confirm data is saved to storage after sending
     const retrievedHistory = await storageHelpers.getPromptHistory()
-    expect(Object.keys(retrievedHistory).length).toBeGreaterThan(0)
+    expect(retrievedHistory.length).toBeGreaterThan(0)
     for (const key in retrievedHistory) {
       const item = retrievedHistory[key]
       expect(item.name).toContain(

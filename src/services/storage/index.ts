@@ -176,23 +176,9 @@ export class StorageService {
   // ===================
 
   /**
-   * Get settings
-   */
-  getSettings(): AppSettings {
-    // Implementation for calling async methods synchronously needs adjustment as needed
-    // Currently returns default settings for compatibility
-    return {
-      autoSaveEnabled: true,
-      maxPrompts: 1000,
-      defaultSortOrder: "composite",
-      showNotifications: true,
-    }
-  }
-
-  /**
    * Get settings (async version)
    */
-  async getSettingsAsync(): Promise<AppSettings> {
+  async getSettings(): Promise<AppSettings> {
     return await settingsService.getSettings()
   }
 

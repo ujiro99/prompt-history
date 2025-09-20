@@ -21,11 +21,12 @@ export interface AutoCompleteOptions {
 export interface AutoCompletePosition {
   x: number
   y: number
+  height: number
 }
 
 export interface AutoCompleteCallbacks {
   onShow: () => void
   onHide: () => void
-  onSelect: (match: AutoCompleteMatch) => Promise<void>
+  onExecute: (match: AutoCompleteMatch) => Promise<void>
   onSelectChange: (index: number) => void
 }

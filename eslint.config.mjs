@@ -81,6 +81,8 @@ export default [
         // WXT globals for content scripts
         defineContentScript: "readonly",
         createShadowRootUi: "readonly",
+        // WXT i18n global
+        i18n: "readonly",
       },
     },
   },

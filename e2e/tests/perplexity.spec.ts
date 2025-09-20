@@ -86,6 +86,17 @@ test.describe("Perplexity Extension Tests", () => {
     inputValue = await promptInput.textContent()
     expect(inputValue?.trim()).toBe("")
 
+    // Close google modal if present (e.g. sign-in prompt)
+    const frame = page
+      .locator("#credential_picker_container iframe")
+      .contentFrame()
+    if (frame) {
+      const closeButton = frame.locator("#close")
+      if (await closeButton.isVisible()) {
+        await closeButton.click()
+      }
+    }
+
     // Find trigger element and hover/click
     const inputPopup = await perplexityPage.getInputPopup()
     const triggerElement = await inputPopup.getHistoryTrigger()

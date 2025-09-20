@@ -1,6 +1,93 @@
-helloWorld: こんにちは世界！
-appName: プロンプト履歴
-count: カウント
-increment: インクリメント
-promptHistoryExtension: プロンプト履歴拡張機能
-canIncreaseDecrease: カウントを増減させることができます。
+# For manifest.json
+appName: Prompt History – プロンプトを保存して再利用
+promptHistoryExtension: すべてのプロンプトを自動保存、入力補完でスピードアップ。設定不要、あとは自分のアイデアに集中！
+
+# Common
+common:
+  loading: 読み込み中...
+  error: エラー
+  cancel: キャンセル
+  save: 保存
+  delete: 削除
+  edit: 編集
+  copy: コピー
+  ok: OK
+  name: 名前
+  nameDescription: 入力補完で検索される名前です
+  update: 更新
+  prompt: プロンプト
+  promptDescription: チャットに入力される内容です
+
+# Buttons
+buttons:
+  edit: 編集
+  copy: コピー
+  delete: 削除
+  save: 保存
+  cancel: キャンセル
+  pin: スター
+  unpin: スター解除
+  saveAsNew: 新規として保存
+  saveAsCopy: コピーとして保存
+
+# Status messages
+status:
+  saving: 保存中...
+  updating: 更新中...
+  loading: 読み込み中...
+  failedToLoadPrompts: プロンプトの読み込みに失敗しました
+  initializationFailed: 初期化に失敗しました
+
+# Placeholders
+placeholders:
+  enterPromptName: プロンプト名を入力...
+  enterPromptContent: プロンプト内容を入力...
+  searchPrompts: プロンプトを検索...
+
+# Dialog titles and messages
+dialogs:
+  edit:
+    title: プロンプトを編集
+  delete:
+    title: プロンプトを削除
+    message: 削除してもよろしいですか？この操作は元に戻すことができません。
+  save:
+    title: プロンプトを保存
+  copy:
+    title: プロンプトをコピー
+
+# Tabs
+tabs:
+  history: 履歴
+  save: 保存
+  pinned: スター
+
+# Messages
+messages:
+  noPromptsYet: プロンプトがまだありません
+  promptSaved: プロンプトを保存しました
+  promptDeleted: プロンプトを削除しました
+  promptUpdated: プロンプトを更新しました
+  promptCopied: プロンプトをコピーしました
+  promptPinned: プロンプトにスターを付けました
+  promptUnpinned: スターを解除しました
+  copyPrefix: コピー -
+  historyEmpty: プロンプトを送信すると、ここに表示されます
+  pinnedEmpty: スターまたは手動保存すると、ここに表示されます
+
+# Time expressions
+time:
+  unknown: ---
+  justNow: たった今
+  minutesAgo: $1分前
+  hoursAgo: $1時間前
+  daysAgo: $1日前
+
+# Preview
+preview:
+  usedTimes: $1回使用
+
+# Autocomplete
+autocomplete:
+  toFocus: フォーカス
+  toMove: 移動

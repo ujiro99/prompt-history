@@ -4,11 +4,13 @@ import type { StoredPrompt, Session, AppSettings } from "../../types/prompt"
 /**
  * Default settings values
  */
-const DEFAULT_SETTINGS: AppSettings = {
+export const DEFAULT_SETTINGS: AppSettings = {
   autoSaveEnabled: true,
+  autoCompleteEnabled: true,
   maxPrompts: 1000,
   defaultSortOrder: "composite",
   showNotifications: true,
+  minimalMode: false,
 }
 
 /**

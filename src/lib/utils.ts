@@ -18,3 +18,10 @@ export function sleep(msec: number): Promise<void> {
 export function isEmpty(str: string | null | undefined): boolean {
   return str == null || str.trim().length === 0
 }
+
+/**
+ * Generate a UUID (version 4)
+ */
+export function uuid(): string {
+  return crypto.randomUUID()
+}

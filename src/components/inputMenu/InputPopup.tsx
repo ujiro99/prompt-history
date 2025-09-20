@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback, useMemo } from "react"
 import { History, Star, Save } from "lucide-react"
 import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/popover"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { ScrollAreaWithGradient } from "./ScrollAreaWithGradient"
 import {
   Menubar,
   MenubarContent,
@@ -201,7 +201,7 @@ export function InputMenu(props: Props): React.ReactElement {
   const openCopyDialog = async (promptId: string) => {
     const prompt = await serviceFacade.getPrompt(promptId)
     setSaveDialogData({
-      name: `Copy of ${prompt.name}`,
+      name: `${i18n.t("messages.copyPrefix")} ${prompt.name}`,
       content: prompt.content,
       saveMode: SaveMode.Copy,
       isPinned: prompt.isPinned,
@@ -270,7 +270,7 @@ export function InputMenu(props: Props): React.ReactElement {
             data-testid={TestIds.inputPopup.historyList}
           >
             {props.prompts.length > 0 ? (
-              <ScrollArea
+              <ScrollAreaWithGradient
                 className={cn(
                   "min-w-[220px]",
                   props.prompts.length > 8 && "h-80",
@@ -293,10 +293,10 @@ export function InputMenu(props: Props): React.ReactElement {
                     {prompt.name}
                   </MenuItem>
                 ))}
-              </ScrollArea>
+              </ScrollAreaWithGradient>
             ) : (
               <div className="px-3 py-2 text-xs text-gray-500">
-                Prompts will be displayed when you send them
+                {i18n.t("messages.historyEmpty")}
               </div>
             )}
             {historyAnchorRef.current && historyContentRef.current && (
@@ -324,7 +324,7 @@ export function InputMenu(props: Props): React.ReactElement {
             data-testid={TestIds.inputPopup.pinnedList}
           >
             {props.pinnedPrompts.length > 0 ? (
-              <ScrollArea
+              <ScrollAreaWithGradient
                 className={cn(
                   "min-w-[220px]",
                   props.pinnedPrompts.length > 8 && "h-80",
@@ -348,10 +348,10 @@ export function InputMenu(props: Props): React.ReactElement {
                     {prompt.name}
                   </MenuItem>
                 ))}
-              </ScrollArea>
+              </ScrollAreaWithGradient>
             ) : (
               <div className="px-3 py-2 text-xs text-gray-500 min-w-[220px]">
-                Will be displayed when you star or manually save
+                {i18n.t("messages.pinnedEmpty")}
               </div>
             )}
             {pinnedAnchorRef.current && pinnedContentRef.current && (
@@ -403,7 +403,7 @@ export function InputMenu(props: Props): React.ReactElement {
       <RemoveDialog
         open={removeId !== null}
         onOpenChange={(val) => setRemoveId(val ? removeId : null)}
-        description={`Are you sure you want to remove? This action cannot be undone.`}
+        description={i18n.t("dialogs.delete.message")}
         onRemove={() => handleDeletePrompt(removeId!)}
       >
         <span className="text-base truncate">{removePrompt?.name}</span>

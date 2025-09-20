@@ -31,7 +31,7 @@ export class StorageHelper {
    */
   async getPrompts(): Promise<Prompt[]> {
     const prompts = await this.storage.getAllPrompts()
-    return this.applySort(prompts)
+    return await this.applySort(prompts)
   }
 
   /**
@@ -48,15 +48,15 @@ export class StorageHelper {
       .map((id) => promptMap.get(id))
       .filter((p): p is Prompt => Boolean(p))
 
-    return this.applySort(pinnedPrompts)
+    return await this.applySort(pinnedPrompts)
   }
 
   /**
    * Watch prompt list changes (sorted)
    */
   watchPrompts(onChange: (prompts: Prompt[]) => void): () => void {
-    return this.storage.watchPrompts((prompts) => {
-      const sorted = this.applySort(prompts)
+    return this.storage.watchPrompts(async (prompts) => {
+      const sorted = await this.applySort(prompts)
       onChange(sorted)
     })
   }
@@ -74,8 +74,8 @@ export class StorageHelper {
   /**
    * Apply sort order to prompts array
    */
-  private applySort(prompts: Prompt[]): Prompt[] {
-    const settings = this.storage.getSettings()
+  private async applySort(prompts: Prompt[]): Promise<Prompt[]> {
+    const settings = await this.storage.getSettings()
 
     // Create a copy to avoid mutating the original array
     const sortedPrompts = [...prompts]
@@ -160,20 +160,20 @@ export class StorageHelper {
    * Auto prompt save (on send)
    */
   async handleAutoSave(
-    aiService: AIServiceInterface,
+    content: string,
     onSuccess?: (prompt: Prompt) => void,
     onError?: (error: Error) => void,
   ): Promise<void> {
-    if (!this.storage.getSettings().autoSaveEnabled) {
+    if (!content || content.length === 0) {
       return
     }
 
-    try {
-      const content = aiService.extractPromptContent()?.trim()
-      if (!content || content.length === 0) {
+    const settings = await this.storage.getSettings()
+    if (!settings.autoSaveEnabled) {
         return
       }
 
+    try {
       // Check for existing prompts with the same content
       const existingPrompts = await this.storage.getAllPrompts()
       const duplicateExists = existingPrompts.some(

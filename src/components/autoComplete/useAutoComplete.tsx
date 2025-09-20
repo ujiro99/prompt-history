@@ -15,7 +15,7 @@ export const useAutoComplete = ({ prompts }: UseAutoCompleteOptions) => {
   const [isVisible, setIsVisible] = useState(false)
   const [matches, setMatches] = useState<AutoCompleteMatch[]>([])
   const [selectedIndex, setSelectedIndex] = useState(-1)
-  const [position, setPosition] = useState({ x: 0, y: 0 })
+  const [position, setPosition] = useState({ x: 0, y: 0, height: 0 })
   const managerRef = useRef<AutoCompleteManager | null>(null)
   const { nodeAtCaret } = useCaretNode()
 
@@ -29,11 +29,11 @@ export const useAutoComplete = ({ prompts }: UseAutoCompleteOptions) => {
         }
       },
       onHide: () => {
-        setIsVisible(false)
         setMatches([])
         managerRef.current?.selectReset()
+        setIsVisible(false)
       },
-      onSelect: async (match: AutoCompleteMatch) => {
+      onExecute: async (match: AutoCompleteMatch) => {
         await serviceFacade.executePrompt(match.id, nodeAtCaret, match)
 
         // Refocus the text input after executing the prompt
@@ -42,7 +42,6 @@ export const useAutoComplete = ({ prompts }: UseAutoCompleteOptions) => {
           textInput.focus()
         }
 
-        setIsVisible(false)
         setMatches([])
         managerRef.current?.selectReset()
       },
@@ -94,9 +93,9 @@ export const useAutoComplete = ({ prompts }: UseAutoCompleteOptions) => {
     managerRef.current?.setCallbacks(callbacks)
   }, [callbacks])
 
-  const handleSelect = (_match: AutoCompleteMatch) => {
+  const handleExecute = (_match: AutoCompleteMatch) => {
     if (managerRef.current) {
-      managerRef.current.selectCurrent()
+      managerRef.current.execute()
     }
   }
 
@@ -123,7 +122,7 @@ export const useAutoComplete = ({ prompts }: UseAutoCompleteOptions) => {
     matches,
     selectedIndex,
     position,
-    handleSelect,
+    handleExecute,
     handleClose,
     selectIndex,
     selectNext,

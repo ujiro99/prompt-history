@@ -24,7 +24,7 @@ export class DomManager {
   protected contentChangeDebounceTimeout: ReturnType<typeof setTimeout> | null =
     null
 
-  constructor(protected config: AIServiceConfig) {}
+  constructor(protected config: AIServiceConfig) { }
 
   /**
    * Find element using selector list
@@ -223,7 +223,7 @@ export class DomManager {
       }
 
       if (changed) {
-        this.refreshElements()
+        this.fireElementChangeCallbacks(this.textInput)
       }
     })
 
@@ -235,27 +235,6 @@ export class DomManager {
     })
 
     console.log(`${this.config.serviceName} DOM observer set up`)
-  }
-
-  /**
-   * Refresh element references and re-setup listeners
-   */
-  protected refreshElements(): void {
-    const oldTextInput = this.textInput
-    const oldSendButton = this.sendButton
-
-    this.textInput = this.findElement(this.config.selectors.textInput)
-    this.sendButton = this.findElement(this.config.selectors.sendButton)
-
-    if (this.textInput !== oldTextInput || this.sendButton !== oldSendButton) {
-      console.log(`${this.config.serviceName} elements refreshed:`, {
-        textInput: this.textInput,
-        sendButton: this.sendButton,
-      })
-
-      // Notify element change callbacks
-      this.fireElementChangeCallbacks(this.textInput)
-    }
   }
 
   /**
@@ -330,6 +309,7 @@ export class DomManager {
             found: true,
             selector,
             tagName: element.tagName,
+            element,
           }
         }
       } catch {
@@ -485,7 +465,6 @@ export class DomManager {
         console.error("Error in send callback:", error)
       }
     })
-
     console.debug(`${this.config.serviceName} send event fired`)
   }
 }

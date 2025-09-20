@@ -1,5 +1,6 @@
 import { useRef } from "react"
 import { Trash2 } from "lucide-react"
+import { useContainer } from "@/hooks/useContainer"
 
 import {
   Dialog,
@@ -22,6 +23,7 @@ type RemoveDialogProps = {
 }
 
 export const RemoveDialog = (props: RemoveDialogProps) => {
+  const { container } = useContainer()
   const closeRef = useRef<HTMLButtonElement>(null)
   const handleOpenAutoFocus = (e: Event) => {
     closeRef.current?.focus()
@@ -29,9 +31,13 @@ export const RemoveDialog = (props: RemoveDialogProps) => {
   }
   return (
     <Dialog open={props.open} onOpenChange={props.onOpenChange}>
-      <DialogContent onOpenAutoFocus={handleOpenAutoFocus} className="w-auto">
+      <DialogContent
+        onOpenAutoFocus={handleOpenAutoFocus}
+        className="w-auto"
+        container={container}
+      >
         <DialogHeader>
-          <DialogTitle>Remove Conofirm</DialogTitle>
+          <DialogTitle>{i18n.t("dialogs.delete.title")}</DialogTitle>
         </DialogHeader>
         <DialogDescription>{props.description}</DialogDescription>
         <div className="py-1 flex items-center justify-center">
@@ -40,7 +46,7 @@ export const RemoveDialog = (props: RemoveDialogProps) => {
         <DialogFooter>
           <DialogClose asChild>
             <Button type="button" variant="secondary" size="lg">
-              Cancel
+              {i18n.t("common.cancel")}
             </Button>
           </DialogClose>
           <DialogClose asChild>
@@ -52,7 +58,7 @@ export const RemoveDialog = (props: RemoveDialogProps) => {
               ref={closeRef}
             >
               <Trash2 />
-              Remove
+              {i18n.t("common.delete")}
             </Button>
           </DialogClose>
         </DialogFooter>

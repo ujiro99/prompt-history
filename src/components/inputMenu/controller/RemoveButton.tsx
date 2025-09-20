@@ -34,7 +34,7 @@ export const RemoveButton = ({
         )}
         size={size}
       />
-      Remove
+      {i18n.t("buttons.delete")}
     </button>
   )
 }

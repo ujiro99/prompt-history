@@ -1,6 +1,93 @@
-helloWorld: Hello world!
-appName: Prompt History
-count: Count
-increment: Increment
-promptHistoryExtension: Prompt History Extension
-canIncreaseDecrease: You can increase or decrease the count.
+# For manifest.json
+extName: Prompt History – Save & Reuse Prompts
+extDescription: Save every prompt automatically and type faster with autocomplete. No setup required, just focus on your ideas!
+
+# Common
+common:
+  loading: Loading...
+  error: Error
+  cancel: Cancel
+  save: Save
+  delete: Delete
+  edit: Edit
+  copy: Copy
+  ok: OK
+  name: Name
+  nameDescription: The name that will be searched in autocomplete
+  update: Update
+  prompt: Prompt
+  promptDescription: The content that will be entered into the chat
+
+# Buttons
+buttons:
+  edit: Edit
+  copy: Copy
+  delete: Delete
+  save: Save
+  cancel: Cancel
+  pin: Star
+  unpin: Unstar
+  saveAsNew: Save as new
+  saveAsCopy: Save as Copy
+
+# Status messages
+status:
+  saving: Saving...
+  updating: Updating...
+  loading: Loading...
+  failedToLoadPrompts: Failed to load prompts
+  initializationFailed: Initialization failed
+
+# Placeholders
+placeholders:
+  enterPromptName: Enter prompt name...
+  enterPromptContent: Enter prompt content...
+  searchPrompts: Search prompts...
+
+# Dialog titles and messages
+dialogs:
+  edit:
+    title: Edit Prompt
+  delete:
+    title: Delete Prompt
+    message: Are you sure you want to remove? This action cannot be undone.
+  save:
+    title: Save Prompt
+  copy:
+    title: Copy Prompt
+
+# Tabs
+tabs:
+  history: History
+  save: Save
+  pinned: Starred
+
+# Messages
+messages:
+  noPromptsYet: No prompts yet
+  promptSaved: Prompt saved successfully
+  promptDeleted: Prompt deleted successfully
+  promptUpdated: Prompt updated successfully
+  promptCopied: Prompt copied successfully
+  promptPinned: Prompt Starred
+  promptUnpinned: Prompt unstarred
+  copyPrefix: Copy of
+  historyEmpty: Prompts will be displayed when you send them
+  pinnedEmpty: Will be displayed when you star or manually save
+
+# Time expressions
+time:
+  unknown: ---
+  justNow: Just now
+  minutesAgo: $1m ago
+  hoursAgo: $1h ago
+  daysAgo: $1d ago
+
+# Preview
+preview:
+  usedTimes: Used $1 times
+
+# Autocomplete
+autocomplete:
+  toFocus: to focus
+  toMove: to move

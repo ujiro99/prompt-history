@@ -1,5 +1,5 @@
 import type { AppSettings, PromptError } from "../../types/prompt"
-import { settingsStorage } from "./definitions"
+import { settingsStorage, DEFAULT_SETTINGS } from "./definitions"
 
 /**
  * Settings management service
@@ -33,12 +33,7 @@ export class SettingsService {
    * Clear storage (for debugging)
    */
   async clearSettings(): Promise<void> {
-    await settingsStorage.setValue({
-      autoSaveEnabled: true,
-      maxPrompts: 1000,
-      defaultSortOrder: "composite",
-      showNotifications: true,
-    })
+    await settingsStorage.setValue(DEFAULT_SETTINGS)
   }
 
   /**

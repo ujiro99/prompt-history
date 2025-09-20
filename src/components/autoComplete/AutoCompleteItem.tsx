@@ -1,8 +1,9 @@
 import React from "react"
 import { ChevronRight, CornerDownLeft } from "lucide-react"
-import type { AutoCompleteMatch } from "../../services/autoComplete/types"
 import { cn } from "@/lib/utils"
 import { TestIds } from "@/components/const"
+import { Key } from "@/components/Key"
+import type { AutoCompleteMatch } from "../../services/autoComplete/types"
 
 interface AutoCompleteItemProps {
   match: AutoCompleteMatch
@@ -59,7 +60,7 @@ export const AutoCompleteItem: React.FC<AutoCompleteItemProps> = ({
       </div>
       {isSelected && (
         <div className="text-xs text-gray-500 flex items-center space-x-0.5">
-          <span className="rounded px-1 py-0.5 bg-gray-100">Tab</span>
+          <Key>Tab</Key>
           <CornerDownLeft className="text-gray-400" size={14} />
         </div>
       )}

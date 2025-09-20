@@ -40,6 +40,7 @@ export interface ElementInfo {
   found: boolean
   selector?: string
   tagName?: string
+  element?: Element | null
 }
 
 /**

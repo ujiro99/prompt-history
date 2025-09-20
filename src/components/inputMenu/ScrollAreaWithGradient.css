@@ -1,0 +1,80 @@
+/* CSS Scroll-driven animations for gradient covers */
+
+/* Top gradient animation - fade in when scrolled down */
+@keyframes fade-top-gradient {
+  0% {
+    opacity: 0;
+  }
+
+  1% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Bottom gradient animation - fade out when at the very bottom */
+@keyframes fade-bottom-gradient {
+  0% {
+    opacity: 1;
+  }
+
+  99% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Base styles for gradient covers - positioned within viewport */
+.scroll-gradient-top,
+.scroll-gradient-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  width: 100%;
+  /* h-10 in Tailwind */
+  height: 2.5rem;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.scroll-gradient-top {
+  top: 0;
+  background: linear-gradient(to bottom, white, transparent);
+}
+
+.scroll-gradient-bottom {
+  bottom: 0;
+  background: linear-gradient(to top, white, transparent);
+}
+
+/* Create named scroll-timeline on the viewport */
+.scroll-viewport-timeline {
+  scroll-timeline-name: --viewport-scroll;
+  scroll-timeline-axis: block;
+}
+
+/* Apply scroll-driven animations using named timeline */
+.scroll-gradient-container[data-scrollable="true"] .scroll-gradient-top {
+  animation: fade-top-gradient linear;
+  animation-timeline: --viewport-scroll;
+  /* Initial state - hidden */
+  opacity: 0;
+}
+
+.scroll-gradient-container[data-scrollable="true"] .scroll-gradient-bottom {
+  animation: fade-bottom-gradient linear;
+  animation-timeline: --viewport-scroll;
+  /* Initial state - visible */
+  opacity: 1;
+}
+
+.scroll-gradient-container[data-scrollable="false"] .scroll-gradient-top,
+.scroll-gradient-container[data-scrollable="false"] .scroll-gradient-bottom {
+  display: none;
+}

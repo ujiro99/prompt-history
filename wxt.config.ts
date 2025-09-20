@@ -11,6 +11,8 @@ export default defineConfig({
   },
   modules: ["@wxt-dev/module-react", "@wxt-dev/i18n/module"],
   manifest: {
+    name: "__MSG_extName__",
+    description: "__MSG_extDescription__",
     permissions: ["storage"],
     default_locale: "en",
   },
@@ -22,8 +24,8 @@ export default defineConfig({
       tailwindcss(),
       configEnv.mode === "production"
         ? removeConsole({
-            includes: ["log", "debug"],
-          })
+          includes: ["log", "debug"],
+        })
         : null,
     ],
   }),

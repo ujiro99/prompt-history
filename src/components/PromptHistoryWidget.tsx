@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { PromptServiceFacade } from "../services/promptServiceFacade"
 import { NotificationManager } from "./Notification"
 import { InputPopup } from "./inputMenu/InputPopup"
 import { AutoCompletePopup } from "./autoComplete/AutoCompletePopup"
 import { CaretProvider } from "@/contexts/CaretContext"
-import { isEmpty } from "@/lib/utils"
+import { ContainerProvider } from "@/contexts/ContainerContext"
+import { isEmpty, uuid } from "@/lib/utils"
 import type { Prompt, NotificationData, PromptError } from "../types/prompt"
 import { TestIds } from "@/components/const"
 
@@ -15,6 +16,7 @@ const serviceFacade = PromptServiceFacade.getInstance()
  * Main widget for prompt history management
  */
 export const PromptHistoryWidget: React.FC = () => {
+  const containerRef = useRef<HTMLDivElement>(null)
   const [prompts, setPrompts] = useState<Prompt[]>([])
   const [pinnedPrompts, setPinnedPrompts] = useState<Prompt[]>([])
   const [targetElement, setTargetElement] = useState<Element | null>(null)
@@ -22,6 +24,20 @@ export const PromptHistoryWidget: React.FC = () => {
   const [isInitializing, setIsInitializing] = useState(true)
   const [initError, setInitError] = useState<string | null>(null)
   const [promptContent, setPromptContent] = useState<string>("")
+
+  /**
+   * Add notification
+   */
+  const addNotification = useCallback((notification: NotificationData) => {
+    setNotifications((prev) => [...prev, notification])
+  }, [])
+
+  /**
+   * Remove notification
+   */
+  const removeNotification = useCallback((id: string) => {
+    setNotifications((prev) => prev.filter((n) => n.id !== id))
+  }, [])
 
   /**
    * Load prompt list
@@ -37,12 +53,13 @@ export const PromptHistoryWidget: React.FC = () => {
     } catch (error) {
       console.error("Failed to load prompts:", error)
       addNotification({
+        id: uuid(),
         type: "error",
-        message: "Failed to load prompts",
+        message: i18n.t("status.failedToLoadPrompts"),
         duration: 3000,
       })
     }
-  }, [])
+  }, [addNotification])
 
   /**
    * Initialization process
@@ -66,7 +83,9 @@ export const PromptHistoryWidget: React.FC = () => {
       } catch (error) {
         if (mounted) {
           setInitError(
-            error instanceof Error ? error.message : "Initialization failed",
+            error instanceof Error
+              ? error.message
+              : i18n.t("status.initializationFailed"),
           )
           setIsInitializing(false)
         }
@@ -101,21 +120,7 @@ export const PromptHistoryWidget: React.FC = () => {
     serviceFacade.onPromptOrPinChange(handlePromptChange)
     serviceFacade.onNotification(handleNotification)
     serviceFacade.onError(handleError)
-  }, [loadPrompts])
-
-  /**
-   * Add notification
-   */
-  const addNotification = (notification: NotificationData) => {
-    setNotifications((prev) => [...prev, notification])
-  }
-
-  /**
-   * Remove notification
-   */
-  const removeNotification = (index: number) => {
-    setNotifications((prev) => prev.filter((_, i) => i !== index))
-  }
+  }, [loadPrompts, addNotification])
 
   // Display during initialization
   if (isInitializing) {
@@ -125,7 +130,7 @@ export const PromptHistoryWidget: React.FC = () => {
         data-testid={TestIds.widget.loading}
       >
         <div className="text-gray-500 dark:text-gray-300 text-sm">
-          Loading...
+          {i18n.t("status.loading")}
         </div>
       </div>
     )
@@ -147,22 +152,26 @@ export const PromptHistoryWidget: React.FC = () => {
   }
 
   return (
-    <CaretProvider inputElement={targetElement}>
-      <InputPopup
-        targetElm={targetElement}
-        prompts={prompts}
-        pinnedPrompts={pinnedPrompts}
-        saveEnabled={!isEmpty(promptContent)}
-      />
+    <div ref={containerRef} data-testid={TestIds.widget.container}>
+      <ContainerProvider container={containerRef.current}>
+        <CaretProvider inputElement={targetElement}>
+          <InputPopup
+            targetElm={targetElement}
+            prompts={prompts}
+            pinnedPrompts={pinnedPrompts}
+            saveEnabled={!isEmpty(promptContent)}
+          />
 
-      {/* Notification system */}
-      <NotificationManager
-        notifications={notifications}
-        onDismiss={removeNotification}
-      />
+          {/* Notification system */}
+          <NotificationManager
+            notifications={notifications}
+            onDismiss={removeNotification}
+          />
 
-      {/* AutoComplete functionality */}
-      <AutoCompletePopup prompts={prompts} />
-    </CaretProvider>
+          {/* AutoComplete functionality */}
+          <AutoCompletePopup prompts={prompts} />
+        </CaretProvider>
+      </ContainerProvider>
+    </div>
   )
 }

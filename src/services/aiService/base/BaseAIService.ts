@@ -27,7 +27,7 @@ export abstract class BaseAIService implements AIServiceInterface {
       config.isSupported(window.location.hostname, window.location.pathname)
     ) {
       console.debug(`Initialized ${config.serviceName}`)
-      ;(window as any).promptHistoryDebug = this
+        ; (window as any).promptHistoryDebug = this
     }
   }
 
@@ -97,14 +97,7 @@ export abstract class BaseAIService implements AIServiceInterface {
    * Set up send event monitoring
    */
   onSend(callback: () => void): () => void {
-    // Create wrapper to check if prompt content is not empty
-    const wrappedCallback = () => {
-      const content = this.extractPromptContent().trim()
-      if (content.length > 0) {
-        callback()
-      }
-    }
-    return this.domManager.onSend(wrappedCallback)
+    return this.domManager.onSend(callback)
   }
 
   /**
