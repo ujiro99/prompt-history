@@ -51,12 +51,14 @@ export const PromptPreview = ({
         onOpenAutoFocus={noFocus}
       >
         <div className="space-y-2 text-gray-700">
-          <p className="font-mono break-keep text-sm whitespace-pre-line">
+          <p className="font-mono break-all text-sm whitespace-pre-line">
             {prompt.content}
           </p>
           <hr />
           <div className="flex items-center justify-end gap-1.5 text-xs text-gray-500 dark:text-gray-400">
-            <span>{i18n.t("preview.usedTimes", [`${prompt.executionCount}`])}</span>
+            <span>
+              {i18n.t("preview.usedTimes", [`${prompt.executionCount}`])}
+            </span>
             <span>•</span>
             <span>{formatRelativeTime(prompt.lastExecutedAt)}</span>
           </div>

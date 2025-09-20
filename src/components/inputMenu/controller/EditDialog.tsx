@@ -164,7 +164,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
           </div>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="mt-3">
           <Button
             variant="secondary"
             onClick={handleCancel}

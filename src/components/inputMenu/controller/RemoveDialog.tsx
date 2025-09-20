@@ -40,10 +40,8 @@ export const RemoveDialog = (props: RemoveDialogProps) => {
           <DialogTitle>{i18n.t("dialogs.delete.title")}</DialogTitle>
         </DialogHeader>
         <DialogDescription>{props.description}</DialogDescription>
-        <div className="py-1 flex items-center justify-center">
-          {props.children}
-        </div>
-        <DialogFooter>
+        <div className="flex items-center justify-center">{props.children}</div>
+        <DialogFooter className="mt-2">
           <DialogClose asChild>
             <Button type="button" variant="secondary" size="lg">
               {i18n.t("common.cancel")}

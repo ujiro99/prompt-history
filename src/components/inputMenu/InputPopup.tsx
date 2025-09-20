@@ -406,7 +406,7 @@ export function InputMenu(props: Props): React.ReactElement {
         description={i18n.t("dialogs.delete.message")}
         onRemove={() => handleDeletePrompt(removeId!)}
       >
-        <span className="text-base truncate">{removePrompt?.name}</span>
+        <span className="text-base break-all">{removePrompt?.name}</span>
       </RemoveDialog>
     </div>
   )
