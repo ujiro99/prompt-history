@@ -39,6 +39,15 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
   const currentMatch = matches[selectedIndex]
   const isSingleMatch = matches.length === 1
 
+  // Dynamic side calculation to prevent overlap with input
+  const POPUP_HEIGHT = popupRef.current?.clientHeight ?? 200 // Expected popup height
+  const MARGIN = 20 // Margin from screen edge
+  const availableSpaceBelow =
+    window.innerHeight - position.y - position.height - MARGIN
+  const availableSpaceAbove = position.y - MARGIN
+  const shouldShowAbove =
+    availableSpaceBelow < POPUP_HEIGHT && availableSpaceAbove > POPUP_HEIGHT
+
   // Close popup and reset states
   const handlePopupClose = useCallback(() => {
     handleClose()
@@ -184,10 +193,6 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
       setIsFocused(false)
       setUserInteracted(false)
     }
-    if (anchorRef.current && isVisible) {
-      anchorRef.current.style.left = `${position.x}px`
-      anchorRef.current.style.top = `${position.y}px`
-    }
   }, [position, isVisible])
 
   if (!isVisible || matches.length === 0) {
@@ -199,10 +204,11 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
       <PopoverAnchor asChild>
         <div
           ref={anchorRef}
-          className="fixed w-0 h-0 pointer-events-none"
+          className="fixed w-0 pointer-events-none"
           style={{
             left: `${position.x}px`,
             top: `${position.y}px`,
+            height: `${position.height}px`,
           }}
         />
       </PopoverAnchor>
@@ -213,7 +219,7 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
           "focus-visible:ring-1 focus-visible:ring-gray-400",
         )}
         align="start"
-        side="bottom"
+        side={shouldShowAbove ? "top" : "bottom"}
         sideOffset={5}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}

@@ -15,7 +15,7 @@ export const useAutoComplete = ({ prompts }: UseAutoCompleteOptions) => {
   const [isVisible, setIsVisible] = useState(false)
   const [matches, setMatches] = useState<AutoCompleteMatch[]>([])
   const [selectedIndex, setSelectedIndex] = useState(-1)
-  const [position, setPosition] = useState({ x: 0, y: 0 })
+  const [position, setPosition] = useState({ x: 0, y: 0, height: 0 })
   const managerRef = useRef<AutoCompleteManager | null>(null)
   const { nodeAtCaret } = useCaretNode()
 

@@ -230,16 +230,17 @@ export class AutoCompleteManager {
    */
   getPopupPosition(): AutoCompletePosition {
     if (!this.element) {
-      return { x: 0, y: 0 }
+      return { x: 0, y: 0, height: 0 }
     }
 
     // Try to get precise caret coordinates
     const coords = getCaretCoordinates(this.element)
     if (coords) {
-      // Position popup below the caret with a small offset
+      // Position popup below the caret
       return {
         x: coords.x,
-        y: coords.y + coords.height + 4,
+        y: coords.y,
+        height: coords.height,
       }
     }
 
@@ -248,6 +249,7 @@ export class AutoCompleteManager {
     return {
       x: rect.left,
       y: rect.bottom + 2,
+      height: rect.height,
     }
   }
 

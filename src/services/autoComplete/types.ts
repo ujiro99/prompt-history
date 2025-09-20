@@ -21,6 +21,7 @@ export interface AutoCompleteOptions {
 export interface AutoCompletePosition {
   x: number
   y: number
+  height: number
 }
 
 export interface AutoCompleteCallbacks {
