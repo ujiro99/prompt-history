@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button"
 import { ButtonGroup } from "@/components/ui/button-group"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { useContainer } from "@/hooks/useContainer"
 
 /**
  * Props for prompt edit dialog
@@ -52,6 +53,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
   const [isLoading, setIsLoading] = useState(false)
   const isEdit = displayMode === SaveMode.Overwrite
   const isCopy = displayMode === SaveMode.Copy
+  const { container } = useContainer()
 
   // Update initial values
   useEffect(() => {
@@ -100,10 +102,18 @@ export const EditDialog: React.FC<EditDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-md" onKeyDown={handleKeyDown}>
+      <DialogContent
+        className="w-md"
+        onKeyDown={handleKeyDown}
+        container={container}
+      >
         <DialogHeader>
           <DialogTitle>
-            {isEdit ? i18n.t("dialogs.edit.title") : isCopy ? i18n.t("dialogs.copy.title") : i18n.t("dialogs.save.title")}
+            {isEdit
+              ? i18n.t("dialogs.edit.title")
+              : isCopy
+                ? i18n.t("dialogs.copy.title")
+                : i18n.t("dialogs.save.title")}
           </DialogTitle>
         </DialogHeader>
 

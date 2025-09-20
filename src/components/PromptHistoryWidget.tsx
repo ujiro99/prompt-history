@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { PromptServiceFacade } from "../services/promptServiceFacade"
 import { NotificationManager } from "./Notification"
 import { InputPopup } from "./inputMenu/InputPopup"
 import { AutoCompletePopup } from "./autoComplete/AutoCompletePopup"
 import { CaretProvider } from "@/contexts/CaretContext"
+import { ContainerProvider } from "@/contexts/ContainerContext"
 import { isEmpty, uuid } from "@/lib/utils"
 import type { Prompt, NotificationData, PromptError } from "../types/prompt"
 import { TestIds } from "@/components/const"
@@ -15,6 +16,7 @@ const serviceFacade = PromptServiceFacade.getInstance()
  * Main widget for prompt history management
  */
 export const PromptHistoryWidget: React.FC = () => {
+  const containerRef = useRef<HTMLDivElement>(null)
   const [prompts, setPrompts] = useState<Prompt[]>([])
   const [pinnedPrompts, setPinnedPrompts] = useState<Prompt[]>([])
   const [targetElement, setTargetElement] = useState<Element | null>(null)
@@ -150,22 +152,26 @@ export const PromptHistoryWidget: React.FC = () => {
   }
 
   return (
-    <CaretProvider inputElement={targetElement}>
-      <InputPopup
-        targetElm={targetElement}
-        prompts={prompts}
-        pinnedPrompts={pinnedPrompts}
-        saveEnabled={!isEmpty(promptContent)}
-      />
+    <div ref={containerRef} data-testid={TestIds.widget.container}>
+      <ContainerProvider container={containerRef.current}>
+        <CaretProvider inputElement={targetElement}>
+          <InputPopup
+            targetElm={targetElement}
+            prompts={prompts}
+            pinnedPrompts={pinnedPrompts}
+            saveEnabled={!isEmpty(promptContent)}
+          />
 
-      {/* Notification system */}
-      <NotificationManager
-        notifications={notifications}
-        onDismiss={removeNotification}
-      />
+          {/* Notification system */}
+          <NotificationManager
+            notifications={notifications}
+            onDismiss={removeNotification}
+          />
 
-      {/* AutoComplete functionality */}
-      <AutoCompletePopup prompts={prompts} />
-    </CaretProvider>
+          {/* AutoComplete functionality */}
+          <AutoCompletePopup prompts={prompts} />
+        </CaretProvider>
+      </ContainerProvider>
+    </div>
   )
 }

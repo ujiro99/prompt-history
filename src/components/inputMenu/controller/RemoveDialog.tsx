@@ -1,5 +1,6 @@
 import { useRef } from "react"
 import { Trash2 } from "lucide-react"
+import { useContainer } from "@/hooks/useContainer"
 
 import {
   Dialog,
@@ -22,6 +23,7 @@ type RemoveDialogProps = {
 }
 
 export const RemoveDialog = (props: RemoveDialogProps) => {
+  const { container } = useContainer()
   const closeRef = useRef<HTMLButtonElement>(null)
   const handleOpenAutoFocus = (e: Event) => {
     closeRef.current?.focus()
@@ -29,7 +31,11 @@ export const RemoveDialog = (props: RemoveDialogProps) => {
   }
   return (
     <Dialog open={props.open} onOpenChange={props.onOpenChange}>
-      <DialogContent onOpenAutoFocus={handleOpenAutoFocus} className="w-auto">
+      <DialogContent
+        onOpenAutoFocus={handleOpenAutoFocus}
+        className="w-auto"
+        container={container}
+      >
         <DialogHeader>
           <DialogTitle>{i18n.t("dialogs.delete.title")}</DialogTitle>
         </DialogHeader>
