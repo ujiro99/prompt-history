@@ -1,7 +1,7 @@
-import React, { createContext, useState, useEffect } from "react"
+import React, { createContext } from "react"
 
 interface ContainerContextType {
-  container: HTMLElement
+  container: HTMLElement | null
 }
 
 export const ContainerContext = createContext<ContainerContextType | undefined>(
@@ -17,16 +17,8 @@ export const ContainerProvider: React.FC<ContainerProviderProps> = ({
   container,
   children,
 }) => {
-  const [containerElement, setContainerElement] = useState<HTMLElement | null>(
-    null,
-  )
-
-  useEffect(() => {
-    setContainerElement(container)
-  }, [container])
-
   const value: ContainerContextType = {
-    container: containerElement || document.body,
+    container,
   }
 
   return (

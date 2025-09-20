@@ -241,7 +241,8 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
         <div className="flex justify-end p-2 py-1.5 text-xs text-gray-500 border-t gap-1 empty:hidden">
           {(!isFocused && !userInteracted) || (!isFocused && isSingleMatch) ? (
             <p className="inline">
-              <Key className="text-[10px]">Tab</Key> <span>to focus</span>
+              <Key className="text-[10px]">Tab</Key>{" "}
+              <span>{i18n.t("autocomplete.toFocus")}</span>
               {!isSingleMatch ? <span>,</span> : null}
             </p>
           ) : null}
@@ -258,7 +259,7 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
                   <Key className="text-[10px]">↓</Key>
                 </>
               )}{" "}
-              to move
+              {i18n.t("autocomplete.toMove")}
             </p>
           )}
         </div>

@@ -33,7 +33,7 @@ export function ScrollAreaWithGradient({
     // Check on content changes (using ResizeObserver)
     const resizeObserver = new ResizeObserver(() => {
       // Small delay to ensure DOM has updated
-      setTimeout(checkScrollable, 0)
+      requestAnimationFrame(checkScrollable)
     })
 
     resizeObserver.observe(viewport)

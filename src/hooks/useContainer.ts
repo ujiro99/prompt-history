@@ -5,7 +5,7 @@ export const useContainer = () => {
   const context = useContext(ContainerContext)
 
   if (context === undefined) {
-    throw new Error("useCaretNode must be used within a CaretProvider")
+    throw new Error("useContainer must be used within a ContainerProvider")
   }
 
   return context

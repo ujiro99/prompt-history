@@ -86,3 +86,8 @@ time:
 # Preview
 preview:
   usedTimes: Used $1 times
+
+# Autocomplete
+autocomplete:
+  toFocus: to focus
+  toMove: to move

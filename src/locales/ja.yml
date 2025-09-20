@@ -86,3 +86,8 @@ time:
 # Preview
 preview:
   usedTimes: $1回使用
+
+# Autocomplete
+autocomplete:
+  toFocus: フォーカス
+  toMove: 移動
