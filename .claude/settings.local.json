@@ -28,7 +28,8 @@
       "Bash(yarn lint)",
       "mcp__serena__insert_before_symbol",
       "Bash(pnpm e2e:*)",
-      "Bash(pnpm run:*)"
+      "Bash(pnpm run:*)",
+      "WebFetch(domain:saruwakakun.com)"
     ],
     "deny": [],
     "ask": []

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback, useMemo } from "react"
 import { History, Star, Save } from "lucide-react"
 import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/popover"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { ScrollAreaWithGradient } from "./ScrollAreaWithGradient"
 import {
   Menubar,
   MenubarContent,
@@ -270,7 +270,7 @@ export function InputMenu(props: Props): React.ReactElement {
             data-testid={TestIds.inputPopup.historyList}
           >
             {props.prompts.length > 0 ? (
-              <ScrollArea
+              <ScrollAreaWithGradient
                 className={cn(
                   "min-w-[220px]",
                   props.prompts.length > 8 && "h-80",
@@ -293,7 +293,7 @@ export function InputMenu(props: Props): React.ReactElement {
                     {prompt.name}
                   </MenuItem>
                 ))}
-              </ScrollArea>
+              </ScrollAreaWithGradient>
             ) : (
               <div className="px-3 py-2 text-xs text-gray-500">
                 {i18n.t("messages.historyEmpty")}
@@ -324,7 +324,7 @@ export function InputMenu(props: Props): React.ReactElement {
             data-testid={TestIds.inputPopup.pinnedList}
           >
             {props.pinnedPrompts.length > 0 ? (
-              <ScrollArea
+              <ScrollAreaWithGradient
                 className={cn(
                   "min-w-[220px]",
                   props.pinnedPrompts.length > 8 && "h-80",
@@ -348,7 +348,7 @@ export function InputMenu(props: Props): React.ReactElement {
                     {prompt.name}
                   </MenuItem>
                 ))}
-              </ScrollArea>
+              </ScrollAreaWithGradient>
             ) : (
               <div className="px-3 py-2 text-xs text-gray-500 min-w-[220px]">
                 {i18n.t("messages.pinnedEmpty")}
