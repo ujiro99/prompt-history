@@ -4,6 +4,7 @@ import type { StorageService } from "../storage"
 import { SessionManager } from "./sessionManager"
 import { replaceTextAtCaret } from "@/services/dom/inputUtils"
 import type { AutoCompleteMatch } from "@/services/autoComplete/types"
+import { analytics } from "#imports"
 
 /**
  * Class responsible for prompt execution and UI support processing (Storage read operations)
@@ -12,7 +13,7 @@ export class ExecuteManager {
   constructor(
     private storage: StorageService,
     private sessionManager: SessionManager,
-  ) {}
+  ) { }
 
   /**
    * Execute prompt
@@ -66,6 +67,7 @@ export class ExecuteManager {
       }
 
       onSuccess?.(updatedPrompt)
+      await analytics.track("execute-prompt")
     } catch (error) {
       const err = error instanceof Error ? error : new Error("Execute failed")
       onError?.(err)

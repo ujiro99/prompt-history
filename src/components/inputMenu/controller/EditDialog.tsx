@@ -20,6 +20,7 @@ import { ButtonGroup } from "@/components/ui/button-group"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { useContainer } from "@/hooks/useContainer"
+import { analytics } from "#imports"
 
 /**
  * Props for prompt edit dialog
@@ -79,6 +80,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
         isPinned: true,
       }
 
+      await analytics.track("edit-save")
       await onSave(saveData)
     } finally {
       setIsLoading(false)

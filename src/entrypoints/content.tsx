@@ -2,6 +2,7 @@ import ReactDOM from "react-dom/client"
 import App from "./content/App.tsx"
 import "./content/App.css"
 import { supportHosts } from "@/services/aiService"
+import { analytics } from "#imports"
 
 let _supportHosts = [...supportHosts]
 if (import.meta.env.MODE === "production") {
@@ -33,6 +34,7 @@ export default defineContentScript({
       position: "inline",
       anchor: "body",
       onMount: (container) => {
+        analytics.autoTrack(container)
         const app = document.createElement("div")
         container.append(app)
         const root = ReactDOM.createRoot(app)

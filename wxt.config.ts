@@ -9,7 +9,11 @@ export default defineConfig({
   alias: {
     "@": resolve("src"),
   },
-  modules: ["@wxt-dev/module-react", "@wxt-dev/i18n/module"],
+  modules: [
+    "@wxt-dev/module-react",
+    "@wxt-dev/i18n/module",
+    "@wxt-dev/analytics/module",
+  ],
   manifest: {
     name: "__MSG_extName__",
     description: "__MSG_extDescription__",
