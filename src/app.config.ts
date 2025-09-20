@@ -10,7 +10,7 @@ export default defineAppConfig({
       }),
     ],
     userId: storage.defineItem("local:analytics-user-id", {
-      init: () => crypto.randomUUID(),
+      init: () => crypto.randomUUID() as string,
     }),
     enabled: storage.defineItem("local:analytics-enabled", {
       fallback: true,
