@@ -3,7 +3,12 @@ import App from "./content/App.tsx"
 import "./content/App.css"
 import { supportHosts } from "@/services/aiService"
 
-const matches = supportHosts.map((hostname) => `https://${hostname}/*`)
+let _supportHosts = [...supportHosts]
+if (import.meta.env.MODE === "production") {
+  _supportHosts = supportHosts.filter((host) => host !== "ujiro99.github.io")
+}
+
+const matches = _supportHosts.map((hostname) => `https://${hostname}/*`)
 
 export default defineContentScript({
   matches,
