@@ -13,8 +13,10 @@ common:
   copy: コピー
   ok: OK
   name: 名前
-  content: 内容
+  nameDescription: 入力補完で検索される名前です
   update: 更新
+  prompt: プロンプト
+  promptDescription: チャットに入力される内容です
 
 # Buttons
 buttons:

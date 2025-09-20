@@ -126,6 +126,9 @@ export const EditDialog: React.FC<EditDialogProps> = ({
             >
               {i18n.t("common.name")}
             </label>
+            <p className="text-xs text-muted-foreground">
+              {i18n.t("common.nameDescription")}
+            </p>
             <Input
               id="prompt-name"
               type="text"
@@ -143,8 +146,11 @@ export const EditDialog: React.FC<EditDialogProps> = ({
               htmlFor="prompt-content"
               className="text-sm font-medium text-foreground"
             >
-              {i18n.t("common.content")}
+              {i18n.t("common.prompt")}
             </label>
+            <p className="text-xs text-muted-foreground">
+              {i18n.t("common.promptDescription")}
+            </p>
             <Textarea
               id="prompt-content"
               value={content}

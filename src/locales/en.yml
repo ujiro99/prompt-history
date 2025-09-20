@@ -13,8 +13,10 @@ common:
   copy: Copy
   ok: OK
   name: Name
-  content: Content
+  nameDescription: The name that will be searched in autocomplete
   update: Update
+  prompt: Prompt
+  promptDescription: The content that will be entered into the chat
 
 # Buttons
 buttons:
