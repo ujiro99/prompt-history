@@ -93,7 +93,7 @@ export const useAutoComplete = ({ prompts }: UseAutoCompleteOptions) => {
     managerRef.current?.setCallbacks(callbacks)
   }, [callbacks])
 
-  const handleSelect = (_match: AutoCompleteMatch) => {
+  const handleExecute = (_match: AutoCompleteMatch) => {
     if (managerRef.current) {
       managerRef.current.execute()
     }
@@ -122,7 +122,7 @@ export const useAutoComplete = ({ prompts }: UseAutoCompleteOptions) => {
     matches,
     selectedIndex,
     position,
-    handleSelect,
+    handleExecute,
     handleClose,
     selectIndex,
     selectNext,

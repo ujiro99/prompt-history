@@ -24,7 +24,7 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
     matches,
     selectedIndex,
     position,
-    handleSelect,
+    handleExecute,
     handleClose,
     selectIndex,
     selectNext,
@@ -77,7 +77,7 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
           event.preventDefault()
           event.stopPropagation()
           if (currentMatch) {
-            handleSelect(currentMatch)
+            handleExecute(currentMatch)
           }
           break
       }
@@ -87,7 +87,7 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
     return () => {
       document.removeEventListener("keydown", handleKeyDownActive, true)
     }
-  }, [isVisible, isFocused, userInteracted, currentMatch, handleSelect])
+  }, [isVisible, isFocused, userInteracted, currentMatch, handleExecute])
 
   useEffect(() => {
     // Only add event listeners when popup is visible
@@ -227,7 +227,7 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
               key={`${match.name}-${index}`}
               match={match}
               isSelected={index === selectedIndex}
-              onClick={handleSelect}
+              onClick={handleExecute}
               onMouseEnter={() => selectIndex(index)}
             />
           ))}
