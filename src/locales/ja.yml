@@ -1,6 +1,6 @@
 # For manifest.json
-appName: Prompt History – プロンプトを保存して再利用
-promptHistoryExtension: すべてのプロンプトを自動保存、入力補完でスピードアップ。設定不要、あとは自分のアイデアに集中！
+extName: Prompt History – プロンプトを保存して再利用
+extDescription: すべてのプロンプトを自動保存、入力補完でスピードアップ。設定不要、あとは自分のアイデアに集中！
 
 # Common
 common:
