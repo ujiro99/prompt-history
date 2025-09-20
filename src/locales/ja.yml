@@ -72,6 +72,7 @@ messages:
   promptPinned: プロンプトにスターを付けました
   promptUnpinned: スターを解除しました
   copyPrefix: コピー -
+  notFound: プロンプトが見つかりません
   historyEmpty: プロンプトを送信すると、ここに表示されます
   pinnedEmpty: スターまたは手動保存すると、ここに表示されます
 

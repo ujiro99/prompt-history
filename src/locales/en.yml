@@ -72,6 +72,7 @@ messages:
   promptPinned: Prompt Starred
   promptUnpinned: Prompt unstarred
   copyPrefix: Copy of
+  notFound: No prompts found
   historyEmpty: Prompts will be displayed when you send them
   pinnedEmpty: Will be displayed when you star or manually save
 
