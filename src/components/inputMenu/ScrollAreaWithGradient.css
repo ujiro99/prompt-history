@@ -73,3 +73,8 @@
   /* Initial state - visible */
   opacity: 1;
 }
+
+.scroll-gradient-container[data-scrollable="false"] .scroll-gradient-top,
+.scroll-gradient-container[data-scrollable="false"] .scroll-gradient-bottom {
+  display: none;
+}
