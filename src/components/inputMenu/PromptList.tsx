@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react"
+import { useMemo, useState, useEffect, useDeferredValue } from "react"
 import { Search, ArrowUpDown } from "lucide-react"
 import type { Prompt, SortOrder } from "@/types/prompt"
 import { cn, isEmpty } from "@/lib/utils"
@@ -53,11 +53,17 @@ export const PromptList = ({
   onTogglePin,
 }: PromptListProps) => {
   const [searchQuery, setSearchQuery] = useState<string>("")
+  const deferredSearchQuery = useDeferredValue(searchQuery)
   const [sortOrder, setSortOrder] = useState<SortOrder>("composite")
 
   const filteredPrompts = useMemo(() => {
-    return [...prompts].filter((p) => p.content.includes(searchQuery))
-  }, [prompts, searchQuery])
+    const query = deferredSearchQuery.toLowerCase()
+    return [...prompts].filter(
+      (p) =>
+        p.content.toLowerCase().includes(query) ||
+        p.name?.toLowerCase().includes(query),
+    )
+  }, [prompts, deferredSearchQuery])
 
   const isListEmpty = filteredPrompts.length === 0
 
