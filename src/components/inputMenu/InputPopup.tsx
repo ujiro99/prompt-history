@@ -331,7 +331,7 @@ export function InputMenu(props: Props): React.ReactElement {
       </Menubar>
 
       {/* PromptPreview Overlay */}
-      {hoveredPrompt && hoveredItem && (
+      {hoveredPrompt && hoveredItem?.element && (
         <PromptPreviewWrapper
           open={!isEmpty(selectedMenu) && hoveredItem.element != null}
           prompt={hoveredPrompt}
