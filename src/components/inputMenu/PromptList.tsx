@@ -96,6 +96,7 @@ export const PromptList = ({
           <Input
             type="text"
             placeholder={i18n.t("placeholders.searchPrompts")}
+            aria-label={i18n.t("placeholders.searchPrompts")}
             className="px-2 border-none shadow-none focus-visible:ring-0 focus-visible:border-none"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
