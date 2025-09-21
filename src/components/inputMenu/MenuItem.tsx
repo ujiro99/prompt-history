@@ -7,7 +7,7 @@ type MenuItemProps = {
   menuType?: "history" | "pinned"
   value: string
   isPinned: boolean
-  dataTestId: string
+  testId: string
   children: React.ReactNode
   onClick: (promptId: string) => void
   onHover: (
@@ -65,7 +65,7 @@ export const MenuItem = (props: MenuItemProps) => {
         "relative flex justify-between px-2 pr-1 py-1 text-sm font-normal font-sans text-gray-700 cursor-pointer outline-gray-300",
       )}
       style={{ outlineColor: "#d1d5db" }}
-      data-testid={props.dataTestId}
+      data-testid={props.testId}
     >
       <div className="max-w-50 truncate">{props.children}</div>
       <div className={cn("flex items-center")}>

@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/tooltip"
 
 const storage = StorageService.getInstance()
-storage.getSettings()
+const orders: SortOrder[] = ["recent", "execution", "name", "composite"]
 
 interface PromptListProps {
   menuType?: "history" | "pinned"
@@ -67,7 +67,7 @@ export const PromptList = ({
 
   const isListEmpty = filteredPrompts.length === 0
 
-  const dataTestId =
+  const testId =
     menuType === "pinned"
       ? TestIds.inputPopup.pinnedItem
       : TestIds.inputPopup.historyItem
@@ -130,7 +130,7 @@ export const PromptList = ({
               onRemove={onRemove}
               onCopy={onCopy}
               onTogglePin={onTogglePin}
-              dataTestId={dataTestId}
+              testId={testId}
             >
               {prompt.name}
             </MenuItem>
@@ -147,8 +147,6 @@ interface SortOrderSelectProps {
 }
 
 const SortOrderSelect = ({ sortOrder, className }: SortOrderSelectProps) => {
-  const orders: SortOrder[] = ["recent", "execution", "name", "composite"]
-
   const handleSortOrderChange = (newSortOrder: SortOrder) => {
     storage.setSettings({ sortOrder: newSortOrder })
   }
