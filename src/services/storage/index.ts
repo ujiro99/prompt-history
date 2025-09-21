@@ -16,7 +16,7 @@ import { settingsService } from "./settings"
 export class StorageService {
   private static instance: StorageService
 
-  private constructor() {}
+  private constructor() { }
 
   /**
    * Get singleton instance
@@ -187,6 +187,17 @@ export class StorageService {
    */
   async setSettings(settings: Partial<AppSettings>): Promise<void> {
     return await settingsService.setSettings(settings)
+  }
+
+  /**
+   * Watch settings for changes
+   * @param callback Callback function to receive updated settings
+   * @returns Unsubscribe function
+   */
+  watchSettings(
+    callback: (settings: AppSettings, oldSettings: AppSettings) => void,
+  ): () => void {
+    return settingsService.watchSettings(callback)
   }
 
   // ===================

@@ -92,3 +92,18 @@ preview:
 autocomplete:
   toFocus: to focus
   toMove: to move
+
+# sort order
+sortOrder:
+  recent:
+    label: Recent Usage
+    description: Prioritize recently used prompts
+  execution:
+    label: Usage Count
+    description: Prioritize frequently used prompts
+  name:
+    label: Name
+    description: Sort by alphabetical order
+  composite:
+    label: Recent Usage & Count
+    description: Prioritize both recently used and frequently used prompts

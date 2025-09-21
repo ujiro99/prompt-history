@@ -37,6 +37,16 @@ export class SettingsService {
   }
 
   /**
+   * Watch for changes in AppSettings
+   * Returns an unsubscribe function
+   */
+  watchSettings(
+    callback: (settings: AppSettings, oldSettings: AppSettings) => void,
+  ): () => void {
+    return settingsStorage.watch(callback)
+  }
+
+  /**
    * Create error object
    */
   private createError(

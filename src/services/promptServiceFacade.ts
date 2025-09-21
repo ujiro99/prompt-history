@@ -28,11 +28,13 @@ export class PromptServiceFacade {
 
   // Callbacks
   private onSessionChangeCallbacks: ((session: Session | null) => void)[] = []
-  private promptUnwatchs: (() => void)[] = []
   private onNotificationCallbacks: ((
     notification: NotificationData,
   ) => void)[] = []
   private onErrorCallbacks: ((error: PromptError) => void)[] = []
+
+  // unwatch functions
+  private promptUnwatchs: (() => void)[] = []
 
   private constructor() {
     const storage = StorageService.getInstance()
@@ -396,6 +398,7 @@ export class PromptServiceFacade {
     this.promptUnwatchs.push(
       this.storageHelper.watchPrompts(callback),
       this.storageHelper.watchPinnedPrompts(callback),
+      this.storageHelper.watchSortOrder(callback),
     )
   }
 

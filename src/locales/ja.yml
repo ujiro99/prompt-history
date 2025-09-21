@@ -92,3 +92,18 @@ preview:
 autocomplete:
   toFocus: フォーカス
   toMove: 移動
+
+# sort order
+sortOrder:
+  recent:
+    label: 最近使用順
+    description: 最近使ったプロンプトを優先的に表示します
+  execution:
+    label: 実行回数順
+    description: よく使うプロンプトを優先的に表示します
+  name:
+    label: 名前順
+    description: 名前のアルファベット順に表示します
+  composite:
+    label: 最近使用 & 実行回数順
+    description: 最近使ったプロンプトとよく使うプロンプトを優先的に表示します

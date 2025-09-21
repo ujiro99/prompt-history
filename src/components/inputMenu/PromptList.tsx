@@ -1,11 +1,26 @@
-import { useMemo, useState } from "react"
-import { Search } from "lucide-react"
-import type { Prompt } from "@/types/prompt"
-import { cn } from "@/lib/utils"
+import { useMemo, useState, useEffect } from "react"
+import { Search, ArrowUpDown } from "lucide-react"
+import type { Prompt, SortOrder } from "@/types/prompt"
+import { cn, isEmpty } from "@/lib/utils"
 import { ScrollAreaWithGradient } from "./ScrollAreaWithGradient"
 import { MenuItem } from "./MenuItem"
 import { Input } from "@/components/ui/input"
 import { TestIds } from "@/components/const"
+import { StorageService } from "@/services/storage"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+
+const storage = StorageService.getInstance()
+storage.getSettings()
 
 interface PromptListProps {
   menuType?: "history" | "pinned"
@@ -38,12 +53,13 @@ export const PromptList = ({
   onTogglePin,
 }: PromptListProps) => {
   const [searchQuery, setSearchQuery] = useState<string>("")
+  const [sortOrder, setSortOrder] = useState<SortOrder>("composite")
 
-  const reversePrompts = useMemo(() => {
-    return [...prompts].filter((p) => p.content.includes(searchQuery)).reverse()
+  const filteredPrompts = useMemo(() => {
+    return [...prompts].filter((p) => p.content.includes(searchQuery))
   }, [prompts, searchQuery])
 
-  const isEmpty = reversePrompts.length === 0
+  const isListEmpty = filteredPrompts.length === 0
 
   const dataTestId =
     menuType === "pinned"
@@ -55,32 +71,46 @@ export const PromptList = ({
       ? i18n.t("messages.pinnedEmpty")
       : i18n.t("messages.historyEmpty")
 
+  useEffect(() => {
+    const updateSettings = async () => {
+      const settings = await storage.getSettings()
+      setSortOrder(settings?.sortOrder || "composite")
+    }
+    updateSettings()
+    return storage.watchSettings((newSettings) => {
+      setSortOrder(newSettings?.sortOrder || "composite")
+    })
+  }, [])
+
   return (
     <>
-      <div className="relative border-b">
-        <Search
-          size={16}
-          className="absolute left-3 top-1/2 -translate-y-1/2 stroke-gray-400"
-        />
-        <Input
-          type="text"
-          placeholder={i18n.t("placeholders.searchPrompts")}
-          className="pl-9 border-none shadow-none focus-visible:ring-0 focus-visible:border-none"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-      </div>
+      {isListEmpty && isEmpty(searchQuery) ? null : (
+        <div className="flex items-center py-0.5 pl-3 pr-1 border-b">
+          <Search size={20} className="stroke-gray-400" />
+          <Input
+            type="text"
+            placeholder={i18n.t("placeholders.searchPrompts")}
+            className="px-2 border-none shadow-none focus-visible:ring-0 focus-visible:border-none"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <SortOrderSelect sortOrder={sortOrder} className="px-1.5 py-0" />
+        </div>
+      )}
       <ScrollAreaWithGradient
-        className={cn("min-w-[220px] p-1", reversePrompts.length > 8 && "h-80")}
+        className={cn(
+          "min-w-[220px] p-1",
+          filteredPrompts.length > 8 && "h-80",
+        )}
       >
-        {isEmpty ? (
+        {isListEmpty ? (
           <div className="px-3 py-2 text-xs text-gray-500">
             {searchQuery.length > 0
               ? i18n.t("messages.notFound")
               : emptyMessage}
           </div>
         ) : (
-          reversePrompts.map((prompt) => (
+          filteredPrompts.map((prompt) => (
             <MenuItem
               menuType={menuType}
               value={prompt.id}
@@ -101,5 +131,41 @@ export const PromptList = ({
         )}
       </ScrollAreaWithGradient>
     </>
+  )
+}
+
+interface SortOrderSelectProps {
+  sortOrder: SortOrder
+  className?: string
+}
+
+const SortOrderSelect = ({ sortOrder, className }: SortOrderSelectProps) => {
+  const orders: SortOrder[] = ["recent", "execution", "name", "composite"]
+
+  const handleSortOrderChange = (newSortOrder: SortOrder) => {
+    storage.setSettings({ sortOrder: newSortOrder })
+  }
+
+  return (
+    <Tooltip>
+      <Select onValueChange={handleSortOrderChange} value={sortOrder}>
+        <TooltipTrigger asChild>
+          <SelectTrigger
+            className={cn("transition hover:bg-gray-100", className)}
+            size="sm"
+          >
+            <ArrowUpDown className="size-4" />
+          </SelectTrigger>
+        </TooltipTrigger>
+        <SelectContent>
+          {orders.map((order) => (
+            <SelectItem key={order} value={order}>
+              {i18n.t(`sortOrder.${order}.label`)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <TooltipContent>{i18n.t(`sortOrder.${sortOrder}.label`)}</TooltipContent>
+    </Tooltip>
   )
 }

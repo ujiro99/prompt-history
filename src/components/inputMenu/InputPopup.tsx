@@ -294,6 +294,7 @@ export function InputMenu(props: Props): React.ReactElement {
           <MenubarContent
             side="top"
             ref={pinnedContentRef}
+            className="p-0"
             data-testid={TestIds.inputPopup.pinnedList}
           >
             <PromptList

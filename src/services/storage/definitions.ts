@@ -8,7 +8,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   autoSaveEnabled: true,
   autoCompleteEnabled: true,
   maxPrompts: 1000,
-  defaultSortOrder: "composite",
+  sortOrder: "composite",
   showNotifications: true,
   minimalMode: false,
 }
