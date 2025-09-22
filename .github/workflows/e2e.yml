@@ -30,7 +30,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build extension
-        run: pnpm build
+        run: pnpm build:e2e
 
       - name: Install Playwright browsers
         run: pnpm e2e:install
