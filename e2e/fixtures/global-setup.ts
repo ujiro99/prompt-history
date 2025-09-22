@@ -11,7 +11,7 @@ async function globalSetup(_config: FullConfig) {
   console.log("🚀 Starting global setup...")
 
   // Check extension build
-  const extensionPath = path.join(__dirname, "../../.output/chrome-mv3")
+  const extensionPath = path.join(__dirname, "../../.output/chrome-mv3-e2e")
 
   if (!fs.existsSync(extensionPath)) {
     console.log("📦 Extension not found. Building...")

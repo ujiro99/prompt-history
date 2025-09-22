@@ -11,7 +11,7 @@ export const test = base.extend<{
   sw: any
 }>({
   context: async ({}, use) => {
-    const pathToExtension = path.join(__dirname, "../../.output/chrome-mv3")
+    const pathToExtension = path.join(__dirname, "../../.output/chrome-mv3-e2e")
     const context = await chromium.launchPersistentContext("", {
       channel: "chromium",
       headless: true,

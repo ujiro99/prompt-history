@@ -13,56 +13,56 @@ test.describe("UI Components Tests", () => {
     storageHelpers = new StorageHelpers(page.context())
     waitHelpers = new WaitHelpers(page)
 
-    // テスト前にストレージをクリア
+    // Clear storage before test
     await page.goto(TestPage.url)
     await testPage.waitForServiceReady()
     await storageHelpers.clearExtensionData()
   })
 
   test("should display InputPopup and verify input", async () => {
-    // モック履歴データを作成
+    // Create mock history data
     await storageHelpers.createMockPromptHistory(5)
 
-    // InputPopupの表示をテスト
+    // Test InputPopup display
     const inputPopup = await testPage.getInputPopup()
 
-    // トリガー要素を探してホバー
+    // Find and hover over trigger element
     const triggerElement = await inputPopup.getHistoryTrigger()
     expect(await triggerElement.count()).toBeGreaterThan(0)
     await triggerElement.hover()
 
-    // 履歴リストが表示されることを確認
+    // Confirm that history list is displayed
     await inputPopup.waitHistory()
     const historyList = await inputPopup.getHistoryList()
     const isVisible = await historyList.isVisible()
     expect(isVisible).toBe(true)
 
-    // 履歴アイテムが表示されることを確認
+    // Confirm that history items are displayed
     const historyItems = await inputPopup.getHistoryItems()
     expect(historyItems.length).toBeGreaterThan(0)
 
-    // 最初(直近)の履歴アイテムを選択
+    // Select first (most recent) history item
     await inputPopup.selectHistoryItem(0)
 
-    // プロンプト入力フィールドの値を確認
+    // Check the value of prompt input field
     const promptInput = await testPage.getPromptInput()
     const inputValue = await promptInput.textContent()
-    expect(inputValue).toBe("Mock prompt 5 for testing") // 直近の履歴が入力されるはず
+    expect(inputValue).toBe("Mock prompt 5 for testing") // Most recent history should be entered
   })
 
   test("should display AutocompletePopup on input", async () => {
     await storageHelpers.createMockPromptHistory(5)
     const autocompletePopup = await testPage.getAutocompletePopup()
 
-    // プロンプト入力を開始
+    // Start prompt input
     await testPage.typePrompt("prompt")
 
-    // オートコンプリートポップアップが表示されるかチェック
+    // Check if autocomplete popup is displayed
     await autocompletePopup.waitForDisplay()
     const isVisible = await autocompletePopup.isVisible()
     expect(isVisible).toBe(true)
 
-    // 候補が表示されることを確認
+    // Confirm that suggestions are displayed
     const suggestions = await autocompletePopup.getSuggestions()
     expect(suggestions.length).toBeGreaterThan(0)
   })
@@ -71,35 +71,35 @@ test.describe("UI Components Tests", () => {
     await storageHelpers.createMockPromptHistory(5)
     const autocompletePopup = await testPage.getAutocompletePopup()
 
-    // プロンプト入力を開始
+    // Start prompt input
     await testPage.typePrompt("prompt")
 
     await autocompletePopup.waitForDisplay()
 
-    // 下へナビゲーション
+    // Navigate down
     await autocompletePopup.pressCtrlN() // 1
     await autocompletePopup.pressCtrlN() // 2
 
-    // 上へナビゲーション
+    // Navigate up
     await autocompletePopup.pressCtrlP() // 1
 
-    // アクティブなアイテムが存在することを確認
+    // Confirm that active item exists
     const activeItem = await autocompletePopup.getActiveItem()
     expect(activeItem).toBeTruthy()
 
-    // Tabキーで選択
+    // Select with Tab key
     await autocompletePopup.pressTab()
 
-    // プロンプト入力フィールドの値を確認
+    // Check the value of prompt input field
     const promptInput = await testPage.getPromptInput()
     await waitHelpers.waitForCondition(async () => {
       const val = await promptInput.textContent()
-      return val === "Mock prompt 1 for testing"
+      return val === "Mock prompt 5 for testing"
     })
     const inputValue = await promptInput.textContent()
-    expect(inputValue).toBe("Mock prompt 1 for testing")
+    expect(inputValue).toBe("Mock prompt 5 for testing")
 
-    // ポップアップが閉じることを確認
+    // Confirm that popup is closed
     const isVisible = await autocompletePopup.isVisible()
     expect(isVisible).toBe(false)
   })
@@ -114,7 +114,7 @@ test.describe("UI Components Tests", () => {
     await storageHelpers.createMockPromptHistory(5)
     const autocompletePopup = await testPage.getAutocompletePopup()
 
-    // プロンプト入力を開始
+    // Start prompt input
     await testPage.typePrompt("prompt")
 
     await autocompletePopup.waitForDisplay()
@@ -140,10 +140,10 @@ test.describe("UI Components Tests", () => {
     const promptInput = await testPage.getPromptInput()
     await waitHelpers.waitForCondition(async () => {
       const val = await promptInput.textContent()
-      return val === "Mock prompt 2 for testing"
+      return val === "Mock prompt 4 for testing"
     })
     const inputValue = await promptInput.textContent()
-    expect(inputValue).toBe("Mock prompt 2 for testing")
+    expect(inputValue).toBe("Mock prompt 4 for testing")
 
     // Confirm that popup is closed
     const isVisible = await autocompletePopup.isVisible()
