@@ -1,7 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { AutoCompleteManager } from "../../autoComplete/autoCompleteManager"
 import type { Prompt } from "../../../types/prompt"
-import type { AutoCompleteCallbacks } from "../../autoComplete/types"
+import type {
+  AutoCompleteCallbacks,
+  AutoCompleteMatch,
+} from "../../autoComplete/types"
 
 // Mock the dom module
 vi.mock("../../dom", () => ({
@@ -319,7 +322,8 @@ describe("AutoCompleteManager", () => {
       let caretPos = 16
       let matches = managerAny.findMatches(input, caretPos)
 
-      expect(matches).toHaveLength(1)
+      expect(matches.length).toBeGreaterThanOrEqual(1)
+      // First match should be the 2-word match
       expect(matches[0].name).toBe("Hello World")
       expect(matches[0].matchStart).toBe(5) // Start of "hello world"
       expect(matches[0].matchEnd).toBe(16) // End of "hello world"
@@ -330,7 +334,8 @@ describe("AutoCompleteManager", () => {
       caretPos = 15
       matches = managerAny.findMatches(input, caretPos)
 
-      expect(matches).toHaveLength(1)
+      expect(matches.length).toBeGreaterThanOrEqual(1)
+      // First match should be the 2-word match
       expect(matches[0].name).toBe("Test Prompt")
       expect(matches[0].matchStart).toBe(4) // Start of "test prompt"
       expect(matches[0].matchEnd).toBe(15) // End of "test prompt"
@@ -361,7 +366,8 @@ describe("AutoCompleteManager", () => {
       const caretPos = input.length // Use full length: 28
       const matches = managerAny.findMatches(input, caretPos)
 
-      expect(matches).toHaveLength(1)
+      expect(matches.length).toBeGreaterThanOrEqual(1)
+      // First match should be the 3-word match (highest priority)
       expect(matches[0].name).toBe("Python Programming Guide")
       expect(matches[0].matchStart).toBe(4) // Start of "python programming guide"
       expect(matches[0].matchEnd).toBe(28) // End of "python programming guide"
@@ -388,14 +394,23 @@ describe("AutoCompleteManager", () => {
       ]
       manager.setPrompts(priorityPrompts)
 
-      // Should match "Hello World" (2 words) rather than "World" (1 word)
+      // Should find both matches but prioritize "Hello World" (2 words) over "World" (1 word)
       const input = "Say hello world"
       const caretPos = 15
-      const matches = managerAny.findMatches(input, caretPos)
+      const matches: AutoCompleteMatch[] = managerAny.findMatches(
+        input,
+        caretPos,
+      )
 
-      expect(matches).toHaveLength(1)
+      expect(matches.length).toBeGreaterThanOrEqual(2)
+      // First match should be the 2-word match "Hello World"
       expect(matches[0].name).toBe("Hello World")
       expect(matches[0].searchTerm).toBe("hello world")
+
+      // Find the "World" match among the results (it might not be at index 1 due to alphabetical sorting)
+      const worldMatch = matches.find((m) => m.name === "World")
+      expect(worldMatch).toBeDefined()
+      expect(worldMatch?.searchTerm).toBe("world")
     })
 
     it("should handle spacing variations in multi-word input", () => {
@@ -416,7 +431,8 @@ describe("AutoCompleteManager", () => {
       caretPos = 16
       matches = managerAny.findMatches(input, caretPos)
 
-      expect(matches).toHaveLength(1)
+      expect(matches.length).toBeGreaterThanOrEqual(1)
+      // First match should be the 2-word pattern
       expect(matches[0].name).toBe("Hello World")
       expect(matches[0].searchTerm).toBe("hello world")
     })
@@ -439,10 +455,10 @@ describe("AutoCompleteManager", () => {
       expect(matches).toHaveLength(0) // No prompt matches "a bc"
     })
 
-    it("should fall back to shorter matches when longer ones don't exist", () => {
+    it("should include both short and long matches when available", () => {
       const managerAny = manager as any
 
-      // "nonexistent hello" should try 2-word match first, then fall back to "hello"
+      // "nonexistent hello" should find both 2-word and 1-word matches
       const input = "Type nonexistent hello"
       const caretPos = 22
       const matches = managerAny.findMatches(input, caretPos)
@@ -450,7 +466,66 @@ describe("AutoCompleteManager", () => {
       expect(matches).toHaveLength(2)
       expect(matches[0].name).toBe("Hello World")
       expect(matches[1].name).toBe("hello-world-special")
-      expect(matches[0].searchTerm).toBe("hello") // Fell back to single word
+      // Both should be single word matches since "nonexistent hello" doesn't match any 2-word prompts
+      expect(matches[0].searchTerm).toBe("hello")
+      expect(matches[1].searchTerm).toBe("hello")
+    })
+
+    it("should show matches from multiple word counts up to maxMatches limit", () => {
+      const managerAny = manager as any
+
+      // Add more prompts to test multiple word count matches
+      const multiPrompts = [
+        ...mockPrompts,
+        {
+          id: "hello-single",
+          name: "Hello",
+          content: "Single hello prompt",
+          executionCount: 0,
+          lastExecutedAt: new Date(),
+          isPinned: false,
+          lastExecutionUrl: "",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "world-single",
+          name: "World",
+          content: "Single world prompt",
+          executionCount: 0,
+          lastExecutedAt: new Date(),
+          isPinned: false,
+          lastExecutionUrl: "",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ]
+      manager.setPrompts(multiPrompts)
+
+      const input = "Type hello world"
+      const caretPos = 16
+      const matches: AutoCompleteMatch[] = managerAny.findMatches(
+        input,
+        caretPos,
+      )
+
+      // Should include matches from different word counts but respect maxMatches (5)
+      expect(matches.length).toBeLessThanOrEqual(5)
+
+      // First match should be the 2-word match
+      expect(matches[0].name).toBe("Hello World")
+      expect(matches[0].searchTerm).toBe("hello world")
+
+      // Should also include single word matches for "world" (since "Hello" doesn't contain "hello world")
+      const matchNames = matches.map((m) => m.name)
+      expect(matchNames).toContain("World") // "World" contains "world"
+      expect(matchNames).toContain("hello-world-special") // Contains "hello" in single word search
+
+      // Log matches for debugging
+      console.log(
+        "All matches:",
+        matches.map((m) => ({ name: m.name, searchTerm: m.searchTerm })),
+      )
     })
   })
 
