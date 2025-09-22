@@ -29,8 +29,8 @@ export default defineConfig({
         launchOptions: {
           // ビルド済み拡張機能のパス
           args: [
-            `--disable-extensions-except=${path.join(__dirname, ".output/chrome-mv3")}`,
-            `--load-extension=${path.join(__dirname, ".output/chrome-mv3")}`,
+            `--disable-extensions-except=${path.join(__dirname, ".output/chrome-mv3-e2e")}`,
+            `--load-extension=${path.join(__dirname, ".output/chrome-mv3-e2e")}`,
           ],
         },
       },

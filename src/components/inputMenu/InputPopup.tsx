@@ -1,7 +1,6 @@
 import React, { useState, useRef, useCallback, useMemo } from "react"
 import { History, Star, Save } from "lucide-react"
 import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/popover"
-import { ScrollAreaWithGradient } from "./ScrollAreaWithGradient"
 import {
   Menubar,
   MenubarContent,
@@ -10,15 +9,15 @@ import {
 } from "@/components/ui/menubar"
 import { useCaretNode } from "@/hooks/useCaretNode"
 import { PromptPreview } from "./PromptPreview"
-import { MenuItem } from "./MenuItem"
 import { RemoveDialog } from "@/components/inputMenu/controller/RemoveDialog"
 import { EditDialog } from "@/components/inputMenu/controller/EditDialog"
 import { BridgeArea } from "@/components/BridgeArea"
 import { PromptServiceFacade } from "@/services/promptServiceFacade"
 import { SaveMode } from "@/types/prompt"
-import type { Prompt, SaveDialogData } from "@/types/prompt"
-import { cn, isEmpty } from "@/lib/utils"
 import { TestIds } from "@/components/const"
+import { PromptList } from "@/components/inputMenu/PromptList"
+import { cn, isEmpty } from "@/lib/utils"
+import type { Prompt, SaveDialogData } from "@/types/prompt"
 
 const serviceFacade = PromptServiceFacade.getInstance()
 
@@ -240,14 +239,6 @@ export function InputMenu(props: Props): React.ReactElement {
     return props.prompts.find((p) => p.id === removeId) || null
   }, [removeId, props.prompts])
 
-  const reversePrompts = useMemo(() => {
-    return [...props.prompts].reverse()
-  }, [props.prompts])
-
-  const reversePinnedPrompts = useMemo(() => {
-    return [...props.pinnedPrompts].reverse()
-  }, [props.pinnedPrompts])
-
   return (
     <div className="relative">
       <Menubar
@@ -267,38 +258,20 @@ export function InputMenu(props: Props): React.ReactElement {
           <MenubarContent
             side="top"
             ref={historyContentRef}
+            className="p-0"
             data-testid={TestIds.inputPopup.historyList}
           >
-            {props.prompts.length > 0 ? (
-              <ScrollAreaWithGradient
-                className={cn(
-                  "min-w-[220px]",
-                  props.prompts.length > 8 && "h-80",
-                )}
-              >
-                {reversePrompts.map((prompt) => (
-                  <MenuItem
-                    menuType="history"
-                    value={prompt.id}
-                    key={prompt.id}
-                    isPinned={prompt.isPinned}
-                    onHover={handleItemHover}
-                    onLeave={handleItemLeave}
-                    onClick={handleItemClick}
-                    onEdit={openEditDialog}
-                    onRemove={setRemoveId}
-                    onCopy={openCopyDialog}
-                    onTogglePin={handleTogglePin}
-                  >
-                    {prompt.name}
-                  </MenuItem>
-                ))}
-              </ScrollAreaWithGradient>
-            ) : (
-              <div className="px-3 py-2 text-xs text-gray-500">
-                {i18n.t("messages.historyEmpty")}
-              </div>
-            )}
+            <PromptList
+              menuType="history"
+              prompts={props.prompts}
+              onClick={handleItemClick}
+              onHover={handleItemHover}
+              onLeave={handleItemLeave}
+              onEdit={openEditDialog}
+              onRemove={setRemoveId}
+              onCopy={openCopyDialog}
+              onTogglePin={handleTogglePin}
+            />
             {historyAnchorRef.current && historyContentRef.current && (
               <BridgeArea
                 fromElm={historyAnchorRef.current}
@@ -321,39 +294,20 @@ export function InputMenu(props: Props): React.ReactElement {
           <MenubarContent
             side="top"
             ref={pinnedContentRef}
+            className="p-0"
             data-testid={TestIds.inputPopup.pinnedList}
           >
-            {props.pinnedPrompts.length > 0 ? (
-              <ScrollAreaWithGradient
-                className={cn(
-                  "min-w-[220px]",
-                  props.pinnedPrompts.length > 8 && "h-80",
-                )}
-              >
-                {reversePinnedPrompts.map((prompt) => (
-                  <MenuItem
-                    menuType="pinned"
-                    value={prompt.id}
-                    key={prompt.id}
-                    isPinned={prompt.isPinned}
-                    onHover={handleItemHover}
-                    onLeave={handleItemLeave}
-                    onClick={handleItemClick}
-                    onEdit={openEditDialog}
-                    onRemove={setRemoveId}
-                    onCopy={openCopyDialog}
-                    onTogglePin={handleTogglePin}
-                    data-testid={TestIds.inputPopup.pinnedItem}
-                  >
-                    {prompt.name}
-                  </MenuItem>
-                ))}
-              </ScrollAreaWithGradient>
-            ) : (
-              <div className="px-3 py-2 text-xs text-gray-500 min-w-[220px]">
-                {i18n.t("messages.pinnedEmpty")}
-              </div>
-            )}
+            <PromptList
+              menuType="pinned"
+              prompts={props.pinnedPrompts}
+              onClick={handleItemClick}
+              onHover={handleItemHover}
+              onLeave={handleItemLeave}
+              onEdit={openEditDialog}
+              onRemove={setRemoveId}
+              onCopy={openCopyDialog}
+              onTogglePin={handleTogglePin}
+            />
             {pinnedAnchorRef.current && pinnedContentRef.current && (
               <BridgeArea
                 fromElm={pinnedAnchorRef.current}
@@ -377,7 +331,7 @@ export function InputMenu(props: Props): React.ReactElement {
       </Menubar>
 
       {/* PromptPreview Overlay */}
-      {hoveredPrompt && hoveredItem && (
+      {hoveredPrompt && hoveredItem?.element && (
         <PromptPreviewWrapper
           open={!isEmpty(selectedMenu) && hoveredItem.element != null}
           prompt={hoveredPrompt}

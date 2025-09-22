@@ -5,7 +5,9 @@ import { supportHosts } from "@/services/aiService"
 import { analytics } from "#imports"
 
 let _supportHosts = [...supportHosts]
-if (import.meta.env.MODE === "production") {
+
+// Exclude development host from production. However, include it for E2E tests
+if (import.meta.env.MODE === "production" && !import.meta.env.WXT_E2E) {
   _supportHosts = supportHosts.filter((host) => host !== "ujiro99.github.io")
 }
 

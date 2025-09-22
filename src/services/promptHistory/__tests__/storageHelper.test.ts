@@ -59,7 +59,7 @@ const mockPrompt: Prompt = {
 const mockSettings: AppSettings = {
   autoSaveEnabled: true,
   maxPrompts: 100,
-  defaultSortOrder: "recent",
+  sortOrder: "recent",
   showNotifications: true,
 }
 
@@ -160,9 +160,9 @@ describe("StorageHelper", () => {
 
       expect(result).toHaveLength(3)
       expect(result.map((p) => p.id)).toEqual([
-        "prompt-5",
-        "prompt-50",
         "prompt-500",
+        "prompt-50",
+        "prompt-5",
       ])
     })
   })
@@ -190,13 +190,13 @@ describe("StorageHelper", () => {
       vi.mocked(mockStorage.getAllPrompts).mockResolvedValue(prompts)
       vi.mocked(mockStorage.getSettings).mockResolvedValue({
         ...mockSettings,
-        defaultSortOrder: "recent",
+        sortOrder: "recent",
       })
 
       const result = await storageHelper.getPrompts()
 
-      expect(result[0].id).toBe("2") // More recent
-      expect(result[1].id).toBe("1")
+      expect(result[0].id).toBe("1") // More recent
+      expect(result[1].id).toBe("2")
     })
 
     it("should sort by execution count", async () => {
@@ -204,13 +204,13 @@ describe("StorageHelper", () => {
       vi.mocked(mockStorage.getAllPrompts).mockResolvedValue(prompts)
       vi.mocked(mockStorage.getSettings).mockResolvedValue({
         ...mockSettings,
-        defaultSortOrder: "execution",
+        sortOrder: "execution",
       })
 
       const result = await storageHelper.getPrompts()
 
-      expect(result[0].id).toBe("2") // Higher execution count
-      expect(result[1].id).toBe("1")
+      expect(result[0].id).toBe("1") // Higher execution count
+      expect(result[1].id).toBe("2")
     })
 
     it("should sort by name alphabetically", async () => {
@@ -218,7 +218,7 @@ describe("StorageHelper", () => {
       vi.mocked(mockStorage.getAllPrompts).mockResolvedValue(prompts)
       vi.mocked(mockStorage.getSettings).mockResolvedValue({
         ...mockSettings,
-        defaultSortOrder: "name",
+        sortOrder: "name",
       })
 
       const result = await storageHelper.getPrompts()
@@ -232,13 +232,13 @@ describe("StorageHelper", () => {
       vi.mocked(mockStorage.getAllPrompts).mockResolvedValue(prompts)
       vi.mocked(mockStorage.getSettings).mockResolvedValue({
         ...mockSettings,
-        defaultSortOrder: "composite",
+        sortOrder: "composite",
       })
 
       const result = await storageHelper.getPrompts()
 
       // Should prioritize higher execution count and more recent date
-      expect(result[0].id).toBe("2")
+      expect(result[0].id).toBe("1")
     })
 
     it("should not mutate the original prompts array", async () => {
@@ -661,7 +661,7 @@ describe("StorageHelper", () => {
       vi.mocked(mockStorage.getAllPrompts).mockResolvedValue(prompts)
       vi.mocked(mockStorage.getSettings).mockResolvedValue({
         ...mockSettings,
-        defaultSortOrder: "composite",
+        sortOrder: "composite",
       })
 
       // First call should calculate and cache scores
@@ -674,8 +674,8 @@ describe("StorageHelper", () => {
       expect(result1).toEqual(result2)
 
       // The same prompt objects should maintain their composite scores
-      expect(result1[0].id).toBe("1") // Higher execution count
-      expect(result2[0].id).toBe("1")
+      expect(result1[0].id).toBe("2") // Higher execution count
+      expect(result2[0].id).toBe("2")
     })
 
     it("should clear composite score cache when prompt is updated", async () => {

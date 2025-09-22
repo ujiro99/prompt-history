@@ -72,6 +72,7 @@ messages:
   promptPinned: Prompt Starred
   promptUnpinned: Prompt unstarred
   copyPrefix: Copy of
+  notFound: No prompts found
   historyEmpty: Prompts will be displayed when you send them
   pinnedEmpty: Will be displayed when you star or manually save
 
@@ -91,3 +92,18 @@ preview:
 autocomplete:
   toFocus: to focus
   toMove: to move
+
+# sort order
+sortOrder:
+  recent:
+    label: Recent Usage
+    description: Prioritize recently used prompts
+  execution:
+    label: Usage Count
+    description: Prioritize frequently used prompts
+  name:
+    label: Name
+    description: Sort by alphabetical order
+  composite:
+    label: Recent Usage & Count
+    description: Prioritize both recently used and frequently used prompts

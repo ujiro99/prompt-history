@@ -108,7 +108,7 @@ export interface AppSettings {
   /** Maximum number of stored prompts */
   maxPrompts: number
   /** Default sort order */
-  defaultSortOrder: "recent" | "execution" | "name" | "composite"
+  sortOrder: SortOrder
   /** Notification display setting */
   showNotifications: boolean
   /** Enable/disable minimal mode */
@@ -130,19 +130,7 @@ export interface PromptListItem {
 /**
  * Sort order setting
  */
-export type SortOrder = "recent" | "execution" | "name" | "pinned" | "composite"
-
-/**
- * Prompt search and filtering conditions
- */
-export interface PromptFilter {
-  /** Keyword search */
-  keyword?: string
-  /** Show only pinned prompts */
-  pinnedOnly?: boolean
-  /** Sort order */
-  sortOrder?: SortOrder
-}
+export type SortOrder = "recent" | "execution" | "name" | "composite"
 
 /**
  * Error information

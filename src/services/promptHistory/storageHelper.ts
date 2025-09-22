@@ -13,7 +13,7 @@ export class StorageHelper {
   constructor(
     private storage: StorageService,
     private sessionManager: SessionManager,
-  ) {}
+  ) { }
 
   /**
    * Get single prompt by ID
@@ -31,6 +31,7 @@ export class StorageHelper {
    */
   async getPrompts(): Promise<Prompt[]> {
     const prompts = await this.storage.getAllPrompts()
+    console.log("Fetched prompts:", prompts)
     return await this.applySort(prompts)
   }
 
@@ -72,6 +73,18 @@ export class StorageHelper {
   }
 
   /**
+   * Watch sort order changes
+   */
+  watchSortOrder(onChange: (sortOrder: string) => void): () => void {
+    return this.storage.watchSettings((newVal, oldVal) => {
+      if (newVal.sortOrder === oldVal.sortOrder) {
+        return
+      }
+      onChange(newVal.sortOrder)
+    })
+  }
+
+  /**
    * Apply sort order to prompts array
    */
   private async applySort(prompts: Prompt[]): Promise<Prompt[]> {
@@ -80,20 +93,26 @@ export class StorageHelper {
     // Create a copy to avoid mutating the original array
     const sortedPrompts = [...prompts]
 
-    switch (settings.defaultSortOrder) {
+    switch (settings.sortOrder) {
       case "recent":
-        return sortedPrompts.sort(
-          (a, b) => b.lastExecutedAt.getTime() - a.lastExecutedAt.getTime(),
-        )
+        return sortedPrompts
+          .sort(
+            (a, b) => b.lastExecutedAt.getTime() - a.lastExecutedAt.getTime(),
+          )
+          .reverse()
       case "execution":
-        return sortedPrompts.sort((a, b) => b.executionCount - a.executionCount)
+        return sortedPrompts
+          .sort((a, b) => b.executionCount - a.executionCount)
+          .reverse()
       case "name":
         return sortedPrompts.sort((a, b) => a.name.localeCompare(b.name))
       case "composite":
-        return sortedPrompts.sort(
-          (a, b) =>
-            this.calculateCompositeScore(b) - this.calculateCompositeScore(a),
-        )
+        return sortedPrompts
+          .sort(
+            (a, b) =>
+              this.calculateCompositeScore(b) - this.calculateCompositeScore(a),
+          )
+          .reverse()
       default:
         return sortedPrompts
     }
@@ -170,8 +189,8 @@ export class StorageHelper {
 
     const settings = await this.storage.getSettings()
     if (!settings.autoSaveEnabled) {
-        return
-      }
+      return
+    }
 
     try {
       // Check for existing prompts with the same content
