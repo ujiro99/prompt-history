@@ -67,7 +67,12 @@ export class ExecuteManager {
       }
 
       onSuccess?.(updatedPrompt)
-      await analytics.track("execute-prompt")
+      try {
+        await analytics.track("execute-prompt")
+      } catch (error) {
+        // Ignore analytics errors to prevent them from affecting core functionality
+        console.warn("Analytics tracking failed:", error)
+      }
     } catch (error) {
       const err = error instanceof Error ? error : new Error("Execute failed")
       onError?.(err)

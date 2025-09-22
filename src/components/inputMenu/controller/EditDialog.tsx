@@ -80,7 +80,12 @@ export const EditDialog: React.FC<EditDialogProps> = ({
         isPinned: true,
       }
 
-      await analytics.track("edit-save")
+      try {
+        await analytics.track("edit-save")
+      } catch (error) {
+        // Ignore analytics errors to prevent them from affecting core functionality
+        console.warn("Analytics tracking failed:", error)
+      }
       await onSave(saveData)
     } finally {
       setIsLoading(false)

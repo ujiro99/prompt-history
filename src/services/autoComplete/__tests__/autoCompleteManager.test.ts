@@ -310,6 +310,148 @@ describe("AutoCompleteManager", () => {
       expect(matches[0].matchStart).toBe(12) // Start of "test"
       expect(matches[0].matchEnd).toBe(16) // End of "test"
     })
+
+    it("should match 2-word combinations", () => {
+      const managerAny = manager as any
+
+      // Test "hello world" matching "Hello World"
+      let input = "Type hello world"
+      let caretPos = 16
+      let matches = managerAny.findMatches(input, caretPos)
+
+      expect(matches).toHaveLength(1)
+      expect(matches[0].name).toBe("Hello World")
+      expect(matches[0].matchStart).toBe(5) // Start of "hello world"
+      expect(matches[0].matchEnd).toBe(16) // End of "hello world"
+      expect(matches[0].searchTerm).toBe("hello world")
+
+      // Test "test prompt" matching "Test Prompt"
+      input = "Run test prompt"
+      caretPos = 15
+      matches = managerAny.findMatches(input, caretPos)
+
+      expect(matches).toHaveLength(1)
+      expect(matches[0].name).toBe("Test Prompt")
+      expect(matches[0].matchStart).toBe(4) // Start of "test prompt"
+      expect(matches[0].matchEnd).toBe(15) // End of "test prompt"
+      expect(matches[0].searchTerm).toBe("test prompt")
+    })
+
+    it("should match 3-word combinations with case insensitivity", () => {
+      const managerAny = manager as any
+
+      // Add a 3-word prompt for testing
+      const threeWordPrompts = [
+        ...mockPrompts,
+        {
+          id: "3word",
+          name: "Python Programming Guide",
+          content: "A comprehensive guide for Python programming",
+          executionCount: 0,
+          lastExecutedAt: new Date(),
+          isPinned: false,
+          lastExecutionUrl: "",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ]
+      manager.setPrompts(threeWordPrompts)
+
+      const input = "Use python programming guide"
+      const caretPos = input.length // Use full length: 28
+      const matches = managerAny.findMatches(input, caretPos)
+
+      expect(matches).toHaveLength(1)
+      expect(matches[0].name).toBe("Python Programming Guide")
+      expect(matches[0].matchStart).toBe(4) // Start of "python programming guide"
+      expect(matches[0].matchEnd).toBe(28) // End of "python programming guide"
+      expect(matches[0].searchTerm).toBe("python programming guide")
+    })
+
+    it("should prioritize longer matches over shorter ones", () => {
+      const managerAny = manager as any
+
+      // Add prompts that would match both single and multi-word searches
+      const priorityPrompts = [
+        ...mockPrompts,
+        {
+          id: "world-single",
+          name: "World",
+          content: "Single word world prompt",
+          executionCount: 0,
+          lastExecutedAt: new Date(),
+          isPinned: false,
+          lastExecutionUrl: "",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ]
+      manager.setPrompts(priorityPrompts)
+
+      // Should match "Hello World" (2 words) rather than "World" (1 word)
+      const input = "Say hello world"
+      const caretPos = 15
+      const matches = managerAny.findMatches(input, caretPos)
+
+      expect(matches).toHaveLength(1)
+      expect(matches[0].name).toBe("Hello World")
+      expect(matches[0].searchTerm).toBe("hello world")
+    })
+
+    it("should handle spacing variations in multi-word input", () => {
+      const managerAny = manager as any
+
+      // Test with multiple spaces - should fall back to single word match since double space won't match single space in prompt names
+      let input = "Type hello  world"
+      let caretPos = 17
+      let matches = managerAny.findMatches(input, caretPos)
+
+      // This should fall back to matching "world" (single word) since "hello  world" won't match "Hello World"
+      expect(matches).toHaveLength(2) // "Hello World" and "hello-world-special" contain "world"
+      expect(matches[0].name).toBe("Hello World")
+      expect(matches[0].searchTerm).toBe("world") // Falls back to single word
+
+      // Test with single space - should match the 2-word pattern
+      input = "Type hello world"
+      caretPos = 16
+      matches = managerAny.findMatches(input, caretPos)
+
+      expect(matches).toHaveLength(1)
+      expect(matches[0].name).toBe("Hello World")
+      expect(matches[0].searchTerm).toBe("hello world")
+    })
+
+    it("should respect minimum character requirement for multi-word matches", () => {
+      const managerAny = manager as any
+
+      // 2 words but total less than 3 characters should not match
+      let input = "a b"
+      let caretPos = 3
+      let matches = managerAny.findMatches(input, caretPos)
+
+      expect(matches).toHaveLength(0)
+
+      // 2 words with exactly 3 characters should match if there's a matching prompt
+      input = "a bc"
+      caretPos = 4
+      matches = managerAny.findMatches(input, caretPos)
+
+      expect(matches).toHaveLength(0) // No prompt matches "a bc"
+    })
+
+    it("should fall back to shorter matches when longer ones don't exist", () => {
+      const managerAny = manager as any
+
+      // "nonexistent hello" should try 2-word match first, then fall back to "hello"
+      const input = "Type nonexistent hello"
+      const caretPos = 22
+      const matches = managerAny.findMatches(input, caretPos)
+
+      expect(matches).toHaveLength(2)
+      expect(matches[0].name).toBe("Hello World")
+      expect(matches[1].name).toBe("hello-world-special")
+      expect(matches[0].searchTerm).toBe("hello") // Fell back to single word
+    })
   })
 
   describe("AutoCompleteManager integration", () => {

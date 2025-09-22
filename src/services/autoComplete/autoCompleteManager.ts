@@ -8,6 +8,8 @@ import type {
 } from "./types"
 
 const NO_SELECTED_INDEX = -1
+const MAX_WORD_COUNT = 3
+const MIN_WORD_COUNT = 1
 
 export class AutoCompleteManager {
   private element: Element | null = null
@@ -86,13 +88,46 @@ export class AutoCompleteManager {
 
   /**
    * Find matching prompts based on input and caret position
+   * Supports matching 1-3 words, prioritizing longer matches
    */
   private findMatches(input: string, caretPos: number): AutoCompleteMatch[] {
-    // Get text before caret
     const textBeforeCaret = input.substring(0, caretPos)
 
-    // Find word boundary using regex
-    const wordMatch = textBeforeCaret.match(/(\S+)$/)
+    // Try matching 3 words, then 2 words, then 1 word
+    for (
+      let wordCount = MAX_WORD_COUNT;
+      wordCount >= MIN_WORD_COUNT;
+      wordCount--
+    ) {
+      const matches = this.tryMatchWithWordCount(
+        textBeforeCaret,
+        wordCount,
+        caretPos,
+      )
+      if (matches.length > 0) {
+        return matches
+      }
+    }
+
+    return []
+  }
+
+  /**
+   * Try to find matches with a specific number of words
+   */
+  private tryMatchWithWordCount(
+    textBeforeCaret: string,
+    wordCount: number,
+    caretPos: number,
+  ): AutoCompleteMatch[] {
+    // Create regex pattern for specified number of words
+    // Pattern matches wordCount number of words separated by whitespace
+    const pattern =
+      wordCount === 1
+        ? /(\S+)$/
+        : new RegExp(`(\\S+(?:\\s+\\S+){${wordCount - 1}})$`)
+
+    const wordMatch = textBeforeCaret.match(pattern)
     if (!wordMatch) {
       return []
     }

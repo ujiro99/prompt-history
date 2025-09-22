@@ -6,6 +6,7 @@ import { useAutoComplete } from "./useAutoComplete"
 import { Popover, PopoverContent, PopoverAnchor } from "../ui/popover"
 import { TestIds } from "@/components/const"
 import { Key } from "@/components/Key"
+import { isWindows } from "@/utils/platform"
 import type { Prompt } from "../../types/prompt"
 
 const serviceFacade = PromptServiceFacade.getInstance()
@@ -167,19 +168,26 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
     if (!isVisible) return
 
     const handleKeyDownAlways = (event: KeyboardEvent) => {
-      // Allwais listen for Ctrl+N/P and Escape
-      if (event.ctrlKey && event.key === "n") {
-        event.preventDefault()
-        selectNext()
-        setUserInteracted(true)
-      } else if (event.ctrlKey && event.key === "p") {
-        event.preventDefault()
-        selectPrevious()
-        setUserInteracted(true)
-      } else if (event.key === "Escape") {
+      // Always listen for Escape
+      if (event.key === "Escape") {
         event.preventDefault()
         handlePopupClose()
+        return
       }
+
+      // For non-Windows platforms, support Ctrl+N/P for navigation
+      if (!isWindows()) {
+        if (event.ctrlKey && event.key === "n") {
+          event.preventDefault()
+          selectNext()
+          setUserInteracted(true)
+        } else if (event.ctrlKey && event.key === "p") {
+          event.preventDefault()
+          selectPrevious()
+          setUserInteracted(true)
+        }
+      }
+      // Windows users must use Tab to focus first, then use arrow keys
     }
     document.addEventListener("keydown", handleKeyDownAlways, true)
     return () => {
@@ -248,16 +256,28 @@ export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
           ) : null}
           {isSingleMatch ? null : (
             <p className="inline">
-              <Key className="text-[10px]">Ctrl + P</Key>
-              <span className="mx-0.5">/</span>
-              <Key className="text-[10px]">Ctrl + N</Key>
-              {isFocused && (
+              {!isWindows() ? (
                 <>
+                  <Key className="text-[10px]">Ctrl + P</Key>
                   <span className="mx-0.5">/</span>
-                  <Key className="text-[10px]">↑</Key>
-                  <span className="mx-0.5">/</span>
-                  <Key className="text-[10px]">↓</Key>
+                  <Key className="text-[10px]">Ctrl + N</Key>
+                  {isFocused && (
+                    <>
+                      <span className="mx-0.5">/</span>
+                      <Key className="text-[10px]">↑</Key>
+                      <span className="mx-0.5">/</span>
+                      <Key className="text-[10px]">↓</Key>
+                    </>
+                  )}
                 </>
+              ) : (
+                isFocused && (
+                  <>
+                    <Key className="text-[10px]">↑</Key>
+                    <span className="mx-0.5">/</span>
+                    <Key className="text-[10px]">↓</Key>
+                  </>
+                )
               )}{" "}
               {i18n.t("autocomplete.toMove")}
             </p>
