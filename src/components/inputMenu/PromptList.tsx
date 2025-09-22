@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect, useDeferredValue } from "react"
-import { Search, ArrowUpDown } from "lucide-react"
+import { Search, Settings2 } from "lucide-react"
 import type { Prompt, SortOrder } from "@/types/prompt"
 import { cn, isEmpty } from "@/lib/utils"
 import { ScrollAreaWithGradient } from "./ScrollAreaWithGradient"
@@ -18,6 +18,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { useContainer } from "@/hooks/useContainer"
 
 const storage = StorageService.getInstance()
 const orders: SortOrder[] = ["recent", "execution", "name", "composite"]
@@ -150,6 +151,7 @@ const SortOrderSelect = ({ sortOrder, className }: SortOrderSelectProps) => {
   const handleSortOrderChange = (newSortOrder: SortOrder) => {
     storage.setSettings({ sortOrder: newSortOrder })
   }
+  const { container } = useContainer()
 
   return (
     <Tooltip>
@@ -159,10 +161,10 @@ const SortOrderSelect = ({ sortOrder, className }: SortOrderSelectProps) => {
             className={cn("transition hover:bg-gray-100", className)}
             size="sm"
           >
-            <ArrowUpDown className="size-4" />
+            <Settings2 className="size-4" />
           </SelectTrigger>
         </TooltipTrigger>
-        <SelectContent>
+        <SelectContent className="bg-white" container={container}>
           {orders.map((order) => (
             <SelectItem key={order} value={order}>
               {i18n.t(`sortOrder.${order}.label`)}
