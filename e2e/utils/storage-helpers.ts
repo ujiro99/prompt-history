@@ -9,7 +9,7 @@ export const getServiceWorker = async (context: BrowserContext) => {
 }
 
 export class StorageHelpers {
-  constructor(private context: BrowserContext) {}
+  constructor(private context: BrowserContext) { }
 
   // Get data from extension local storage
   async getExtensionData<T>(key: string): Promise<T> {
@@ -128,16 +128,18 @@ export class StorageHelpers {
 
   // Create mock data for testing
   async createMockPromptHistory(count = 5): Promise<StoredPrompt[]> {
+    const date = (i: number) =>
+      new Date(Date.now() - (count - i) * 60000).toISOString()
     const mockData = Array.from({ length: count }, (_, i) => ({
       id: `mock-${i + 1}`,
       name: `Mock prompt ${i + 1}`,
       content: `Mock prompt ${i + 1} for testing`,
       executionCount: 0,
-      lastExecutedAt: new Date(Date.now() - i * 60000).toISOString(),
+      lastExecutedAt: date(i),
       isPinned: false,
       lastExecutionUrl: `https://example.com/mock${i + 1}`,
-      createdAt: new Date(Date.now() - i * 60000).toISOString(),
-      updatedAt: new Date(Date.now() - i * 60000).toISOString(),
+      createdAt: date(i),
+      updatedAt: date(i),
     }))
 
     await this.setPromptHistory(mockData)

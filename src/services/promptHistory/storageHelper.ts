@@ -108,10 +108,18 @@ export class StorageHelper {
         return sortedPrompts.sort((a, b) => a.name.localeCompare(b.name))
       case "composite":
         return sortedPrompts
-          .sort(
-            (a, b) =>
-              this.calculateCompositeScore(b) - this.calculateCompositeScore(a),
-          )
+          .sort((a, b) => {
+            const scoreA = this.calculateCompositeScore(a)
+            const scoreB = this.calculateCompositeScore(b)
+
+            // Primary sort: composite score (descending)
+            if (scoreB !== scoreA) {
+              return scoreB - scoreA
+            }
+
+            // Secondary sort: recent (descending)
+            return b.lastExecutedAt.getTime() - a.lastExecutedAt.getTime()
+          })
           .reverse()
       default:
         return sortedPrompts

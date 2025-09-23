@@ -110,7 +110,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="w-md"
+        className="w-xl sm:max-w-xl"
         onKeyDown={handleKeyDown}
         container={container}
       >

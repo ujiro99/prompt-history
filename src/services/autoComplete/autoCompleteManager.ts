@@ -93,7 +93,10 @@ export class AutoCompleteManager {
   private findMatches(input: string, caretPos: number): AutoCompleteMatch[] {
     const textBeforeCaret = input.substring(0, caretPos)
 
-    // Try matching 3 words, then 2 words, then 1 word
+    // Collect matches from all word counts
+    const allMatches: (AutoCompleteMatch & { wordCount: number })[] = []
+
+    // Search for matches with all word counts (3, 2, 1)
     for (
       let wordCount = MAX_WORD_COUNT;
       wordCount >= MIN_WORD_COUNT;
@@ -104,12 +107,38 @@ export class AutoCompleteManager {
         wordCount,
         caretPos,
       )
-      if (matches.length > 0) {
-        return matches
-      }
+
+      // Add word count information for prioritization
+      matches.forEach((match) => {
+        allMatches.push({ ...match, wordCount })
+      })
     }
 
-    return []
+    // Sort by word count (descending)
+    allMatches.sort((a, b) => {
+      if (a.wordCount !== b.wordCount) {
+        return b.wordCount - a.wordCount // Higher word count first
+      }
+      return 0
+    })
+
+    // Remove duplicates (same prompt matched by different word counts)
+    const seenPromptIds = new Set<string>()
+    const uniqueMatches = allMatches.filter((match) => {
+      if (seenPromptIds.has(match.id)) {
+        return false
+      }
+      seenPromptIds.add(match.id)
+      return true
+    })
+
+    // Apply max matches limit and remove wordCount property
+    return (
+      uniqueMatches
+        .slice(0, this.options.maxMatches)
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        .map(({ wordCount, ...match }) => match)
+    )
   }
 
   /**
