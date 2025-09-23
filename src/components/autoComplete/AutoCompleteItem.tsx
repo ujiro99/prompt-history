@@ -51,7 +51,9 @@ export const AutoCompleteItem: React.FC<AutoCompleteItemProps> = ({
       <div className="w-full overflow-hidden">
         <p className="truncate font-light">
           {name1}
-          <span className="font-medium bg-amber-100 px-1 rounded">{name2}</span>
+          <span className="font-medium bg-amber-100 px-0.5 rounded">
+            {name2}
+          </span>
           {name3}
         </p>
         <div className="text-xs text-gray-500 truncate mt-0.5">

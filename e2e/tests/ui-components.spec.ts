@@ -47,7 +47,7 @@ test.describe("UI Components Tests", () => {
     // Check the value of prompt input field
     const promptInput = await testPage.getPromptInput()
     const inputValue = await promptInput.textContent()
-    expect(inputValue).toBe("Mock prompt 5 for testing") // Most recent history should be entered
+    expect(inputValue).toBe("Mock prompt 1 for testing") // Most recent history should be entered
   })
 
   test("should display AutocompletePopup on input", async () => {
@@ -94,10 +94,10 @@ test.describe("UI Components Tests", () => {
     const promptInput = await testPage.getPromptInput()
     await waitHelpers.waitForCondition(async () => {
       const val = await promptInput.textContent()
-      return val === "Mock prompt 5 for testing"
+      return val === "Mock prompt 1 for testing"
     })
     const inputValue = await promptInput.textContent()
-    expect(inputValue).toBe("Mock prompt 5 for testing")
+    expect(inputValue).toBe("Mock prompt 1 for testing")
 
     // Confirm that popup is closed
     const isVisible = await autocompletePopup.isVisible()
@@ -140,10 +140,10 @@ test.describe("UI Components Tests", () => {
     const promptInput = await testPage.getPromptInput()
     await waitHelpers.waitForCondition(async () => {
       const val = await promptInput.textContent()
-      return val === "Mock prompt 4 for testing"
+      return val === "Mock prompt 2 for testing"
     })
     const inputValue = await promptInput.textContent()
-    expect(inputValue).toBe("Mock prompt 4 for testing")
+    expect(inputValue).toBe("Mock prompt 2 for testing")
 
     // Confirm that popup is closed
     const isVisible = await autocompletePopup.isVisible()

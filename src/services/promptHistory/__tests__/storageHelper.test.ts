@@ -195,8 +195,8 @@ describe("StorageHelper", () => {
 
       const result = await storageHelper.getPrompts()
 
-      expect(result[0].id).toBe("1") // More recent
-      expect(result[1].id).toBe("2")
+      expect(result[0].id).toBe("1")
+      expect(result[1].id).toBe("2") // More recent reverse order
     })
 
     it("should sort by execution count", async () => {
@@ -209,8 +209,8 @@ describe("StorageHelper", () => {
 
       const result = await storageHelper.getPrompts()
 
-      expect(result[0].id).toBe("1") // Higher execution count
-      expect(result[1].id).toBe("2")
+      expect(result[0].id).toBe("1")
+      expect(result[1].id).toBe("2") // Higher execution count
     })
 
     it("should sort by name alphabetically", async () => {

@@ -114,12 +114,12 @@ export class AutoCompleteManager {
       })
     }
 
-    // Sort by word count (descending) then by prompt name for stable ordering
+    // Sort by word count (descending)
     allMatches.sort((a, b) => {
       if (a.wordCount !== b.wordCount) {
         return b.wordCount - a.wordCount // Higher word count first
       }
-      return a.name.localeCompare(b.name) // Alphabetical by name for stable ordering
+      return 0
     })
 
     // Remove duplicates (same prompt matched by different word counts)
