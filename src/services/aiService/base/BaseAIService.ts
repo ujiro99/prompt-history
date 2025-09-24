@@ -4,6 +4,7 @@ import type {
 } from "../../../types/aiService"
 import type { AIServiceConfig, ServiceElementInfo } from "./types"
 import { DomManager } from "../base/domManager"
+import { SelectorDebugger } from "../base/selectorDebugger"
 
 /**
  * Base class for AI service implementations
@@ -12,13 +13,19 @@ import { DomManager } from "../base/domManager"
 export abstract class BaseAIService implements AIServiceInterface {
   protected domManager: DomManager
   protected config: AIServiceConfig
+  protected debugger: SelectorDebugger
 
   // Legacy mode flag (if true, uses execCommand for text insertion)
   public legacyMode = false
 
   constructor(config: AIServiceConfig) {
-    this.domManager = new DomManager(config)
     this.config = config
+    this.domManager = new DomManager(config)
+    this.debugger = new SelectorDebugger({
+      serviceName: config.serviceName,
+      textInputSelectors: config.selectors.textInput,
+      sendButtonSelectors: config.selectors.sendButton,
+    })
 
     if (
       typeof window !== "undefined" &&
@@ -27,7 +34,7 @@ export abstract class BaseAIService implements AIServiceInterface {
       config.isSupported(window.location.hostname, window.location.pathname)
     ) {
       console.debug(`Initialized ${config.serviceName}`)
-        ; (window as any).promptHistoryDebug = this
+      ;(window as any).promptHistoryDebug = this
     }
   }
 
@@ -148,7 +155,9 @@ export abstract class BaseAIService implements AIServiceInterface {
   }
 
   /**
-   * Run selector tests (to be implemented by subclasses if needed)
+   * Run selector tests
    */
-  abstract testSelectors(): void
+  testSelectors(): void {
+    this.debugger.testSelectors()
+  }
 }
