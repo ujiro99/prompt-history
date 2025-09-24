@@ -1,19 +1,18 @@
 import type { AIServiceConfig } from "../base/types"
-import { CHATGPT_DEFINITIONS } from "./chatGptDefinitions"
+import { DEFINITIONS } from "./testPageDefinitions"
 import { extractElementContent } from "../../dom"
 
-export const supportHosts = ["chatgpt.com", "openai.com"]
+export const supportHosts = [
+  "ujiro99.github.io", // For testing
+]
 
 /**
- * Configuration for ChatGPT service
+ * Configuration for TestPage service
  */
-export const CHATGPT_CONFIG: AIServiceConfig = {
-  serviceName: "ChatGPT",
-
-  selectors: CHATGPT_DEFINITIONS.selectors,
-
-  popupPlacement: CHATGPT_DEFINITIONS.popupPlacement,
-
+export const TESTPAGE_CONFIG: AIServiceConfig = {
+  serviceName: "TestPage",
+  selectors: DEFINITIONS.selectors,
+  popupPlacement: DEFINITIONS.popupPlacement,
   extractContent: extractElementContent,
 
   keyHandlers: {

@@ -8,8 +8,6 @@ export const CHATGPT_DEFINITIONS = {
       '[data-testid="prompt-textarea"]',
       // openai.com
       "#main form textarea",
-      // test page
-      'div[contenteditable="true"].ql-editor',
     ],
     sendButton: [
       '[data-testid="send-button"]',
@@ -17,8 +15,6 @@ export const CHATGPT_DEFINITIONS = {
       '[id="composer-submit-button"]',
       // openai.com
       "button[type='submit']",
-      // test page
-      'form button[type="submit"]',
     ],
   },
   popupPlacement: {
