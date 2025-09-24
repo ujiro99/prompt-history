@@ -5,6 +5,12 @@ import type {
 import type { AIServiceConfig, ServiceElementInfo } from "./types"
 import { DomManager } from "../base/domManager"
 import { SelectorDebugger } from "../base/selectorDebugger"
+import { extractElementContent } from "@/services/dom"
+
+export type AIServiceConfigProps = Omit<
+  AIServiceConfig,
+  "extractContent" | "shouldTriggerSend"
+>
 
 /**
  * Base class for AI service implementations
@@ -21,10 +27,14 @@ export abstract class BaseAIService implements AIServiceInterface {
   // Legacy mode flag (if true, uses execCommand for text insertion)
   public legacyMode = false
 
-  constructor(config: AIServiceConfig, supportHosts: string[]) {
-    this.config = config
+  constructor(config: AIServiceConfigProps, supportHosts: string[]) {
+    this.config = {
+      ...config,
+      extractContent: extractElementContent,
+      shouldTriggerSend: this.shouldTriggerSend.bind(this),
+    }
     this.supportHosts = supportHosts
-    this.domManager = new DomManager(config)
+    this.domManager = new DomManager(this.config)
     this.debugger = new SelectorDebugger({
       serviceName: config.serviceName,
       textInputSelectors: config.selectors.textInput,
@@ -101,6 +111,13 @@ export abstract class BaseAIService implements AIServiceInterface {
   }
 
   /**
+   * Get service configuration
+   */
+  getConfig(): AIServiceConfig {
+    return this.config
+  }
+
+  /**
    * Extract prompt content
    */
   extractPromptContent(): string {
@@ -141,6 +158,21 @@ export abstract class BaseAIService implements AIServiceInterface {
    */
   onElementChange(callback: (textInput: Element | null) => void): () => void {
     return this.domManager.onElementChange(callback)
+  }
+
+  /**
+   * Determine if a keyboard event should trigger sending the prompt.
+   * Default implementation: Send with Enter (but not Shift+Enter or Ctrl+Enter), and not during IME composition.
+   * Returns true if the event should trigger sending, false otherwise.
+   */
+  shouldTriggerSend(event: KeyboardEvent): boolean {
+    // Send with Enter (but not Shift+Enter or Ctrl+Enter), and not during IME composition
+    return (
+      event.key === "Enter" &&
+      !event.shiftKey &&
+      !event.ctrlKey &&
+      !event.isComposing
+    )
   }
 
   /**

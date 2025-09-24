@@ -1,5 +1,5 @@
 import { BaseAIService } from "../base/BaseAIService"
-import { TESTPAGE_CONFIG } from "./testPageConfig"
+import { DEFINITIONS } from "./testPageDefinitions"
 
 export const supportHosts: string[] = ["ujiro99.github.io"]
 
@@ -8,6 +8,23 @@ export const supportHosts: string[] = ["ujiro99.github.io"]
  */
 export class TestPageService extends BaseAIService {
   constructor() {
-    super(TESTPAGE_CONFIG, supportHosts)
+    const config = {
+      serviceName: "TestPage",
+      selectors: DEFINITIONS.selectors,
+      popupPlacement: DEFINITIONS.popupPlacement,
+      debounceTime: 100,
+    }
+
+    super(config, supportHosts)
+  }
+
+  shouldTriggerSend(event: KeyboardEvent): boolean {
+    // Send with Enter (but not Shift+Enter or Ctrl+Enter), and not during IME composition
+    return (
+      event.key === "Enter" &&
+      !event.shiftKey &&
+      !event.ctrlKey &&
+      !event.isComposing
+    )
   }
 }

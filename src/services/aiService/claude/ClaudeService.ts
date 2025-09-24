@@ -1,5 +1,5 @@
 import { BaseAIService } from "../base/BaseAIService"
-import { CLAUDE_CONFIG } from "./claudeConfig"
+import { CLAUDE_DEFINITIONS } from "./claudeDefinitions"
 
 export const supportHosts = ["claude.ai"]
 
@@ -8,6 +8,12 @@ export const supportHosts = ["claude.ai"]
  */
 export class ClaudeService extends BaseAIService {
   constructor() {
-    super(CLAUDE_CONFIG, supportHosts)
+    const config = {
+      serviceName: "Claude",
+      selectors: CLAUDE_DEFINITIONS.selectors,
+      popupPlacement: CLAUDE_DEFINITIONS.popupPlacement,
+      debounceTime: 100,
+    }
+    super(config, supportHosts)
   }
 }

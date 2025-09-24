@@ -24,7 +24,7 @@ export class DomManager {
   protected contentChangeDebounceTimeout: ReturnType<typeof setTimeout> | null =
     null
 
-  constructor(protected config: AIServiceConfig) { }
+  constructor(protected config: AIServiceConfig) {}
 
   /**
    * Find element using selector list
@@ -388,7 +388,7 @@ export class DomManager {
    */
   protected handleKeyDown = (event: Event): void => {
     const keyEvent = event as KeyboardEvent
-    if (this.config.keyHandlers.shouldTriggerSend(keyEvent)) {
+    if (this.config.shouldTriggerSend(keyEvent)) {
       // Allow some time for the content to be processed
       setTimeout(() => this.fireSendCallbacks(), 50)
     }

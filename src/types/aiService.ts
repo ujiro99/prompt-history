@@ -1,4 +1,5 @@
 // Type definitions for AI service functionality
+import type { AIServiceConfig } from "@/services/aiService/base/types"
 
 /**
  * AI service abstraction interface
@@ -24,6 +25,10 @@ export interface AIServiceInterface {
   getPopupPlacement(): PopupPlacement
   /** Get supported hostnames */
   getSupportHosts(): string[]
+  /** Get service configuration */
+  getConfig(): AIServiceConfig
+  /** Check if a keyboard event should trigger send */
+  shouldTriggerSend(event: KeyboardEvent): boolean
   /** Service cleanup */
   destroy(): void
   /** Legacy mode flag */

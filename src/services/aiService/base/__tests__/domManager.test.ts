@@ -34,13 +34,8 @@ const createMockConfig = (
     }
     return element.textContent || ""
   },
-  keyHandlers: {
-    shouldTriggerSend: (event: KeyboardEvent) =>
-      event.key === "Enter" &&
-      !event.shiftKey &&
-      !event.ctrlKey &&
-      !event.altKey,
-  },
+  shouldTriggerSend: (event: KeyboardEvent) =>
+    event.key === "Enter" && !event.shiftKey && !event.ctrlKey && !event.altKey,
   debounceTime: 300,
   ...overrides,
 })

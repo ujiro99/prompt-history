@@ -3,7 +3,7 @@
  * @vitest-environment happy-dom
  */
 import { describe, it, expect, beforeEach, afterEach, vi, Mock } from "vitest"
-import { BaseAIService } from "../BaseAIService"
+import { BaseAIService, AIServiceConfigProps } from "../BaseAIService"
 import { DomManager } from "../domManager"
 import type { AIServiceConfig, ServiceElementInfo } from "../types"
 import type { PopupPlacement } from "@/types/aiService"
@@ -17,7 +17,7 @@ vi.mock("../domManager")
 
 // Concrete test implementation of abstract BaseAIService
 class TestableAIService extends BaseAIService {
-  constructor(config: AIServiceConfig, supportHosts: string[] = []) {
+  constructor(config: AIServiceConfigProps, supportHosts: string[] = []) {
     super(config, supportHosts)
   }
 
@@ -48,15 +48,13 @@ const createMockConfig = (
     }
     return element.textContent || ""
   }),
-  keyHandlers: {
-    shouldTriggerSend: vi.fn(
-      (event: KeyboardEvent) =>
-        event.key === "Enter" &&
-        !event.shiftKey &&
-        !event.ctrlKey &&
-        !event.altKey,
-    ),
-  },
+  shouldTriggerSend: vi.fn(
+    (event: KeyboardEvent) =>
+      event.key === "Enter" &&
+      !event.shiftKey &&
+      !event.ctrlKey &&
+      !event.altKey,
+  ),
   debounceTime: 300,
   ...overrides,
 })
@@ -148,8 +146,7 @@ describe("BaseAIService", () => {
       service = new TestableAIService(mockConfig, ["test.example.com"])
 
       expect(service).toBeInstanceOf(BaseAIService)
-      expect(service["config"]).toBe(mockConfig)
-      expect(DomManager).toHaveBeenCalledWith(mockConfig)
+      expect(DomManager).toHaveBeenCalledWith(service.getConfig())
     })
 
     it("should set up debug logging in development environment", () => {

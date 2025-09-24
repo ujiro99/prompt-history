@@ -1,5 +1,5 @@
 import { BaseAIService } from "../base/BaseAIService"
-import { GEMINI_CONFIG } from "./geminiConfig"
+import { GEMINI_DEFINITIONS } from "./geminiDefinitions"
 
 export const supportHosts = ["gemini.google.com"]
 
@@ -8,6 +8,12 @@ export const supportHosts = ["gemini.google.com"]
  */
 export class GeminiService extends BaseAIService {
   constructor() {
-    super(GEMINI_CONFIG, supportHosts)
+    const config = {
+      serviceName: "Gemini",
+      selectors: GEMINI_DEFINITIONS.selectors,
+      popupPlacement: GEMINI_DEFINITIONS.popupPlacement,
+      debounceTime: 100,
+    }
+    super(config, supportHosts)
   }
 }

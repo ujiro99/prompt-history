@@ -18,16 +18,14 @@ export interface AIServiceConfig {
   /** InputPopup placement details */
   popupPlacement: PopupPlacement
 
+  /** Debounce time for content change events (ms) */
+  debounceTime: number
+
   /** Function to extract content from text input element */
   extractContent: (element: Element) => string
 
   /** Keyboard event handlers */
-  keyHandlers: {
-    shouldTriggerSend: (event: KeyboardEvent) => boolean
-  }
-
-  /** Debounce time for content change events (ms) */
-  debounceTime: number
+  shouldTriggerSend: (event: KeyboardEvent) => boolean
 }
 
 /**

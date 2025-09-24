@@ -1,5 +1,5 @@
 import { BaseAIService } from "../base/BaseAIService"
-import { CHATGPT_CONFIG } from "./chatGptConfig"
+import { CHATGPT_DEFINITIONS } from "./chatGptDefinitions"
 
 export const supportHosts = ["chatgpt.com", "openai.com"]
 
@@ -8,6 +8,13 @@ export const supportHosts = ["chatgpt.com", "openai.com"]
  */
 export class ChatGptService extends BaseAIService {
   constructor() {
-    super(CHATGPT_CONFIG, supportHosts)
+    const config = {
+      serviceName: "ChatGPT",
+      selectors: CHATGPT_DEFINITIONS.selectors,
+      popupPlacement: CHATGPT_DEFINITIONS.popupPlacement,
+      debounceTime: 100,
+    }
+
+    super(config, supportHosts)
   }
 }
