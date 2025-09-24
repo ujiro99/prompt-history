@@ -10,7 +10,7 @@ export const CLAUDE_DEFINITIONS = {
     sendButton: ["button[type=button][aria-label][disabled]"],
   },
   popupPlacement: {
-    alignOffset: -10,
+    alignOffset: -14,
     sideOffset: 22,
   },
 }

@@ -18,7 +18,7 @@ export const CHATGPT_DEFINITIONS = {
     ],
   },
   popupPlacement: {
-    alignOffset: -10,
+    alignOffset: -18,
     sideOffset: 22,
   },
 }

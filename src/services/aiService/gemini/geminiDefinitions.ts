@@ -15,6 +15,6 @@ export const GEMINI_DEFINITIONS = {
   },
   popupPlacement: {
     alignOffset: -20,
-    sideOffset: 22,
+    sideOffset: 24,
   },
 }

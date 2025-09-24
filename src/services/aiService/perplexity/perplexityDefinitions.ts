@@ -10,7 +10,7 @@ export const PERPLEXITY_DEFINITIONS = {
     ],
   },
   popupPlacement: {
-    alignOffset: -6,
+    alignOffset: -16,
     sideOffset: 20,
   },
 }
