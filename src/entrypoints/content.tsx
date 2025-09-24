@@ -7,7 +7,10 @@ import { analytics } from "#imports"
 let _supportHosts = [...supportHosts]
 
 // Exclude development host from production. However, include it for E2E tests
-if (import.meta.env.MODE === "production" && !import.meta.env.WXT_E2E) {
+if (
+  import.meta.env.MODE === "production" &&
+  import.meta.env.WXT_E2E !== "true"
+) {
   _supportHosts = supportHosts.filter((host) => host !== "ujiro99.github.io")
 }
 

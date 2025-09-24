@@ -17,6 +17,10 @@ vi.mock("../domManager")
 
 // Concrete test implementation of abstract BaseAIService
 class TestableAIService extends BaseAIService {
+  constructor(config: AIServiceConfig, supportHosts: string[] = []) {
+    super(config, supportHosts)
+  }
+
   testSelectors(): void {
     // Mock implementation for testing
   }
@@ -54,7 +58,6 @@ const createMockConfig = (
     ),
   },
   debounceTime: 300,
-  isSupported: vi.fn().mockReturnValue(true),
   ...overrides,
 })
 
@@ -109,11 +112,11 @@ describe("BaseAIService", () => {
       getTextInput: vi.fn().mockReturnValue(null),
       getSendButton: vi.fn().mockReturnValue(null),
       getCurrentContent: vi.fn().mockReturnValue(""),
-      onSend: vi.fn().mockReturnValue(() => { }),
+      onSend: vi.fn().mockReturnValue(() => {}),
       offSend: vi.fn(),
-      onContentChange: vi.fn().mockReturnValue(() => { }),
+      onContentChange: vi.fn().mockReturnValue(() => {}),
       offContentChange: vi.fn(),
-      onElementChange: vi.fn().mockReturnValue(() => { }),
+      onElementChange: vi.fn().mockReturnValue(() => {}),
       destroy: vi.fn(),
       getElementInfo: vi.fn().mockReturnValue({
         textInput: { found: false },
@@ -142,7 +145,7 @@ describe("BaseAIService", () => {
 
   describe("Constructor and Initialization", () => {
     it("should initialize with valid config", () => {
-      service = new TestableAIService(mockConfig)
+      service = new TestableAIService(mockConfig, ["test.example.com"])
 
       expect(service).toBeInstanceOf(BaseAIService)
       expect(service["config"]).toBe(mockConfig)
@@ -150,23 +153,18 @@ describe("BaseAIService", () => {
     })
 
     it("should set up debug logging in development environment", () => {
-      const consoleSpy = vi.spyOn(console, "debug").mockImplementation(() => { })
+      const consoleSpy = vi.spyOn(console, "debug").mockImplementation(() => {})
 
-      // Create config with isSupported returning true
-      const configWithSupport = createMockConfig({
-        isSupported: vi.fn().mockReturnValue(true),
-      })
-
-      service = new TestableAIService(configWithSupport)
+      // Create service with supported host to enable debug logging
+      service = new TestableAIService(mockConfig, ["test.example.com"])
 
       expect(consoleSpy).toHaveBeenCalledWith("Initialized TestService")
-      expect((window as any).promptHistoryDebug).toBe(service)
 
       consoleSpy.mockRestore()
     })
 
     it("should not set up debug logging in production environment", () => {
-      const consoleSpy = vi.spyOn(console, "debug").mockImplementation(() => { })
+      const consoleSpy = vi.spyOn(console, "debug").mockImplementation(() => {})
 
       // Mock production environment
       globalThis.process = {
@@ -185,28 +183,23 @@ describe("BaseAIService", () => {
     })
 
     it("should not set up debug logging when service is not supported", () => {
-      const consoleSpy = vi.spyOn(console, "debug").mockImplementation(() => { })
+      const consoleSpy = vi.spyOn(console, "debug").mockImplementation(() => {})
 
-      // Create config with isSupported returning false
-      const configWithoutSupport = createMockConfig({
-        isSupported: vi.fn().mockReturnValue(false),
-      })
-
-      service = new TestableAIService(configWithoutSupport)
+      // Create service with unsupported host (empty array)
+      service = new TestableAIService(mockConfig, [])
 
       expect(consoleSpy).not.toHaveBeenCalled()
-      expect((window as any).promptHistoryDebug).toBeUndefined()
 
       consoleSpy.mockRestore()
     })
 
     it("should handle missing window object", () => {
-      const consoleSpy = vi.spyOn(console, "debug").mockImplementation(() => { })
+      const consoleSpy = vi.spyOn(console, "debug").mockImplementation(() => {})
 
       // Remove window object
       delete (globalThis as any).window
 
-      service = new TestableAIService(mockConfig)
+      service = new TestableAIService(mockConfig, ["test.example.com"])
 
       expect(consoleSpy).not.toHaveBeenCalled()
       // Can't check window.promptHistoryDebug since window doesn't exist
@@ -217,11 +210,16 @@ describe("BaseAIService", () => {
 
   describe("Configuration Delegation Methods", () => {
     beforeEach(() => {
-      service = new TestableAIService(mockConfig)
+      service = new TestableAIService(mockConfig, ["test.example.com"])
     })
 
     it("should return service name from config", () => {
       expect(service.getServiceName()).toBe("TestService")
+    })
+
+    it("should return support hosts list", () => {
+      service = new TestableAIService(mockConfig, ["example.com", "test.com"])
+      expect(service.getSupportHosts()).toEqual(["example.com", "test.com"])
     })
 
     it("should return popup placement from config", () => {
@@ -229,22 +227,22 @@ describe("BaseAIService", () => {
       const configWithPlacement = createMockConfig({
         popupPlacement: mockPlacement,
       })
-      service = new TestableAIService(configWithPlacement)
+      service = new TestableAIService(configWithPlacement, ["test.example.com"])
 
       expect(service.getPopupPlacement()).toBe(mockPlacement)
     })
 
-    it("should delegate isSupported to config", () => {
-      const mockIsSupported = vi.mocked(mockConfig.isSupported)
-      mockIsSupported.mockReturnValue(true)
-
+    it("should check if current hostname is in supportHosts", () => {
+      // Test with supported host
+      service = new TestableAIService(mockConfig, ["test.example.com"])
       expect(service.isSupported()).toBe(true)
-      expect(mockIsSupported).toHaveBeenCalledWith(
-        "test.example.com",
-        "/test/path",
-      )
 
-      mockIsSupported.mockReturnValue(false)
+      // Test with unsupported host
+      service = new TestableAIService(mockConfig, ["other.example.com"])
+      expect(service.isSupported()).toBe(false)
+
+      // Test with empty supportHosts
+      service = new TestableAIService(mockConfig, [])
       expect(service.isSupported()).toBe(false)
     })
   })
@@ -253,7 +251,7 @@ describe("BaseAIService", () => {
     let mockDomManagerInstance: any
 
     beforeEach(() => {
-      service = new TestableAIService(mockConfig)
+      service = new TestableAIService(mockConfig, ["test.example.com"])
       mockDomManagerInstance = service["domManager"]
     })
 
@@ -346,12 +344,12 @@ describe("BaseAIService", () => {
     let mockDomManagerInstance: any
 
     beforeEach(() => {
-      service = new TestableAIService(mockConfig)
+      service = new TestableAIService(mockConfig, ["test.example.com"])
       mockDomManagerInstance = service["domManager"]
     })
 
     it("should initialize successfully when service is supported", async () => {
-      vi.mocked(mockConfig.isSupported).mockReturnValue(true)
+      // Service is already created with supported host in beforeEach
 
       await expect(service.initialize()).resolves.toBeUndefined()
 
@@ -364,9 +362,10 @@ describe("BaseAIService", () => {
     })
 
     it("should throw error when service is not supported", async () => {
-      vi.mocked(mockConfig.isSupported).mockReturnValue(false)
+      // Create service with unsupported host
+      const unsupportedService = new TestableAIService(mockConfig, [])
 
-      await expect(service.initialize()).rejects.toThrow(
+      await expect(unsupportedService.initialize()).rejects.toThrow(
         "TestService service is not supported on this site",
       )
 
@@ -381,7 +380,7 @@ describe("BaseAIService", () => {
     })
 
     it("should call domManager methods in correct sequence", async () => {
-      vi.mocked(mockConfig.isSupported).mockReturnValue(true)
+      // Service is already created with supported host in beforeEach
 
       await service.initialize()
 
@@ -399,7 +398,7 @@ describe("BaseAIService", () => {
     })
 
     it("should handle domManager errors during initialization", async () => {
-      vi.mocked(mockConfig.isSupported).mockReturnValue(true)
+      // Service is already created with supported host in beforeEach
       mockDomManagerInstance.waitForElements.mockRejectedValue(
         new Error("DOM error"),
       )
@@ -412,7 +411,7 @@ describe("BaseAIService", () => {
     let mockDomManagerInstance: any
 
     beforeEach(() => {
-      service = new TestableAIService(mockConfig)
+      service = new TestableAIService(mockConfig, ["test.example.com"])
       mockDomManagerInstance = service["domManager"]
     })
 
@@ -458,7 +457,7 @@ describe("BaseAIService", () => {
     let mockDomManagerInstance: any
 
     beforeEach(() => {
-      service = new TestableAIService(mockConfig)
+      service = new TestableAIService(mockConfig, ["test.example.com"])
       mockDomManagerInstance = service["domManager"]
     })
 
@@ -491,16 +490,15 @@ describe("BaseAIService", () => {
 
   describe("Environment-Specific Behavior", () => {
     it("should handle different NODE_ENV values", () => {
-      const consoleSpy = vi.spyOn(console, "debug").mockImplementation(() => { })
+      const consoleSpy = vi.spyOn(console, "debug").mockImplementation(() => {})
 
       // Test development
       globalThis.process = {
         ...originalProcess,
         env: { NODE_ENV: "development" },
       } as any
-      vi.mocked(mockConfig.isSupported).mockReturnValue(true)
 
-      service = new TestableAIService(mockConfig)
+      service = new TestableAIService(mockConfig, ["test.example.com"])
       expect(consoleSpy).toHaveBeenCalled()
 
       consoleSpy.mockClear()
@@ -511,31 +509,40 @@ describe("BaseAIService", () => {
         env: { NODE_ENV: "production" },
       } as any
 
-      service = new TestableAIService(mockConfig)
+      service = new TestableAIService(mockConfig, ["test.example.com"])
       expect(consoleSpy).not.toHaveBeenCalled()
 
       consoleSpy.mockRestore()
     })
 
-    it("should handle different hostname and pathname combinations", () => {
+    it("should handle different hostname combinations", () => {
       const testCases = [
-        { hostname: "chat.openai.com", pathname: "/", expected: true },
-        { hostname: "bard.google.com", pathname: "/chat", expected: false },
-        { hostname: "localhost", pathname: "/dev", expected: true },
+        {
+          hostname: "chat.openai.com",
+          supportHosts: ["chat.openai.com"],
+          expected: true,
+        },
+        {
+          hostname: "bard.google.com",
+          supportHosts: ["chat.openai.com"],
+          expected: false,
+        },
+        {
+          hostname: "localhost",
+          supportHosts: ["localhost", "127.0.0.1"],
+          expected: true,
+        },
       ]
 
-      testCases.forEach(({ hostname, pathname, expected }) => {
+      testCases.forEach(({ hostname, supportHosts, expected }) => {
         // Mock window.location
         Object.defineProperty(globalThis.window, "location", {
-          value: { hostname, pathname },
+          value: { hostname, pathname: "/" },
           configurable: true,
         })
 
-        vi.mocked(mockConfig.isSupported).mockReturnValue(expected)
-
-        service = new TestableAIService(mockConfig)
+        service = new TestableAIService(mockConfig, supportHosts)
         expect(service.isSupported()).toBe(expected)
-        expect(mockConfig.isSupported).toHaveBeenCalledWith(hostname, pathname)
       })
     })
   })

@@ -2,8 +2,6 @@ import type { AIServiceConfig } from "../base/types"
 import { PERPLEXITY_DEFINITIONS } from "./perplexityDefinitions"
 import { extractElementContent } from "../../dom"
 
-export const supportHosts = ["perplexity.ai", "www.perplexity.ai"]
-
 /**
  * Configuration for Perplexity AI service
  */
@@ -29,8 +27,4 @@ export const PERPLEXITY_CONFIG: AIServiceConfig = {
   },
 
   debounceTime: 100,
-
-  isSupported: (hostname: string, _pathname: string): boolean => {
-    return supportHosts.includes(hostname)
-  },
 }

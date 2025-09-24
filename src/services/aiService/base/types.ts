@@ -28,9 +28,6 @@ export interface AIServiceConfig {
 
   /** Debounce time for content change events (ms) */
   debounceTime: number
-
-  /** Domain checker function */
-  isSupported: (hostname: string, pathname: string) => boolean
 }
 
 /**

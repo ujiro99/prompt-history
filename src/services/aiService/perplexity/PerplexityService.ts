@@ -1,6 +1,8 @@
 import { BaseAIService } from "../base/BaseAIService"
 import { PERPLEXITY_CONFIG } from "./perplexityConfig"
 
+export const supportHosts = ["perplexity.ai", "www.perplexity.ai"]
+
 /**
  * Perplexity AI service implementation
  */
@@ -9,6 +11,6 @@ export class PerplexityService extends BaseAIService {
   legacyMode = true
 
   constructor() {
-    super(PERPLEXITY_CONFIG)
+    super(PERPLEXITY_CONFIG, supportHosts)
   }
 }

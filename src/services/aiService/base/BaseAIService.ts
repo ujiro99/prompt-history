@@ -15,11 +15,15 @@ export abstract class BaseAIService implements AIServiceInterface {
   protected config: AIServiceConfig
   protected debugger: SelectorDebugger
 
+  // List of supported hostnames (for quick checks)
+  protected supportHosts: string[] = []
+
   // Legacy mode flag (if true, uses execCommand for text insertion)
   public legacyMode = false
 
-  constructor(config: AIServiceConfig) {
+  constructor(config: AIServiceConfig, supportHosts: string[]) {
     this.config = config
+    this.supportHosts = supportHosts
     this.domManager = new DomManager(config)
     this.debugger = new SelectorDebugger({
       serviceName: config.serviceName,
@@ -31,10 +35,9 @@ export abstract class BaseAIService implements AIServiceInterface {
       typeof window !== "undefined" &&
       // eslint-disable-next-line no-undef
       process.env.NODE_ENV !== "production" &&
-      config.isSupported(window.location.hostname, window.location.pathname)
+      this.isSupported()
     ) {
       console.debug(`Initialized ${config.serviceName}`)
-      ;(window as any).promptHistoryDebug = this
     }
   }
 
@@ -43,10 +46,7 @@ export abstract class BaseAIService implements AIServiceInterface {
    */
   isSupported(): boolean {
     const hostname = window.location.hostname
-    const pathname = window.location.pathname
-
-    // Use custom checker if provided
-    return this.config.isSupported(hostname, pathname)
+    return this.supportHosts?.includes(hostname) ?? false
   }
 
   /**
@@ -70,6 +70,13 @@ export abstract class BaseAIService implements AIServiceInterface {
    */
   getServiceName(): string {
     return this.config.serviceName
+  }
+
+  /**
+   * Get list of supported hostnames
+   */
+  getSupportHosts(): string[] {
+    return this.supportHosts
   }
 
   /**

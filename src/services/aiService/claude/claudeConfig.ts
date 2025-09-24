@@ -2,8 +2,6 @@ import type { AIServiceConfig } from "../base/types"
 import { CLAUDE_DEFINITIONS } from "./claudeDefinitions"
 import { extractElementContent } from "../../dom"
 
-export const supportHosts = ["claude.ai"]
-
 /**
  * Configuration for Claude AI service
  */
@@ -29,8 +27,4 @@ export const CLAUDE_CONFIG: AIServiceConfig = {
   },
 
   debounceTime: 100,
-
-  isSupported: (hostname: string, _pathname: string): boolean => {
-    return supportHosts.includes(hostname)
-  },
 }

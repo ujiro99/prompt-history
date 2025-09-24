@@ -22,6 +22,8 @@ export interface AIServiceInterface {
   getServiceName(): string
   /** Get popup placement details */
   getPopupPlacement(): PopupPlacement
+  /** Get supported hostnames */
+  getSupportHosts(): string[]
   /** Service cleanup */
   destroy(): void
   /** Legacy mode flag */
