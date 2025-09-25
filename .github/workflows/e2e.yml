@@ -29,6 +29,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Create .env file from secrets
+        run: |
+          echo "WXT_CONFIG_ENDPOINT=${{ secrets.WXT_CONFIG_ENDPOINT }}" >> .env
+        shell: bash
+
       - name: Build extension
         run: pnpm build:e2e
 
