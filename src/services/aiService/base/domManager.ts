@@ -405,6 +405,8 @@ export class DomManager {
    * Handle content change events
    */
   protected handleContentChange = (): void => {
+    const DEBOUNCE_TIME = 100
+
     // Clear existing timeout
     if (this.contentChangeDebounceTimeout) {
       clearTimeout(this.contentChangeDebounceTimeout)
@@ -413,7 +415,7 @@ export class DomManager {
     // Debounce content change notifications
     this.contentChangeDebounceTimeout = setTimeout(() => {
       this.checkAndFireContentChange()
-    }, this.config.debounceTime)
+    }, DEBOUNCE_TIME)
   }
 
   /**

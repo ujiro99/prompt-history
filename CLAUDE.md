@@ -92,6 +92,20 @@ The extension uses a modular architecture for supporting different AI services:
 - WXT handles manifest generation and browser-specific builds
 - Extends base tsconfig from `.wxt/tsconfig.json`
 
+**About Design Documents**
+
+- Store design and technical documents in the `docs/` directory
+- A design document should include:
+  - Feature concepts and requirements
+  - Feature architecture
+  - External specifications
+  - UI flows
+  - Key type definitions
+  - Test design
+- A design document should not include:
+  - Implementation details
+  - Code snippets
+
 ## Key Files
 
 - `wxt.config.ts` - WXT configuration with React module

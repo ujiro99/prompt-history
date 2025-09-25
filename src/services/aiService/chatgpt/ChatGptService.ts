@@ -1,20 +1,15 @@
 import { BaseAIService } from "../base/BaseAIService"
-import { CHATGPT_DEFINITIONS } from "./chatGptDefinitions"
+import type { AIServiceConfigData } from "@/services/aiService/base/types"
 
+const ServiceName = "ChatGPT"
 export const supportHosts = ["chatgpt.com", "openai.com"]
 
 /**
  * ChatGPT AI service implementation
  */
 export class ChatGptService extends BaseAIService {
-  constructor() {
-    const config = {
-      serviceName: "ChatGPT",
-      selectors: CHATGPT_DEFINITIONS.selectors,
-      popupPlacement: CHATGPT_DEFINITIONS.popupPlacement,
-      debounceTime: 100,
-    }
-
+  constructor(configs: Record<string, AIServiceConfigData> = {}) {
+    const config = configs[ServiceName] || {}
     super(config, supportHosts)
   }
 }

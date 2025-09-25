@@ -1,20 +1,15 @@
-import { BaseAIService } from "../base/BaseAIService"
-import { DEFINITIONS } from "./testPageDefinitions"
+import { BaseAIService } from "@/services/aiService/base/BaseAIService"
+import type { AIServiceConfigData } from "@/services/aiService/base/types"
 
+const ServiceName = "TestPage"
 export const supportHosts: string[] = ["ujiro99.github.io"]
 
 /**
  * TestPage service implementation
  */
 export class TestPageService extends BaseAIService {
-  constructor() {
-    const config = {
-      serviceName: "TestPage",
-      selectors: DEFINITIONS.selectors,
-      popupPlacement: DEFINITIONS.popupPlacement,
-      debounceTime: 100,
-    }
-
+  constructor(configs: Record<string, AIServiceConfigData> = {}) {
+    const config = configs[ServiceName] || {}
     super(config, supportHosts)
   }
 

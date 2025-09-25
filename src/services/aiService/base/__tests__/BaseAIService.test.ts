@@ -3,9 +3,13 @@
  * @vitest-environment happy-dom
  */
 import { describe, it, expect, beforeEach, afterEach, vi, Mock } from "vitest"
-import { BaseAIService, AIServiceConfigProps } from "../BaseAIService"
+import { BaseAIService } from "../BaseAIService"
 import { DomManager } from "../domManager"
-import type { AIServiceConfig, ServiceElementInfo } from "../types"
+import type {
+  AIServiceConfig,
+  AIServiceConfigData,
+  ServiceElementInfo,
+} from "../types"
 import type { PopupPlacement } from "@/types/aiService"
 import {
   setupDOMEnvironment,
@@ -17,7 +21,7 @@ vi.mock("../domManager")
 
 // Concrete test implementation of abstract BaseAIService
 class TestableAIService extends BaseAIService {
-  constructor(config: AIServiceConfigProps, supportHosts: string[] = []) {
+  constructor(config: AIServiceConfigData, supportHosts: string[] = []) {
     super(config, supportHosts)
   }
 
@@ -55,7 +59,6 @@ const createMockConfig = (
       !event.ctrlKey &&
       !event.altKey,
   ),
-  debounceTime: 300,
   ...overrides,
 })
 

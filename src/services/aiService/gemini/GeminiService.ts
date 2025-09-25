@@ -1,19 +1,15 @@
 import { BaseAIService } from "../base/BaseAIService"
-import { GEMINI_DEFINITIONS } from "./geminiDefinitions"
+import type { AIServiceConfigData } from "@/services/aiService/base/types"
 
+const ServiceName = "Gemini"
 export const supportHosts = ["gemini.google.com"]
 
 /**
  * Google Gemini AI service implementation
  */
 export class GeminiService extends BaseAIService {
-  constructor() {
-    const config = {
-      serviceName: "Gemini",
-      selectors: GEMINI_DEFINITIONS.selectors,
-      popupPlacement: GEMINI_DEFINITIONS.popupPlacement,
-      debounceTime: 100,
-    }
+  constructor(configs: Record<string, AIServiceConfigData> = {}) {
+    const config = configs[ServiceName] || {}
     super(config, supportHosts)
   }
 }

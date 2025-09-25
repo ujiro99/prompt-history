@@ -2,15 +2,14 @@ import type {
   AIServiceInterface,
   PopupPlacement,
 } from "../../../types/aiService"
-import type { AIServiceConfig, ServiceElementInfo } from "./types"
+import type {
+  AIServiceConfig,
+  AIServiceConfigData,
+  ServiceElementInfo,
+} from "./types"
 import { DomManager } from "../base/domManager"
 import { SelectorDebugger } from "../base/selectorDebugger"
 import { extractElementContent } from "@/services/dom"
-
-export type AIServiceConfigProps = Omit<
-  AIServiceConfig,
-  "extractContent" | "shouldTriggerSend"
->
 
 /**
  * Base class for AI service implementations
@@ -27,7 +26,7 @@ export abstract class BaseAIService implements AIServiceInterface {
   // Legacy mode flag (if true, uses execCommand for text insertion)
   public legacyMode = false
 
-  constructor(config: AIServiceConfigProps, supportHosts: string[]) {
+  constructor(config: AIServiceConfigData, supportHosts: string[]) {
     this.config = {
       ...config,
       extractContent: extractElementContent,
@@ -37,8 +36,8 @@ export abstract class BaseAIService implements AIServiceInterface {
     this.domManager = new DomManager(this.config)
     this.debugger = new SelectorDebugger({
       serviceName: config.serviceName,
-      textInputSelectors: config.selectors.textInput,
-      sendButtonSelectors: config.selectors.sendButton,
+      textInputSelectors: config.selectors?.textInput ?? [],
+      sendButtonSelectors: config.selectors?.sendButton ?? [],
     })
 
     if (

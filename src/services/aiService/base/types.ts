@@ -18,15 +18,17 @@ export interface AIServiceConfig {
   /** InputPopup placement details */
   popupPlacement: PopupPlacement
 
-  /** Debounce time for content change events (ms) */
-  debounceTime: number
-
   /** Function to extract content from text input element */
   extractContent: (element: Element) => string
 
   /** Keyboard event handlers */
   shouldTriggerSend: (event: KeyboardEvent) => boolean
 }
+
+export type AIServiceConfigData = Omit<
+  AIServiceConfig,
+  "extractContent" | "shouldTriggerSend"
+>
 
 /**
  * Interface for DOM element information (debugging)
