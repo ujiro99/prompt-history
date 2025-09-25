@@ -1,10 +1,11 @@
 import { BasePage, Selectors } from "./BasePage"
-import { DEFINITIONS } from "@/services/aiService/testPage/testPageDefinitions"
-
-const selectors = DEFINITIONS.selectors
 
 export class TestPage extends BasePage {
   static readonly url = "https://ujiro99.github.io/selection-command/en/test"
+
+  constructor(page: any) {
+    super(page, "TestPage")
+  }
 
   async navigate(): Promise<void> {
     await this.page.goto(TestPage.url)
@@ -12,7 +13,7 @@ export class TestPage extends BasePage {
 
   async waitForServiceReady(): Promise<void> {
     // Wait until input field is displayed
-    await this.page.waitForSelector(selectors.textInput[0], {
+    await this.page.waitForSelector(this.selectors.textInput[0], {
       timeout: 5000,
     })
 
@@ -26,8 +27,8 @@ export class TestPage extends BasePage {
   getServiceSpecificSelectors(): Selectors {
     // Use more specific selectors with priority
     return {
-      promptInput: selectors.textInput[0],
-      sendButton: selectors.sendButton[0],
+      textInput: this.selectors.textInput[0],
+      sendButton: this.selectors.sendButton[0],
     }
   }
 }

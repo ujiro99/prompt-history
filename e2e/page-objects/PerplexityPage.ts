@@ -1,10 +1,11 @@
 import { BasePage, Selectors } from "./BasePage"
-import { PERPLEXITY_DEFINITIONS } from "@/services/aiService/perplexity/perplexityDefinitions"
-
-const selectors = PERPLEXITY_DEFINITIONS.selectors
 
 export class PerplexityPage extends BasePage {
   static readonly url = "https://www.perplexity.ai/"
+
+  constructor(page: any) {
+    super(page, "Perplexity")
+  }
 
   async navigate(): Promise<void> {
     await this.page.goto(PerplexityPage.url)
@@ -12,7 +13,7 @@ export class PerplexityPage extends BasePage {
 
   async waitForServiceReady(): Promise<void> {
     // Wait until input field is displayed
-    await this.page.waitForSelector(selectors.textInput[0], {
+    await this.page.waitForSelector(this.selectors.textInput[0], {
       timeout: 5000,
     })
 
@@ -26,8 +27,8 @@ export class PerplexityPage extends BasePage {
   getServiceSpecificSelectors(): Selectors {
     // Use more specific selectors with priority
     return {
-      promptInput: selectors.textInput[0],
-      sendButton: `${selectors.sendButton[1]}, ${selectors.sendButton[0]}`,
+      textInput: this.selectors.textInput[0],
+      sendButton: `${this.selectors.sendButton[1]}, ${this.selectors.sendButton[0]}`,
     }
   }
 }

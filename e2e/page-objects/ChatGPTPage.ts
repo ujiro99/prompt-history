@@ -1,10 +1,11 @@
 import { BasePage, Selectors } from "./BasePage"
-import { CHATGPT_DEFINITIONS } from "@/services/aiService/chatgpt/chatGptDefinitions"
-
-const selectors = CHATGPT_DEFINITIONS.selectors
 
 export class ChatGPTPage extends BasePage {
   static readonly url = "https://chatgpt.com"
+
+  constructor(page: any) {
+    super(page, "ChatGPT")
+  }
 
   async navigate(): Promise<void> {
     await this.page.goto(ChatGPTPage.url)
@@ -12,7 +13,7 @@ export class ChatGPTPage extends BasePage {
 
   async waitForServiceReady(): Promise<void> {
     // Wait until input field is displayed
-    await this.page.waitForSelector(selectors.textInput[0], {
+    await this.page.waitForSelector(this.selectors.textInput[0], {
       timeout: 5000,
     })
 
@@ -26,8 +27,8 @@ export class ChatGPTPage extends BasePage {
   getServiceSpecificSelectors(): Selectors {
     // Use more specific selectors with priority
     return {
-      promptInput: selectors.textInput[0],
-      sendButton: `${selectors.sendButton[0]}, ${selectors.sendButton[1]}`,
+      textInput: this.selectors.textInput[0],
+      sendButton: `${this.selectors.sendButton[0]}, ${this.selectors.sendButton[1]}`,
     }
   }
 }
