@@ -92,6 +92,7 @@ export class PromptServiceFacade {
     const services = await getAiServices()
     for (const service of services) {
       if (service.isSupported()) {
+        console.log(`Found supported AI service: ${service.getServiceName()}`)
         try {
           await service.initialize()
           this.aiService = service

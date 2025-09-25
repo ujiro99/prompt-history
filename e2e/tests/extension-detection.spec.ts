@@ -129,4 +129,16 @@ test.describe("Extension Detection Tests", () => {
     // Tabs permission status checked
     expect(hasTabsPermission).toBeTruthy()
   })
+
+  test("should verify configs loaded from server", async () => {
+    await testPage.navigate()
+    await testPage.waitForServiceReady()
+
+    const configs = JSON.parse(process.env.CONFIGS ?? "{}")
+
+    expect(configs).toBeTruthy()
+    expect(configs.TestPage.serviceName).toBe("TestPage")
+    expect(configs.TestPage.selectors.textInput).toHaveLength(1)
+    expect(configs.ChatGPT.serviceName).toBe("ChatGPT")
+  })
 })

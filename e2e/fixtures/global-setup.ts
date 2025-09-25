@@ -29,6 +29,12 @@ async function globalSetup(_config: FullConfig) {
   // Set environment variables
   process.env.EXTENSION_PATH = extensionPath
 
+  // Fetch and cache AI service configs
+  const endpointUrl = process.env.WXT_CONFIG_ENDPOINT as string
+  console.log("🌐 Fetching AI service configurations...", endpointUrl)
+  const configs = await fetch(endpointUrl).then((res) => res.json())
+  process.env.CONFIGS = JSON.stringify(configs)
+
   console.log("✅ Global setup completed")
 }
 

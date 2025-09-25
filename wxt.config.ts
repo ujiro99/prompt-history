@@ -28,9 +28,12 @@ export default defineConfig({
       tailwindcss(),
       configEnv.mode === "production"
         ? removeConsole({
-          includes: ["log", "debug"],
-        })
+            includes: ["log", "debug"],
+          })
         : null,
     ],
+    build: {
+      minify: configEnv.mode === "production" ? true : false,
+    },
   }),
 })
