@@ -1,5 +1,5 @@
 import React from "react"
-import { ChevronRight, CornerDownLeft } from "lucide-react"
+import { Star, ChevronRight, CornerDownLeft } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { TestIds } from "@/components/const"
 import { Key } from "@/components/Key"
@@ -50,6 +50,12 @@ export const AutoCompleteItem: React.FC<AutoCompleteItemProps> = ({
       {isSelected && <ChevronRight size={18} className="text-gray-500" />}
       <div className="w-full overflow-hidden">
         <p className="truncate font-light">
+          {match.isPinned && (
+            <Star
+              size={14}
+              className="inline mr-1 mb-0.5 fill-yellow-300 stroke-yellow-400"
+            />
+          )}
           {name1}
           <span className="font-medium bg-amber-100 px-0.5 rounded">
             {name2}

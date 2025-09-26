@@ -5,6 +5,8 @@ export interface AutoCompleteMatch {
   name: string
   // Content of prompt to insert when selected
   content: string
+  /** Pin flag */
+  isPinned: boolean
   // Indices of the match within the name
   matchStart: number
   matchEnd: number
