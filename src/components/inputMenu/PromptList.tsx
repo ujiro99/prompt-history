@@ -53,6 +53,7 @@ export const PromptList = ({
   onCopy,
   onTogglePin,
 }: PromptListProps) => {
+  const [hoveredPromptId, setHoveredPromptId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState<string>("")
   const deferredSearchQuery = useDeferredValue(searchQuery)
   const [sortOrder, setSortOrder] = useState<SortOrder>("composite")
@@ -78,6 +79,20 @@ export const PromptList = ({
       ? i18n.t("messages.pinnedEmpty")
       : i18n.t("messages.historyEmpty")
 
+  const handleHover = (
+    promptId: string,
+    element: HTMLElement,
+    menuType: "history" | "pinned",
+  ) => {
+    setHoveredPromptId(promptId)
+    onHover(promptId, element, menuType)
+  }
+
+  const handleLeave = () => {
+    setHoveredPromptId(null)
+    onLeave()
+  }
+
   useEffect(() => {
     const updateSettings = async () => {
       const settings = await storage.getSettings()
@@ -88,6 +103,17 @@ export const PromptList = ({
       setSortOrder(newSettings?.sortOrder || "composite")
     })
   }, [])
+
+  useEffect(() => {
+    if (
+      hoveredPromptId &&
+      !filteredPrompts.find((p) => p.id === hoveredPromptId)
+    ) {
+      // If the currently hovered prompt is filtered out, clear the hover state
+      setHoveredPromptId(null)
+      onLeave()
+    }
+  }, [filteredPrompts, hoveredPromptId, onLeave])
 
   return (
     <>
@@ -124,8 +150,8 @@ export const PromptList = ({
               value={prompt.id}
               key={prompt.id}
               isPinned={prompt.isPinned}
-              onHover={onHover}
-              onLeave={onLeave}
+              onHover={handleHover}
+              onLeave={handleLeave}
               onClick={onClick}
               onEdit={onEdit}
               onRemove={onRemove}

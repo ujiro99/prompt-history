@@ -98,7 +98,7 @@ export function InputMenu(props: Props): React.ReactElement {
       }
       hoverTimeoutRef.current = window.setTimeout(() => {
         setHoveredItem({ promptId, element, menuType })
-      }, 100)
+      }, 50)
     },
     [],
   )
