@@ -1,6 +1,11 @@
 # Prompt History
 
-Stop retyping prompts. With auto-save and autocomplete, Prompt History lets you reuse them instantly.
+**Prompt History** is a Chrome extension that enables instant reuse of prompts through auto-saving and auto-completion.
+
+## Install
+<a href="https://chromewebstore.google.com/detail/nfdmafefekbbiahffhaodbdlikficnah?utm_source=github" title="open chrome webstore">
+  <img src="https://github.com/ujiro99/optimize-ab-selector/blob/master/docs/assets/chrome-webstore-small.png?raw=true" alt="chrome webstore" width="200">
+</a>
 
 ## Donation
 
