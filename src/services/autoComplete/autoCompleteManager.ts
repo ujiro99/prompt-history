@@ -180,6 +180,7 @@ export class AutoCompleteManager {
           id: prompt.id,
           name: prompt.name,
           content: prompt.content,
+          isPinned: prompt.isPinned || false,
           matchStart: inputMatchStart,
           matchEnd: caretPos,
           searchTerm,
