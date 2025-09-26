@@ -53,7 +53,7 @@ export function InputPopup(props: Props): React.ReactElement {
     <Popover open={true}>
       <PopoverAnchor virtualRef={{ current: targetElm }} />
       <PopoverContent
-        className="p-0 border-0"
+        className="p-0 border-0 shadow-none"
         side={"top"}
         sideOffset={popupPlacement.sideOffset}
         align={"end"}
@@ -243,7 +243,7 @@ export function InputMenu(props: Props): React.ReactElement {
     <div className="relative">
       <Menubar
         value={selectedMenu}
-        className="gap-0.5"
+        className="gap-0.5 shadow-xs rounded-lg"
         onValueChange={(v) => setSelectedMenu(v as MENU)}
       >
         {/* History Menu */}

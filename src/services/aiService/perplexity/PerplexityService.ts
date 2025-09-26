@@ -1,30 +1,19 @@
 import { BaseAIService } from "../base/BaseAIService"
-import { SelectorDebugger } from "../base/selectorDebugger"
-import { PERPLEXITY_CONFIG } from "./perplexityConfig"
-import { PERPLEXITY_DEFINITIONS } from "./perplexityDefinitions"
+import type { AIServiceConfigData } from "@/services/aiService/base/types"
+
+const ServiceName = "Perplexity"
+
+export const supportHosts = ["perplexity.ai", "www.perplexity.ai"]
 
 /**
  * Perplexity AI service implementation
  */
 export class PerplexityService extends BaseAIService {
-  private debugger: SelectorDebugger
-
   // Perplexity requires legacy mode for execCommand to insert text
   legacyMode = true
 
-  constructor() {
-    super(PERPLEXITY_CONFIG)
-    this.debugger = new SelectorDebugger({
-      serviceName: "Perplexity",
-      textInputSelectors: PERPLEXITY_DEFINITIONS.selectors.textInput,
-      sendButtonSelectors: PERPLEXITY_DEFINITIONS.selectors.sendButton,
-    })
-  }
-
-  /**
-   * Run selector tests
-   */
-  testSelectors(): void {
-    this.debugger.testSelectors()
+  constructor(configs: Record<string, AIServiceConfigData> = {}) {
+    const config = configs[ServiceName] || {}
+    super(config, supportHosts)
   }
 }

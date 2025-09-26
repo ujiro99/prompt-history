@@ -89,8 +89,10 @@ export class PromptServiceFacade {
    */
   private async initializeAIService(): Promise<void> {
     // Try each service in order
-    for (const service of getAiServices()) {
+    const services = await getAiServices()
+    for (const service of services) {
       if (service.isSupported()) {
+        console.log(`Found supported AI service: ${service.getServiceName()}`)
         try {
           await service.initialize()
           this.aiService = service
@@ -429,7 +431,7 @@ export class PromptServiceFacade {
         null,
       )
     }
-    return () => { }
+    return () => {}
   }
 
   /**
@@ -445,7 +447,7 @@ export class PromptServiceFacade {
         null,
       )
     }
-    return () => { }
+    return () => {}
   }
 
   // ===================

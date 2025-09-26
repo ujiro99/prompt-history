@@ -4,7 +4,7 @@ import { AutocompletePopup } from "./components/AutocompletePopup"
 import { TestIds } from "@/components/const"
 
 export interface Selectors {
-  promptInput: string
+  textInput: string
   sendButton: string
 }
 
@@ -14,7 +14,15 @@ interface PageResult {
 }
 
 export abstract class BasePage {
-  constructor(protected page: Page) {}
+  protected selectors: Selectors
+
+  constructor(
+    protected page: Page,
+    protected serviceName: string,
+  ) {
+    const configs = JSON.parse(process.env.CONFIGS ?? "{}")
+    this.selectors = configs[serviceName]?.selectors
+  }
 
   get pageInstance(): Page {
     return this.page
@@ -39,7 +47,7 @@ export abstract class BasePage {
 
   async getPromptInput(): Promise<Locator> {
     const selectors = this.getServiceSpecificSelectors()
-    return this.page.locator(selectors.promptInput).first()
+    return this.page.locator(selectors.textInput).first()
   }
 
   async getSendButton(): Promise<Locator> {

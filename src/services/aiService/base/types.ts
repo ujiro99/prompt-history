@@ -22,16 +22,13 @@ export interface AIServiceConfig {
   extractContent: (element: Element) => string
 
   /** Keyboard event handlers */
-  keyHandlers: {
-    shouldTriggerSend: (event: KeyboardEvent) => boolean
-  }
-
-  /** Debounce time for content change events (ms) */
-  debounceTime: number
-
-  /** Domain checker function */
-  isSupported: (hostname: string, pathname: string) => boolean
+  shouldTriggerSend: (event: KeyboardEvent) => boolean
 }
+
+export type AIServiceConfigData = Omit<
+  AIServiceConfig,
+  "extractContent" | "shouldTriggerSend"
+>
 
 /**
  * Interface for DOM element information (debugging)

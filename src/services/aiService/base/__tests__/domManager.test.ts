@@ -34,15 +34,8 @@ const createMockConfig = (
     }
     return element.textContent || ""
   },
-  keyHandlers: {
-    shouldTriggerSend: (event: KeyboardEvent) =>
-      event.key === "Enter" &&
-      !event.shiftKey &&
-      !event.ctrlKey &&
-      !event.altKey,
-  },
-  debounceTime: 300,
-  isSupported: () => true,
+  shouldTriggerSend: (event: KeyboardEvent) =>
+    event.key === "Enter" && !event.shiftKey && !event.ctrlKey && !event.altKey,
   ...overrides,
 })
 
@@ -138,7 +131,7 @@ describe("DomManager", () => {
       it("should handle invalid selectors gracefully", () => {
         const consoleSpy = vi
           .spyOn(console, "debug")
-          .mockImplementation(() => { })
+          .mockImplementation(() => {})
 
         // Use a more realistic invalid selector that will actually trigger an error
         const element = domManager["findElement"]([
@@ -402,7 +395,7 @@ describe("DomManager", () => {
   describe("Async Element Waiting", () => {
     describe("waitForElements", () => {
       it("should resolve immediately when elements are found", async () => {
-        const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => { })
+        const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {})
 
         await expect(domManager.waitForElements()).resolves.toBeUndefined()
 
@@ -572,7 +565,7 @@ describe("DomManager", () => {
       it("should set up event listeners on send button and text input", () => {
         const sendButtonSpy = vi.spyOn(mockSendButton, "addEventListener")
         const textInputSpy = vi.spyOn(mockTextInput, "addEventListener")
-        const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => { })
+        const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {})
 
         domManager.setupSendEventListeners()
 
@@ -613,7 +606,7 @@ describe("DomManager", () => {
 
         const consoleSpy = vi
           .spyOn(console, "warn")
-          .mockImplementation(() => { })
+          .mockImplementation(() => {})
 
         domManager.setupSendEventListeners()
 
@@ -630,7 +623,7 @@ describe("DomManager", () => {
     describe("setupContentChangeListeners", () => {
       it("should set up content change listeners for regular input", () => {
         const inputSpy = vi.spyOn(mockTextInput, "addEventListener")
-        const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => { })
+        const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {})
 
         domManager.setupContentChangeListeners()
 
@@ -705,7 +698,7 @@ describe("DomManager", () => {
 
         const consoleSpy = vi
           .spyOn(console, "warn")
-          .mockImplementation(() => { })
+          .mockImplementation(() => {})
 
         domManager.setupContentChangeListeners()
 
@@ -721,7 +714,7 @@ describe("DomManager", () => {
 
     describe("setupDOMObserver", () => {
       it("should set up DOM observer with correct configuration", () => {
-        const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => { })
+        const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {})
 
         domManager.setupDOMObserver()
 
@@ -775,7 +768,7 @@ describe("DomManager", () => {
         const normalCallback = vi.fn()
         const consoleSpy = vi
           .spyOn(console, "error")
-          .mockImplementation(() => { })
+          .mockImplementation(() => {})
 
         domManager.onSend(errorCallback)
         domManager.onSend(normalCallback)
@@ -835,7 +828,7 @@ describe("DomManager", () => {
         const normalCallback = vi.fn()
         const consoleSpy = vi
           .spyOn(console, "error")
-          .mockImplementation(() => { })
+          .mockImplementation(() => {})
 
         domManager.onContentChange(errorCallback)
         domManager.onContentChange(normalCallback)
@@ -895,7 +888,7 @@ describe("DomManager", () => {
         const normalCallback = vi.fn()
         const consoleSpy = vi
           .spyOn(console, "error")
-          .mockImplementation(() => { })
+          .mockImplementation(() => {})
 
         domManager.onElementChange(errorCallback)
         domManager.onElementChange(normalCallback)
@@ -1200,7 +1193,7 @@ describe("DomManager", () => {
 
         // Set up a timeout
         domManager["contentChangeDebounceTimeout"] = setTimeout(
-          () => { },
+          () => {},
           1000,
         ) as any
 
@@ -1241,7 +1234,7 @@ describe("DomManager", () => {
       })
 
       it("should log destruction message", () => {
-        const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => { })
+        const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {})
 
         domManager.destroy()
 
@@ -1256,7 +1249,7 @@ describe("DomManager", () => {
     describe("DOM Observer Callback", () => {
       it("should re-setup listeners when text input changes", () => {
         // Mock setupDOMObserver to not interfere
-        vi.spyOn(domManager, "setupDOMObserver").mockImplementation(() => { })
+        vi.spyOn(domManager, "setupDOMObserver").mockImplementation(() => {})
 
         const setupContentSpy = vi.spyOn(
           domManager,
@@ -1303,7 +1296,7 @@ describe("DomManager", () => {
 
       it("should re-setup listeners when send button changes", () => {
         // Mock setupDOMObserver to not interfere
-        vi.spyOn(domManager, "setupDOMObserver").mockImplementation(() => { })
+        vi.spyOn(domManager, "setupDOMObserver").mockImplementation(() => {})
 
         const setupSendSpy = vi.spyOn(domManager, "setupSendEventListeners")
 

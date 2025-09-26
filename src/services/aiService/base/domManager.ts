@@ -24,7 +24,7 @@ export class DomManager {
   protected contentChangeDebounceTimeout: ReturnType<typeof setTimeout> | null =
     null
 
-  constructor(protected config: AIServiceConfig) { }
+  constructor(protected config: AIServiceConfig) {}
 
   /**
    * Find element using selector list
@@ -388,7 +388,7 @@ export class DomManager {
    */
   protected handleKeyDown = (event: Event): void => {
     const keyEvent = event as KeyboardEvent
-    if (this.config.keyHandlers.shouldTriggerSend(keyEvent)) {
+    if (this.config.shouldTriggerSend(keyEvent)) {
       // Allow some time for the content to be processed
       setTimeout(() => this.fireSendCallbacks(), 50)
     }
@@ -405,6 +405,8 @@ export class DomManager {
    * Handle content change events
    */
   protected handleContentChange = (): void => {
+    const DEBOUNCE_TIME = 100
+
     // Clear existing timeout
     if (this.contentChangeDebounceTimeout) {
       clearTimeout(this.contentChangeDebounceTimeout)
@@ -413,7 +415,7 @@ export class DomManager {
     // Debounce content change notifications
     this.contentChangeDebounceTimeout = setTimeout(() => {
       this.checkAndFireContentChange()
-    }, this.config.debounceTime)
+    }, DEBOUNCE_TIME)
   }
 
   /**

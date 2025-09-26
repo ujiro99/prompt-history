@@ -9,6 +9,8 @@ import { promptsService } from "./prompts"
 import { sessionsService } from "./sessions"
 import { pinsService } from "./pins"
 import { settingsService } from "./settings"
+import { aiConfigCacheService } from "./aiConfigCache"
+import type { AIServiceConfigData } from "@/services/aiService/base/types"
 
 /**
  * Integrated storage service (Facade pattern)
@@ -16,7 +18,7 @@ import { settingsService } from "./settings"
 export class StorageService {
   private static instance: StorageService
 
-  private constructor() { }
+  private constructor() {}
 
   /**
    * Get singleton instance
@@ -248,6 +250,39 @@ export class StorageService {
       mostExecutedPrompt,
       recentlyExecutedPrompt,
     }
+  }
+
+  // ===================
+  // AI Config Cache operations
+  // ===================
+
+  /**
+   * Get today's cached AI configs
+   */
+  async getTodaysAiConfigCache(): Promise<Record<
+    string,
+    AIServiceConfigData
+  > | null> {
+    return await aiConfigCacheService.getTodaysCache()
+  }
+
+  /**
+   * Save AI configs to cache
+   */
+  async saveAiConfigCache(
+    configs: Record<string, AIServiceConfigData>,
+  ): Promise<void> {
+    return await aiConfigCacheService.saveCache(configs)
+  }
+
+  /**
+   * Get latest AI configs from cache (for fallback)
+   */
+  async getLatestAiConfigCache(): Promise<Record<
+    string,
+    AIServiceConfigData
+  > | null> {
+    return await aiConfigCacheService.getLatestCache()
   }
 
   /**

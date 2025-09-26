@@ -2,8 +2,14 @@ import type {
   AIServiceInterface,
   PopupPlacement,
 } from "../../../types/aiService"
-import type { AIServiceConfig, ServiceElementInfo } from "./types"
+import type {
+  AIServiceConfig,
+  AIServiceConfigData,
+  ServiceElementInfo,
+} from "./types"
 import { DomManager } from "../base/domManager"
+import { SelectorDebugger } from "../base/selectorDebugger"
+import { extractElementContent } from "@/services/dom"
 
 /**
  * Base class for AI service implementations
@@ -12,22 +18,35 @@ import { DomManager } from "../base/domManager"
 export abstract class BaseAIService implements AIServiceInterface {
   protected domManager: DomManager
   protected config: AIServiceConfig
+  protected debugger: SelectorDebugger
+
+  // List of supported hostnames (for quick checks)
+  protected supportHosts: string[] = []
 
   // Legacy mode flag (if true, uses execCommand for text insertion)
   public legacyMode = false
 
-  constructor(config: AIServiceConfig) {
-    this.domManager = new DomManager(config)
-    this.config = config
+  constructor(config: AIServiceConfigData, supportHosts: string[]) {
+    this.config = {
+      ...config,
+      extractContent: extractElementContent,
+      shouldTriggerSend: this.shouldTriggerSend.bind(this),
+    }
+    this.supportHosts = supportHosts
+    this.domManager = new DomManager(this.config)
+    this.debugger = new SelectorDebugger({
+      serviceName: config.serviceName,
+      textInputSelectors: config.selectors?.textInput ?? [],
+      sendButtonSelectors: config.selectors?.sendButton ?? [],
+    })
 
     if (
       typeof window !== "undefined" &&
       // eslint-disable-next-line no-undef
       process.env.NODE_ENV !== "production" &&
-      config.isSupported(window.location.hostname, window.location.pathname)
+      this.isSupported()
     ) {
       console.debug(`Initialized ${config.serviceName}`)
-        ; (window as any).promptHistoryDebug = this
     }
   }
 
@@ -36,10 +55,7 @@ export abstract class BaseAIService implements AIServiceInterface {
    */
   isSupported(): boolean {
     const hostname = window.location.hostname
-    const pathname = window.location.pathname
-
-    // Use custom checker if provided
-    return this.config.isSupported(hostname, pathname)
+    return this.supportHosts?.includes(hostname) ?? false
   }
 
   /**
@@ -66,6 +82,13 @@ export abstract class BaseAIService implements AIServiceInterface {
   }
 
   /**
+   * Get list of supported hostnames
+   */
+  getSupportHosts(): string[] {
+    return this.supportHosts
+  }
+
+  /**
    * Get text input element
    */
   getTextInput(): Element | null {
@@ -84,6 +107,13 @@ export abstract class BaseAIService implements AIServiceInterface {
    */
   getPopupPlacement(): PopupPlacement {
     return this.config.popupPlacement
+  }
+
+  /**
+   * Get service configuration
+   */
+  getConfig(): AIServiceConfig {
+    return this.config
   }
 
   /**
@@ -130,6 +160,21 @@ export abstract class BaseAIService implements AIServiceInterface {
   }
 
   /**
+   * Determine if a keyboard event should trigger sending the prompt.
+   * Default implementation: Send with Enter (but not Shift+Enter or Ctrl+Enter), and not during IME composition.
+   * Returns true if the event should trigger sending, false otherwise.
+   */
+  shouldTriggerSend(event: KeyboardEvent): boolean {
+    // Send with Enter (but not Shift+Enter or Ctrl+Enter), and not during IME composition
+    return (
+      event.key === "Enter" &&
+      !event.shiftKey &&
+      !event.ctrlKey &&
+      !event.isComposing
+    )
+  }
+
+  /**
    * Service cleanup
    */
   destroy(): void {
@@ -148,7 +193,9 @@ export abstract class BaseAIService implements AIServiceInterface {
   }
 
   /**
-   * Run selector tests (to be implemented by subclasses if needed)
+   * Run selector tests
    */
-  abstract testSelectors(): void
+  testSelectors(): void {
+    this.debugger.testSelectors()
+  }
 }
