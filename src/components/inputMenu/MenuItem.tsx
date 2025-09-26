@@ -15,7 +15,7 @@ type MenuItemProps = {
     element: HTMLElement,
     menuType: "history" | "pinned",
   ) => void
-  onLeave: () => void
+  onLeave: (promptId: string) => void
   onEdit: (promptId: string) => void
   onRemove: (promptId: string) => void
   onCopy: (promptId: string) => void
@@ -25,9 +25,34 @@ type MenuItemProps = {
 const BUTTON_SIZE = 11
 
 export const MenuItem = (props: MenuItemProps) => {
-  const [forceClose, setForceClose] = useState(false)
+  const { value: promptId, onLeave } = props
+  const [isHovered, setIsHovered] = useState(false)
   const elementRef = useRef<HTMLDivElement>(null)
-  const promptId = props.value
+
+  React.useEffect(() => {
+    const element = elementRef.current
+    if (!element || !onLeave || !isHovered) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          // When the element goes off-screen (becomes invisible)
+          if (!entry.isIntersecting) {
+            onLeave(promptId)
+          }
+        })
+      },
+      {
+        // Set root margin to detect only when completely off-screen
+        rootMargin: "0px",
+        threshold: 0,
+      },
+    )
+    observer.observe(element)
+    return () => {
+      observer.disconnect()
+    }
+  }, [onLeave, promptId, isHovered])
 
   const handleClick = () => {
     if (promptId) {
@@ -38,7 +63,7 @@ export const MenuItem = (props: MenuItemProps) => {
   }
 
   const handleMouseEnter = () => {
-    setForceClose(false)
+    setIsHovered(true)
     if (props.onHover && props.menuType) {
       const element = (elementRef as React.RefObject<HTMLDivElement>).current
       if (element) {
@@ -48,9 +73,9 @@ export const MenuItem = (props: MenuItemProps) => {
   }
 
   const handleMouseLeave = () => {
-    setForceClose(true)
+    setIsHovered(false)
     if (props.onLeave) {
-      props.onLeave()
+      props.onLeave(promptId)
     }
   }
 
@@ -76,7 +101,7 @@ export const MenuItem = (props: MenuItemProps) => {
         />
         <MenuItemPopup
           promptId={promptId}
-          forceClose={forceClose}
+          forceClose={!isHovered}
           onEdit={props.onEdit}
           onRemove={props.onRemove}
           onCopy={props.onCopy}
