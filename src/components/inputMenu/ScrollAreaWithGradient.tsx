@@ -5,27 +5,36 @@ import "./ScrollAreaWithGradient.css"
 type ScrollAreaWithGradientProps = {
   className?: string
   children: React.ReactNode
+  ref?: React.Ref<HTMLDivElement>
 }
 
 export function ScrollAreaWithGradient({
   className,
   children,
+  ref,
 }: ScrollAreaWithGradientProps): React.ReactElement {
   const [isScrollable, setIsScrollable] = useState(false)
   const scrollViewportRef = useRef<HTMLDivElement>(null)
-
-  const checkScrollable = () => {
-    const viewport = scrollViewportRef.current
-    if (!viewport) return
-
-    const { scrollHeight, clientHeight } = viewport
-    const scrollable = scrollHeight > clientHeight
-    setIsScrollable(scrollable)
-  }
+  const viewport = scrollViewportRef.current
 
   useEffect(() => {
-    const viewport = scrollViewportRef.current
+    // Update external ref.
+    if (typeof ref === "function") {
+      ref(viewport)
+    } else if (ref) {
+      ;(ref as React.RefObject<HTMLDivElement | null>).current = viewport
+    }
+  }, [ref, viewport])
+
+  useEffect(() => {
     if (!viewport) return
+
+    const checkScrollable = () => {
+      if (!viewport) return
+      const { scrollHeight, clientHeight } = viewport
+      const scrollable = scrollHeight > clientHeight
+      setIsScrollable(scrollable)
+    }
 
     // Initial check
     checkScrollable()
@@ -41,7 +50,7 @@ export function ScrollAreaWithGradient({
     return () => {
       resizeObserver.disconnect()
     }
-  }, [])
+  }, [viewport])
 
   return (
     <div

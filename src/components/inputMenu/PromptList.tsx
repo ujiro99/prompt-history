@@ -59,6 +59,7 @@ export const PromptList = ({
   const [searchQuery, setSearchQuery] = useState<string>("")
   const deferredSearchQuery = useDeferredValue(searchQuery)
   const [sortOrder, setSortOrder] = useState<SortOrder>("composite")
+  const [viewportElm, setViewportElm] = useState<HTMLElement | null>(null)
 
   const filteredPrompts = useMemo(() => {
     const query = deferredSearchQuery.toLowerCase()
@@ -121,6 +122,13 @@ export const PromptList = ({
     }
   }, [filteredPrompts, hoveredPromptId, onLeave])
 
+  useEffect(() => {
+    if (viewportElm && !sideFlipped) {
+      // Scroll to bottom when prompts change (e.g., after search)
+      viewportElm.scrollTop = viewportElm.scrollHeight
+    }
+  }, [viewportElm, sideFlipped])
+
   return (
     <>
       {isListEmpty && isEmpty(searchQuery) ? null : (
@@ -142,6 +150,7 @@ export const PromptList = ({
           "min-w-[220px] p-1",
           filteredPrompts.length > 8 && "h-80",
         )}
+        ref={setViewportElm}
       >
         {isListEmpty ? (
           <div className="px-3 py-2 text-xs text-gray-500">
