@@ -26,6 +26,7 @@ const orders: SortOrder[] = ["recent", "execution", "name", "composite"]
 interface PromptListProps {
   menuType?: "history" | "pinned"
   prompts: Prompt[]
+  sideFlipped: boolean
   onClick: (promptId: string) => void
   onHover: (
     promptId: string,
@@ -45,6 +46,7 @@ interface PromptListProps {
 export const PromptList = ({
   menuType,
   prompts,
+  sideFlipped,
   onClick,
   onHover,
   onLeave,
@@ -60,12 +62,16 @@ export const PromptList = ({
 
   const filteredPrompts = useMemo(() => {
     const query = deferredSearchQuery.toLowerCase()
-    return [...prompts].filter(
+    const filtered = [...prompts].filter(
       (p) =>
         p.content.toLowerCase().includes(query) ||
         p.name?.toLowerCase().includes(query),
     )
-  }, [prompts, deferredSearchQuery])
+    if (sideFlipped) {
+      return filtered.reverse()
+    }
+    return filtered
+  }, [prompts, sideFlipped, deferredSearchQuery])
 
   const isListEmpty = filteredPrompts.length === 0
 
@@ -124,7 +130,7 @@ export const PromptList = ({
             type="text"
             placeholder={i18n.t("placeholders.searchPrompts")}
             aria-label={i18n.t("placeholders.searchPrompts")}
-            className="px-2 border-none shadow-none focus-visible:ring-0 focus-visible:border-none"
+            className="px-2 text-sm border-none shadow-none focus-visible:ring-0 focus-visible:border-none"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />

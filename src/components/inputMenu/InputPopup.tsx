@@ -76,6 +76,8 @@ export function InputMenu(props: Props): React.ReactElement {
   const [saveDialogData, setSaveDialogData] = useState<SaveDialogData | null>(
     null,
   )
+  const [historySideFlipped, setHistorySideFlipped] = useState(false)
+  const [pinnedSideFlipped, setPinnedSideFlipped] = useState(false)
   const historyAnchorRef = useRef<HTMLButtonElement>(null)
   const historyContentRef = useRef<HTMLDivElement>(null)
   const pinnedAnchorRef = useRef<HTMLButtonElement>(null)
@@ -257,13 +259,15 @@ export function InputMenu(props: Props): React.ReactElement {
           </MenuTrigger>
           <MenubarContent
             side="top"
-            ref={historyContentRef}
             className="p-0"
+            onSideFlip={(side) => setHistorySideFlipped(side !== "top")}
+            ref={historyContentRef}
             data-testid={TestIds.inputPopup.historyList}
           >
             <PromptList
               menuType="history"
               prompts={props.prompts}
+              sideFlipped={historySideFlipped}
               onClick={handleItemClick}
               onHover={handleItemHover}
               onLeave={handleItemLeave}
@@ -293,13 +297,15 @@ export function InputMenu(props: Props): React.ReactElement {
           </MenuTrigger>
           <MenubarContent
             side="top"
-            ref={pinnedContentRef}
             className="p-0"
+            onSideFlip={(side) => setPinnedSideFlipped(side !== "top")}
+            ref={pinnedContentRef}
             data-testid={TestIds.inputPopup.pinnedList}
           >
             <PromptList
               menuType="pinned"
               prompts={props.pinnedPrompts}
+              sideFlipped={pinnedSideFlipped}
               onClick={handleItemClick}
               onHover={handleItemHover}
               onLeave={handleItemLeave}
