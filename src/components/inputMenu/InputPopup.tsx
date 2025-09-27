@@ -78,10 +78,16 @@ export function InputMenu(props: Props): React.ReactElement {
   )
   const [historySideFlipped, setHistorySideFlipped] = useState(false)
   const [pinnedSideFlipped, setPinnedSideFlipped] = useState(false)
-  const historyAnchorRef = useRef<HTMLButtonElement>(null)
-  const historyContentRef = useRef<HTMLDivElement>(null)
-  const pinnedAnchorRef = useRef<HTMLButtonElement>(null)
-  const pinnedContentRef = useRef<HTMLDivElement>(null)
+
+  // For positioning BridgeArea
+  const [historyAnchorElm, setHistoryAnchorElm] =
+    useState<HTMLButtonElement | null>(null)
+  const [historyContentElm, setHistoryContentElm] =
+    useState<HTMLDivElement | null>(null)
+  const [pinnedAnchorElm, setPinnedAnchorElm] =
+    useState<HTMLButtonElement | null>(null)
+  const [pinnedContentElm, setPinnedContentElm] =
+    useState<HTMLDivElement | null>(null)
 
   const { nodeAtCaret } = useCaretNode()
 
@@ -251,7 +257,7 @@ export function InputMenu(props: Props): React.ReactElement {
         {/* History Menu */}
         <MenubarMenu value={MENU.History}>
           <MenuTrigger
-            ref={historyAnchorRef}
+            ref={setHistoryAnchorElm}
             onMouseEnter={() => handleMenuEnter(MENU.History)}
             data-testid={TestIds.inputPopup.historyTrigger}
           >
@@ -261,7 +267,7 @@ export function InputMenu(props: Props): React.ReactElement {
             side="top"
             className="p-0"
             onSideFlip={(side) => setHistorySideFlipped(side !== "top")}
-            ref={historyContentRef}
+            ref={setHistoryContentElm}
             data-testid={TestIds.inputPopup.historyList}
           >
             <PromptList
@@ -276,10 +282,10 @@ export function InputMenu(props: Props): React.ReactElement {
               onCopy={openCopyDialog}
               onTogglePin={handleTogglePin}
             />
-            {historyAnchorRef.current && historyContentRef.current && (
+            {historyAnchorElm && historyContentElm && (
               <BridgeArea
-                fromElm={historyAnchorRef.current}
-                toElm={historyContentRef.current}
+                fromElm={historyAnchorElm}
+                toElm={historyContentElm}
                 isHorizontal={false}
               />
             )}
@@ -290,7 +296,7 @@ export function InputMenu(props: Props): React.ReactElement {
         <MenubarMenu value={MENU.Pinned}>
           <MenuTrigger
             onMouseEnter={() => handleMenuEnter(MENU.Pinned)}
-            ref={pinnedAnchorRef}
+            ref={setPinnedAnchorElm}
             data-testid={TestIds.inputPopup.pinnedTrigger}
           >
             <Star size={16} className="stroke-gray-600" />
@@ -299,7 +305,7 @@ export function InputMenu(props: Props): React.ReactElement {
             side="top"
             className="p-0"
             onSideFlip={(side) => setPinnedSideFlipped(side !== "top")}
-            ref={pinnedContentRef}
+            ref={setPinnedContentElm}
             data-testid={TestIds.inputPopup.pinnedList}
           >
             <PromptList
@@ -314,10 +320,10 @@ export function InputMenu(props: Props): React.ReactElement {
               onCopy={openCopyDialog}
               onTogglePin={handleTogglePin}
             />
-            {pinnedAnchorRef.current && pinnedContentRef.current && (
+            {pinnedAnchorElm && pinnedContentElm && (
               <BridgeArea
-                fromElm={pinnedAnchorRef.current}
-                toElm={pinnedContentRef.current}
+                fromElm={pinnedAnchorElm}
+                toElm={pinnedContentElm}
                 isHorizontal={false}
               />
             )}
