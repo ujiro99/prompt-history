@@ -133,6 +133,23 @@ export interface PromptListItem {
 export type SortOrder = "recent" | "execution" | "name" | "composite"
 
 /**
+ * Grouped prompts for display
+ */
+export interface PromptGroup {
+  /** Group label */
+  label: string
+  /** Prompts in this group */
+  prompts: Prompt[]
+  /** Display order of this group */
+  order: number
+}
+
+/**
+ * Function type for grouping prompts
+ */
+export type GroupingFunction = (prompts: Prompt[]) => PromptGroup[]
+
+/**
  * Error information
  */
 export interface PromptError {

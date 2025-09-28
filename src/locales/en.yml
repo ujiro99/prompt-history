@@ -105,5 +105,42 @@ sortOrder:
     label: Name
     description: Sort by alphabetical order
   composite:
-    label: Recent Usage & Count
+    label: Recent Usage & Count Score
     description: Prioritize both recently used and frequently used prompts
+
+# Group labels for prompt list grouping
+groups:
+  # Date-based groups (recent sort)
+  today: Today
+  yesterday: Yesterday
+  thisWeek: This week
+  thisMonth: This month
+  year: "{year}"
+
+  # Execution count groups
+  highFrequency: "High frequency (20+ times)"
+  mediumFrequency: "Medium frequency (5-19 times)"
+  lowFrequency: "Low frequency (1-4 times)"
+  notExecuted: Not executed
+
+  # Name-based groups
+  alphabetic: Alphabetic
+  numeric: Numeric
+  hiragana: Hiragana
+  katakana: Katakana
+  kanji: Kanji
+  other: Other
+
+  # Composite score groups
+  highestScore: "Highest score (80+)"
+  highScore: "High score (60-79)"
+  mediumScore: "Medium score (40-59)"
+  lowScore: "Low score (20-39)"
+  lowestScore: "Lowest score (0-19)"
+
+  # Fallback
+  all: All
+
+# Accessibility labels
+accessibility:
+  groupLabel: "$1 group, $2 items"

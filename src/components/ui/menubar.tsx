@@ -67,8 +67,53 @@ function MenubarContent({
   align = "start",
   alignOffset = -4,
   sideOffset = 8,
+  onSideFlip,
+  ref,
   ...props
-}: React.ComponentProps<typeof MenubarPrimitive.Content>) {
+}: React.ComponentProps<typeof MenubarPrimitive.Content> & {
+  onSideFlip?: (side: string) => void | null
+}) {
+  const [elm, setElm] = React.useState<HTMLElement | null>(null)
+
+  // Combine forwarded ref with local ref
+  const setRef = (node: HTMLDivElement) => {
+    setElm(node)
+    if (typeof ref === "function") {
+      ref(node)
+    } else if (ref) {
+      ref.current = node
+    }
+  }
+
+  React.useEffect(() => {
+    if (!elm || !onSideFlip) return
+
+    // Observe data-side changes
+    const observer = new MutationObserver((p) => {
+      p.forEach((mutation) => {
+        if (
+          mutation.type === "attributes" &&
+          mutation.attributeName === "data-side"
+        ) {
+          const side = elm.getAttribute("data-side")
+          onSideFlip(side!)
+        }
+      })
+    })
+    observer.observe(elm, {
+      childList: false,
+      subtree: false,
+      characterData: false,
+      attributes: true,
+      attributeFilter: ["data-side"],
+    })
+
+    // Initial state
+    const side = elm.getAttribute("data-side")
+    onSideFlip(side!)
+    return () => observer.disconnect()
+  }, [elm, onSideFlip])
+
   return (
     <MenubarPrimitive.Content
       data-slot="menubar-content"
@@ -79,6 +124,7 @@ function MenubarContent({
         "bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 min-w-[12rem] origin-(--radix-menubar-content-transform-origin) overflow-hidden rounded-md border p-1 shadow-md",
         className,
       )}
+      ref={setRef}
       {...props}
     />
   )
