@@ -105,5 +105,42 @@ sortOrder:
     label: 名前順
     description: 名前のアルファベット順に表示します
   composite:
-    label: 最近使用 & 実行回数順
+    label: 最近使用 & 実行回数スコア
     description: 最近使ったプロンプトとよく使うプロンプトを優先的に表示します
+
+# Group labels for prompt list grouping
+groups:
+  # Date-based groups (recent sort)
+  today: 今日
+  yesterday: 昨日
+  thisWeek: 1週間以内
+  thisMonth: 1ヶ月以内
+  year: "{year}年"
+
+  # Execution count groups
+  highFrequency: "高頻度 (20回以上)"
+  mediumFrequency: "中頻度 (5-19回)"
+  lowFrequency: "低頻度 (1-4回)"
+  notExecuted: 未実行
+
+  # Name-based groups
+  alphabetic: アルファベット
+  numeric: 数字
+  hiragana: ひらがな
+  katakana: カタカナ
+  kanji: 漢字
+  other: その他
+
+  # Composite score groups
+  highestScore: "最高スコア (80以上)"
+  highScore: "高スコア (60-79)"
+  mediumScore: "中スコア (40-59)"
+  lowScore: "低スコア (20-39)"
+  lowestScore: "最低スコア (0-19)"
+
+  # Fallback
+  all: すべて
+
+# Accessibility labels
+accessibility:
+  groupLabel: "$1 グループ、$2件"

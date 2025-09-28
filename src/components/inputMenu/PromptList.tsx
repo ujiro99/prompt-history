@@ -4,9 +4,11 @@ import type { Prompt, SortOrder } from "@/types/prompt"
 import { cn, isEmpty } from "@/lib/utils"
 import { ScrollAreaWithGradient } from "./ScrollAreaWithGradient"
 import { MenuItem } from "./MenuItem"
+import { GroupHeader } from "./GroupHeader"
 import { Input } from "@/components/ui/input"
 import { TestIds } from "@/components/const"
 import { StorageService } from "@/services/storage"
+import { groupPrompts } from "@/utils/promptSorting"
 import {
   Select,
   SelectContent,
@@ -60,21 +62,41 @@ export const PromptList = ({
   const deferredSearchQuery = useDeferredValue(searchQuery)
   const [sortOrder, setSortOrder] = useState<SortOrder>("composite")
   const [viewportElm, setViewportElm] = useState<HTMLElement | null>(null)
+  const [loading, setLoading] = useState(false)
 
-  const filteredPrompts = useMemo(() => {
+  const { filteredGroups, totalCount } = useMemo(() => {
+    if (loading) {
+      return { filteredGroups: [], totalCount: 0 }
+    }
+
     const query = deferredSearchQuery.toLowerCase()
+
+    // First filter prompts by search query
     const filtered = [...prompts].filter(
       (p) =>
         p.content.toLowerCase().includes(query) ||
         p.name?.toLowerCase().includes(query),
     )
-    if (sideFlipped) {
-      return filtered.reverse()
-    }
-    return filtered
-  }, [prompts, sideFlipped, deferredSearchQuery])
 
-  const isListEmpty = filteredPrompts.length === 0
+    // Group the filtered prompts
+    const groups = groupPrompts(filtered, sortOrder)
+
+    // Apply sideFlipped transformation if needed
+    const transformedGroups = sideFlipped ? groups : groups.reverse()
+
+    // Calculate total count
+    const count = transformedGroups.reduce(
+      (acc, group) => acc + group.prompts.length,
+      0,
+    )
+
+    return {
+      filteredGroups: transformedGroups,
+      totalCount: count,
+    }
+  }, [loading, prompts, sideFlipped, deferredSearchQuery, sortOrder])
+
+  const isListEmpty = totalCount === 0
 
   const testId =
     menuType === "pinned"
@@ -102,8 +124,10 @@ export const PromptList = ({
 
   useEffect(() => {
     const updateSettings = async () => {
+      setLoading(true)
       const settings = await storage.getSettings()
       setSortOrder(settings?.sortOrder || "composite")
+      setLoading(false)
     }
     updateSettings()
     return storage.watchSettings((newSettings) => {
@@ -112,22 +136,26 @@ export const PromptList = ({
   }, [])
 
   useEffect(() => {
-    if (
-      hoveredPromptId &&
-      !filteredPrompts.find((p) => p.id === hoveredPromptId)
-    ) {
-      // If the currently hovered prompt is filtered out, clear the hover state
-      setHoveredPromptId(null)
-      onLeave()
+    if (hoveredPromptId) {
+      // Check if the hovered prompt exists in any of the filtered groups
+      const promptExists = filteredGroups.some((group) =>
+        group.prompts.find((p) => p.id === hoveredPromptId),
+      )
+
+      if (!promptExists) {
+        // If the currently hovered prompt is filtered out, clear the hover state
+        setHoveredPromptId(null)
+        onLeave()
+      }
     }
-  }, [filteredPrompts, hoveredPromptId, onLeave])
+  }, [filteredGroups, hoveredPromptId, onLeave])
 
   useEffect(() => {
-    if (viewportElm && !sideFlipped) {
+    if (viewportElm && !sideFlipped && sortOrder !== "name") {
       // Scroll to bottom when prompts change (e.g., after search)
       viewportElm.scrollTop = viewportElm.scrollHeight
     }
-  }, [viewportElm, sideFlipped])
+  }, [loading, viewportElm, sideFlipped, sortOrder])
 
   return (
     <>
@@ -146,10 +174,7 @@ export const PromptList = ({
         </div>
       )}
       <ScrollAreaWithGradient
-        className={cn(
-          "min-w-[220px] p-1",
-          filteredPrompts.length > 8 && "h-80",
-        )}
+        className={cn("min-w-[220px] p-1", totalCount > 8 && "h-80")}
         ref={setViewportElm}
       >
         {isListEmpty ? (
@@ -159,23 +184,31 @@ export const PromptList = ({
               : emptyMessage}
           </div>
         ) : (
-          filteredPrompts.map((prompt) => (
-            <MenuItem
-              menuType={menuType}
-              value={prompt.id}
-              key={prompt.id}
-              isPinned={prompt.isPinned}
-              onHover={handleHover}
-              onLeave={handleLeave}
-              onClick={onClick}
-              onEdit={onEdit}
-              onRemove={onRemove}
-              onCopy={onCopy}
-              onTogglePin={onTogglePin}
-              testId={testId}
-            >
-              {prompt.name}
-            </MenuItem>
+          filteredGroups.map((group) => (
+            <div key={`group-${group.order}`}>
+              <GroupHeader
+                labelKey={group.label}
+                count={group.prompts.length}
+              />
+              {group.prompts.map((prompt) => (
+                <MenuItem
+                  menuType={menuType}
+                  value={prompt.id}
+                  key={prompt.id}
+                  isPinned={prompt.isPinned}
+                  onHover={handleHover}
+                  onLeave={handleLeave}
+                  onClick={onClick}
+                  onEdit={onEdit}
+                  onRemove={onRemove}
+                  onCopy={onCopy}
+                  onTogglePin={onTogglePin}
+                  testId={testId}
+                >
+                  {prompt.name}
+                </MenuItem>
+              ))}
+            </div>
           ))
         )}
       </ScrollAreaWithGradient>
