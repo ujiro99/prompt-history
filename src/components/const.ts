@@ -22,3 +22,11 @@ export const TestIds = {
     item: "suggestion-item",
   },
 }
+
+export enum MENU {
+  None = "None",
+  History = "History",
+  Pinned = "Pinned",
+  Save = "Save",
+  Settings = "Settings",
+}

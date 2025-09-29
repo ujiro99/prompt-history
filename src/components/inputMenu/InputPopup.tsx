@@ -14,20 +14,13 @@ import { EditDialog } from "@/components/inputMenu/controller/EditDialog"
 import { BridgeArea } from "@/components/BridgeArea"
 import { PromptServiceFacade } from "@/services/promptServiceFacade"
 import { SaveMode } from "@/types/prompt"
-import { TestIds } from "@/components/const"
+import { MENU, TestIds } from "@/components/const"
 import { PromptList } from "@/components/inputMenu/PromptList"
 import { SettingsMenu } from "./SettingsMenu"
 import { cn, isEmpty } from "@/lib/utils"
 import type { Prompt, SaveDialogData } from "@/types/prompt"
 
 const serviceFacade = PromptServiceFacade.getInstance()
-
-enum MENU {
-  None = "None",
-  History = "History",
-  Pinned = "Pinned",
-  Save = "Save",
-}
 
 type Props = {
   targetElm: Element | null
@@ -236,7 +229,6 @@ export function InputMenu(props: Props): React.ReactElement {
     }
   }
 
-
   const hoveredPrompt = useMemo(() => {
     if (!hoveredItem) return null
     const prompts =
@@ -344,7 +336,7 @@ export function InputMenu(props: Props): React.ReactElement {
         </MenubarMenu>
 
         {/* Settings Menu */}
-        <SettingsMenu onMouseEnter={() => {}} />
+        <SettingsMenu onMouseEnter={() => handleMenuEnter(MENU.Settings)} />
       </Menubar>
 
       {/* PromptPreview Overlay */}

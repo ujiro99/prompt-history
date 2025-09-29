@@ -16,7 +16,7 @@ import {
   promptExportService,
   promptImportService,
 } from "@/services/importExport"
-import { TestIds } from "@/components/const"
+import { MENU, TestIds } from "@/components/const"
 import type { AppSettings } from "@/types/prompt"
 
 type Props = {
@@ -96,7 +96,7 @@ export function SettingsMenu({ onMouseEnter }: Props): React.ReactElement {
   }, [])
 
   return (
-    <MenubarMenu value="Settings">
+    <MenubarMenu value={MENU.Settings}>
       <MenuTrigger
         onMouseEnter={onMouseEnter}
         data-testid={TestIds.inputPopup.settingsTrigger}
