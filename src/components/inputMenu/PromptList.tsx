@@ -7,7 +7,7 @@ import { MenuItem } from "./MenuItem"
 import { GroupHeader } from "./GroupHeader"
 import { Input } from "@/components/ui/input"
 import { TestIds } from "@/components/const"
-import { StorageService } from "@/services/storage"
+import { useSettings } from "@/hooks/useSettings"
 import { groupPrompts } from "@/utils/promptSorting"
 import {
   Select,
@@ -22,7 +22,6 @@ import {
 } from "@/components/ui/tooltip"
 import { useContainer } from "@/hooks/useContainer"
 
-const storage = StorageService.getInstance()
 const orders: SortOrder[] = ["recent", "execution", "name", "composite"]
 
 interface PromptListProps {
@@ -60,12 +59,14 @@ export const PromptList = ({
   const [hoveredPromptId, setHoveredPromptId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState<string>("")
   const deferredSearchQuery = useDeferredValue(searchQuery)
-  const [sortOrder, setSortOrder] = useState<SortOrder>("composite")
+  const {
+    settings: { sortOrder },
+    isLoaded,
+  } = useSettings()
   const [viewportElm, setViewportElm] = useState<HTMLElement | null>(null)
-  const [loading, setLoading] = useState(false)
 
   const { filteredGroups, totalCount } = useMemo(() => {
-    if (loading) {
+    if (!isLoaded) {
       return { filteredGroups: [], totalCount: 0 }
     }
 
@@ -94,7 +95,7 @@ export const PromptList = ({
       filteredGroups: transformedGroups,
       totalCount: count,
     }
-  }, [loading, prompts, sideFlipped, deferredSearchQuery, sortOrder])
+  }, [isLoaded, prompts, sideFlipped, deferredSearchQuery, sortOrder])
 
   const isListEmpty = totalCount === 0
 
@@ -123,19 +124,6 @@ export const PromptList = ({
   }
 
   useEffect(() => {
-    const updateSettings = async () => {
-      setLoading(true)
-      const settings = await storage.getSettings()
-      setSortOrder(settings?.sortOrder || "composite")
-      setLoading(false)
-    }
-    updateSettings()
-    return storage.watchSettings((newSettings) => {
-      setSortOrder(newSettings?.sortOrder || "composite")
-    })
-  }, [])
-
-  useEffect(() => {
     if (hoveredPromptId) {
       // Check if the hovered prompt exists in any of the filtered groups
       const promptExists = filteredGroups.some((group) =>
@@ -155,7 +143,7 @@ export const PromptList = ({
       // Scroll to bottom when prompts change (e.g., after search)
       viewportElm.scrollTop = viewportElm.scrollHeight
     }
-  }, [loading, viewportElm, sideFlipped, sortOrder])
+  }, [isLoaded, viewportElm, sideFlipped, sortOrder])
 
   return (
     <>
@@ -222,8 +210,10 @@ interface SortOrderSelectProps {
 }
 
 const SortOrderSelect = ({ sortOrder, className }: SortOrderSelectProps) => {
+  const { update } = useSettings()
+
   const handleSortOrderChange = (newSortOrder: SortOrder) => {
-    storage.setSettings({ sortOrder: newSortOrder })
+    update({ sortOrder: newSortOrder })
   }
   const { container } = useContainer()
 

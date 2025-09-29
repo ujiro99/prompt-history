@@ -202,6 +202,19 @@ export class StorageService {
     return settingsService.watchSettings(callback)
   }
 
+  /**
+   * Watch a specific setting key for changes
+   * @param key The setting key to watch
+   * @param callback Callback function to receive updated value and old value
+   * @returns Unsubscribe function
+   */
+  watchSetting<K extends keyof AppSettings>(
+    key: K,
+    callback: (value: AppSettings[K], oldValue: AppSettings[K]) => void,
+  ): () => void {
+    return settingsService.watchSetting(key, callback)
+  }
+
   // ===================
   // Statistics and utilities
   // ===================

@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils"
 import { PromptServiceFacade } from "@/services/promptServiceFacade"
 import { AutoCompleteItem } from "./AutoCompleteItem"
 import { useAutoComplete } from "./useAutoComplete"
+import { useSettings } from "@/hooks/useSettings"
 import { Popover, PopoverContent, PopoverAnchor } from "../ui/popover"
 import { TestIds } from "@/components/const"
 import { Key } from "@/components/Key"
@@ -17,7 +18,19 @@ interface AutoCompletePopupProps {
   prompts: Prompt[]
 }
 
-export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
+export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = (
+  props: AutoCompletePopupProps,
+) => {
+  const {
+    settings: { autoCompleteEnabled },
+  } = useSettings()
+
+  if (!autoCompleteEnabled) return null
+
+  return <AutoCompletePopupInner {...props} />
+}
+
+const AutoCompletePopupInner: React.FC<AutoCompletePopupProps> = ({
   prompts,
 }) => {
   const {

@@ -141,6 +141,17 @@ groups:
   # Fallback
   all: All
 
+# Settings
+settings:
+  autoSave: Auto-save prompts
+  autoComplete: Auto-complete
+  notifications: Notifications
+  autoCompleteTarget:
+    all: All prompts
+    pinned: Starred only
+  export: Export prompts
+  import: Import prompts
+
 # Accessibility labels
 accessibility:
   groupLabel: "$1 group, $2 items"

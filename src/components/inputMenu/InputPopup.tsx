@@ -16,6 +16,7 @@ import { PromptServiceFacade } from "@/services/promptServiceFacade"
 import { SaveMode } from "@/types/prompt"
 import { TestIds } from "@/components/const"
 import { PromptList } from "@/components/inputMenu/PromptList"
+import { SettingsMenu } from "./SettingsMenu"
 import { cn, isEmpty } from "@/lib/utils"
 import type { Prompt, SaveDialogData } from "@/types/prompt"
 
@@ -235,6 +236,7 @@ export function InputMenu(props: Props): React.ReactElement {
     }
   }
 
+
   const hoveredPrompt = useMemo(() => {
     if (!hoveredItem) return null
     const prompts =
@@ -340,6 +342,9 @@ export function InputMenu(props: Props): React.ReactElement {
             <Save size={16} className="stroke-gray-600" />
           </MenuTrigger>
         </MenubarMenu>
+
+        {/* Settings Menu */}
+        <SettingsMenu onMouseEnter={() => {}} />
       </Menubar>
 
       {/* PromptPreview Overlay */}

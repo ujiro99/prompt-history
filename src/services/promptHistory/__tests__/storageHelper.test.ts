@@ -64,6 +64,7 @@ const mockSettings: AppSettings = {
   maxPrompts: 100,
   sortOrder: "recent",
   showNotifications: true,
+  autoCompleteEnabled: true,
 }
 
 describe("StorageHelper", () => {

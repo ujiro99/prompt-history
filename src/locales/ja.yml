@@ -141,6 +141,17 @@ groups:
   # Fallback
   all: すべて
 
+# Settings
+settings:
+  autoSave: プロンプト自動保存
+  autoComplete: 入力補完
+  notifications: 通知
+  autoCompleteTarget:
+    all: すべてのプロンプト
+    pinned: スター付きのみ
+  export: プロンプトをエクスポート
+  import: プロンプトをインポート
+
 # Accessibility labels
 accessibility:
   groupLabel: "$1 グループ、$2件"

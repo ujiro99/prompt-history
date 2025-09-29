@@ -47,6 +47,26 @@ export class SettingsService {
   }
 
   /**
+   * Watch for changes in a specific setting key.
+   * Returns an unsubscribe function.
+   *
+   * @param key The setting key to watch
+   * @param callback Callback function to receive updated value and old value
+   *
+   * @returns Unsubscribe function
+   */
+  watchSetting<K extends keyof AppSettings>(
+    key: K,
+    callback: (value: AppSettings[K], oldValue: AppSettings[K]) => void,
+  ): () => void {
+    return settingsStorage.watch((settings, oldSettings) => {
+      if (settings[key] !== oldSettings[key]) {
+        callback(settings[key], oldSettings[key])
+      }
+    })
+  }
+
+  /**
    * Create error object
    */
   private createError(

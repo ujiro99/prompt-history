@@ -14,6 +14,8 @@ export const TestIds = {
     pinnedList: "pinned-list",
     pinnedItem: "pinned-item",
     editTrigger: "edit-trigger",
+    settingsTrigger: "settings-trigger",
+    settingsContent: "settings-content",
   },
   autocomplete: {
     popup: "autocomplete-popup",
