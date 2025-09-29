@@ -1,7 +1,22 @@
+import Papa from "papaparse"
 import { PromptServiceFacade } from "@/services/promptServiceFacade"
 import type { ImportResult } from "./types"
-import type { Prompt, SaveDialogData } from "@/types/prompt"
-import { SaveMode } from "@/types/prompt"
+import type { Prompt } from "@/types/prompt"
+import { generatePromptId } from "@/utils/idGenerator"
+
+/**
+ * Type for CSV row data from Papa Parse (without id field)
+ */
+interface CSVRowData {
+  name: string
+  content: string
+  executionCount: number | string
+  lastExecutedAt: string
+  isPinned: boolean | string
+  lastExecutionUrl: string
+  createdAt: string
+  updatedAt: string
+}
 
 /**
  * Service for importing prompt data
@@ -14,15 +29,15 @@ export class PromptImportService {
    */
   async importFromCSV(): Promise<ImportResult> {
     return new Promise((resolve, reject) => {
-      const input = document.createElement('input')
-      input.type = 'file'
-      input.accept = '.csv'
-      input.style.display = 'none'
+      const input = document.createElement("input")
+      input.type = "file"
+      input.accept = ".csv"
+      input.style.display = "none"
 
       input.onchange = async (event) => {
         const file = (event.target as HTMLInputElement).files?.[0]
         if (!file) {
-          reject(new Error('No file selected'))
+          reject(new Error("No file selected"))
           return
         }
 
@@ -60,28 +75,32 @@ export class PromptImportService {
         resolve(event.target?.result as string)
       }
       reader.onerror = () => {
-        reject(new Error('Failed to read file'))
+        reject(new Error("Failed to read file"))
       }
       reader.readAsText(file)
     })
   }
 
   /**
-   * Parse CSV text to prompt objects
+   * Parse CSV text to prompt objects using Papa Parse
    */
   private parseCSV(csvText: string): Prompt[] {
-    const lines = csvText.split('\\n').filter(line => line.trim())
-    if (lines.length < 2) {
-      throw new Error('Invalid CSV format: no data rows found')
+    const parseResult = Papa.parse<CSVRowData>(csvText, {
+      header: true,
+      dynamicTyping: true,
+      skipEmptyLines: true,
+      transformHeader: (header: string) => header.trim(),
+    })
+
+    if (parseResult.errors.length > 0) {
+      console.warn("CSV parsing warnings:", parseResult.errors)
     }
 
-    // Skip header row
-    const dataLines = lines.slice(1)
     const prompts: Prompt[] = []
 
-    for (let i = 0; i < dataLines.length; i++) {
+    for (let i = 0; i < parseResult.data.length; i++) {
       try {
-        const prompt = this.parseCSVRow(dataLines[i])
+        const prompt = this.parseRowData(parseResult.data[i])
         prompts.push(prompt)
       } catch (error) {
         console.warn(`Failed to parse row ${i + 2}:`, error)
@@ -93,106 +112,58 @@ export class PromptImportService {
   }
 
   /**
-   * Parse single CSV row to prompt object
+   * Parse Papa Parse row data to prompt object
    */
-  private parseCSVRow(row: string): Prompt {
-    const fields = this.parseCSVFields(row)
+  private parseRowData(row: CSVRowData): Prompt {
+    const requiredFields = [
+      "name",
+      "content",
+      "executionCount",
+      "lastExecutedAt",
+      "isPinned",
+      "lastExecutionUrl",
+      "createdAt",
+      "updatedAt",
+    ]
 
-    if (fields.length < 9) {
-      throw new Error('Invalid CSV row: insufficient fields')
+    for (const field of requiredFields) {
+      if (!(field in row)) {
+        throw new Error(`Missing required field: ${field}`)
+      }
     }
+
+    // Generate a new unique ID for the imported prompt
+    const newId = generatePromptId()
 
     return {
-      id: fields[0],
-      name: fields[1],
-      content: fields[2],
-      executionCount: parseInt(fields[3]) || 0,
-      lastExecutedAt: new Date(fields[4]),
-      isPinned: fields[5].toLowerCase() === 'true',
-      lastExecutionUrl: fields[6],
-      createdAt: new Date(fields[7]),
-      updatedAt: new Date(fields[8]),
+      id: newId,
+      name: String(row.name),
+      content: String(row.content),
+      executionCount: Number(row.executionCount) || 0,
+      lastExecutedAt: new Date(row.lastExecutedAt),
+      isPinned: Boolean(row.isPinned),
+      lastExecutionUrl: String(row.lastExecutionUrl),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     }
   }
 
   /**
-   * Parse CSV fields handling quotes and commas
-   */
-  private parseCSVFields(row: string): string[] {
-    const fields: string[] = []
-    let currentField = ''
-    let inQuotes = false
-    let i = 0
-
-    while (i < row.length) {
-      const char = row[i]
-
-      if (char === '"') {
-        if (inQuotes && row[i + 1] === '"') {
-          // Escaped quote
-          currentField += '"'
-          i += 2
-        } else {
-          // Toggle quote state
-          inQuotes = !inQuotes
-          i++
-        }
-      } else if (char === ',' && !inQuotes) {
-        // Field separator
-        fields.push(currentField)
-        currentField = ''
-        i++
-      } else {
-        currentField += char
-        i++
-      }
-    }
-
-    // Add the last field
-    fields.push(currentField)
-
-    return fields
-  }
-
-  /**
-   * Import prompts to storage
+   * Import prompts to storage using bulk save API
    */
   private async importPrompts(prompts: Prompt[]): Promise<ImportResult> {
-    const result: ImportResult = {
-      imported: 0,
-      duplicates: 0,
-      errors: 0,
-      errorMessages: [],
-    }
-
-    // Get existing prompts to check for duplicates
-    const existingPrompts = await this.serviceFacade.getPrompts()
-    const existingIds = new Set(existingPrompts.map(p => p.id))
-
-    for (const prompt of prompts) {
-      try {
-        if (existingIds.has(prompt.id)) {
-          result.duplicates++
-          continue
-        }
-
-        // Convert to SaveDialogData for saving
-        const saveData: SaveDialogData = {
-          name: prompt.name,
-          content: prompt.content,
-          saveMode: SaveMode.New,
-          isPinned: prompt.isPinned,
-        }
-
-        await this.serviceFacade.savePromptManually(saveData)
-        result.imported++
-      } catch (error) {
-        result.errors++
-        result.errorMessages.push(`Failed to import prompt "${prompt.name}": ${error}`)
+    try {
+      // Use the bulk save API for efficient import
+      return await this.serviceFacade.saveBulkPrompts(prompts)
+    } catch (error) {
+      // If bulk save fails, return an error result
+      return {
+        imported: 0,
+        duplicates: 0,
+        errors: prompts.length,
+        errorMessages: [`Bulk import failed: ${error}`],
       }
     }
-
-    return result
   }
 }
 

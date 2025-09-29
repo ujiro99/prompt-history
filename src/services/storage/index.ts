@@ -84,6 +84,13 @@ export class StorageService {
   }
 
   /**
+   * Save multiple prompts in bulk (for import operations)
+   */
+  async saveBulkPrompts(prompts: Prompt[]): Promise<Prompt[]> {
+    return await promptsService.saveBulkPrompts(prompts)
+  }
+
+  /**
    * Watch prompts for changes
    * @param callback Callback function to receive updated prompts
    * @returns Unsubscribe function
@@ -162,6 +169,13 @@ export class StorageService {
    */
   async updatePinnedOrder(order: string[]): Promise<void> {
     return await pinsService.updatePinnedOrder(order)
+  }
+
+  /**
+   * Pin multiple prompts in bulk (for import operations)
+   */
+  async pinBulkPrompts(ids: string[]): Promise<void> {
+    return await pinsService.pinBulkPrompts(ids)
   }
 
   /**

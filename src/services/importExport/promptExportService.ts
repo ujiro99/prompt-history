@@ -1,5 +1,6 @@
+import Papa from "papaparse"
 import { PromptServiceFacade } from "@/services/promptServiceFacade"
-import type { ExportOptions, PromptCSVRow } from "./types"
+import type { ExportOptions } from "./types"
 import type { Prompt } from "@/types/prompt"
 
 /**
@@ -19,17 +20,20 @@ export class PromptExportService {
       // Filter prompts based on options
       let prompts = allPrompts
       if (options.pinnedOnly) {
-        prompts = allPrompts.filter(prompt => prompt.isPinned)
+        prompts = allPrompts.filter((prompt) => prompt.isPinned)
       }
 
       if (options.dateRange) {
-        prompts = prompts.filter(prompt => {
+        prompts = prompts.filter((prompt) => {
           const createdAt = new Date(prompt.createdAt)
-          return createdAt >= options.dateRange!.from && createdAt <= options.dateRange!.to
+          return (
+            createdAt >= options.dateRange!.from &&
+            createdAt <= options.dateRange!.to
+          )
         })
       }
 
-      // Convert to CSV format
+      // Convert to CSV format using Papa Parse
       const csvData = this.convertToCSV(prompts)
 
       // Download file
@@ -40,62 +44,27 @@ export class PromptExportService {
   }
 
   /**
-   * Convert prompts to CSV format
+   * Convert prompts to CSV format using Papa Parse
    */
   private convertToCSV(prompts: Prompt[]): string {
-    const headers = [
-      'id',
-      'name',
-      'content',
-      'executionCount',
-      'lastExecutedAt',
-      'isPinned',
-      'lastExecutionUrl',
-      'createdAt',
-      'updatedAt',
-    ]
+    // Transform prompts to plain objects with proper field formatting (excluding id)
+    const csvData = prompts.map((prompt) => ({
+      name: prompt.name,
+      content: prompt.content,
+      executionCount: prompt.executionCount,
+      lastExecutedAt: prompt.lastExecutedAt.toISOString(),
+      isPinned: prompt.isPinned,
+      lastExecutionUrl: prompt.lastExecutionUrl,
+      createdAt: prompt.createdAt.toISOString(),
+      updatedAt: prompt.updatedAt.toISOString(),
+    }))
 
-    const rows: string[] = [headers.join(',')]
-
-    prompts.forEach(prompt => {
-      const row: PromptCSVRow = {
-        id: prompt.id,
-        name: this.escapeCSVField(prompt.name),
-        content: this.escapeCSVField(prompt.content),
-        executionCount: prompt.executionCount,
-        lastExecutedAt: prompt.lastExecutedAt.toISOString(),
-        isPinned: prompt.isPinned,
-        lastExecutionUrl: this.escapeCSVField(prompt.lastExecutionUrl),
-        createdAt: prompt.createdAt.toISOString(),
-        updatedAt: prompt.updatedAt.toISOString(),
-      }
-
-      const csvRow = [
-        row.id,
-        row.name,
-        row.content,
-        row.executionCount.toString(),
-        row.lastExecutedAt,
-        row.isPinned.toString(),
-        row.lastExecutionUrl,
-        row.createdAt,
-        row.updatedAt,
-      ].join(',')
-
-      rows.push(csvRow)
+    // Use Papa Parse to generate CSV with headers and proper escaping
+    return Papa.unparse(csvData, {
+      header: true,
+      quotes: true,
+      delimiter: ",",
     })
-
-    return rows.join('\\n')
-  }
-
-  /**
-   * Escape CSV field to handle commas, quotes, and newlines
-   */
-  private escapeCSVField(field: string): string {
-    if (field.includes(',') || field.includes('"') || field.includes('\\n')) {
-      return `"${field.replace(/"/g, '""')}"`
-    }
-    return field
   }
 
   /**
@@ -103,7 +72,7 @@ export class PromptExportService {
    */
   private generateFileName(): string {
     const now = new Date()
-    const timestamp = now.toISOString().slice(0, 19).replace(/:/g, '-')
+    const timestamp = now.toISOString().slice(0, 19).replace(/:/g, "-")
     return `prompts-export-${timestamp}.csv`
   }
 
@@ -111,14 +80,14 @@ export class PromptExportService {
    * Download CSV file
    */
   private downloadCSV(csvData: string, filename: string): void {
-    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' })
-    const link = document.createElement('a')
+    const blob = new Blob([csvData], { type: "text/csv;charset=utf-8;" })
+    const link = document.createElement("a")
 
     if (link.download !== undefined) {
       const url = URL.createObjectURL(blob)
-      link.setAttribute('href', url)
-      link.setAttribute('download', filename)
-      link.style.visibility = 'hidden'
+      link.setAttribute("href", url)
+      link.setAttribute("download", filename)
+      link.style.visibility = "hidden"
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)

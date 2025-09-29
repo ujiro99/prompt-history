@@ -30,7 +30,8 @@
       "Bash(pnpm e2e:*)",
       "Bash(pnpm run:*)",
       "WebFetch(domain:saruwakakun.com)",
-      "WebFetch(domain:developer.chrome.com)"
+      "WebFetch(domain:developer.chrome.com)",
+      "WebFetch(domain:www.papaparse.com)"
     ],
     "deny": [],
     "ask": []

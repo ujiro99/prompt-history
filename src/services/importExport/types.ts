@@ -20,7 +20,6 @@ export interface ExportData {
  * CSV row structure for prompt export
  */
 export interface PromptCSVRow {
-  id: string
   name: string
   content: string
   executionCount: number
