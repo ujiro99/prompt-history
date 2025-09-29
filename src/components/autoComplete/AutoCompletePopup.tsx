@@ -16,21 +16,33 @@ const noFocus = (e: Event) => e.preventDefault()
 
 interface AutoCompletePopupProps {
   prompts: Prompt[]
+  pinnedPrompts: Prompt[]
 }
 
 export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = (
   props: AutoCompletePopupProps,
 ) => {
   const {
-    settings: { autoCompleteEnabled },
+    settings: { autoCompleteEnabled, autoCompleteTarget },
   } = useSettings()
 
+  // Do not render if auto-complete is disabled
   if (!autoCompleteEnabled) return null
 
-  return <AutoCompletePopupInner {...props} />
+  // Choose prompts based on target setting
+  let prompts = props.prompts
+  if (autoCompleteTarget === "pinned") {
+    prompts = props.pinnedPrompts
+  }
+
+  return <AutoCompletePopupInner prompts={prompts} />
 }
 
-const AutoCompletePopupInner: React.FC<AutoCompletePopupProps> = ({
+interface AutoCompletePopupInnerProps {
+  prompts: Prompt[]
+}
+
+const AutoCompletePopupInner: React.FC<AutoCompletePopupInnerProps> = ({
   prompts,
 }) => {
   const {

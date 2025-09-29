@@ -171,7 +171,10 @@ export const PromptHistoryWidget: React.FC = () => {
             />
 
             {/* AutoComplete functionality */}
-            <AutoCompletePopup prompts={prompts} />
+            <AutoCompletePopup
+              prompts={prompts}
+              pinnedPrompts={pinnedPrompts}
+            />
           </CaretProvider>
         </ContainerProvider>
       </SettingsProvider>

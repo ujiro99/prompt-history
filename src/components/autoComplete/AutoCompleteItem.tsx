@@ -50,17 +50,17 @@ export const AutoCompleteItem: React.FC<AutoCompleteItemProps> = ({
       {isSelected && <ChevronRight size={18} className="text-gray-500" />}
       <div className="w-full overflow-hidden">
         <p className="truncate font-light">
-          {match.isPinned && (
-            <Star
-              size={14}
-              className="inline mr-1 mb-0.5 fill-yellow-300 stroke-yellow-400"
-            />
-          )}
           {name1}
           <span className="font-medium bg-amber-100 px-0.5 rounded">
             {name2}
           </span>
           {name3}
+          {match.isPinned && (
+            <Star
+              size={14}
+              className="inline ml-1 mb-0.5 fill-yellow-300 stroke-yellow-400"
+            />
+          )}
         </p>
         <div className="text-xs text-gray-500 truncate mt-0.5">
           {match.content}
