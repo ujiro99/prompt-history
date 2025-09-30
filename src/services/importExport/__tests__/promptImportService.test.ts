@@ -19,7 +19,6 @@ vi.mock("@/utils/idGenerator", () => ({
 }))
 
 import { PromptImportService } from "../promptImportService"
-import { PromptServiceFacade } from "@/services/promptServiceFacade"
 import { generatePromptId } from "@/utils/idGenerator"
 
 // Mock FileReader
@@ -282,7 +281,9 @@ newline and, comma",1,2024-01-10T10:00:00.000Z,false,https://example.com,2024-01
       const result = await (service as any).importPrompts(prompts)
 
       expect(result).toEqual(expectedResult)
-      expect((service as any).serviceFacade.saveBulkPrompts).toHaveBeenCalledWith(prompts)
+      expect(
+        (service as any).serviceFacade.saveBulkPrompts,
+      ).toHaveBeenCalledWith(prompts)
     })
 
     it("should handle saveBulkPrompts failure", async () => {
@@ -360,7 +361,7 @@ Test Prompt,Test content,1,2024-01-10T10:00:00.000Z,false,https://example.com,20
       const mockInput = {
         type: "",
         accept: "",
-        style: {},
+        style: { display: "" },
         click: mockClick,
         onchange: null as any,
       }
