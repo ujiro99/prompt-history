@@ -9,6 +9,7 @@ import {
   MenubarCheckboxItem,
   MenubarRadioGroup,
   MenubarRadioItem,
+  MenubarLabel,
 } from "@/components/ui/menubar"
 import { cn } from "@/lib/utils"
 import { useSettings } from "@/hooks/useSettings"
@@ -114,6 +115,9 @@ export function SettingsMenu({ onMouseEnter }: Props): React.ReactElement {
         {settings && (
           <>
             {/* ON/OFF Settings Group */}
+            <MenubarLabel className="text-xs font-medium text-muted-foreground">
+              {i18n.t("settings.groups.feature")}
+            </MenubarLabel>
             <MenubarCheckboxItem
               checked={settings.autoSaveEnabled}
               onCheckedChange={(checked) =>
@@ -147,6 +151,9 @@ export function SettingsMenu({ onMouseEnter }: Props): React.ReactElement {
             <MenubarSeparator />
 
             {/* Selection Settings Group */}
+            <MenubarLabel className="text-xs font-medium text-muted-foreground">
+              {i18n.t("settings.groups.autocompleteTarget")}
+            </MenubarLabel>
             <MenubarRadioGroup
               value={settings.autoCompleteTarget ?? "all"}
               onValueChange={(value) =>
@@ -164,13 +171,16 @@ export function SettingsMenu({ onMouseEnter }: Props): React.ReactElement {
             <MenubarSeparator />
 
             {/* Action Settings Group */}
+            <MenubarLabel className="text-xs font-medium text-muted-foreground">
+              {i18n.t("settings.groups.inportExport")}
+            </MenubarLabel>
             <MenubarItem onClick={handleExport}>
-              <Download size={16} className="mr-2" />
+              <Download size={16} />
               {i18n.t("settings.export")}
             </MenubarItem>
 
             <MenubarItem onClick={handleImport}>
-              <Upload size={16} className="mr-2" />
+              <Upload size={16} />
               {i18n.t("settings.import")}
             </MenubarItem>
           </>

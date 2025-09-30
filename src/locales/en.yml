@@ -143,6 +143,10 @@ groups:
 
 # Settings
 settings:
+  groups:
+    feature: Features ON/OFF
+    autocompleteTarget: Autocomplete target
+    inportExport: Import/Export
   autoSave: Auto-save prompts
   autoComplete: Auto-complete
   notifications: Notifications

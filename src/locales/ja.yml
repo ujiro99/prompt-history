@@ -143,6 +143,10 @@ groups:
 
 # Settings
 settings:
+  groups:
+    feature: 機能のON・OFF
+    autocompleteTarget: 入力補完の対象
+    inportExport: インポート・エクスポート
   autoSave: プロンプト自動保存
   autoComplete: 入力補完
   notifications: 通知
