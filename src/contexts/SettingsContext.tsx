@@ -25,9 +25,13 @@ export const SettingsProvider: React.FC<ProviderProps> = ({ children }) => {
 
   useEffect(() => {
     const fetchSettings = async () => {
-      const loadedSettings = await storage.getSettings()
-      setSettings(loadedSettings)
-      setIsLoaded(true)
+      try {
+        const loadedSettings = await storage.getSettings()
+        setSettings(loadedSettings)
+        setIsLoaded(true)
+      } catch (error) {
+        console.error("Failed to load settings:", error)
+      }
     }
     fetchSettings()
     return storage.watchSettings((newSettings) => {

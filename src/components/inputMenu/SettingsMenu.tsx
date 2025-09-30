@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/menubar"
 import { cn } from "@/lib/utils"
 import { useSettings } from "@/hooks/useSettings"
+import { useContainer } from "@/hooks/useContainer"
 import {
   promptExportService,
   promptImportService,
@@ -41,6 +42,7 @@ function MenuTrigger(props: MenuTriggerProps): React.ReactElement {
 
 export function SettingsMenu({ onMouseEnter }: Props): React.ReactElement {
   const { settings, update } = useSettings()
+  const { container } = useContainer()
 
   /**
    * Handle settings change
@@ -49,7 +51,7 @@ export function SettingsMenu({ onMouseEnter }: Props): React.ReactElement {
     async (key: keyof AppSettings, value: boolean | string) => {
       try {
         const updatedSettings = { [key]: value }
-        update(updatedSettings)
+        await update(updatedSettings)
       } catch (error) {
         console.error("Settings update failed:", error)
       }
@@ -105,8 +107,9 @@ export function SettingsMenu({ onMouseEnter }: Props): React.ReactElement {
       </MenuTrigger>
       <MenubarContent
         side="top"
-        className="w-56"
+        className="max-w-64"
         data-testid={TestIds.inputPopup.settingsContent}
+        container={container}
       >
         {settings && (
           <>

@@ -8,6 +8,7 @@ import {
   MenubarTrigger,
 } from "@/components/ui/menubar"
 import { useCaretNode } from "@/hooks/useCaretNode"
+import { useContainer } from "@/hooks/useContainer"
 import { PromptPreview } from "./PromptPreview"
 import { RemoveDialog } from "@/components/inputMenu/controller/RemoveDialog"
 import { EditDialog } from "@/components/inputMenu/controller/EditDialog"
@@ -84,6 +85,7 @@ export function InputMenu(props: Props): React.ReactElement {
     useState<HTMLDivElement | null>(null)
 
   const { nodeAtCaret } = useCaretNode()
+  const { container } = useContainer()
 
   const handleMenuEnter = (val: MENU) => {
     setSelectedMenu(val)
@@ -263,6 +265,7 @@ export function InputMenu(props: Props): React.ReactElement {
             onSideFlip={(side) => setHistorySideFlipped(side !== "top")}
             ref={setHistoryContentElm}
             data-testid={TestIds.inputPopup.historyList}
+            container={container}
           >
             <PromptList
               menuType="history"
@@ -289,8 +292,8 @@ export function InputMenu(props: Props): React.ReactElement {
         {/* Pinned Menu */}
         <MenubarMenu value={MENU.Pinned}>
           <MenuTrigger
-            onMouseEnter={() => handleMenuEnter(MENU.Pinned)}
             ref={setPinnedAnchorElm}
+            onMouseEnter={() => handleMenuEnter(MENU.Pinned)}
             data-testid={TestIds.inputPopup.pinnedTrigger}
           >
             <Star size={16} className="stroke-gray-600" />
@@ -301,6 +304,7 @@ export function InputMenu(props: Props): React.ReactElement {
             onSideFlip={(side) => setPinnedSideFlipped(side !== "top")}
             ref={setPinnedContentElm}
             data-testid={TestIds.inputPopup.pinnedList}
+            container={container}
           >
             <PromptList
               menuType="pinned"
