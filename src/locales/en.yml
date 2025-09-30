@@ -149,7 +149,7 @@ settings:
     inportExport: Import/Export
   autoSave: Auto-save prompts
   autoComplete: Auto-complete
-  notifications: Notifications
+  notifications: Status notifications
   autoCompleteTarget:
     all: All prompts
     pinned: Starred only

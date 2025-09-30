@@ -149,7 +149,7 @@ settings:
     inportExport: インポート・エクスポート
   autoSave: プロンプト自動保存
   autoComplete: 入力補完
-  notifications: 通知
+  notifications: ステータス通知
   autoCompleteTarget:
     all: すべてのプロンプト
     pinned: スター付きのみ
