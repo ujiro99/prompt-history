@@ -60,11 +60,26 @@ export class PromptExportService {
     }))
 
     // Use Papa Parse to generate CSV with headers and proper escaping
-    return Papa.unparse(csvData, {
-      header: true,
-      quotes: true,
-      delimiter: ",",
-    })
+    return Papa.unparse(
+      {
+        fields: [
+          "name",
+          "content",
+          "executionCount",
+          "lastExecutedAt",
+          "isPinned",
+          "lastExecutionUrl",
+          "createdAt",
+          "updatedAt",
+        ],
+        data: csvData,
+      },
+      {
+        header: true,
+        quotes: true,
+        delimiter: ",",
+      },
+    )
   }
 
   /**
@@ -82,17 +97,14 @@ export class PromptExportService {
   private downloadCSV(csvData: string, filename: string): void {
     const blob = new Blob([csvData], { type: "text/csv;charset=utf-8;" })
     const link = document.createElement("a")
-
-    if (link.download !== undefined) {
-      const url = URL.createObjectURL(blob)
-      link.setAttribute("href", url)
-      link.setAttribute("download", filename)
-      link.style.visibility = "hidden"
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      URL.revokeObjectURL(url)
-    }
+    const url = URL.createObjectURL(blob)
+    link.setAttribute("href", url)
+    link.setAttribute("download", filename)
+    link.style.visibility = "hidden"
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
   }
 }
 
