@@ -146,7 +146,7 @@ export function ImportDialog({
 
       // Check if the file is a CSV
       if (!file.name.toLowerCase().endsWith(".csv")) {
-        setError("CSVファイルを選択してください")
+        setError(i18n.t("importDialog.error.selectCsv"))
         setState(ImportState.Error)
         return
       }
@@ -192,10 +192,10 @@ export function ImportDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Upload size={18} />
-            プロンプトのインポート
+            {i18n.t("importDialog.title")}
           </DialogTitle>
           <DialogDescription>
-            CSVファイルからプロンプトを追加します。
+            {i18n.t("importDialog.description")}
           </DialogDescription>
         </DialogHeader>
 
@@ -208,7 +208,7 @@ export function ImportDialog({
             onChange={handleFileChange}
             className="hidden"
             data-testid={TestIds.import.fileInput}
-            aria-label="CSVファイルを選択"
+            aria-label={i18n.t("importDialog.selectFileLabel")}
             aria-hidden={true}
           />
 
@@ -239,10 +239,10 @@ export function ImportDialog({
                     className={cn("font-medium", getStatusColor())}
                   >
                     {state === ImportState.Idle && (
-                      <span>CSVファイルを選択してください</span>
+                      <span>{i18n.t("importDialog.status.idle")}</span>
                     )}
                     {state === ImportState.Error && (
-                      <span>ファイルを確認してください</span>
+                      <span>{i18n.t("importDialog.status.errorPrompt")}</span>
                     )}
                   </p>
                   {selectedFile && (
@@ -258,9 +258,9 @@ export function ImportDialog({
                   size="sm"
                   data-testid={TestIds.import.selectButton}
                   aria-describedby="file-status-text"
-                  aria-label="CSVファイルを選択"
+                  aria-label={i18n.t("importDialog.selectFileLabel")}
                 >
-                  ファイルを選択
+                  {i18n.t("importDialog.selectFile")}
                 </Button>
               </div>
             </div>
@@ -271,14 +271,14 @@ export function ImportDialog({
             <div
               className="bg-gray-50 border border-gray-200 rounded-lg p-6 space-y-2"
               role="status"
-              aria-label="チェック中"
+              aria-label={i18n.t("importDialog.status.checking")}
             >
               <h4
                 className="font-medium text-gray-800 flex flex-col items-center gap-2"
                 id="file-status-text"
               >
                 <Loader2 className="animate-spin" size={20} />
-                チェック中
+                {i18n.t("importDialog.status.checking")}
               </h4>
               {selectedFile && (
                 <p className="text-sm text-gray-500 flex items-center justify-center gap-1">
@@ -287,7 +287,7 @@ export function ImportDialog({
                 </p>
               )}
               <div className="text-sm text-center space-y-1">
-                <p>チェック中です</p>
+                <p>{i18n.t("importDialog.status.checkingDescription")}</p>
               </div>
             </div>
           )}
@@ -297,14 +297,14 @@ export function ImportDialog({
             <div
               className="bg-gray-50 border border-gray-200 rounded-lg p-6 space-y-2"
               role="status"
-              aria-label="チェック結果"
+              aria-label={i18n.t("importDialog.status.checkOk")}
             >
               <h4
                 className="font-medium text-gray-800 flex flex-col items-center gap-2"
                 id="file-status-text"
               >
                 {getStatusIcon()}
-                チェックOK
+                {i18n.t("importDialog.status.checkOk")}
               </h4>
               {selectedFile && (
                 <p className="text-sm text-gray-500 flex items-center justify-center gap-1">
@@ -314,12 +314,20 @@ export function ImportDialog({
               )}
               <div className="text-sm text-center text-green-700 space-y-1">
                 {result.imported > 0 ? (
-                  <p>✓ {result.imported}件のプロンプトをインポートします</p>
+                  <p>
+                    {i18n.t("importDialog.result.willImport", [
+                      result.imported,
+                    ])}
+                  </p>
                 ) : (
-                  <p>• インポートするプロンプトはありません</p>
+                  <p>{i18n.t("importDialog.result.noPrompts")}</p>
                 )}
                 {result.duplicates > 0 && (
-                  <p>• {result.duplicates}件の重複があります</p>
+                  <p>
+                    {i18n.t("importDialog.result.hasDuplicates", [
+                      result.duplicates,
+                    ])}
+                  </p>
                 )}
                 {result.imported > 0 && (
                   <div className="mt-4 mb-2 flex justify-center">
@@ -328,9 +336,9 @@ export function ImportDialog({
                       size="sm"
                       data-testid={TestIds.import.executeButton}
                       aria-describedby="file-status-text"
-                      aria-label="CSVファイルからプロンプトをインポート"
+                      aria-label={i18n.t("importDialog.executeLabel")}
                     >
-                      インポートを実行
+                      {i18n.t("importDialog.execute")}
                     </Button>
                   </div>
                 )}
@@ -343,14 +351,14 @@ export function ImportDialog({
             <div
               className="bg-green-50 border border-green-200 rounded-lg p-6 space-y-2"
               role="status"
-              aria-label="インポート成功結果"
+              aria-label={i18n.t("importDialog.status.importResult")}
             >
               <h4
                 className="font-medium text-gray-800 flex flex-col items-center gap-2"
                 id="file-status-text"
               >
                 {getStatusIcon()}
-                インポート結果
+                {i18n.t("importDialog.status.importResult")}
               </h4>
               {selectedFile && (
                 <p className="text-sm text-gray-500 flex items-center justify-center gap-1">
@@ -359,9 +367,15 @@ export function ImportDialog({
                 </p>
               )}
               <div className="text-sm text-center text-green-700 space-y-1">
-                <p>✓ {result.imported}件のプロンプトをインポートしました</p>
+                <p>
+                  {i18n.t("importDialog.result.imported", [result.imported])}
+                </p>
                 {result.duplicates > 0 && (
-                  <p>• {result.duplicates}件の重複をスキップしました</p>
+                  <p>
+                    {i18n.t("importDialog.result.skippedDuplicates", [
+                      result.duplicates,
+                    ])}
+                  </p>
                 )}
               </div>
             </div>
@@ -372,9 +386,11 @@ export function ImportDialog({
             <div
               className="bg-red-50 border border-red-200 rounded-lg p-4"
               role="alert"
-              aria-label="インポートエラー"
+              aria-label={i18n.t("importDialog.status.errorTitle")}
             >
-              <h4 className="font-medium text-red-700 mb-2">エラー</h4>
+              <h4 className="font-medium text-red-700 mb-2">
+                {i18n.t("importDialog.status.errorTitle")}
+              </h4>
               <p className="text-sm text-red-700 whitespace-pre-line">
                 {error}
               </p>
@@ -386,11 +402,11 @@ export function ImportDialog({
           {state === ImportState.Importing ? (
             <Button
               disabled
-              aria-label="インポート処理中"
+              aria-label={i18n.t("importDialog.status.importing")}
               aria-describedby="file-status-text"
             >
               <Loader2 className="animate-spin mr-2" size={16} />
-              インポート中...
+              {i18n.t("importDialog.status.importing")}
             </Button>
           ) : (
             <div className="flex gap-2">
@@ -400,9 +416,9 @@ export function ImportDialog({
                   variant="outline"
                   onClick={handleReset}
                   data-testid={TestIds.import.resetButton}
-                  aria-label="ファイル選択をリセット"
+                  aria-label={i18n.t("importDialog.selectAnotherFile")}
                 >
-                  別のファイルを選択
+                  {i18n.t("importDialog.selectAnotherFile")}
                 </Button>
               )}
               <Button
@@ -410,11 +426,13 @@ export function ImportDialog({
                 data-testid={TestIds.import.closeButton}
                 aria-label={
                   state === ImportState.Success
-                    ? "ダイアログを閉じる"
-                    : "インポートをキャンセル"
+                    ? i18n.t("importDialog.close")
+                    : i18n.t("importDialog.cancel")
                 }
               >
-                {state === ImportState.Success ? "終了" : "キャンセル"}
+                {state === ImportState.Success
+                  ? i18n.t("importDialog.close")
+                  : i18n.t("importDialog.cancel")}
               </Button>
             </div>
           )}

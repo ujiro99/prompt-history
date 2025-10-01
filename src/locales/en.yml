@@ -156,6 +156,42 @@ settings:
   export: Export prompts
   import: Import prompts
 
+# Import Dialog
+importDialog:
+  title: Import Prompts
+  description: Add prompts from CSV file.
+  selectFile: Select File
+  selectFileLabel: Select CSV file
+  selectAnotherFile: Select Another File
+  execute: Execute Import
+  executeLabel: Import prompts from CSV file
+  close: Close
+  cancel: Cancel
+  status:
+    idle: Please select a CSV file
+    checking: Checking
+    checkingDescription: Checking...
+    checkOk: Check OK
+    importing: Importing...
+    importResult: Import Result
+    errorTitle: Error
+    errorPrompt: Please check the file
+  result:
+    willImport: "✓ Will import $1 prompts"
+    noPrompts: "• No prompts to import"
+    hasDuplicates: "• $1 duplicates found"
+    imported: "✓ Imported $1 prompts"
+    skippedDuplicates: "• Skipped $1 duplicates"
+  error:
+    selectCsv: Please select a CSV file
+    noFile: No file selected
+    invalidFileType: Please select a CSV file
+    fileTooLarge: File size is too large. Please select a file under 10MB
+    emptyFile: Cannot process an empty file
+    readFileFailed: Failed to read file
+    missingField: "Missing required field: $1"
+    bulkImportFailed: "Bulk import failed: $1"
+
 # Accessibility labels
 accessibility:
   groupLabel: "$1 group, $2 items"

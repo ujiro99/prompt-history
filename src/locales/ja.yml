@@ -156,6 +156,42 @@ settings:
   export: プロンプトをエクスポート
   import: プロンプトをインポート
 
+# Import Dialog
+importDialog:
+  title: プロンプトのインポート
+  description: CSVファイルからプロンプトを追加します。
+  selectFile: ファイルを選択
+  selectFileLabel: CSVファイルを選択
+  selectAnotherFile: 別のファイルを選択
+  execute: インポートを実行
+  executeLabel: CSVファイルからプロンプトをインポート
+  close: 終了
+  cancel: キャンセル
+  status:
+    idle: CSVファイルを選択してください
+    checking: チェック中
+    checkingDescription: チェック中です
+    checkOk: チェックOK
+    importing: インポート中...
+    importResult: インポート結果
+    errorTitle: エラー
+    errorPrompt: ファイルを確認してください
+  result:
+    willImport: "✓ $1件のプロンプトをインポートします"
+    noPrompts: "• インポートするプロンプトはありません"
+    hasDuplicates: "• $1件の重複があります"
+    imported: "✓ $1件のプロンプトをインポートしました"
+    skippedDuplicates: "• $1件の重複をスキップしました"
+  error:
+    selectCsv: CSVファイルを選択してください
+    noFile: ファイルが選択されていません
+    invalidFileType: CSVファイルを選択してください
+    fileTooLarge: ファイルサイズが大きすぎます。10MB以下にしてください
+    emptyFile: 空のファイルは処理できません
+    readFileFailed: ファイルの読み込みに失敗しました
+    missingField: "必須フィールドがありません: $1"
+    bulkImportFailed: "一括インポートに失敗しました: $1"
+
 # Accessibility labels
 accessibility:
   groupLabel: "$1 グループ、$2件"

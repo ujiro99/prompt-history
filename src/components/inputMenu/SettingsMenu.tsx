@@ -92,12 +92,8 @@ export function SettingsMenu({ onMouseEnter }: Props): React.ReactElement {
    */
   const handleImportComplete = useCallback((result: ImportResult) => {
     console.log(
-      `Import completed: ${result.imported} imported, ${result.duplicates} duplicates, ${result.errors} errors`,
+      `Import completed: ${result.imported} imported, ${result.duplicates} duplicates`,
     )
-
-    if (result.errors > 0) {
-      console.warn("Import errors:", result.errorMessages)
-    }
   }, [])
 
   return (

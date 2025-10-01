@@ -18,6 +18,17 @@ vi.mock("@/utils/idGenerator", () => ({
   generatePromptId: vi.fn(),
 }))
 
+vi.mock("@wxt-dev/i18n", () => {
+  return {
+    createI18n: () => ({
+      t: (key: string, _countOrSubs?: unknown, _subs?: unknown) => key,
+    }),
+    i18n: {
+      t: (key: string, _countOrSubs?: unknown, _subs?: unknown) => key,
+    },
+  }
+})
+
 import { PromptImportService } from "../promptImportService"
 import { generatePromptId } from "@/utils/idGenerator"
 
@@ -163,7 +174,7 @@ describe("PromptImportService", () => {
 
       expect(() => {
         ;(service as any).parseRowData(incompleteRowData)
-      }).toThrow("Missing required field:")
+      }).toThrow("importDialog.error.missingField")
     })
 
     it("should handle invalid date formats gracefully", () => {
@@ -204,17 +215,18 @@ Test Prompt 2,Content 2,2,2024-01-11T10:00:00.000Z,true,https://example2.com,202
       expect(result).toHaveLength(0)
     })
 
-    it("should skip invalid rows and continue processing", () => {
+    it("should throw error when invalid rows are present and stop processing", () => {
       const csvText = `name,content,executionCount,lastExecutedAt,isPinned,lastExecutionUrl,createdAt,updatedAt
 Test Prompt 1,Content 1,1,2024-01-10T10:00:00.000Z,false,https://example.com,2024-01-01T10:00:00.000Z,2024-01-01T10:00:00.000Z
 Invalid Row,,,,,,
 Test Prompt 2,Content 2,2,2024-01-11T10:00:00.000Z,true,https://example2.com,2024-01-02T10:00:00.000Z,2024-01-02T10:00:00.000Z`
 
-      const result = (service as any).parseCSV(csvText)
+      const errorMessage =
+        "1 errors occurred during import.\n  - [3] Too few fields: expected 8 fields but parsed 7"
 
-      expect(result).toHaveLength(2)
-      expect(result[0].name).toBe("Test Prompt 1")
-      expect(result[1].name).toBe("Test Prompt 2")
+      expect(() => {
+        ;(service as any).parseCSV(csvText)
+      }).toThrow(errorMessage)
     })
 
     it("should handle CSV with special characters", () => {
@@ -259,7 +271,9 @@ newline and, comma",1,2024-01-10T10:00:00.000Z,false,https://example.com,2024-01
         }
       }, 0)
 
-      await expect(readPromise).rejects.toThrow("Failed to read file")
+      await expect(readPromise).rejects.toThrow(
+        "importDialog.error.readFileFailed",
+      )
     })
   })
 
@@ -269,8 +283,6 @@ newline and, comma",1,2024-01-10T10:00:00.000Z,false,https://example.com,2024-01
       const expectedResult: ImportResult = {
         imported: 1,
         duplicates: 0,
-        errors: 0,
-        errorMessages: [],
       }
 
       // Mock the serviceFacade directly on the service instance
@@ -294,63 +306,9 @@ newline and, comma",1,2024-01-10T10:00:00.000Z,false,https://example.com,2024-01
         saveBulkPrompts: vi.fn().mockRejectedValue(new Error("Database error")),
       }
 
-      const result = await (service as any).importPrompts(prompts)
-
-      expect(result).toEqual({
-        imported: 0,
-        duplicates: 0,
-        errors: 2,
-        errorMessages: ["Bulk import failed: Error: Database error"],
-      })
-    })
-  })
-
-  describe("processCSVFile", () => {
-    it("should process CSV file end-to-end", async () => {
-      const csvContent = `name,content,executionCount,lastExecutedAt,isPinned,lastExecutionUrl,createdAt,updatedAt
-Test Prompt,Test content,1,2024-01-10T10:00:00.000Z,false,https://example.com,2024-01-01T10:00:00.000Z,2024-01-01T10:00:00.000Z`
-
-      const file = createMockFile(csvContent)
-      const expectedResult: ImportResult = {
-        imported: 1,
-        duplicates: 0,
-        errors: 0,
-        errorMessages: [],
-      }
-
-      // Mock the serviceFacade directly on the service instance
-      ;(service as any).serviceFacade = {
-        saveBulkPrompts: vi.fn().mockResolvedValue(expectedResult),
-      }
-
-      const processPromise = (service as any).processCSVFile(file)
-
-      // Simulate FileReader onload
-      setTimeout(() => {
-        mockFileReader.result = csvContent
-        if (mockFileReader.onload) {
-          mockFileReader.onload({ target: { result: csvContent } })
-        }
-      }, 0)
-
-      const result = await processPromise
-
-      expect(result).toEqual(expectedResult)
-      expect((service as any).serviceFacade.saveBulkPrompts).toHaveBeenCalled()
-    })
-
-    it("should handle file reading error", async () => {
-      const file = createMockFile("test content")
-      const processPromise = (service as any).processCSVFile(file)
-
-      // Simulate FileReader error
-      setTimeout(() => {
-        if (mockFileReader.onerror) {
-          mockFileReader.onerror()
-        }
-      }, 0)
-
-      await expect(processPromise).rejects.toThrow("Failed to read file")
+      expect((service as any).importPrompts(prompts)).rejects.toThrow(
+        "importDialog.error.bulkImportFailed",
+      )
     })
   })
 })

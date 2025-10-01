@@ -5,7 +5,6 @@ import type { StorageService } from "@/services/storage"
 import type { SessionManager } from "@/services/promptHistory/sessionManager"
 import type { AIServiceInterface } from "@/types/aiService"
 import type { Prompt, SaveDialogData, AppSettings } from "@/types/prompt"
-import type { ImportResult } from "@/services/importExport/types"
 
 // Mock dependencies
 const createMockStorageService = (): StorageService =>
@@ -736,8 +735,6 @@ describe("StorageHelper", () => {
       expect(result).toEqual({
         imported: 0,
         duplicates: 0,
-        errors: 0,
-        errorMessages: [],
       })
       expect(mockStorage.getAllPrompts).not.toHaveBeenCalled()
       expect(mockStorage.saveBulkPrompts).not.toHaveBeenCalled()
@@ -770,8 +767,6 @@ describe("StorageHelper", () => {
       expect(result).toEqual({
         imported: 2,
         duplicates: 0,
-        errors: 0,
-        errorMessages: [],
       })
       expect(mockStorage.saveBulkPrompts).toHaveBeenCalledWith(newPrompts)
       expect(mockStorage.pinBulkPrompts).not.toHaveBeenCalled()
@@ -792,8 +787,6 @@ describe("StorageHelper", () => {
       expect(result).toEqual({
         imported: 2,
         duplicates: 1,
-        errors: 0,
-        errorMessages: [],
       })
       // Should only save non-duplicate prompts
       expect(mockStorage.saveBulkPrompts).toHaveBeenCalledWith([
@@ -829,8 +822,6 @@ describe("StorageHelper", () => {
       expect(result).toEqual({
         imported: 2,
         duplicates: 0,
-        errors: 0,
-        errorMessages: [],
       })
       expect(mockStorage.saveBulkPrompts).toHaveBeenCalledWith(prompts)
       expect(mockStorage.pinBulkPrompts).toHaveBeenCalledWith([
@@ -855,8 +846,6 @@ describe("StorageHelper", () => {
       expect(result).toEqual({
         imported: 2,
         duplicates: 1,
-        errors: 0,
-        errorMessages: [],
       })
       // Should save non-duplicate prompts
       expect(mockStorage.saveBulkPrompts).toHaveBeenCalledWith([
@@ -875,7 +864,7 @@ describe("StorageHelper", () => {
       )
 
       await expect(storageHelper.saveBulkPrompts(prompts)).rejects.toThrow(
-        "Bulk save failed: Error: Database error",
+        "Save failed: Error: Database error",
       )
     })
 
@@ -892,17 +881,12 @@ describe("StorageHelper", () => {
 
       vi.mocked(mockStorage.getAllPrompts).mockResolvedValue([])
       vi.mocked(mockStorage.saveBulkPrompts).mockRejectedValue(
-        new Error("Save failed"),
+        new Error("TEST Database error"),
       )
 
-      const result = await storageHelper.saveBulkPrompts(prompts)
-
-      expect(result).toEqual({
-        imported: 0,
-        duplicates: 0,
-        errors: 1,
-        errorMessages: ["Bulk save operation failed: Error: Save failed"],
-      })
+      await expect(storageHelper.saveBulkPrompts(prompts)).rejects.toThrow(
+        "Save failed: Error: TEST Database error",
+      )
     })
 
     it("should handle all prompts being duplicates", async () => {
@@ -929,8 +913,6 @@ describe("StorageHelper", () => {
       expect(result).toEqual({
         imported: 0,
         duplicates: 2,
-        errors: 0,
-        errorMessages: [],
       })
       expect(mockStorage.saveBulkPrompts).not.toHaveBeenCalled()
       expect(mockStorage.pinBulkPrompts).not.toHaveBeenCalled()

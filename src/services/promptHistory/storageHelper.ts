@@ -449,17 +449,13 @@ export class StorageHelper {
       }
 
       if (promptsToSave.length > 0) {
-        try {
-          // Bulk save - single storage operation for all prompts
-          const savedPrompts = await this.storage.saveBulkPrompts(promptsToSave)
-          result.imported = savedPrompts.length
+        // Bulk save - single storage operation for all prompts
+        const savedPrompts = await this.storage.saveBulkPrompts(promptsToSave)
+        result.imported = savedPrompts.length
 
-          // Bulk pin - single storage operation for all pins
-          if (promptsToPin.length > 0) {
-            await this.storage.pinBulkPrompts(promptsToPin)
-          }
-        } catch (error) {
-          throw new Error(`Save failed: ${error}`)
+        // Bulk pin - single storage operation for all pins
+        if (promptsToPin.length > 0) {
+          await this.storage.pinBulkPrompts(promptsToPin)
         }
       }
 

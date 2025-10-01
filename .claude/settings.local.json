@@ -32,7 +32,9 @@
       "WebFetch(domain:saruwakakun.com)",
       "WebFetch(domain:developer.chrome.com)",
       "WebFetch(domain:www.papaparse.com)",
-      "WebFetch(domain:www.radix-ui.com)"
+      "WebFetch(domain:www.radix-ui.com)",
+      "Bash(pnpm exec tsc:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

@@ -50,20 +50,20 @@ export class PromptImportService {
    */
   private validateFile(file: File): void {
     if (!file) {
-      throw new Error("ファイルが選択されていません")
+      throw new Error(i18n.t("importDialog.error.noFile"))
     }
 
     if (file.type !== "text/csv" && !file.name.toLowerCase().endsWith(".csv")) {
-      throw new Error("CSVファイルを選択してください")
+      throw new Error(i18n.t("importDialog.error.invalidFileType"))
     }
 
     const maxSize = 10 * 1024 * 1024 // 10MB
     if (file.size > maxSize) {
-      throw new Error("ファイルサイズが大きすぎます。10MB以下にしてください")
+      throw new Error(i18n.t("importDialog.error.fileTooLarge"))
     }
 
     if (file.size === 0) {
-      throw new Error("空のファイルは処理できません")
+      throw new Error(i18n.t("importDialog.error.emptyFile"))
     }
   }
 
@@ -77,7 +77,7 @@ export class PromptImportService {
         resolve(event.target?.result as string)
       }
       reader.onerror = () => {
-        reject(new Error("Failed to read file"))
+        reject(new Error(i18n.t("importDialog.error.readFileFailed")))
       }
       reader.readAsText(file)
     })
@@ -139,7 +139,7 @@ export class PromptImportService {
 
     for (const field of requiredFields) {
       if (!(field in row)) {
-        throw new Error(`Missing required field: ${field}`)
+        throw new Error(i18n.t("importDialog.error.missingField", [field]))
       }
     }
 
@@ -168,7 +168,9 @@ export class PromptImportService {
       return await this.serviceFacade.saveBulkPrompts(prompts)
     } catch (error) {
       // If bulk save fails, return an error result
-      throw new ImportError(prompts.length, [`Bulk import failed: ${error}`])
+      throw new ImportError(prompts.length, [
+        i18n.t("importDialog.error.bulkImportFailed", [error]),
+      ])
     }
   }
 }
