@@ -1,4 +1,4 @@
-import React, { useCallback } from "react"
+import React, { useCallback, useState } from "react"
 import { EllipsisVertical, Download, Upload } from "lucide-react"
 import {
   MenubarMenu,
@@ -14,12 +14,11 @@ import {
 import { cn } from "@/lib/utils"
 import { useSettings } from "@/hooks/useSettings"
 import { useContainer } from "@/hooks/useContainer"
-import {
-  promptExportService,
-  promptImportService,
-} from "@/services/importExport"
+import { promptExportService } from "@/services/importExport"
+import { ImportDialog } from "./ImportDialog"
 import { MENU, TestIds } from "@/components/const"
 import type { AppSettings } from "@/types/prompt"
+import type { ImportResult } from "@/services/importExport/types"
 
 type Props = {
   onMouseEnter: () => void
@@ -44,6 +43,7 @@ function MenuTrigger(props: MenuTriggerProps): React.ReactElement {
 export function SettingsMenu({ onMouseEnter }: Props): React.ReactElement {
   const { settings, update } = useSettings()
   const { container } = useContainer()
+  const [importDialogOpen, setImportDialogOpen] = useState(false)
 
   /**
    * Handle settings change
@@ -83,18 +83,20 @@ export function SettingsMenu({ onMouseEnter }: Props): React.ReactElement {
   /**
    * Handle import prompts
    */
-  const handleImport = useCallback(async () => {
-    try {
-      const result = await promptImportService.importFromCSV()
-      console.log(
-        `Import completed: ${result.imported} imported, ${result.duplicates} duplicates, ${result.errors} errors`,
-      )
+  const handleImport = useCallback(() => {
+    setImportDialogOpen(true)
+  }, [])
 
-      if (result.errors > 0) {
-        console.warn("Import errors:", result.errorMessages)
-      }
-    } catch (error) {
-      console.error("Import failed:", error)
+  /**
+   * Handle import completion
+   */
+  const handleImportComplete = useCallback((result: ImportResult) => {
+    console.log(
+      `Import completed: ${result.imported} imported, ${result.duplicates} duplicates, ${result.errors} errors`,
+    )
+
+    if (result.errors > 0) {
+      console.warn("Import errors:", result.errorMessages)
     }
   }, [])
 
@@ -174,18 +176,31 @@ export function SettingsMenu({ onMouseEnter }: Props): React.ReactElement {
             <MenubarLabel className="text-xs font-medium text-muted-foreground">
               {i18n.t("settings.groups.inportExport")}
             </MenubarLabel>
-            <MenubarItem onClick={handleExport}>
+            <MenubarItem
+              onClick={handleExport}
+              data-testid={TestIds.settingsMenu.export}
+            >
               <Download size={16} />
               {i18n.t("settings.export")}
             </MenubarItem>
 
-            <MenubarItem onClick={handleImport}>
+            <MenubarItem
+              onClick={handleImport}
+              data-testid={TestIds.settingsMenu.import}
+            >
               <Upload size={16} />
               {i18n.t("settings.import")}
             </MenubarItem>
           </>
         )}
       </MenubarContent>
+
+      {/* Import Dialog */}
+      <ImportDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        onImportComplete={handleImportComplete}
+      />
     </MenubarMenu>
   )
 }

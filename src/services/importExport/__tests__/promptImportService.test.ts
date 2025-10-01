@@ -353,35 +353,4 @@ Test Prompt,Test content,1,2024-01-10T10:00:00.000Z,false,https://example.com,20
       await expect(processPromise).rejects.toThrow("Failed to read file")
     })
   })
-
-  describe("importFromCSV", () => {
-    it("should create file input and trigger click", async () => {
-      // This test just verifies the DOM manipulation part
-      // The full file selection flow is too complex to mock reliably
-      const mockInput = {
-        type: "",
-        accept: "",
-        style: { display: "" },
-        click: mockClick,
-        onchange: null as any,
-      }
-
-      vi.mocked(document.createElement).mockReturnValue(mockInput as any)
-
-      // Start the import process but don't wait for completion
-      // as we can't easily simulate the file selection
-      service.importFromCSV().catch(() => {
-        // Expected to fail without proper file selection simulation
-      })
-
-      // Verify DOM operations
-      expect(document.createElement).toHaveBeenCalledWith("input")
-      expect(mockInput.type).toBe("file")
-      expect(mockInput.accept).toBe(".csv")
-      expect(mockInput.style.display).toBe("none")
-      expect(mockAppendChild).toHaveBeenCalledWith(mockInput)
-      expect(mockClick).toHaveBeenCalled()
-      expect(mockRemoveChild).toHaveBeenCalledWith(mockInput)
-    })
-  })
 })

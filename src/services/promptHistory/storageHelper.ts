@@ -418,8 +418,6 @@ export class StorageHelper {
     const result: ImportResult = {
       imported: 0,
       duplicates: 0,
-      errors: 0,
-      errorMessages: [],
     }
 
     if (prompts.length === 0) {
@@ -461,14 +459,58 @@ export class StorageHelper {
             await this.storage.pinBulkPrompts(promptsToPin)
           }
         } catch (error) {
-          result.errors = promptsToSave.length
-          result.errorMessages.push(`Bulk save operation failed: ${error}`)
+          throw new Error(`Save failed: ${error}`)
         }
       }
 
       return result
     } catch (error) {
-      throw new Error(`Bulk save failed: ${error}`)
+      throw new Error(`Save failed: ${error}`)
+    }
+  }
+
+  /**
+   * Check prompts for bulk saving (for import operations)
+   * Returns how many would be imported, duplicates, errors
+   */
+  async checkBulkSaving(prompts: Prompt[]): Promise<ImportResult> {
+    const result: ImportResult = {
+      imported: 0,
+      duplicates: 0,
+    }
+
+    if (prompts.length === 0) {
+      throw new Error("No prompts to import")
+    }
+
+    try {
+      // Get existing prompts for duplicate check
+      const existingPrompts = await this.storage.getAllPrompts()
+      const existingPromptKeys = new Set(
+        existingPrompts.map((p) => `${p.name}:${p.content}`),
+      )
+
+      const promptsToSave: Prompt[] = []
+      const promptsToPin: string[] = []
+
+      // Filter out duplicates and prepare for batch save
+      for (const prompt of prompts) {
+        const promptKey = `${prompt.name}:${prompt.content}`
+        if (existingPromptKeys.has(promptKey)) {
+          result.duplicates++
+          continue
+        }
+
+        promptsToSave.push(prompt)
+        if (prompt.isPinned) {
+          promptsToPin.push(prompt.id)
+        }
+      }
+
+      result.imported = promptsToSave.length
+      return result
+    } catch (error) {
+      throw new Error(`Bulk save checking failed: ${error}`)
     }
   }
 }

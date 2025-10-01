@@ -1,5 +1,10 @@
 import type { StoredPrompt } from "@/types/prompt"
-import { type BrowserContext } from "@playwright/test"
+import { type BrowserContext, type Page } from "@playwright/test"
+import { readFileSync } from "fs"
+import { join } from "path"
+import { fileURLToPath } from "url"
+import { dirname } from "path"
+import { TestIds } from "@/components/const"
 
 export const getServiceWorker = async (context: BrowserContext) => {
   let [serviceWorker] = context.serviceWorkers()
@@ -9,7 +14,7 @@ export const getServiceWorker = async (context: BrowserContext) => {
 }
 
 export class StorageHelpers {
-  constructor(private context: BrowserContext) { }
+  constructor(private context: BrowserContext) {}
 
   // Get data from extension local storage
   async getExtensionData<T>(key: string): Promise<T> {
@@ -144,5 +149,207 @@ export class StorageHelpers {
 
     await this.setPromptHistory(mockData)
     return mockData
+  }
+
+  // Load CSV fixture file content
+  loadFixtureCSV(filename: string): string {
+    const __filename = fileURLToPath(import.meta.url)
+    const __dirname = dirname(__filename)
+    const fixturePath = join(__dirname, "..", "fixtures", filename)
+    return readFileSync(fixturePath, "utf-8")
+  }
+
+  // Simulate file import using new dialog-based UI
+  async simulateFileImport(page: Page, csvContent: string): Promise<any> {
+    // Open settings menu and click import
+    await page.hover(`[data-testid="${TestIds.inputPopup.settingsTrigger}"]`)
+    await page.waitForSelector(
+      `[data-testid="${TestIds.inputPopup.settingsContent}"]`,
+      { state: "visible" },
+    )
+
+    // Click import button to open dialog
+    await page.click(`[data-testid="${TestIds.settingsMenu.import}"]`)
+
+    // Wait for import dialog to appear
+    await page.waitForSelector(`[data-testid="${TestIds.import.dialog}"]`, {
+      state: "visible",
+      timeout: 5000,
+    })
+
+    // Create a file from CSV content and set it to the file input
+    const fileInput = page.locator(`[data-testid="${TestIds.import.fileInput}"]`)
+    await fileInput.setInputFiles({
+      name: "test.csv",
+      mimeType: "text/csv",
+      buffer: Buffer.from(csvContent),
+    })
+
+    // Wait for import to complete - look for success or error state
+    await page.waitForFunction(
+      () => {
+        const dialog = document.querySelector('[data-testid="import-dialog"]')
+        if (!dialog) return false
+
+        // Check for success state (result display)
+        const successElement = dialog.querySelector('.bg-green-50')
+        if (successElement) return true
+
+        // Check for error state
+        const errorElement = dialog.querySelector('.bg-red-50')
+        if (errorElement) return true
+
+        return false
+      },
+      { timeout: 15000 }
+    )
+
+    // Extract the import result
+    const result = await page.evaluate(() => {
+      const dialog = document.querySelector('[data-testid="import-dialog"]')
+      if (!dialog) return { error: "Dialog not found" }
+
+      // Check for success
+      const successElement = dialog.querySelector('.bg-green-50')
+      if (successElement) {
+        const text = successElement.textContent || ""
+        const importedMatch = text.match(/(\d+)件のプロンプトをインポートしました/)
+        const duplicatesMatch = text.match(/(\d+)件の重複をスキップしました/)
+        const errorsMatch = text.match(/(\d+)件のエラーがありました/)
+
+        return {
+          success: true,
+          imported: importedMatch ? parseInt(importedMatch[1]) : 0,
+          duplicates: duplicatesMatch ? parseInt(duplicatesMatch[1]) : 0,
+          errors: errorsMatch ? parseInt(errorsMatch[1]) : 0,
+          errorMessages: []
+        }
+      }
+
+      // Check for error
+      const errorElement = dialog.querySelector('.bg-red-50')
+      if (errorElement) {
+        const errorText = errorElement.textContent || "Unknown error"
+        return {
+          success: false,
+          error: errorText,
+          imported: 0,
+          duplicates: 0,
+          errors: 1,
+          errorMessages: [errorText]
+        }
+      }
+
+      return { error: "Unknown state" }
+    })
+
+    return result
+  }
+
+  // Simulate export operation and capture downloaded data
+  async simulateExport(page: Page): Promise<string> {
+    // Set up download event listener to capture the actual download
+    const downloadPromise = page.waitForEvent("download", { timeout: 10000 })
+
+    // Alternative: Set up blob capture as fallback
+    await page.evaluate(() => {
+      window.__exportedContent = undefined
+
+      // Override both URL.createObjectURL and download mechanisms
+      const originalCreateObjectURL = URL.createObjectURL
+      URL.createObjectURL = function (blob: Blob) {
+        if (blob.type === "text/csv;charset=utf-8;") {
+          blob
+            .text()
+            .then((text) => {
+              window.__exportedContent = text
+            })
+            .catch(console.error)
+        }
+        return originalCreateObjectURL.call(this, blob)
+      }
+    })
+
+    // Open settings menu
+    await page.click(`[data-testid="${TestIds.inputPopup.settingsTrigger}"]`)
+    await page.waitForSelector(
+      `[data-testid="${TestIds.inputPopup.settingsContent}"]`,
+      { state: "visible" },
+    )
+
+    // Click export button
+    await page.click(`[data-testid="${TestIds.settingsMenu.export}"]`)
+
+    try {
+      // Try to capture via download event first
+      const download = await downloadPromise
+      const path = await download.path()
+      if (path) {
+        console.log("Download captured at path:", path)
+        const fs = await import("fs")
+        return fs.readFileSync(path, "utf-8")
+      }
+    } catch (error) {
+      console.log("Download event failed, trying blob capture:", error)
+    }
+
+    // Fallback to blob capture method
+    await page.waitForTimeout(100) // Give time for export to complete
+
+    const content = await page.evaluate(() => {
+      return new Promise<string>((resolve, reject) => {
+        if (window.__exportedContent) {
+          console.log("Captured via blob override", window.__exportedContent)
+          resolve(window.__exportedContent)
+        } else {
+          let attempts = 0
+          const checkContent = () => {
+            if (window.__exportedContent) {
+              resolve(window.__exportedContent)
+            } else if (attempts < 50) {
+              attempts++
+              setTimeout(checkContent, 100)
+            } else {
+              reject(new Error("Export content not captured"))
+            }
+          }
+          checkContent()
+        }
+      })
+    })
+
+    return content
+  }
+
+  // Compare two sets of prompts for equality (ignoring IDs and timestamps)
+  comparePrompts(expected: StoredPrompt[], actual: StoredPrompt[]): boolean {
+    if (expected.length !== actual.length) {
+      return false
+    }
+
+    const normalize = (prompt: StoredPrompt) => ({
+      name: prompt.name,
+      content: prompt.content,
+      executionCount: prompt.executionCount,
+      isPinned: prompt.isPinned,
+      lastExecutionUrl: prompt.lastExecutionUrl,
+    })
+
+    const expectedNormalized = expected
+      .map(normalize)
+      .sort((a, b) => a.name.localeCompare(b.name))
+    const actualNormalized = actual
+      .map(normalize)
+      .sort((a, b) => a.name.localeCompare(b.name))
+
+    return (
+      JSON.stringify(expectedNormalized) === JSON.stringify(actualNormalized)
+    )
+  }
+
+  // Verify prompt count limit
+  async verifyPromptCountLimit(expectedMax: number): Promise<boolean> {
+    const prompts = await this.getPromptHistory()
+    return prompts.length <= expectedMax
   }
 }

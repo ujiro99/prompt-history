@@ -229,37 +229,27 @@ export class PromptServiceFacade {
   async saveBulkPrompts(prompts: Prompt[]): Promise<ImportResult> {
     this.ensureInitialized()
 
-    try {
-      const result = await this.storageHelper.saveBulkPrompts(prompts)
+    const result = await this.storageHelper.saveBulkPrompts(prompts)
 
-      // Send a summary notification
-      if (result.imported > 0) {
-        this.notify({
-          id: uuid(),
-          type: "success",
-          message: `Successfully imported ${result.imported} prompts${result.duplicates > 0 ? ` (${result.duplicates} duplicates skipped)` : ""}`,
-          duration: 3000,
-        })
-      }
-
-      if (result.errors > 0) {
-        this.notify({
-          id: uuid(),
-          type: "error",
-          message: `${result.errors} prompts failed to import`,
-          duration: 5000,
-        })
-      }
-
-      return result
-    } catch (error) {
-      this.handleError(
-        "BULK_SAVE_FAILED",
-        "Failed to save prompts in bulk",
-        error,
-      )
-      throw error
+    // Send a summary notification
+    if (result.imported > 0) {
+      this.notify({
+        id: uuid(),
+        type: "success",
+        message: `Successfully imported ${result.imported} prompts${result.duplicates > 0 ? ` (${result.duplicates} duplicates skipped)` : ""}`,
+        duration: 3000,
+      })
     }
+
+    return result
+  }
+
+  /**
+   * Check prompts for bulk saving (for import operations)
+   */
+  async checkBulkSaving(prompts: Prompt[]): Promise<ImportResult> {
+    this.ensureInitialized()
+    return await this.storageHelper.checkBulkSaving(prompts)
   }
 
   /**

@@ -17,6 +17,18 @@ export const TestIds = {
     settingsTrigger: "settings-trigger",
     settingsContent: "settings-content",
   },
+  settingsMenu: {
+    import: "settings-import",
+    export: "settings-export",
+  },
+  import: {
+    dialog: "import-dialog",
+    fileInput: "import-file-input",
+    selectButton: "import-select-button",
+    executeButton: "import-execute-button",
+    resetButton: "import-reset-button",
+    closeButton: "import-close-button",
+  },
   autocomplete: {
     popup: "autocomplete-popup",
     item: "suggestion-item",

@@ -38,6 +38,12 @@ export interface ImportResult {
   imported: number
   /** Number of prompts that already existed */
   duplicates: number
+}
+
+/**
+ * Import error information
+ */
+export interface ImportError {
   /** Number of prompts that failed to import */
   errors: number
   /** Error messages if any */

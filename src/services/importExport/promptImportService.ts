@@ -3,6 +3,7 @@ import { PromptServiceFacade } from "@/services/promptServiceFacade"
 import type { ImportResult } from "./types"
 import type { Prompt } from "@/types/prompt"
 import { generatePromptId } from "@/utils/idGenerator"
+import { ImportError } from "./ImportError"
 
 /**
  * Type for CSV row data from Papa Parse (without id field)
@@ -25,44 +26,45 @@ export class PromptImportService {
   private serviceFacade = PromptServiceFacade.getInstance()
 
   /**
-   * Import prompts from CSV file
+   * Check CSV file for duplicates without importing
    */
-  async importFromCSV(): Promise<ImportResult> {
-    return new Promise((resolve, reject) => {
-      const input = document.createElement("input")
-      input.type = "file"
-      input.accept = ".csv"
-      input.style.display = "none"
-
-      input.onchange = async (event) => {
-        const file = (event.target as HTMLInputElement).files?.[0]
-        if (!file) {
-          reject(new Error("No file selected"))
-          return
-        }
-
-        try {
-          const result = await this.processCSVFile(file)
-          resolve(result)
-        } catch (error) {
-          reject(error)
-        }
-      }
-
-      document.body.appendChild(input)
-      input.click()
-      document.body.removeChild(input)
-    })
+  async checkCSVFile(file: File): Promise<ImportResult> {
+    this.validateFile(file)
+    const csvText = await this.readFileAsText(file)
+    const prompts = this.parseCSV(csvText)
+    return await this.serviceFacade.checkBulkSaving(prompts)
   }
 
   /**
-   * Process CSV file and import prompts
+   * Process a file directly for import (UI-agnostic)
    */
-  private async processCSVFile(file: File): Promise<ImportResult> {
+  async processFile(file: File): Promise<ImportResult> {
+    this.validateFile(file)
     const csvText = await this.readFileAsText(file)
     const prompts = this.parseCSV(csvText)
-
     return await this.importPrompts(prompts)
+  }
+
+  /**
+   * Validate file before processing
+   */
+  private validateFile(file: File): void {
+    if (!file) {
+      throw new Error("ファイルが選択されていません")
+    }
+
+    if (file.type !== "text/csv" && !file.name.toLowerCase().endsWith(".csv")) {
+      throw new Error("CSVファイルを選択してください")
+    }
+
+    const maxSize = 10 * 1024 * 1024 // 10MB
+    if (file.size > maxSize) {
+      throw new Error("ファイルサイズが大きすぎます。10MB以下にしてください")
+    }
+
+    if (file.size === 0) {
+      throw new Error("空のファイルは処理できません")
+    }
   }
 
   /**
@@ -93,19 +95,28 @@ export class PromptImportService {
     })
 
     if (parseResult.errors.length > 0) {
-      console.warn("CSV parsing warnings:", parseResult.errors)
+      console.error("CSV parsing error:", parseResult.errors)
+      const msgs = parseResult.errors.map(
+        (e) => (e.row ? `[${e.row + 2}] ${e.message}` : `${e.message}`), // +2 for header and 0-based index
+      )
+      throw new ImportError(parseResult.errors.length, msgs)
     }
 
     const prompts: Prompt[] = []
-
+    const errors: string[] = []
     for (let i = 0; i < parseResult.data.length; i++) {
       try {
         const prompt = this.parseRowData(parseResult.data[i])
         prompts.push(prompt)
       } catch (error) {
-        console.warn(`Failed to parse row ${i + 2}:`, error)
-        // Continue with other rows
+        errors.push(
+          `[${i + 2}] ${error instanceof Error ? error.message : error}`,
+        )
       }
+    }
+    if (errors.length > 0) {
+      console.error("CSV parsing error:", errors)
+      throw new ImportError(errors.length, errors)
     }
 
     return prompts
@@ -157,12 +168,7 @@ export class PromptImportService {
       return await this.serviceFacade.saveBulkPrompts(prompts)
     } catch (error) {
       // If bulk save fails, return an error result
-      return {
-        imported: 0,
-        duplicates: 0,
-        errors: prompts.length,
-        errorMessages: [`Bulk import failed: ${error}`],
-      }
+      throw new ImportError(prompts.length, [`Bulk import failed: ${error}`])
     }
   }
 }

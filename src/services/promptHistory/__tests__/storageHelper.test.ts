@@ -5,6 +5,7 @@ import type { StorageService } from "@/services/storage"
 import type { SessionManager } from "@/services/promptHistory/sessionManager"
 import type { AIServiceInterface } from "@/types/aiService"
 import type { Prompt, SaveDialogData, AppSettings } from "@/types/prompt"
+import type { ImportResult } from "@/services/importExport/types"
 
 // Mock dependencies
 const createMockStorageService = (): StorageService =>
@@ -19,6 +20,8 @@ const createMockStorageService = (): StorageService =>
     unpinPrompt: vi.fn(),
     getPinnedOrder: vi.fn(),
     getSettings: vi.fn(),
+    saveBulkPrompts: vi.fn(),
+    pinBulkPrompts: vi.fn(),
     // Add other required StorageService methods as needed
   }) as unknown as StorageService
 
@@ -699,6 +702,238 @@ describe("StorageHelper", () => {
 
       expect(onSuccess).toHaveBeenCalledWith(updatedPrompt)
       // Cache should be cleared for both original and updated prompts
+    })
+  })
+
+  describe("saveBulkPrompts", () => {
+    const createBulkPrompts = () => [
+      {
+        ...mockPrompt,
+        id: "new-1",
+        name: "New Prompt 1",
+        content: "New content 1",
+        isPinned: false,
+      },
+      {
+        ...mockPrompt,
+        id: "new-2",
+        name: "New Prompt 2",
+        content: "New content 2",
+        isPinned: true,
+      },
+      {
+        ...mockPrompt,
+        id: "duplicate-1",
+        name: "Test Prompt", // Same as mockPrompt
+        content: "Test content", // Same as mockPrompt
+        isPinned: false,
+      },
+    ]
+
+    it("should handle empty array", async () => {
+      const result = await storageHelper.saveBulkPrompts([])
+
+      expect(result).toEqual({
+        imported: 0,
+        duplicates: 0,
+        errors: 0,
+        errorMessages: [],
+      })
+      expect(mockStorage.getAllPrompts).not.toHaveBeenCalled()
+      expect(mockStorage.saveBulkPrompts).not.toHaveBeenCalled()
+    })
+
+    it("should save new prompts successfully", async () => {
+      const newPrompts = [
+        {
+          ...mockPrompt,
+          id: "new-1",
+          name: "New Prompt 1",
+          content: "New content 1",
+          isPinned: false,
+        },
+        {
+          ...mockPrompt,
+          id: "new-2",
+          name: "New Prompt 2",
+          content: "New content 2",
+          isPinned: false,
+        },
+      ]
+      const existingPrompts = [mockPrompt] // Different content
+
+      vi.mocked(mockStorage.getAllPrompts).mockResolvedValue(existingPrompts)
+      vi.mocked(mockStorage.saveBulkPrompts).mockResolvedValue(newPrompts)
+
+      const result = await storageHelper.saveBulkPrompts(newPrompts)
+
+      expect(result).toEqual({
+        imported: 2,
+        duplicates: 0,
+        errors: 0,
+        errorMessages: [],
+      })
+      expect(mockStorage.saveBulkPrompts).toHaveBeenCalledWith(newPrompts)
+      expect(mockStorage.pinBulkPrompts).not.toHaveBeenCalled()
+    })
+
+    it("should detect duplicate prompts by name and content", async () => {
+      const prompts = createBulkPrompts()
+      const existingPrompts = [mockPrompt] // Has same name+content as duplicate-1
+
+      vi.mocked(mockStorage.getAllPrompts).mockResolvedValue(existingPrompts)
+      vi.mocked(mockStorage.saveBulkPrompts).mockResolvedValue([
+        prompts[0],
+        prompts[1],
+      ])
+
+      const result = await storageHelper.saveBulkPrompts(prompts)
+
+      expect(result).toEqual({
+        imported: 2,
+        duplicates: 1,
+        errors: 0,
+        errorMessages: [],
+      })
+      // Should only save non-duplicate prompts
+      expect(mockStorage.saveBulkPrompts).toHaveBeenCalledWith([
+        prompts[0],
+        prompts[1],
+      ])
+    })
+
+    it("should handle pinned prompts", async () => {
+      const prompts = [
+        {
+          ...mockPrompt,
+          id: "pinned-1",
+          name: "Pinned Prompt 1",
+          content: "Pinned content 1",
+          isPinned: true,
+        },
+        {
+          ...mockPrompt,
+          id: "pinned-2",
+          name: "Pinned Prompt 2",
+          content: "Pinned content 2",
+          isPinned: true,
+        },
+      ]
+
+      vi.mocked(mockStorage.getAllPrompts).mockResolvedValue([])
+      vi.mocked(mockStorage.saveBulkPrompts).mockResolvedValue(prompts)
+      vi.mocked(mockStorage.pinBulkPrompts).mockResolvedValue(undefined)
+
+      const result = await storageHelper.saveBulkPrompts(prompts)
+
+      expect(result).toEqual({
+        imported: 2,
+        duplicates: 0,
+        errors: 0,
+        errorMessages: [],
+      })
+      expect(mockStorage.saveBulkPrompts).toHaveBeenCalledWith(prompts)
+      expect(mockStorage.pinBulkPrompts).toHaveBeenCalledWith([
+        "pinned-1",
+        "pinned-2",
+      ])
+    })
+
+    it("should handle mixed new, duplicate, and pinned prompts", async () => {
+      const prompts = createBulkPrompts()
+      const existingPrompts = [mockPrompt] // Matches duplicate-1
+
+      vi.mocked(mockStorage.getAllPrompts).mockResolvedValue(existingPrompts)
+      vi.mocked(mockStorage.saveBulkPrompts).mockResolvedValue([
+        prompts[0],
+        prompts[1],
+      ])
+      vi.mocked(mockStorage.pinBulkPrompts).mockResolvedValue(undefined)
+
+      const result = await storageHelper.saveBulkPrompts(prompts)
+
+      expect(result).toEqual({
+        imported: 2,
+        duplicates: 1,
+        errors: 0,
+        errorMessages: [],
+      })
+      // Should save non-duplicate prompts
+      expect(mockStorage.saveBulkPrompts).toHaveBeenCalledWith([
+        prompts[0],
+        prompts[1],
+      ])
+      // Should pin only the pinned ones
+      expect(mockStorage.pinBulkPrompts).toHaveBeenCalledWith(["new-2"])
+    })
+
+    it("should handle getAllPrompts error", async () => {
+      const prompts = [mockPrompt]
+
+      vi.mocked(mockStorage.getAllPrompts).mockRejectedValue(
+        new Error("Database error"),
+      )
+
+      await expect(storageHelper.saveBulkPrompts(prompts)).rejects.toThrow(
+        "Bulk save failed: Error: Database error",
+      )
+    })
+
+    it("should handle saveBulkPrompts error", async () => {
+      const prompts = [
+        {
+          ...mockPrompt,
+          id: "new-1",
+          name: "New Prompt",
+          content: "New content",
+          isPinned: false,
+        },
+      ]
+
+      vi.mocked(mockStorage.getAllPrompts).mockResolvedValue([])
+      vi.mocked(mockStorage.saveBulkPrompts).mockRejectedValue(
+        new Error("Save failed"),
+      )
+
+      const result = await storageHelper.saveBulkPrompts(prompts)
+
+      expect(result).toEqual({
+        imported: 0,
+        duplicates: 0,
+        errors: 1,
+        errorMessages: ["Bulk save operation failed: Error: Save failed"],
+      })
+    })
+
+    it("should handle all prompts being duplicates", async () => {
+      const prompts = [
+        {
+          ...mockPrompt,
+          id: "dup-1",
+          name: "Test Prompt", // Same as mockPrompt
+          content: "Test content", // Same as mockPrompt
+        },
+        {
+          ...mockPrompt,
+          id: "dup-2",
+          name: "Test Prompt", // Same as mockPrompt
+          content: "Test content", // Same as mockPrompt
+        },
+      ]
+      const existingPrompts = [mockPrompt]
+
+      vi.mocked(mockStorage.getAllPrompts).mockResolvedValue(existingPrompts)
+
+      const result = await storageHelper.saveBulkPrompts(prompts)
+
+      expect(result).toEqual({
+        imported: 0,
+        duplicates: 2,
+        errors: 0,
+        errorMessages: [],
+      })
+      expect(mockStorage.saveBulkPrompts).not.toHaveBeenCalled()
+      expect(mockStorage.pinBulkPrompts).not.toHaveBeenCalled()
     })
   })
 })
