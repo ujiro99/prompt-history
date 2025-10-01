@@ -91,6 +91,11 @@ export function InputMenu(props: Props): React.ReactElement {
     setSelectedMenu(val)
   }
 
+  const handleMenuChange = (val: string) => {
+    setHoveredItem(null) // Reset preview when menu changes.
+    setSelectedMenu(val as MENU)
+  }
+
   const handleItemHover = useCallback(
     (
       promptId: string,
@@ -248,7 +253,7 @@ export function InputMenu(props: Props): React.ReactElement {
       <Menubar
         value={selectedMenu}
         className="gap-0.5 shadow-xs rounded-lg"
-        onValueChange={(v) => setSelectedMenu(v as MENU)}
+        onValueChange={handleMenuChange}
       >
         {/* History Menu */}
         <MenubarMenu value={MENU.History}>
