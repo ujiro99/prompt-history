@@ -26,7 +26,10 @@ export function calculateCompositeScore(prompt: Prompt): number {
   )
 
   // Calculate recency score (0-100, higher is more recent)
-  const recencyScore = Math.max(0, 100 - daysDiff)
+  let recencyScore = Math.max(0, 100 - daysDiff)
+  if (daysDiff === 0) {
+    recencyScore = 200 // Bonus for same-day execution
+  }
 
   // Calculate composite score
   const score =
@@ -297,21 +300,32 @@ export function groupByComposite(prompts: Prompt[]): PromptGroup[] {
 export function groupPrompts(
   prompts: Prompt[],
   sortOrder: SortOrder,
+  sideFlipped: boolean,
 ): PromptGroup[] {
-  const sortedPrompts = sortPrompts(prompts, sortOrder)
+  let sortedPrompts = sortPrompts(prompts, sortOrder)
 
+  // If side is flipped, reverse the sorted order for better UX
+  if (sideFlipped) {
+    sortedPrompts = sortedPrompts.reverse()
+  }
+
+  let grouped: PromptGroup[]
   switch (sortOrder) {
     case "recent":
-      return groupByRecent(sortedPrompts)
+      grouped = groupByRecent(sortedPrompts)
+      break
     case "execution":
-      return groupByExecution(sortedPrompts)
+      grouped = groupByExecution(sortedPrompts)
+      break
     case "name":
-      return groupByName(sortedPrompts)
+      grouped = groupByName(sortedPrompts)
+      break
     case "composite":
-      return groupByComposite(sortedPrompts)
+      grouped = groupByComposite(sortedPrompts)
+      break
     default:
       // Fallback: return all prompts in a single group
-      return [
+      grouped = [
         {
           label: "groups.all",
           prompts: sortedPrompts,
@@ -319,4 +333,9 @@ export function groupPrompts(
         },
       ]
   }
+
+  if (!sideFlipped) {
+    return grouped.reverse()
+  }
+  return grouped
 }
