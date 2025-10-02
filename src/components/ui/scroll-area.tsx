@@ -4,12 +4,14 @@ import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area"
 import { cn } from "@/lib/utils"
 
 type ScrollAreaProps = React.ComponentProps<typeof ScrollAreaPrimitive.Root> & {
+  scrollbarClassName?: string
   viewportRef?: React.RefObject<HTMLDivElement | null>
   viewportClassName?: string
 }
 
 function ScrollArea({
   className,
+  scrollbarClassName,
   children,
   viewportRef,
   viewportClassName,
@@ -31,7 +33,7 @@ function ScrollArea({
       >
         {children}
       </ScrollAreaPrimitive.Viewport>
-      <ScrollBar />
+      <ScrollBar className={scrollbarClassName} />
       <ScrollAreaPrimitive.Corner />
     </ScrollAreaPrimitive.Root>
   )

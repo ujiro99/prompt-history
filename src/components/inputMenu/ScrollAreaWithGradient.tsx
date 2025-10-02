@@ -59,6 +59,7 @@ export function ScrollAreaWithGradient({
     >
       <ScrollArea
         className={className}
+        scrollbarClassName="scrollbar"
         viewportRef={scrollViewportRef}
         viewportClassName="scroll-viewport-timeline"
       >
