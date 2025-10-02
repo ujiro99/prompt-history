@@ -81,19 +81,14 @@ export const PromptList = ({
     )
 
     // Group the filtered prompts
-    const groups = groupPrompts(filtered, sortOrder)
-
-    // Apply sideFlipped transformation if needed
-    const transformedGroups = sideFlipped ? groups : groups.reverse()
+    const groups = groupPrompts(filtered, sortOrder, sideFlipped)
+    console.log("Grouped Prompts:", groups, sideFlipped) // Debug log
 
     // Calculate total count
-    const count = transformedGroups.reduce(
-      (acc, group) => acc + group.prompts.length,
-      0,
-    )
+    const count = groups.reduce((acc, group) => acc + group.prompts.length, 0)
 
     return {
-      filteredGroups: transformedGroups,
+      filteredGroups: groups,
       totalCount: count,
     }
   }, [isLoaded, prompts, sideFlipped, deferredSearchQuery, sortOrder])

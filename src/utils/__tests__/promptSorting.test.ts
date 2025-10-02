@@ -46,6 +46,12 @@ describe("promptSorting", () => {
         executionCount: 1,
         lastExecutedAt: new Date("2024-01-03"),
       }),
+      createMockPrompt({
+        id: "4",
+        name: "Delta",
+        executionCount: 0,
+        lastExecutedAt: new Date(),
+      }),
     ]
   })
 
@@ -55,26 +61,33 @@ describe("promptSorting", () => {
       expect(result[0].id).toBe("1") // oldest first (reversed)
       expect(result[1].id).toBe("2")
       expect(result[2].id).toBe("3")
+      expect(result[3].id).toBe("4")
     })
 
     it("should sort by execution count when sortOrder is 'execution'", () => {
       const result = sortPrompts(mockPrompts, "execution")
-      expect(result[0].id).toBe("3") // lowest count first (reversed)
-      expect(result[1].id).toBe("1")
-      expect(result[2].id).toBe("2")
+      expect(result[0].id).toBe("4") // lowest count first (reversed)
+      expect(result[1].id).toBe("3")
+      expect(result[2].id).toBe("1")
+      expect(result[3].id).toBe("2")
     })
 
     it("should sort by name when sortOrder is 'name'", () => {
       const result = sortPrompts(mockPrompts, "name")
       expect(result[0].name).toBe("Alpha")
       expect(result[1].name).toBe("Beta")
-      expect(result[2].name).toBe("Gamma")
+      expect(result[2].name).toBe("Delta")
+      expect(result[3].name).toBe("Gamma")
     })
 
     it("should sort by composite score when sortOrder is 'composite'", () => {
       const result = sortPrompts(mockPrompts, "composite")
       // Should be sorted by composite score (reversed)
-      expect(result).toHaveLength(3)
+      expect(result[0].id).toBe("3")
+      expect(result[1].id).toBe("1")
+      expect(result[2].id).toBe("2")
+      expect(result[3].id).toBe("4")
+      expect(result).toHaveLength(4)
     })
   })
 
@@ -271,7 +284,7 @@ describe("promptSorting", () => {
       ]
 
       sortOrders.forEach((sortOrder) => {
-        const result = groupPrompts(mockPrompts, sortOrder)
+        const result = groupPrompts(mockPrompts, sortOrder, false)
         expect(result).toBeInstanceOf(Array)
         result.forEach((group) => {
           expect(group).toHaveProperty("label")
@@ -282,7 +295,7 @@ describe("promptSorting", () => {
     })
 
     it("should return fallback group for unknown sort order", () => {
-      const result = groupPrompts(mockPrompts, "unknown" as SortOrder)
+      const result = groupPrompts(mockPrompts, "unknown" as SortOrder, false)
       expect(result).toHaveLength(1)
       expect(result[0].label).toBe("groups.all")
       expect(result[0].prompts).toHaveLength(mockPrompts.length)
