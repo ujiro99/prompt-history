@@ -30,7 +30,13 @@
       "Bash(pnpm e2e:*)",
       "Bash(pnpm run:*)",
       "WebFetch(domain:saruwakakun.com)",
-      "WebFetch(domain:developer.chrome.com)"
+      "WebFetch(domain:developer.chrome.com)",
+      "WebFetch(domain:www.papaparse.com)",
+      "WebFetch(domain:www.radix-ui.com)",
+      "Bash(pnpm exec tsc:*)",
+      "Bash(cat:*)",
+      "mcp__serena__think_about_task_adherence",
+      "WebFetch(domain:stackoverflow.com)"
     ],
     "deny": [],
     "ask": []

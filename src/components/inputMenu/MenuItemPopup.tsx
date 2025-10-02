@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Ellipsis } from "lucide-react"
+import { EllipsisVertical } from "lucide-react"
 import {
   Popover,
   PopoverContent,
@@ -48,7 +48,7 @@ export const MenuItemPopup = ({
           className="outline-gray-200 p-1.5 rounded-md transition group/button hover:bg-gray-200 cursor-pointer"
           onClick={handleClick}
         >
-          <Ellipsis
+          <EllipsisVertical
             size={butttonSize}
             className="stroke-gray-500 group-hover/button:scale-125 transition"
           />

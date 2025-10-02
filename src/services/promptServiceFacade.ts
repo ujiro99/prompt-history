@@ -7,6 +7,7 @@ import type {
   NotificationData,
   PromptError,
 } from "../types/prompt"
+import type { ImportResult } from "./importExport/types"
 import { SessionManager } from "./promptHistory/sessionManager"
 import { StorageHelper } from "./promptHistory/storageHelper"
 import { ExecuteManager } from "./promptHistory/executeManager"
@@ -220,6 +221,35 @@ export class PromptServiceFacade {
         this.handleError("UPDATE_FAILED", "Failed to update prompt", error)
       },
     )
+  }
+
+  /**
+   * Save prompts in bulk (for import operations)
+   */
+  async saveBulkPrompts(prompts: Prompt[]): Promise<ImportResult> {
+    this.ensureInitialized()
+
+    const result = await this.storageHelper.saveBulkPrompts(prompts)
+
+    // Send a summary notification
+    if (result.imported > 0) {
+      this.notify({
+        id: uuid(),
+        type: "success",
+        message: `Successfully imported ${result.imported} prompts${result.duplicates > 0 ? ` (${result.duplicates} duplicates skipped)` : ""}`,
+        duration: 3000,
+      })
+    }
+
+    return result
+  }
+
+  /**
+   * Check prompts for bulk saving (for import operations)
+   */
+  async checkBulkSaving(prompts: Prompt[]): Promise<ImportResult> {
+    this.ensureInitialized()
+    return await this.storageHelper.checkBulkSaving(prompts)
   }
 
   /**

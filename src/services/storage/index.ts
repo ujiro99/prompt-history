@@ -84,6 +84,13 @@ export class StorageService {
   }
 
   /**
+   * Save multiple prompts in bulk (for import operations)
+   */
+  async saveBulkPrompts(prompts: Prompt[]): Promise<Prompt[]> {
+    return await promptsService.saveBulkPrompts(prompts)
+  }
+
+  /**
    * Watch prompts for changes
    * @param callback Callback function to receive updated prompts
    * @returns Unsubscribe function
@@ -165,6 +172,13 @@ export class StorageService {
   }
 
   /**
+   * Pin multiple prompts in bulk (for import operations)
+   */
+  async pinBulkPrompts(ids: string[]): Promise<void> {
+    return await pinsService.pinBulkPrompts(ids)
+  }
+
+  /**
    * Watch pinned order for changes
    * @param callback Callback function to receive updated pinned order
    * @returns Unsubscribe function
@@ -200,6 +214,19 @@ export class StorageService {
     callback: (settings: AppSettings, oldSettings: AppSettings) => void,
   ): () => void {
     return settingsService.watchSettings(callback)
+  }
+
+  /**
+   * Watch a specific setting key for changes
+   * @param key The setting key to watch
+   * @param callback Callback function to receive updated value and old value
+   * @returns Unsubscribe function
+   */
+  watchSetting<K extends keyof AppSettings>(
+    key: K,
+    callback: (value: AppSettings[K], oldValue: AppSettings[K]) => void,
+  ): () => void {
+    return settingsService.watchSetting(key, callback)
   }
 
   // ===================

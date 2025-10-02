@@ -31,6 +31,31 @@ export class PinsService {
   }
 
   /**
+   * Pin multiple prompts in bulk (for import operations)
+   */
+  async pinBulkPrompts(ids: string[]): Promise<void> {
+    if (ids.length === 0) {
+      return
+    }
+
+    try {
+      // Get current pinned order once
+      const currentOrder = await pinnedOrderStorage.getValue()
+      const currentOrderSet = new Set(currentOrder)
+
+      // Filter out IDs that are already pinned to avoid duplicates
+      const newIds = ids.filter((id) => !currentOrderSet.has(id))
+
+      if (newIds.length > 0) {
+        // Single storage write for all new pins
+        await pinnedOrderStorage.setValue([...currentOrder, ...newIds])
+      }
+    } catch (error) {
+      throw this.createError("BULK_PIN_FAILED", "Failed to pin prompts in bulk", error)
+    }
+  }
+
+  /**
    * Unpin prompt
    */
   async unpinPrompt(id: string): Promise<void> {

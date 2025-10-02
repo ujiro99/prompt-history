@@ -1,6 +1,7 @@
 import type { AIServiceInterface } from "../../types/aiService"
 import type { Prompt, SaveDialogData } from "../../types/prompt"
 import type { StorageService } from "../storage"
+import type { ImportResult } from "../importExport/types"
 import { SessionManager } from "./sessionManager"
 
 /**
@@ -13,7 +14,7 @@ export class StorageHelper {
   constructor(
     private storage: StorageService,
     private sessionManager: SessionManager,
-  ) { }
+  ) {}
 
   /**
    * Get single prompt by ID
@@ -408,5 +409,104 @@ export class StorageHelper {
     }
 
     return cleanContent.substring(0, maxLength - 3) + "..."
+  }
+
+  /**
+   * Bulk save prompts (for import operations)
+   */
+  async saveBulkPrompts(prompts: Prompt[]): Promise<ImportResult> {
+    const result: ImportResult = {
+      imported: 0,
+      duplicates: 0,
+    }
+
+    if (prompts.length === 0) {
+      return result
+    }
+
+    try {
+      // Get existing prompts for duplicate check
+      const existingPrompts = await this.storage.getAllPrompts()
+      const existingPromptKeys = new Set(
+        existingPrompts.map((p) => `${p.name}:${p.content}`),
+      )
+
+      const promptsToSave: Prompt[] = []
+      const promptsToPin: string[] = []
+
+      // Filter out duplicates and prepare for batch save
+      for (const prompt of prompts) {
+        const promptKey = `${prompt.name}:${prompt.content}`
+        if (existingPromptKeys.has(promptKey)) {
+          result.duplicates++
+          continue
+        }
+
+        promptsToSave.push(prompt)
+        if (prompt.isPinned) {
+          promptsToPin.push(prompt.id)
+        }
+      }
+
+      if (promptsToSave.length > 0) {
+        // Bulk save - single storage operation for all prompts
+        const savedPrompts = await this.storage.saveBulkPrompts(promptsToSave)
+        result.imported = savedPrompts.length
+
+        // Bulk pin - single storage operation for all pins
+        if (promptsToPin.length > 0) {
+          await this.storage.pinBulkPrompts(promptsToPin)
+        }
+      }
+
+      return result
+    } catch (error) {
+      throw new Error(`Save failed: ${error}`)
+    }
+  }
+
+  /**
+   * Check prompts for bulk saving (for import operations)
+   * Returns how many would be imported, duplicates, errors
+   */
+  async checkBulkSaving(prompts: Prompt[]): Promise<ImportResult> {
+    const result: ImportResult = {
+      imported: 0,
+      duplicates: 0,
+    }
+
+    if (prompts.length === 0) {
+      throw new Error("No prompts to import")
+    }
+
+    try {
+      // Get existing prompts for duplicate check
+      const existingPrompts = await this.storage.getAllPrompts()
+      const existingPromptKeys = new Set(
+        existingPrompts.map((p) => `${p.name}:${p.content}`),
+      )
+
+      const promptsToSave: Prompt[] = []
+      const promptsToPin: string[] = []
+
+      // Filter out duplicates and prepare for batch save
+      for (const prompt of prompts) {
+        const promptKey = `${prompt.name}:${prompt.content}`
+        if (existingPromptKeys.has(promptKey)) {
+          result.duplicates++
+          continue
+        }
+
+        promptsToSave.push(prompt)
+        if (prompt.isPinned) {
+          promptsToPin.push(prompt.id)
+        }
+      }
+
+      result.imported = promptsToSave.length
+      return result
+    } catch (error) {
+      throw new Error(`Bulk save checking failed: ${error}`)
+    }
   }
 }

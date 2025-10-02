@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils"
+import { i18n } from "#imports"
 
 interface GroupHeaderProps {
   labelKey: string
@@ -18,7 +19,7 @@ export const GroupHeader = ({
   const getDisplayLabel = (key: string): string => {
     if (key.startsWith("groups.year:")) {
       const year = key.split(":")[1]
-      return i18n.t("groups.year", { year })
+      return i18n.t("groups.year", [year])
     }
     return i18n.t(key)
   }

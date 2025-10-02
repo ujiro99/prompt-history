@@ -78,3 +78,7 @@
 .scroll-gradient-container[data-scrollable="false"] .scroll-gradient-bottom {
   display: none;
 }
+
+.scrollbar {
+  z-index: 11;
+}

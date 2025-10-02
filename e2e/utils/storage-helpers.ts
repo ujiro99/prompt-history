@@ -9,7 +9,7 @@ export const getServiceWorker = async (context: BrowserContext) => {
 }
 
 export class StorageHelpers {
-  constructor(private context: BrowserContext) { }
+  constructor(private context: BrowserContext) {}
 
   // Get data from extension local storage
   async getExtensionData<T>(key: string): Promise<T> {
@@ -144,5 +144,37 @@ export class StorageHelpers {
 
     await this.setPromptHistory(mockData)
     return mockData
+  }
+
+  // Compare two sets of prompts for equality (ignoring IDs and timestamps)
+  comparePrompts(expected: StoredPrompt[], actual: StoredPrompt[]): boolean {
+    if (expected.length !== actual.length) {
+      return false
+    }
+
+    const normalize = (prompt: StoredPrompt) => ({
+      name: prompt.name,
+      content: prompt.content,
+      executionCount: prompt.executionCount,
+      isPinned: prompt.isPinned,
+      lastExecutionUrl: prompt.lastExecutionUrl,
+    })
+
+    const expectedNormalized = expected
+      .map(normalize)
+      .sort((a, b) => a.name.localeCompare(b.name))
+    const actualNormalized = actual
+      .map(normalize)
+      .sort((a, b) => a.name.localeCompare(b.name))
+
+    return (
+      JSON.stringify(expectedNormalized) === JSON.stringify(actualNormalized)
+    )
+  }
+
+  // Verify prompt count limit
+  async verifyPromptCountLimit(expectedMax: number): Promise<boolean> {
+    const prompts = await this.getPromptHistory()
+    return prompts.length <= expectedMax
   }
 }

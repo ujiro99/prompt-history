@@ -1,5 +1,6 @@
 import type { Prompt, StoredPrompt, PromptError } from "../../types/prompt"
 import { promptsStorage, settingsStorage } from "./definitions"
+import { generatePromptId } from "../../utils/idGenerator"
 
 /**
  * Prompt management service
@@ -39,7 +40,7 @@ export class PromptsService {
       const now = new Date()
       const newPrompt: Prompt = {
         ...prompt,
-        id: this.generateId(),
+        id: generatePromptId(),
         createdAt: now,
         updatedAt: now,
       }
@@ -200,15 +201,49 @@ export class PromptsService {
   }
 
   /**
-   * Generate unique ID
+   * Save multiple prompts in bulk (for import operations)
    */
-  private generateId(): string {
-    // Use native crypto.randomUUID() if available (modern browsers)
-    if (typeof crypto !== "undefined" && crypto.randomUUID) {
-      return "prompt_" + crypto.randomUUID()
+  async saveBulkPrompts(prompts: Prompt[]): Promise<Prompt[]> {
+    if (prompts.length === 0) {
+      return []
     }
-    // Fallback for older browsers or environments without crypto.randomUUID()
-    return `prompt_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`
+
+    try {
+      const now = new Date()
+      const savedPrompts: Prompt[] = []
+
+      // Get current prompts once
+      const currentPrompts = await promptsStorage.getValue()
+      const updatedPrompts = { ...currentPrompts }
+
+      // Process all prompts in memory
+      for (const prompt of prompts) {
+        const newPrompt: Prompt = {
+          ...prompt,
+          id: prompt.id || generatePromptId(), // Use existing ID or generate new one
+          createdAt: prompt.createdAt || now,
+          updatedAt: now,
+        }
+
+        const storedPrompt = this.toStoredPrompt(newPrompt)
+        updatedPrompts[newPrompt.id] = storedPrompt
+        savedPrompts.push(newPrompt)
+      }
+
+      // Single storage write for all prompts
+      await promptsStorage.setValue(updatedPrompts)
+
+      // Check maximum count once
+      await this.enforceMaxPrompts()
+
+      return savedPrompts
+    } catch (error) {
+      throw this.createError(
+        "BULK_SAVE_FAILED",
+        "Failed to save prompts in bulk",
+        error,
+      )
+    }
   }
 
   /**

@@ -3,10 +3,12 @@ import { cn } from "@/lib/utils"
 import { PromptServiceFacade } from "@/services/promptServiceFacade"
 import { AutoCompleteItem } from "./AutoCompleteItem"
 import { useAutoComplete } from "./useAutoComplete"
+import { useSettings } from "@/hooks/useSettings"
 import { Popover, PopoverContent, PopoverAnchor } from "../ui/popover"
 import { TestIds } from "@/components/const"
 import { Key } from "@/components/Key"
 import { isWindows } from "@/utils/platform"
+import { i18n } from "#imports"
 import type { Prompt } from "../../types/prompt"
 
 const serviceFacade = PromptServiceFacade.getInstance()
@@ -15,9 +17,33 @@ const noFocus = (e: Event) => e.preventDefault()
 
 interface AutoCompletePopupProps {
   prompts: Prompt[]
+  pinnedPrompts: Prompt[]
 }
 
-export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = ({
+export const AutoCompletePopup: React.FC<AutoCompletePopupProps> = (
+  props: AutoCompletePopupProps,
+) => {
+  const {
+    settings: { autoCompleteEnabled, autoCompleteTarget },
+  } = useSettings()
+
+  // Do not render if auto-complete is disabled
+  if (!autoCompleteEnabled) return null
+
+  // Choose prompts based on target setting
+  let prompts = props.prompts
+  if (autoCompleteTarget === "pinned") {
+    prompts = props.pinnedPrompts
+  }
+
+  return <AutoCompletePopupInner prompts={prompts} />
+}
+
+interface AutoCompletePopupInnerProps {
+  prompts: Prompt[]
+}
+
+const AutoCompletePopupInner: React.FC<AutoCompletePopupInnerProps> = ({
   prompts,
 }) => {
   const {

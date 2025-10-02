@@ -8,25 +8,21 @@ import {
   MenubarTrigger,
 } from "@/components/ui/menubar"
 import { useCaretNode } from "@/hooks/useCaretNode"
+import { useContainer } from "@/hooks/useContainer"
 import { PromptPreview } from "./PromptPreview"
 import { RemoveDialog } from "@/components/inputMenu/controller/RemoveDialog"
 import { EditDialog } from "@/components/inputMenu/controller/EditDialog"
 import { BridgeArea } from "@/components/BridgeArea"
 import { PromptServiceFacade } from "@/services/promptServiceFacade"
 import { SaveMode } from "@/types/prompt"
-import { TestIds } from "@/components/const"
+import { MENU, TestIds } from "@/components/const"
 import { PromptList } from "@/components/inputMenu/PromptList"
+import { SettingsMenu } from "./SettingsMenu"
 import { cn, isEmpty } from "@/lib/utils"
 import type { Prompt, SaveDialogData } from "@/types/prompt"
+import { i18n } from "#imports"
 
 const serviceFacade = PromptServiceFacade.getInstance()
-
-enum MENU {
-  None = "None",
-  History = "History",
-  Pinned = "Pinned",
-  Save = "Save",
-}
 
 type Props = {
   targetElm: Element | null
@@ -90,9 +86,15 @@ export function InputMenu(props: Props): React.ReactElement {
     useState<HTMLDivElement | null>(null)
 
   const { nodeAtCaret } = useCaretNode()
+  const { container } = useContainer()
 
   const handleMenuEnter = (val: MENU) => {
     setSelectedMenu(val)
+  }
+
+  const handleMenuChange = (val: string) => {
+    setHoveredItem(null) // Reset preview when menu changes.
+    setSelectedMenu(val as MENU)
   }
 
   const handleItemHover = useCallback(
@@ -252,7 +254,7 @@ export function InputMenu(props: Props): React.ReactElement {
       <Menubar
         value={selectedMenu}
         className="gap-0.5 shadow-xs rounded-lg"
-        onValueChange={(v) => setSelectedMenu(v as MENU)}
+        onValueChange={handleMenuChange}
       >
         {/* History Menu */}
         <MenubarMenu value={MENU.History}>
@@ -269,6 +271,7 @@ export function InputMenu(props: Props): React.ReactElement {
             onSideFlip={(side) => setHistorySideFlipped(side !== "top")}
             ref={setHistoryContentElm}
             data-testid={TestIds.inputPopup.historyList}
+            container={container}
           >
             <PromptList
               menuType="history"
@@ -295,8 +298,8 @@ export function InputMenu(props: Props): React.ReactElement {
         {/* Pinned Menu */}
         <MenubarMenu value={MENU.Pinned}>
           <MenuTrigger
-            onMouseEnter={() => handleMenuEnter(MENU.Pinned)}
             ref={setPinnedAnchorElm}
+            onMouseEnter={() => handleMenuEnter(MENU.Pinned)}
             data-testid={TestIds.inputPopup.pinnedTrigger}
           >
             <Star size={16} className="stroke-gray-600" />
@@ -307,6 +310,7 @@ export function InputMenu(props: Props): React.ReactElement {
             onSideFlip={(side) => setPinnedSideFlipped(side !== "top")}
             ref={setPinnedContentElm}
             data-testid={TestIds.inputPopup.pinnedList}
+            container={container}
           >
             <PromptList
               menuType="pinned"
@@ -340,6 +344,9 @@ export function InputMenu(props: Props): React.ReactElement {
             <Save size={16} className="stroke-gray-600" />
           </MenuTrigger>
         </MenubarMenu>
+
+        {/* Settings Menu */}
+        <SettingsMenu onMouseEnter={() => handleMenuEnter(MENU.Settings)} />
       </Menubar>
 
       {/* PromptPreview Overlay */}

@@ -115,7 +115,7 @@ groups:
   yesterday: 昨日
   thisWeek: 1週間以内
   thisMonth: 1ヶ月以内
-  year: "{year}年"
+  year: "$1年"
 
   # Execution count groups
   highFrequency: "高頻度 (20回以上)"
@@ -140,6 +140,58 @@ groups:
 
   # Fallback
   all: すべて
+
+# Settings
+settings:
+  groups:
+    feature: 機能のON・OFF
+    autocompleteTarget: 入力補完の対象
+    importExport: インポート・エクスポート
+  autoSave: プロンプト自動保存
+  autoComplete: 入力補完
+  notifications: ステータス通知
+  autoCompleteTarget:
+    all: すべてのプロンプト
+    pinned: スター付きのみ
+  export: プロンプトをエクスポート
+  import: プロンプトをインポート
+
+# Import Dialog
+importDialog:
+  title: プロンプトのインポート
+  description: CSVファイルからプロンプトを追加します。
+  selectFile: ファイルを選択
+  selectFileLabel: CSVファイルを選択
+  selectAnotherFile: 別のファイルを選択
+  execute: インポートを実行
+  executeLabel: CSVファイルからプロンプトをインポート
+  close: 終了
+  cancel: キャンセル
+  status:
+    idle: CSVファイルを選択してください
+    checking: チェック中
+    checkingDescription: チェック中です
+    checkOk: チェックOK
+    importing: インポート中...
+    importResult: インポート結果
+    errorTitle: エラー
+    errorPrompt: ファイルを確認してください
+  result:
+    willImport: "✓ $1件のプロンプトをインポートします"
+    noPrompts: "• インポートするプロンプトはありません"
+    hasDuplicates: "• $1件の重複があります"
+    imported: "✓ $1件のプロンプトをインポートしました"
+    skippedDuplicates: "• $1件の重複をスキップしました"
+  error:
+    selectCsv: CSVファイルを選択してください
+    noFile: ファイルが選択されていません
+    invalidFileType: CSVファイルを選択してください
+    fileTooLarge: ファイルサイズが大きすぎます。10MB以下にしてください
+    emptyFile: 空のファイルは処理できません
+    readFileFailed: ファイルの読み込みに失敗しました
+    missingField: "必須フィールドがありません: $1"
+    bulkImportFailed: "一括インポートに失敗しました: $1"
+    unknown: 不明なエラーが発生しました
 
 # Accessibility labels
 accessibility:

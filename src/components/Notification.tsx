@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { CircleCheck, CircleOff, CircleAlert } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useSettings } from "@/hooks/useSettings"
 import type { NotificationData } from "../types/prompt"
 
 interface NotificationProps {
@@ -102,6 +103,15 @@ export const NotificationManager: React.FC<NotificationManagerProps> = ({
   notifications,
   onDismiss,
 }) => {
+  const {
+    settings: { showNotifications },
+  } = useSettings()
+
+  if (!showNotifications) {
+    notifications.forEach((n) => onDismiss(n.id))
+    return null
+  }
+
   return (
     <div className="fixed bottom-10 right-4 opacity-60 pointer-events-none select-none space-y-2 z-[10001]">
       {notifications.map((notification) => (
