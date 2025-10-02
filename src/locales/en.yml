@@ -115,7 +115,7 @@ groups:
   yesterday: Yesterday
   thisWeek: This week
   thisMonth: This month
-  year: "{year}"
+  year: "$1"
 
   # Execution count groups
   highFrequency: "High frequency (20+ times)"

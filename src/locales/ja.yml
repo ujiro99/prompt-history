@@ -115,7 +115,7 @@ groups:
   yesterday: 昨日
   thisWeek: 1週間以内
   thisMonth: 1ヶ月以内
-  year: "{year}年"
+  year: "$1年"
 
   # Execution count groups
   highFrequency: "高頻度 (20回以上)"
