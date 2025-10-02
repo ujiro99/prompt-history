@@ -28,6 +28,13 @@ export const TestIds = {
     executeButton: "import-execute-button",
     resetButton: "import-reset-button",
     closeButton: "import-close-button",
+    ui: {
+      willImport: "will-import",
+      noPrompts: "no-prompts",
+      duplicate: "duplicate-prompts",
+      imported: "imported-prompts",
+      errors: "import-errors",
+    },
   },
   autocomplete: {
     popup: "autocomplete-popup",

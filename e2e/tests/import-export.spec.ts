@@ -2,6 +2,7 @@ import { test, expect } from "../fixtures/extension"
 import { TestPage } from "../page-objects/TestPage"
 import { StorageHelpers } from "../utils/storage-helpers"
 import { WaitHelpers } from "../utils/wait-helpers"
+import { TestIds } from "@/components/const"
 
 test.describe("Import/Export Functionality Tests", () => {
   let testPage: TestPage
@@ -38,6 +39,10 @@ test.describe("Import/Export Functionality Tests", () => {
 
       // Import the data back
       await storageHelpers.simulateFileImport(page, exportedData)
+      await waitHelpers.waitForCondition(async () => {
+        const prompts = await storageHelpers.getPromptHistory()
+        return prompts.length === originalPrompts.length
+      }, 1000)
 
       // Verify imported data matches original
       const importedPrompts = await storageHelpers.getPromptHistory()
@@ -53,18 +58,55 @@ test.describe("Import/Export Functionality Tests", () => {
       page,
     }) => {
       // Create initial prompts
-      const initialPrompts = await storageHelpers.createMockPromptHistory(3)
+      await storageHelpers.createMockPromptHistory(3)
 
       // Export prompts
       const exportedData = await storageHelpers.simulateExport(page)
       expect(exportedData).toBeTruthy()
 
       // Import the same data back (should not create duplicates)
-      await storageHelpers.simulateFileImport(page, exportedData)
+      // Open settings menu and click import
+      await page.hover(`[data-testid="${TestIds.inputPopup.settingsTrigger}"]`)
+      await page.waitForSelector(
+        `[data-testid="${TestIds.inputPopup.settingsContent}"]`,
+        { state: "visible" },
+      )
 
-      // Verify no duplicates were created
-      const finalPrompts = await storageHelpers.getPromptHistory()
-      expect(finalPrompts.length).toBe(initialPrompts.length)
+      // Click import button to open dialog
+      await page.click(`[data-testid="${TestIds.settingsMenu.import}"]`)
+
+      // Wait for import dialog to appear
+      await page.waitForSelector(`[data-testid="${TestIds.import.dialog}"]`, {
+        state: "visible",
+        timeout: 5000,
+      })
+
+      // Create a file from CSV content and set it to the file input
+      const fileInput = page.locator(
+        `[data-testid="${TestIds.import.fileInput}"]`,
+      )
+      await fileInput.setInputFiles({
+        name: "test.csv",
+        mimeType: "text/csv",
+        buffer: Buffer.from(exportedData),
+      })
+
+      // Verify duplicates prompts were not created.
+      await page.waitForSelector(
+        `[data-testid="${TestIds.import.ui.noPrompts}"]`,
+        {
+          state: "visible",
+          timeout: 5000,
+        },
+      )
+      await page.waitForSelector(
+        `[data-testid="${TestIds.import.ui.duplicate}"]`,
+        {
+          state: "visible",
+          timeout: 5000,
+        },
+      )
+      expect(page.getByTestId(TestIds.import.executeButton)).not.toBeVisible()
     })
 
     test("should export prompts with correct CSV format", async ({ page }) => {
@@ -114,9 +156,16 @@ test.describe("Import/Export Functionality Tests", () => {
       // Import special characters data
       await storageHelpers.simulateFileImport(page, specialCharsCSV)
 
+      // Wait until all prompts are imported
+      const expectedCount = 5
+      await waitHelpers.waitForCondition(async () => {
+        const prompts = await storageHelpers.getPromptHistory()
+        return prompts.length === expectedCount
+      }, 1000)
+
       // Verify special characters are preserved
       const importedPrompts = await storageHelpers.getPromptHistory()
-      expect(importedPrompts.length).toBe(5)
+      expect(importedPrompts.length).toBe(expectedCount)
 
       // Check for specific special character preservation
       const quotesPrompt = importedPrompts.find((p) =>
@@ -187,6 +236,11 @@ test.describe("Import/Export Functionality Tests", () => {
       await storageHelpers.clearExtensionData()
       await storageHelpers.simulateFileImport(page, exportedData)
 
+      await waitHelpers.waitForCondition(async () => {
+        const prompts = await storageHelpers.getPromptHistory()
+        return prompts.length === 2
+      }, 1000)
+
       const reimportedPrompts = await storageHelpers.getPromptHistory()
       expect(reimportedPrompts.length).toBe(2)
 
@@ -217,9 +271,9 @@ test.describe("Import/Export Functionality Tests", () => {
       const exportedData = await storageHelpers.simulateExport(page)
 
       // Should export headers only
-      expect(exportedData).toContain("name,content,executionCount")
+      expect(exportedData).toContain(`"name","content","executionCount"`)
       expect(exportedData).toContain(
-        "lastExecutedAt,isPinned,lastExecutionUrl,createdAt,updatedAt",
+        `"lastExecutedAt","isPinned","lastExecutionUrl","createdAt","updatedAt"`,
       )
 
       // Should have header line + empty line only
@@ -231,12 +285,12 @@ test.describe("Import/Export Functionality Tests", () => {
       // Load empty CSV fixture
       const emptyCSV = storageHelpers.loadFixtureCSV("empty-prompts.csv")
 
-      // Import empty file
-      await storageHelpers.simulateFileImport(page, emptyCSV)
+      // Set import file to dialog
+      await storageHelpers.openAndSetImportDialog(page, emptyCSV)
 
       // Verify no prompts were added
-      const prompts = await storageHelpers.getPromptHistory()
-      expect(prompts.length).toBe(0)
+      expect(page.getByTestId(TestIds.import.ui.errors)).toBeVisible()
+      expect(page.getByTestId(TestIds.import.executeButton)).not.toBeVisible()
     })
 
     test("should handle import of CSV with only whitespace", async ({
@@ -246,12 +300,12 @@ test.describe("Import/Export Functionality Tests", () => {
       const whitespaceCSV =
         '"name","content","executionCount","lastExecutedAt","isPinned","lastExecutionUrl","createdAt","updatedAt"\n   \n  \t  \n'
 
-      // Import whitespace file
-      await storageHelpers.simulateFileImport(page, whitespaceCSV)
+      // Set import file to dialog
+      await storageHelpers.openAndSetImportDialog(page, whitespaceCSV)
 
       // Verify no prompts were added
-      const prompts = await storageHelpers.getPromptHistory()
-      expect(prompts.length).toBe(0)
+      expect(page.getByTestId(TestIds.import.ui.errors)).toBeVisible()
+      expect(page.getByTestId(TestIds.import.executeButton)).not.toBeVisible()
     })
   })
 
@@ -263,22 +317,11 @@ test.describe("Import/Export Functionality Tests", () => {
       )
 
       // Attempt import - this should complete without throwing
-      try {
-        await storageHelpers.simulateFileImport(page, malformedCSV)
-      } catch (error) {
-        // Import should handle errors gracefully, not throw
-        console.log("Import completed with errors (expected):", error)
-      }
+      await storageHelpers.openAndSetImportDialog(page, malformedCSV)
 
-      // Valid rows should still be imported despite some invalid ones
-      const prompts = await storageHelpers.getPromptHistory()
-      expect(prompts.length).toBeGreaterThan(0) // Some valid rows should be imported
-      expect(prompts.length).toBeLessThan(5) // But not all rows due to malformed data
-
-      // Verify valid prompts were imported correctly
-      const validPrompt = prompts.find((p) => p.name === "Valid Prompt")
-      expect(validPrompt).toBeDefined()
-      expect(validPrompt?.content).toBe("Valid content")
+      // Verify no prompts were added
+      expect(page.getByTestId(TestIds.import.ui.errors)).toBeVisible()
+      expect(page.getByTestId(TestIds.import.executeButton)).not.toBeVisible()
     })
 
     test("should handle CSV format errors (wrong headers)", async ({
@@ -287,17 +330,12 @@ test.describe("Import/Export Functionality Tests", () => {
       // Load CSV with wrong headers
       const wrongHeadersCSV = storageHelpers.loadFixtureCSV("wrong-headers.csv")
 
-      // Attempt import - should handle wrong headers gracefully
-      try {
-        await storageHelpers.simulateFileImport(page, wrongHeadersCSV)
-      } catch (error) {
-        // Expected to fail due to wrong headers
-        console.log("Import failed as expected due to wrong headers:", error)
-      }
+      // Attempt import - this should complete without throwing
+      await storageHelpers.openAndSetImportDialog(page, wrongHeadersCSV)
 
-      // Should not import data with wrong headers
-      const prompts = await storageHelpers.getPromptHistory()
-      expect(prompts.length).toBe(0) // No prompts should be imported
+      // Verify no prompts were added
+      expect(page.getByTestId(TestIds.import.ui.errors)).toBeVisible()
+      expect(page.getByTestId(TestIds.import.executeButton)).not.toBeVisible()
     })
 
     test("should truncate imports when exceeding 1000 prompt limit", async ({
@@ -309,15 +347,21 @@ test.describe("Import/Export Functionality Tests", () => {
       // Import large file
       await storageHelpers.simulateFileImport(page, largeCSV)
 
+      // Wait until import is processed
+      const expectedMaxCount = 1000
+      await waitHelpers.waitForCondition(async () => {
+        const prompts = await storageHelpers.getPromptHistory()
+        return prompts.length === expectedMaxCount
+      }, 1000)
+
       // Verify limit is enforced
-      const isWithinLimit = await storageHelpers.verifyPromptCountLimit(1000)
+      const isWithinLimit =
+        await storageHelpers.verifyPromptCountLimit(expectedMaxCount)
       expect(isWithinLimit).toBe(true)
 
-      const prompts = await storageHelpers.getPromptHistory()
-      expect(prompts.length).toBeLessThanOrEqual(1000)
-
       // Should have imported exactly 1000 (the limit)
-      expect(prompts.length).toBe(1000)
+      const prompts = await storageHelpers.getPromptHistory()
+      expect(prompts.length).toBe(expectedMaxCount)
     })
 
     test("should handle existing prompts + import limit correctly", async ({
@@ -346,78 +390,11 @@ test.describe("Import/Export Functionality Tests", () => {
         "this,is,not,valid,csv,data\n{json:like,data},invalid\n"
 
       // Attempt import
-      try {
-        await storageHelpers.simulateFileImport(page, invalidCSV)
-      } catch (error) {
-        console.log("Import failed as expected for invalid CSV:", error)
-      }
+      await storageHelpers.openAndSetImportDialog(page, invalidCSV)
 
       // Should not import any invalid data
-      const prompts = await storageHelpers.getPromptHistory()
-      expect(prompts.length).toBe(0)
-    })
-  })
-
-  test.describe("Import Result Feedback", () => {
-    test("should handle mixed valid/invalid data appropriately", async ({
-      page,
-    }) => {
-      // Start with clean state
-      await storageHelpers.clearExtensionData()
-
-      // Mix of valid and invalid data
-      const mixedCSV = storageHelpers.loadFixtureCSV("malformed-prompts.csv")
-
-      // Import should complete without throwing errors
-      try {
-        await storageHelpers.simulateFileImport(page, mixedCSV)
-      } catch (error) {
-        console.log("Import completed with some errors (expected):", error)
-      }
-
-      // Verify only valid data was imported
-      const prompts = await storageHelpers.getPromptHistory()
-
-      // Should have some prompts (the valid ones)
-      expect(prompts.length).toBeGreaterThan(0)
-
-      // All imported prompts should have valid required fields
-      prompts.forEach((prompt) => {
-        expect(prompt.name).toBeTruthy()
-        expect(prompt.content).toBeTruthy()
-        expect(prompt.id).toBeTruthy()
-        expect(typeof prompt.executionCount).toBe("number")
-        expect(typeof prompt.isPinned).toBe("boolean")
-      })
-    })
-
-    test("should preserve data integrity during partial imports", async ({
-      page,
-    }) => {
-      // Create some existing data
-      const existingPrompts = await storageHelpers.createMockPromptHistory(2)
-
-      // Import mixed data (some valid, some invalid)
-      const mixedCSV = storageHelpers.loadFixtureCSV("malformed-prompts.csv")
-
-      try {
-        await storageHelpers.simulateFileImport(page, mixedCSV)
-      } catch (error) {
-        console.log("Partial import completed:", error)
-      }
-
-      const finalPrompts = await storageHelpers.getPromptHistory()
-
-      // Should have original + new valid prompts
-      expect(finalPrompts.length).toBeGreaterThan(existingPrompts.length)
-
-      // Original prompts should still exist
-      existingPrompts.forEach((originalPrompt) => {
-        const stillExists = finalPrompts.some(
-          (p) => p.name === originalPrompt.name,
-        )
-        expect(stillExists).toBe(true)
-      })
+      expect(page.getByTestId(TestIds.import.ui.errors)).toBeVisible()
+      expect(page.getByTestId(TestIds.import.executeButton)).not.toBeVisible()
     })
   })
 })

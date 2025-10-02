@@ -34,7 +34,9 @@
       "WebFetch(domain:www.papaparse.com)",
       "WebFetch(domain:www.radix-ui.com)",
       "Bash(pnpm exec tsc:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "mcp__serena__think_about_task_adherence",
+      "WebFetch(domain:stackoverflow.com)"
     ],
     "deny": [],
     "ask": []

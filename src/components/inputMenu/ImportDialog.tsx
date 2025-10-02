@@ -314,16 +314,18 @@ export function ImportDialog({
               )}
               <div className="text-sm text-center text-green-700 space-y-1">
                 {result.imported > 0 ? (
-                  <p>
+                  <p data-testid={TestIds.import.ui.willImport}>
                     {i18n.t("importDialog.result.willImport", [
                       result.imported,
                     ])}
                   </p>
                 ) : (
-                  <p>{i18n.t("importDialog.result.noPrompts")}</p>
+                  <p data-testid={TestIds.import.ui.noPrompts}>
+                    {i18n.t("importDialog.result.noPrompts")}
+                  </p>
                 )}
                 {result.duplicates > 0 && (
-                  <p>
+                  <p data-testid={TestIds.import.ui.duplicate}>
                     {i18n.t("importDialog.result.hasDuplicates", [
                       result.duplicates,
                     ])}
@@ -367,11 +369,11 @@ export function ImportDialog({
                 </p>
               )}
               <div className="text-sm text-center text-green-700 space-y-1">
-                <p>
+                <p data-testid={TestIds.import.ui.imported}>
                   {i18n.t("importDialog.result.imported", [result.imported])}
                 </p>
                 {result.duplicates > 0 && (
-                  <p>
+                  <p data-testid={TestIds.import.ui.duplicate}>
                     {i18n.t("importDialog.result.skippedDuplicates", [
                       result.duplicates,
                     ])}
@@ -391,7 +393,10 @@ export function ImportDialog({
               <h4 className="font-medium text-red-700 mb-2">
                 {i18n.t("importDialog.status.errorTitle")}
               </h4>
-              <p className="text-sm text-red-700 whitespace-pre-line">
+              <p
+                className="text-sm text-red-700 whitespace-pre-line"
+                data-testid={TestIds.import.ui.errors}
+              >
                 {error}
               </p>
             </div>

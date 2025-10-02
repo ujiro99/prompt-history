@@ -159,8 +159,8 @@ export class StorageHelpers {
     return readFileSync(fixturePath, "utf-8")
   }
 
-  // Simulate file import using new dialog-based UI
-  async simulateFileImport(page: Page, csvContent: string): Promise<any> {
+  // Open import dialog and set CSV content to file input
+  async openAndSetImportDialog(page: Page, csvContent: string): Promise<void> {
     // Open settings menu and click import
     await page.hover(`[data-testid="${TestIds.inputPopup.settingsTrigger}"]`)
     await page.waitForSelector(
@@ -178,72 +178,60 @@ export class StorageHelpers {
     })
 
     // Create a file from CSV content and set it to the file input
-    const fileInput = page.locator(`[data-testid="${TestIds.import.fileInput}"]`)
+    const fileInput = page.locator(
+      `[data-testid="${TestIds.import.fileInput}"]`,
+    )
     await fileInput.setInputFiles({
       name: "test.csv",
       mimeType: "text/csv",
       buffer: Buffer.from(csvContent),
     })
+  }
 
-    // Wait for import to complete - look for success or error state
-    await page.waitForFunction(
-      () => {
-        const dialog = document.querySelector('[data-testid="import-dialog"]')
-        if (!dialog) return false
+  // Simulate file import using new dialog-based UI
+  async simulateFileImport(page: Page, csvContent: string): Promise<any> {
+    // Open settings menu and click import
+    await this.openAndSetImportDialog(page, csvContent)
 
-        // Check for success state (result display)
-        const successElement = dialog.querySelector('.bg-green-50')
-        if (successElement) return true
+    // Click the execute import button.
+    await page.click(`[data-testid="${TestIds.import.executeButton}"]`)
 
-        // Check for error state
-        const errorElement = dialog.querySelector('.bg-red-50')
-        if (errorElement) return true
+    // Extract the import result from shadow-dom
+    const host = page.locator("prompt-history-ui")
+    const dialog = host.locator(`[data-testid="${TestIds.import.dialog}"]`)
+    await dialog.waitFor({ state: "visible" })
 
-        return false
-      },
-      { timeout: 15000 }
+    // Check for success
+    const successElement = dialog.locator(
+      `[data-testid="${TestIds.import.ui.imported}"]`,
     )
+    const isSuccess = await successElement.isVisible()
 
-    // Extract the import result
-    const result = await page.evaluate(() => {
-      const dialog = document.querySelector('[data-testid="import-dialog"]')
-      if (!dialog) return { error: "Dialog not found" }
-
-      // Check for success
-      const successElement = dialog.querySelector('.bg-green-50')
-      if (successElement) {
-        const text = successElement.textContent || ""
-        const importedMatch = text.match(/(\d+)件のプロンプトをインポートしました/)
-        const duplicatesMatch = text.match(/(\d+)件の重複をスキップしました/)
-        const errorsMatch = text.match(/(\d+)件のエラーがありました/)
-
-        return {
-          success: true,
-          imported: importedMatch ? parseInt(importedMatch[1]) : 0,
-          duplicates: duplicatesMatch ? parseInt(duplicatesMatch[1]) : 0,
-          errors: errorsMatch ? parseInt(errorsMatch[1]) : 0,
-          errorMessages: []
-        }
+    if (isSuccess) {
+      return {
+        success: true,
       }
+    }
 
-      // Check for error
-      const errorElement = dialog.querySelector('.bg-red-50')
-      if (errorElement) {
-        const errorText = errorElement.textContent || "Unknown error"
-        return {
-          success: false,
-          error: errorText,
-          imported: 0,
-          duplicates: 0,
-          errors: 1,
-          errorMessages: [errorText]
-        }
+    // Check for error
+    const errorElement = dialog.locator(
+      `[data-testid="${TestIds.import.ui.errors}"]`,
+    )
+    const isError = await errorElement.isVisible()
+
+    if (isError) {
+      const errorText = (await errorElement.textContent()) || "Unknown error"
+      return {
+        success: false,
+        error: errorText,
+        imported: 0,
+        duplicates: 0,
+        errors: 1,
+        errorMessages: [errorText],
       }
+    }
 
-      return { error: "Unknown state" }
-    })
-
-    return result
+    return { error: "Unknown state" }
   }
 
   // Simulate export operation and capture downloaded data
