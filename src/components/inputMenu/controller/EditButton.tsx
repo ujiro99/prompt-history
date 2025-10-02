@@ -1,5 +1,6 @@
 import React from "react"
 import { Pencil } from "lucide-react"
+import { i18n } from "#imports"
 
 import { cn } from "@/lib/utils"
 

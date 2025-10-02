@@ -8,6 +8,7 @@ import { Popover, PopoverContent, PopoverAnchor } from "../ui/popover"
 import { TestIds } from "@/components/const"
 import { Key } from "@/components/Key"
 import { isWindows } from "@/utils/platform"
+import { i18n } from "#imports"
 import type { Prompt } from "../../types/prompt"
 
 const serviceFacade = PromptServiceFacade.getInstance()

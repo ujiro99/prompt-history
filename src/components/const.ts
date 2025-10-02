@@ -40,7 +40,7 @@ export const TestIds = {
     popup: "autocomplete-popup",
     item: "suggestion-item",
   },
-}
+} as const
 
 export enum MENU {
   None = "None",

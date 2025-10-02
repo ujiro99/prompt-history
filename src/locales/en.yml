@@ -146,7 +146,7 @@ settings:
   groups:
     feature: Features ON/OFF
     autocompleteTarget: Autocomplete target
-    inportExport: Import/Export
+    importExport: Import/Export
   autoSave: Auto-save prompts
   autoComplete: Auto-complete
   notifications: Status notifications
@@ -191,6 +191,7 @@ importDialog:
     readFileFailed: Failed to read file
     missingField: "Missing required field: $1"
     bulkImportFailed: "Bulk import failed: $1"
+    unknown: An unknown error occurred
 
 # Accessibility labels
 accessibility:

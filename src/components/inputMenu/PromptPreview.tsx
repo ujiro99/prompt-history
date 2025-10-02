@@ -2,6 +2,7 @@ import { useState } from "react"
 import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/popover"
 import { BridgeArea } from "../BridgeArea"
 import type { Prompt } from "@/types/prompt"
+import { i18n } from "#imports"
 
 interface PromptDetailProps {
   open: boolean

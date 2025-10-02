@@ -1,5 +1,6 @@
 import React from "react"
 import { Copy } from "lucide-react"
+import { i18n } from "#imports"
 
 import { cn } from "@/lib/utils"
 

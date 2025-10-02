@@ -146,7 +146,7 @@ settings:
   groups:
     feature: 機能のON・OFF
     autocompleteTarget: 入力補完の対象
-    inportExport: インポート・エクスポート
+    importExport: インポート・エクスポート
   autoSave: プロンプト自動保存
   autoComplete: 入力補完
   notifications: ステータス通知
@@ -191,6 +191,7 @@ importDialog:
     readFileFailed: ファイルの読み込みに失敗しました
     missingField: "必須フィールドがありません: $1"
     bulkImportFailed: "一括インポートに失敗しました: $1"
+    unknown: 不明なエラーが発生しました
 
 # Accessibility labels
 accessibility:

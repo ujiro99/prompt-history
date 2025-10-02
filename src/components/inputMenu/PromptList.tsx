@@ -21,6 +21,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { useContainer } from "@/hooks/useContainer"
+import { i18n } from "#imports"
 
 const orders: SortOrder[] = ["recent", "execution", "name", "composite"]
 

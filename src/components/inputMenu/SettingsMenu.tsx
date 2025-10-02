@@ -19,6 +19,7 @@ import { ImportDialog } from "./ImportDialog"
 import { MENU, TestIds } from "@/components/const"
 import type { AppSettings } from "@/types/prompt"
 import type { ImportResult } from "@/services/importExport/types"
+import { i18n } from "#imports"
 
 type Props = {
   onMouseEnter: () => void
@@ -170,7 +171,7 @@ export function SettingsMenu({ onMouseEnter }: Props): React.ReactElement {
 
             {/* Action Settings Group */}
             <MenubarLabel className="text-xs font-medium text-muted-foreground">
-              {i18n.t("settings.groups.inportExport")}
+              {i18n.t("settings.groups.importExport")}
             </MenubarLabel>
             <MenubarItem
               onClick={handleExport}

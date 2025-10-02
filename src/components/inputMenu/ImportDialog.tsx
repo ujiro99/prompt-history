@@ -22,6 +22,7 @@ import { promptImportService } from "@/services/importExport"
 import type { ImportResult } from "@/services/importExport/types"
 import { TestIds } from "@/components/const"
 import { ImportError } from "@/services/importExport/ImportError"
+import { i18n } from "#imports"
 
 interface ImportDialogProps {
   open: boolean
@@ -84,7 +85,7 @@ export function ImportDialog({
           ? err.message
           : err instanceof Error
             ? err.message
-            : "不明なエラーが発生しました"
+            : i18n.t("importDialog.error.unknown")
       setError(errorMessage)
       setState(ImportState.Error)
     }
@@ -106,7 +107,7 @@ export function ImportDialog({
           ? err.message
           : err instanceof Error
             ? err.message
-            : "不明なエラーが発生しました"
+            : i18n.t("importDialog.error.unknown")
       setError(errorMessage)
       setState(ImportState.Error)
     }

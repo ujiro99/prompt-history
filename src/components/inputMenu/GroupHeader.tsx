@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils"
+import { i18n } from "#imports"
 
 interface GroupHeaderProps {
   labelKey: string

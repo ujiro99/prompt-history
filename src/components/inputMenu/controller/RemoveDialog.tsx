@@ -1,6 +1,7 @@
 import { useRef } from "react"
 import { Trash2 } from "lucide-react"
 import { useContainer } from "@/hooks/useContainer"
+import { i18n } from "#imports"
 
 import {
   Dialog,

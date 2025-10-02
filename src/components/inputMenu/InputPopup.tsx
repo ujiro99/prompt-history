@@ -20,6 +20,7 @@ import { PromptList } from "@/components/inputMenu/PromptList"
 import { SettingsMenu } from "./SettingsMenu"
 import { cn, isEmpty } from "@/lib/utils"
 import type { Prompt, SaveDialogData } from "@/types/prompt"
+import { i18n } from "#imports"
 
 const serviceFacade = PromptServiceFacade.getInstance()
 

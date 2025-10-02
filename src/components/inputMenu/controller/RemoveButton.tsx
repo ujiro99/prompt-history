@@ -1,5 +1,6 @@
 import { Trash } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { i18n } from "#imports"
 
 type RemoveButtonProps = {
   onClick: () => void

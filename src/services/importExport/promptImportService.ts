@@ -4,6 +4,7 @@ import type { ImportResult } from "./types"
 import type { Prompt } from "@/types/prompt"
 import { generatePromptId } from "@/utils/idGenerator"
 import { ImportError } from "./ImportError"
+import { i18n } from "#imports"
 
 /**
  * Type for CSV row data from Papa Parse (without id field)

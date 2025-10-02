@@ -9,6 +9,7 @@ import { SettingsProvider } from "@/contexts/SettingsContext"
 import { isEmpty, uuid } from "@/lib/utils"
 import type { Prompt, NotificationData, PromptError } from "../types/prompt"
 import { TestIds } from "@/components/const"
+import { i18n } from "#imports"
 
 // Singleton instance for compatibility
 const serviceFacade = PromptServiceFacade.getInstance()
