@@ -24,9 +24,7 @@ test.describe("Import/Export Functionality Tests", () => {
   })
 
   test.describe("正常系 - Normal Import/Export Operations", () => {
-    test("should export and import prompts successfully with data integrity", async ({
-      page,
-    }) => {
+    test("should export and import prompts successfully with data integrity", async () => {
       // Setup: Create initial test data
       const originalPrompts = await storageHelpers.createMockPromptHistory(5)
 
@@ -88,7 +86,7 @@ test.describe("Import/Export Functionality Tests", () => {
       expect(page.getByTestId(TestIds.import.executeButton)).not.toBeVisible()
     })
 
-    test("should export prompts with correct CSV format", async ({ page }) => {
+    test("should export prompts with correct CSV format", async () => {
       // Create specific test data
       const testPrompts = [
         {
@@ -124,9 +122,7 @@ test.describe("Import/Export Functionality Tests", () => {
   })
 
   test.describe("特殊文字 - Special Characters Handling", () => {
-    test("should export and import prompts with special characters correctly", async ({
-      page,
-    }) => {
+    test("should export and import prompts with special characters correctly", async () => {
       // Load special characters test data
       const specialCharsCSV = importExportPage.loadFixtureCSV(
         "special-chars-prompts.csv",
@@ -171,9 +167,7 @@ test.describe("Import/Export Functionality Tests", () => {
       expect(emojiPrompt?.content).toContain("🎉")
     })
 
-    test("should export prompts with special characters and maintain formatting", async ({
-      page,
-    }) => {
+    test("should export prompts with special characters and maintain formatting", async () => {
       // Create prompts with special characters
       const specialPrompts = [
         {
@@ -240,7 +234,7 @@ test.describe("Import/Export Functionality Tests", () => {
   })
 
   test.describe("空データ - Empty Data Handling", () => {
-    test("should handle export when no prompts exist", async ({ page }) => {
+    test("should handle export when no prompts exist", async () => {
       // Ensure storage is empty
       await storageHelpers.clearExtensionData()
       const emptyCheck = await storageHelpers.getPromptHistory()
@@ -307,7 +301,8 @@ test.describe("Import/Export Functionality Tests", () => {
       page,
     }) => {
       // Load CSV with wrong headers
-      const wrongHeadersCSV = importExportPage.loadFixtureCSV("wrong-headers.csv")
+      const wrongHeadersCSV =
+        importExportPage.loadFixtureCSV("wrong-headers.csv")
 
       // Attempt import - this should complete without throwing
       await importExportPage.openAndSelectImportFile(wrongHeadersCSV)
@@ -317,9 +312,7 @@ test.describe("Import/Export Functionality Tests", () => {
       expect(page.getByTestId(TestIds.import.executeButton)).not.toBeVisible()
     })
 
-    test("should truncate imports when exceeding 1000 prompt limit", async ({
-      page,
-    }) => {
+    test("should truncate imports when exceeding 1000 prompt limit", async () => {
       // Load large CSV with 1005 prompts
       const largeCSV = importExportPage.loadFixtureCSV("large-prompts.csv")
 
@@ -343,9 +336,7 @@ test.describe("Import/Export Functionality Tests", () => {
       expect(prompts.length).toBe(expectedMaxCount)
     })
 
-    test("should handle existing prompts + import limit correctly", async ({
-      page,
-    }) => {
+    test("should handle existing prompts + import limit correctly", async () => {
       // Create 995 existing prompts (close to limit)
       await storageHelpers.createMockPromptHistory(995)
 

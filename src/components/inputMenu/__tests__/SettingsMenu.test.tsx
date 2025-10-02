@@ -26,10 +26,7 @@ vi.mock("@/services/importExport", () => ({
     importFromCSV: vi.fn(),
   },
 }))
-import {
-  promptExportService,
-  promptImportService,
-} from "@/services/importExport"
+import { promptExportService } from "@/services/importExport"
 
 type MockMenubarProps = {
   onMouseEnter?: () => void
