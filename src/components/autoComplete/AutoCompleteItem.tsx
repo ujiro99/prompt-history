@@ -49,7 +49,7 @@ export const AutoCompleteItem: React.FC<AutoCompleteItemProps> = ({
     >
       {isSelected && <ChevronRight size={18} className="text-gray-500" />}
       <div className="w-full overflow-hidden">
-        <p className="truncate font-light">
+        <p className="truncate">
           {name1}
           <span className="font-medium bg-amber-100 px-0.5 rounded">
             {name2}
@@ -62,7 +62,7 @@ export const AutoCompleteItem: React.FC<AutoCompleteItemProps> = ({
             />
           )}
         </p>
-        <div className="text-xs text-gray-500 truncate mt-0.5">
+        <div className="text-xs text-gray-600 truncate mt-0.5 font-light">
           {match.content}
         </div>
       </div>
