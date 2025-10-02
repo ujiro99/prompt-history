@@ -1,16 +1,19 @@
 import { test, expect } from "../fixtures/extension"
 import { TestPage } from "../page-objects/TestPage"
+import { ImportExportPage } from "../page-objects/ImportExportPage"
 import { StorageHelpers } from "../utils/storage-helpers"
 import { WaitHelpers } from "../utils/wait-helpers"
 import { TestIds } from "@/components/const"
 
 test.describe("Import/Export Functionality Tests", () => {
   let testPage: TestPage
+  let importExportPage: ImportExportPage
   let storageHelpers: StorageHelpers
   let waitHelpers: WaitHelpers
 
   test.beforeEach(async ({ page }) => {
     testPage = new TestPage(page)
+    importExportPage = new ImportExportPage(page)
     storageHelpers = new StorageHelpers(page.context())
     waitHelpers = new WaitHelpers(page)
 
@@ -28,7 +31,7 @@ test.describe("Import/Export Functionality Tests", () => {
       const originalPrompts = await storageHelpers.createMockPromptHistory(5)
 
       // Export the data
-      const exportedData = await storageHelpers.simulateExport(page)
+      const exportedData = await importExportPage.exportToCSV()
       expect(exportedData).toContain(`"name","content","executionCount"`)
       expect(exportedData.split("\n").length).toBeGreaterThan(5) // Header + 5 data rows
 
@@ -38,7 +41,7 @@ test.describe("Import/Export Functionality Tests", () => {
       expect(emptyPrompts.length).toBe(0)
 
       // Import the data back
-      await storageHelpers.simulateFileImport(page, exportedData)
+      await importExportPage.importFromCSV(exportedData)
       await waitHelpers.waitForCondition(async () => {
         const prompts = await storageHelpers.getPromptHistory()
         return prompts.length === originalPrompts.length
@@ -61,35 +64,11 @@ test.describe("Import/Export Functionality Tests", () => {
       await storageHelpers.createMockPromptHistory(3)
 
       // Export prompts
-      const exportedData = await storageHelpers.simulateExport(page)
+      const exportedData = await importExportPage.exportToCSV()
       expect(exportedData).toBeTruthy()
 
       // Import the same data back (should not create duplicates)
-      // Open settings menu and click import
-      await page.hover(`[data-testid="${TestIds.inputPopup.settingsTrigger}"]`)
-      await page.waitForSelector(
-        `[data-testid="${TestIds.inputPopup.settingsContent}"]`,
-        { state: "visible" },
-      )
-
-      // Click import button to open dialog
-      await page.click(`[data-testid="${TestIds.settingsMenu.import}"]`)
-
-      // Wait for import dialog to appear
-      await page.waitForSelector(`[data-testid="${TestIds.import.dialog}"]`, {
-        state: "visible",
-        timeout: 5000,
-      })
-
-      // Create a file from CSV content and set it to the file input
-      const fileInput = page.locator(
-        `[data-testid="${TestIds.import.fileInput}"]`,
-      )
-      await fileInput.setInputFiles({
-        name: "test.csv",
-        mimeType: "text/csv",
-        buffer: Buffer.from(exportedData),
-      })
+      await importExportPage.openAndSelectImportFile(exportedData)
 
       // Verify duplicates prompts were not created.
       await page.waitForSelector(
@@ -128,7 +107,7 @@ test.describe("Import/Export Functionality Tests", () => {
       await storageHelpers.setPromptHistory(testPrompts)
 
       // Export and verify CSV format
-      const exportedData = await storageHelpers.simulateExport(page)
+      const exportedData = await importExportPage.exportToCSV()
 
       // Check CSV headers
       expect(exportedData).toContain(
@@ -149,12 +128,12 @@ test.describe("Import/Export Functionality Tests", () => {
       page,
     }) => {
       // Load special characters test data
-      const specialCharsCSV = storageHelpers.loadFixtureCSV(
+      const specialCharsCSV = importExportPage.loadFixtureCSV(
         "special-chars-prompts.csv",
       )
 
       // Import special characters data
-      await storageHelpers.simulateFileImport(page, specialCharsCSV)
+      await importExportPage.importFromCSV(specialCharsCSV)
 
       // Wait until all prompts are imported
       const expectedCount = 5
@@ -224,7 +203,7 @@ test.describe("Import/Export Functionality Tests", () => {
       await storageHelpers.setPromptHistory(specialPrompts)
 
       // Export and verify CSV formatting
-      const exportedData = await storageHelpers.simulateExport(page)
+      const exportedData = await importExportPage.exportToCSV()
 
       // Verify special characters are properly escaped in CSV
       expect(exportedData).toContain('""quotes""') // Double quotes should be escaped
@@ -234,7 +213,7 @@ test.describe("Import/Export Functionality Tests", () => {
 
       // Verify round-trip: import back and check data integrity
       await storageHelpers.clearExtensionData()
-      await storageHelpers.simulateFileImport(page, exportedData)
+      await importExportPage.importFromCSV(exportedData)
 
       await waitHelpers.waitForCondition(async () => {
         const prompts = await storageHelpers.getPromptHistory()
@@ -268,7 +247,7 @@ test.describe("Import/Export Functionality Tests", () => {
       expect(emptyCheck.length).toBe(0)
 
       // Attempt export
-      const exportedData = await storageHelpers.simulateExport(page)
+      const exportedData = await importExportPage.exportToCSV()
 
       // Should export headers only
       expect(exportedData).toContain(`"name","content","executionCount"`)
@@ -283,10 +262,10 @@ test.describe("Import/Export Functionality Tests", () => {
 
     test("should handle import of empty CSV file", async ({ page }) => {
       // Load empty CSV fixture
-      const emptyCSV = storageHelpers.loadFixtureCSV("empty-prompts.csv")
+      const emptyCSV = importExportPage.loadFixtureCSV("empty-prompts.csv")
 
       // Set import file to dialog
-      await storageHelpers.openAndSetImportDialog(page, emptyCSV)
+      await importExportPage.openAndSelectImportFile(emptyCSV)
 
       // Verify no prompts were added
       expect(page.getByTestId(TestIds.import.ui.errors)).toBeVisible()
@@ -301,7 +280,7 @@ test.describe("Import/Export Functionality Tests", () => {
         '"name","content","executionCount","lastExecutedAt","isPinned","lastExecutionUrl","createdAt","updatedAt"\n   \n  \t  \n'
 
       // Set import file to dialog
-      await storageHelpers.openAndSetImportDialog(page, whitespaceCSV)
+      await importExportPage.openAndSelectImportFile(whitespaceCSV)
 
       // Verify no prompts were added
       expect(page.getByTestId(TestIds.import.ui.errors)).toBeVisible()
@@ -312,12 +291,12 @@ test.describe("Import/Export Functionality Tests", () => {
   test.describe("準正常系 - Error Handling", () => {
     test("should handle CSV parse errors gracefully", async ({ page }) => {
       // Load malformed CSV fixture
-      const malformedCSV = storageHelpers.loadFixtureCSV(
+      const malformedCSV = importExportPage.loadFixtureCSV(
         "malformed-prompts.csv",
       )
 
       // Attempt import - this should complete without throwing
-      await storageHelpers.openAndSetImportDialog(page, malformedCSV)
+      await importExportPage.openAndSelectImportFile(malformedCSV)
 
       // Verify no prompts were added
       expect(page.getByTestId(TestIds.import.ui.errors)).toBeVisible()
@@ -328,10 +307,10 @@ test.describe("Import/Export Functionality Tests", () => {
       page,
     }) => {
       // Load CSV with wrong headers
-      const wrongHeadersCSV = storageHelpers.loadFixtureCSV("wrong-headers.csv")
+      const wrongHeadersCSV = importExportPage.loadFixtureCSV("wrong-headers.csv")
 
       // Attempt import - this should complete without throwing
-      await storageHelpers.openAndSetImportDialog(page, wrongHeadersCSV)
+      await importExportPage.openAndSelectImportFile(wrongHeadersCSV)
 
       // Verify no prompts were added
       expect(page.getByTestId(TestIds.import.ui.errors)).toBeVisible()
@@ -342,10 +321,10 @@ test.describe("Import/Export Functionality Tests", () => {
       page,
     }) => {
       // Load large CSV with 1005 prompts
-      const largeCSV = storageHelpers.loadFixtureCSV("large-prompts.csv")
+      const largeCSV = importExportPage.loadFixtureCSV("large-prompts.csv")
 
       // Import large file
-      await storageHelpers.simulateFileImport(page, largeCSV)
+      await importExportPage.importFromCSV(largeCSV)
 
       // Wait until import is processed
       const expectedMaxCount = 1000
@@ -371,10 +350,10 @@ test.describe("Import/Export Functionality Tests", () => {
       await storageHelpers.createMockPromptHistory(995)
 
       // Load CSV with 5 valid prompts
-      const additionalCSV = storageHelpers.loadFixtureCSV("valid-prompts.csv")
+      const additionalCSV = importExportPage.loadFixtureCSV("valid-prompts.csv")
 
       // Import additional prompts
-      await storageHelpers.simulateFileImport(page, additionalCSV)
+      await importExportPage.importFromCSV(additionalCSV)
 
       // Should still respect 1000 limit
       const isWithinLimit = await storageHelpers.verifyPromptCountLimit(1000)
@@ -390,7 +369,7 @@ test.describe("Import/Export Functionality Tests", () => {
         "this,is,not,valid,csv,data\n{json:like,data},invalid\n"
 
       // Attempt import
-      await storageHelpers.openAndSetImportDialog(page, invalidCSV)
+      await importExportPage.openAndSelectImportFile(invalidCSV)
 
       // Should not import any invalid data
       expect(page.getByTestId(TestIds.import.ui.errors)).toBeVisible()
