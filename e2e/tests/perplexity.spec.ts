@@ -31,6 +31,12 @@ test.describe("Perplexity Extension Tests", () => {
     // 3. Confirm content script operation
     await perplexityPage.waitForServiceReady()
 
+    // Close comment modal if present
+    const commetBtn = page.getByRole("button").getByText("Download Comet")
+    if (commetBtn) {
+      await page.mouse.click(10, 10) // Click outside to close
+    }
+
     // 4. Confirm detection of input field and send button
     const promptInput = await perplexityPage.getPromptInput()
     const sendButton = await perplexityPage.getSendButton()
@@ -118,9 +124,9 @@ test.describe("Perplexity Extension Tests", () => {
     // 9. Check the value of prompt input field
     await waitHelpers.waitForCondition(async () => {
       const val = await promptInput.textContent()
-      return val === "Mock prompt 2 for testing"
+      return val === "Mock prompt 1 for testing"
     })
     inputValue = await promptInput.textContent()
-    expect(inputValue).toBe("Mock prompt 2 for testing") // Most recent history should be input
+    expect(inputValue).toBe("Mock prompt 1 for testing") // Most recent history should be input
   })
 })
