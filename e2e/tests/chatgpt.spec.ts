@@ -101,15 +101,19 @@ test.describe("ChatGPT Extension Tests", () => {
     const historyItems = await inputPopup.getHistoryItems()
     expect(historyItems.length).toBeGreaterThan(0)
 
-    // Select the first (most recent) history item
+    // Select the first item
     await inputPopup.selectHistoryItem(0)
+
+    // The sort order is `Recent usage & execution count score`.
+    // If it appears under the menu, the previously entered ID 1 will be selected.
+    // If it appears above the menu, the order will be reversed, and the oldest ID 2 will be selected.
 
     // 9. Check the value of prompt input field
     await waitHelpers.waitForCondition(async () => {
       const val = await promptInput.textContent()
-      return val === "Mock prompt 2 for testing"
+      return val === "Mock prompt 1 for testing"
     })
     inputValue = await promptInput.textContent()
-    expect(inputValue).toBe("Mock prompt 2 for testing") // Most recent history should be input
+    expect(inputValue).toBe("Mock prompt 1 for testing") // Most recent history should be input
   })
 })

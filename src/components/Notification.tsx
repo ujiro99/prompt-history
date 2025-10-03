@@ -107,8 +107,14 @@ export const NotificationManager: React.FC<NotificationManagerProps> = ({
     settings: { showNotifications },
   } = useSettings()
 
+  useEffect(() => {
+    // Dismiss all notifications if disabled
+    if (!showNotifications) {
+      notifications.forEach((n) => onDismiss(n.id))
+    }
+  }, [showNotifications, notifications, onDismiss])
+
   if (!showNotifications) {
-    notifications.forEach((n) => onDismiss(n.id))
     return null
   }
 

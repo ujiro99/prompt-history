@@ -92,8 +92,6 @@ export class StorageHelpers {
     await serviceWorker.evaluate(() => {
       if (typeof chrome !== "undefined" && chrome.storage) {
         chrome.storage.local.clear()
-      } else {
-        localStorage.clear()
       }
     })
   }

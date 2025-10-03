@@ -8,11 +8,6 @@ export interface Selectors {
   sendButton: string
 }
 
-interface PageResult {
-  ret: boolean
-  err?: string
-}
-
 export abstract class BasePage {
   protected selectors: Selectors
 
@@ -107,39 +102,19 @@ export abstract class BasePage {
     return new AutocompletePopup(this.page)
   }
 
-  async checkExtensionElementsPresence(): Promise<PageResult> {
-    const result = await this.page.evaluate((testIds) => {
-      const shadowHost = document.querySelector("prompt-history-ui")
-      if (!shadowHost) {
-        return { ret: false, err: "Shadow host not found" }
-      }
-
-      // Access shadow root
-      const shadowRoot =
-        (shadowHost as any).shadowRoot || (shadowHost as any).__wxtShadowRoot
-      if (!shadowRoot) {
-        return { ret: false, err: "Shadow root not found" }
-      }
-
-      // Search for elements within Shadow DOM
-      const extensionElements = [
-        `[data-testid="${testIds.inputPopup.popup}"]`,
-        `[data-testid="${testIds.inputPopup.historyTrigger}"]`,
-      ]
-
-      for (const selector of extensionElements) {
-        const element = shadowRoot.querySelector(selector)
-        if (element) {
-          return { ret: true }
-        }
-      }
-      return {
-        ret: false,
-        err: `Extension elements not found in Shadow DOM. Looking for: ${JSON.stringify(extensionElements)}.`,
-      }
-    }, TestIds)
-
-    return result
+  async checkExtensionElementsPresence(): Promise<void> {
+    await this.page.waitForSelector(
+      `[data-testid="${TestIds.inputPopup.popup}"]`,
+      {
+        timeout: 5000,
+      },
+    )
+    await this.page.waitForSelector(
+      `[data-testid="${TestIds.inputPopup.historyTrigger}"]`,
+      {
+        timeout: 5000,
+      },
+    )
   }
 
   // Abstract methods (service-specific implementation)
