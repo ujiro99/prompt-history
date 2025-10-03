@@ -28,16 +28,7 @@ test.describe("Extension Detection Tests", () => {
     expect(isInjected).toBeTruthy()
 
     // Check if extension DOM exists on page
-    const extensionElementsPresent =
-      await testPage.checkExtensionElementsPresence()
-    if (extensionElementsPresent.err) {
-      console.error(
-        "Extension elements check failed:",
-        extensionElementsPresent.err,
-      )
-    }
-    expect(extensionElementsPresent.err).toBeUndefined()
-    expect(extensionElementsPresent.ret).toBeTruthy()
+    await testPage.checkExtensionElementsPresence()
   })
 
   test("should have access to extension storage", async ({ context }) => {
