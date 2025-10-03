@@ -101,10 +101,11 @@ test.describe("Gemini Extension Tests", () => {
     const historyItems = await inputPopup.getHistoryItems()
     expect(historyItems.length).toBeGreaterThan(0)
 
-    // Select the first (most recent) history item
+    // Select the first item
     await inputPopup.selectHistoryItem(0)
 
     // 9. Check the value of prompt input field
+    // - Intended to be displayed under the menu
     await waitHelpers.waitForCondition(async () => {
       const val = await promptInput.textContent()
       return val === "Mock prompt 2 for testing"

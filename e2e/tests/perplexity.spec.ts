@@ -118,7 +118,7 @@ test.describe("Perplexity Extension Tests", () => {
     const historyItems = await inputPopup.getHistoryItems()
     expect(historyItems.length).toBeGreaterThan(0)
 
-    // Select the first (most recent) history item
+    // Select the first item
     await inputPopup.selectHistoryItem(0)
 
     // 9. Check the value of prompt input field
