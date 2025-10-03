@@ -160,7 +160,7 @@ export interface PromptError {
   /** Error message */
   message: string
   /** Error details */
-  details?: any
+  details?: unknown
 }
 
 /**

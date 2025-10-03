@@ -162,6 +162,21 @@ export default [
       "no-empty-pattern": "off", // Ignore empty destructuring in test fixtures
     },
   },
+  // Configuration for Next.js files
+  {
+    files: ["pages/**/*.{js,jsx,ts,tsx}"],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+        React: "readonly",
+        process: "readonly",
+      },
+    },
+    rules: {
+      "@typescript-eslint/triple-slash-reference": "off",
+    },
+  },
   {
     ignores: [
       "node_modules/**",
@@ -169,6 +184,7 @@ export default [
       "dist/**",
       ".wxt/**",
       "coverage/**",
+      "pages/.next/**",
     ],
   },
 ]

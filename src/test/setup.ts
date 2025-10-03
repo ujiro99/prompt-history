@@ -71,12 +71,12 @@ vi.stubGlobal("TextDecoder", CompatibleTextDecoder)
 
 // Simple Port implementation
 function createFakePort(name = "test-port") {
-  const listeners: Array<(msg: any) => void> = []
+  const listeners: Array<(msg: unknown) => void> = []
   return {
     name,
     disconnect: vi.fn(),
-    onMessage: { addListener: (fn: (msg: any) => void) => listeners.push(fn) },
-    postMessage: vi.fn((msg: any) => {
+    onMessage: { addListener: (fn: (msg: unknown) => void) => listeners.push(fn) },
+    postMessage: vi.fn((msg: unknown) => {
       for (const l of listeners) l(msg)
     }),
   }
@@ -84,7 +84,7 @@ function createFakePort(name = "test-port") {
 
 const BrowserMock = {
   runtime: {
-    connect: vi.fn((_extId?: string, _info?: any) => {
+    connect: vi.fn((_extId?: string, _info?: { name?: string }) => {
       return createFakePort(_info?.name)
     }),
   },
