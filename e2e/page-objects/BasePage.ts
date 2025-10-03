@@ -8,11 +8,6 @@ export interface Selectors {
   sendButton: string
 }
 
-interface PageResult {
-  ret: boolean
-  err?: string
-}
-
 export abstract class BasePage {
   protected selectors: Selectors
 
