@@ -1,5 +1,6 @@
 import { CTAButton } from "@/components/CTAButton"
 import { FAQItem } from "@/components/FAQItem"
+import { Image } from "@/components/Image"
 import { IssueCard } from "@/components/IssueCard"
 import { SectionHeading } from "@/components/SectionHeading"
 import { SolutionCard } from "@/components/SolutionCard"
@@ -7,7 +8,22 @@ import { SolutionCard } from "@/components/SolutionCard"
 export default function Home() {
   return (
     <main>
-      <section className="py-20 md:py-32 text-center px-4 sm:px-6 lg:px-8">
+      <section
+        id="logo"
+        className="flex justify-center items-center pt-20 gap-6"
+      >
+        <Image
+          src="/icon.png"
+          alt="Chrome Web Store"
+          className="inline-block"
+          width={70}
+          height={70}
+        />
+        <p className="text-4xl md:text-6xl font-serif font-semibold text-zinc-600 tracking-wider">
+          Prompt history
+        </p>
+      </section>
+      <section className="py-20 md:py-28 text-center px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto whitespace-normal wrap-normal break-keep mb-14">
           <h2 className="text-3xl md:text-5xl font-serif font-bold leading-tight tracking-wide mb-8">
             書くたびに加速。 蓄えた言葉が力になる。
@@ -99,11 +115,11 @@ export default function Home() {
             <SolutionCard
               emoji="🌐"
               title="AIサービス横断：いろんなモデルで使い回し"
-              description="ChatGPT、Gemini、Claude、Perplexityに対応。サービスを切り替えてもOK！全てのAI資産を一元管理＆横断的に再利用 可能です。"
+              description="ChatGPT、Gemini、Claude、Perplexityに対応。サービスをまたいで同じプロンプトを使い回せます。複数のAIサービスを使う方でも、もうプロンプトを探し回る必要はありません。"
             />
           </div>
 
-          <hr className="my-16 mx-auto w-14 border-t-10 border-zinc-300 border-dotted" />
+          <div className="my-16 mx-auto w-32 h-1 bg-gradient-to-r from-transparent via-zinc-300 to-transparent" />
 
           <p className="max-w-4xl mt-12 mx-auto text-lg text-center text-zinc-800 leading-relaxed">
             プロンプトの入力や整理に時間を取られず、もっと大切なことに集中したい方へ。
@@ -117,8 +133,8 @@ export default function Home() {
         <SectionHeading className="mb-6">
           いますぐ、プロンプト管理のストレスから解放されましょう
         </SectionHeading>
-        <p className="text-lg text-zinc-600 mb-12">
-          インストールはたった10秒、効果は今日から
+        <p className="text-lg text-zinc-600 mb-4">
+          インストールはたったの10秒、効果は今日から
         </p>
 
         <CTAButton />

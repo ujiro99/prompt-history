@@ -8,7 +8,9 @@
       "mcp__chrome-devtools__evaluate_script",
       "mcp__chrome-devtools__take_screenshot",
       "mcp__chrome-devtools__get_network_request",
-      "Bash(curl -s http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__3025bb10._.css)"
+      "Bash(curl -s http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__3025bb10._.css)",
+      "mcp__chrome-devtools__navigate_page",
+      "mcp__chrome-devtools__wait_for"
     ],
     "deny": [],
     "ask": []
