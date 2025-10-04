@@ -16,25 +16,26 @@ export default function Home() {
           src="/icon.png"
           alt="Chrome Web Store"
           className="inline-block"
-          width={70}
-          height={70}
+          width={100}
+          height={100}
         />
-        <p className="text-4xl md:text-6xl font-serif font-semibold text-zinc-600 tracking-wider">
+        <p className="text-4xl md:text-6xl font-serif font-semibold text-zinc-700 tracking-wider">
           Prompt history
         </p>
       </section>
+
       <section className="py-20 md:py-28 text-center px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto whitespace-normal wrap-normal break-keep mb-14">
-          <h2 className="text-3xl md:text-5xl font-serif font-bold leading-tight tracking-wide mb-8">
-            書くたびに加速。 蓄えた言葉が力になる。
+          <h2 className="text-3xl md:text-5xl font-serif font-bold text-zinc-700 leading-tight tracking-wide mb-8">
+            書くたびに加速。 蓄えた言葉があなたの力に。
           </h2>
           <p className="text-lg md:text-xl leading-relaxed">
-            送信したプロンプトを自動で蓄積。メニューと入力補完から即再利用。
-            AI横断活用で、使うほどあなたのプロンプトが鍛えられる。
+            送信したプロンプトを自動で蓄積。メニューと入力補完から即再利用に。
+            事前設定無しで、主要AIでの横断利用を可能にします。
           </p>
         </div>
         <div>
-          <p className="text-base md:text-lg text-zinc-500 mb-14 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-base md:text-lg text-zinc-600 mb-14 max-w-3xl mx-auto leading-relaxed">
             ChatGPTやGeminiを日々使っているなかで、「あのときのプロンプト…もう一度使いたい！」と思ったことはありませんか？
             <br />
             Prompt
@@ -49,7 +50,7 @@ export default function Home() {
       <section id="issues" className="py-20 bg-zinc-100">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <SectionHeading>
-            AIを使うほどに感じる「ちょっとした不満」
+            AIを使うほどに感じる、「ちょっとした不満」
           </SectionHeading>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
