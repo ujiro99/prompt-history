@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__chrome-devtools__list_pages",
+      "Read(//Users/yujiro-takeda/src/github.com/ujiro99/prompt-history/**)",
+      "mcp__chrome-devtools__new_page",
+      "mcp__chrome-devtools__take_snapshot",
+      "mcp__chrome-devtools__evaluate_script",
+      "mcp__chrome-devtools__take_screenshot",
+      "mcp__chrome-devtools__get_network_request",
+      "Bash(curl -s http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__3025bb10._.css)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

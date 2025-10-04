@@ -36,7 +36,9 @@
       "Bash(pnpm exec tsc:*)",
       "Bash(cat:*)",
       "mcp__serena__think_about_task_adherence",
-      "WebFetch(domain:stackoverflow.com)"
+      "WebFetch(domain:stackoverflow.com)",
+      "WebFetch(domain:biomejs.dev)",
+      "Bash(pnpm biome:*)"
     ],
     "deny": [],
     "ask": []

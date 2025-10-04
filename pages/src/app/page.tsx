@@ -1,103 +1,146 @@
-import Image from "next/image";
+import { CTAButton } from "@/components/CTAButton"
+import { FAQItem } from "@/components/FAQItem"
+import { IssueCard } from "@/components/IssueCard"
+import { SectionHeading } from "@/components/SectionHeading"
+import { SolutionCard } from "@/components/SolutionCard"
 
 export default function Home() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <main>
+      <section className="py-20 md:py-32 text-center px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto whitespace-normal wrap-normal break-keep mb-14">
+          <h2 className="text-3xl md:text-5xl font-serif font-bold leading-tight tracking-wide mb-8">
+            書くたびに加速。 蓄えた言葉が力になる。
+          </h2>
+          <p className="text-lg md:text-xl leading-relaxed">
+            送信したプロンプトを自動で蓄積。メニューと入力補完から即再利用。
+            AI横断活用で、使うほどあなたのプロンプトが鍛えられる。
+          </p>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+        <div>
+          <p className="text-base md:text-lg text-zinc-500 mb-14 max-w-3xl mx-auto leading-relaxed">
+            ChatGPTやGeminiを日々使っているなかで、「あのときのプロンプト…もう一度使いたい！」と思ったことはありませんか？
+            <br />
+            Prompt
+            historyは、あなたが送信したプロンプトを自動で保存・再利用するChrome拡張機能です。
+            インストールした瞬間から、あなたのAI作業を加速します。
+          </p>
+
+          <CTAButton />
+        </div>
+      </section>
+
+      <section id="issues" className="py-20 bg-zinc-100">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <SectionHeading>
+            AIを使うほどに感じる「ちょっとした不満」
+          </SectionHeading>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <IssueCard
+              emoji="😩"
+              title="毎回同じプロンプトを打ち直し"
+              description="わずかな違いのプロンプトを毎回手入力。非効率な時間が積み重なっていきます。"
+            />
+
+            <IssueCard
+              emoji="📂"
+              title="定型プロンプトを探すのが大変"
+              description="いつか作ったあの渾身のプロンプト、再び使う時に探し回っていませんか？"
+            />
+
+            <IssueCard
+              emoji="⏰"
+              title="設定・準備に時間をかけたくない"
+              description="業務効率化が真の目的。ツールの事前準備に時間を費やすのは本末転倒です。"
+            />
+
+            <IssueCard
+              emoji="💭"
+              title="別のモデルで試したい"
+              description="プロンプトを別のモデルで試したいけど、コピペが面倒。サクサク試せたら、改善が加速しませんか？"
+            />
+
+            <IssueCard
+              emoji="🌐"
+              title="サービス横断での再利用が困難"
+              description="ChatGPTやGeminiなど、複数のAIサービスを使うとプロンプトが分散し、また探すのが大変に..."
+            />
+
+            <IssueCard
+              emoji="💡"
+              title="良いプロンプトの保存し忘れ"
+              description="一度きりの最高のプロンプト、どこかに行ってしまった経験はありませんか？"
+            />
+            <div className="hidden lg:block"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="solutions" className="py-20 md:py-24 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto">
+          <SectionHeading>
+            その不満、「Prompt history」が解決します
+          </SectionHeading>
+
+          <div className="grid md:grid-cols-1 lg:grid-cols-3 gap-6">
+            <SolutionCard
+              emoji="📝"
+              title="自動保存：手間ゼロでプロンプトを資産化"
+              description="AIチャットサービスでのプロンプト送信時に自動で履歴を保存します。これで「保存し忘れ」の心配はゼロ！業務効率化を邪魔する手動のコピペ作業から完全に解放されます。"
+            />
+
+            <SolutionCard
+              emoji="⚡"
+              title="爆速再利用：思考を途切れさせない即時補完"
+              description="保存されたプロンプトは、メニューバーから一覧表示できる他、AIチャットの入力欄に自動補完として表示されます。プロンプトを探す時間がゼロに。思考を途切れさせず、即座に作業を再開できます。"
+            />
+
+            <SolutionCard
+              emoji="🌐"
+              title="AIサービス横断：いろんなモデルで使い回し"
+              description="ChatGPT、Gemini、Claude、Perplexityに対応。サービスを切り替えてもOK！全てのAI資産を一元管理＆横断的に再利用 可能です。"
+            />
+          </div>
+
+          <hr className="my-16 mx-auto w-14 border-t-10 border-zinc-300 border-dotted" />
+
+          <p className="max-w-4xl mt-12 mx-auto text-lg text-center text-zinc-800 leading-relaxed">
+            プロンプトの入力や整理に時間を取られず、もっと大切なことに集中したい方へ。
+            <br />
+            あなたが本来取り組みたい、創造的な作業や学びの時間を、最大化するようサポートします。
+          </p>
+        </div>
+      </section>
+
+      <section className="py-24 md:py-32 text-center px-4 sm:px-6 lg:px-8 bg-zinc-100">
+        <SectionHeading className="mb-6">
+          いますぐ、プロンプト管理のストレスから解放されましょう
+        </SectionHeading>
+        <p className="text-lg text-zinc-600 mb-12">
+          インストールはたった10秒、効果は今日から
+        </p>
+
+        <CTAButton />
+
+        <div className="mt-24 max-w-3xl mx-auto">
+          <h4 className="text-xl font-semibold mb-8">よくある質問</h4>
+          <div className="text-left space-y-6">
+            <FAQItem
+              question="Q: データのセキュリティは大丈夫ですか？"
+              answer="A: はい。Prompt historyは、あなたのプロンプトデータを外部サーバーに送信したり保存したりしません。全てのデータはあなたのブラウザ内で安全に管理されます。"
+            />
+            <FAQItem
+              question="Q: 事前設定なしですぐに使えますか？"
+              answer="A: はい。インストールするだけで、あなたが次にプロンプトを送信した瞬間から自動保存と再利用機能が有効になります。"
+            />
+            <FAQItem
+              question="Q: サポートするAIサービスは増えますか？"
+              answer="A: はい。今後も主要なAIチャットサービスへの対応を拡大していく予定です。ご要望があればChrome Web Storeのレビュー欄からぜひお知らせください。"
+            />
+          </div>
+        </div>
+      </section>
+    </main>
+  )
 }
