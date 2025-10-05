@@ -28,7 +28,7 @@ export function CTAButton(props: CTAButtonProps) {
         height={64}
       />
       <p className="inline-block text-base md:text-lg md:break-keep font-semibold text-left text-zinc-600 leading-normal">
-        <span className="font-serif tracking-wide mr-1">Prompt history</span>を
+        <span className="font-logo tracking-wide mr-1">Prompt history</span>を
         無料インストール
       </p>
     </a>

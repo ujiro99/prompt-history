@@ -1,5 +1,11 @@
 import type { Metadata } from "next"
-import { Geist_Mono, Oranienbaum, Noto_Sans } from "next/font/google"
+import {
+  Geist_Mono,
+  Oranienbaum,
+  Noto_Sans,
+  Noto_Serif_Display,
+} from "next/font/google"
+import { LocaleProvider } from "@/components/LocaleProvider"
 import { cn } from "@/lib/utils"
 import "./globals.css"
 
@@ -20,6 +26,12 @@ const notoSans = Noto_Sans({
   variable: "--font-noto-sans",
 })
 
+const notoSerifDisplay = Noto_Serif_Display({
+  weight: ["400", "700"],
+  subsets: ["latin"],
+  variable: "--font-noto-serif-display",
+})
+
 export const metadata: Metadata = {
   title: "Prompt History",
   description:
@@ -38,10 +50,11 @@ export default function RootLayout({
           geistMono.variable,
           oranienbaumSans.variable,
           notoSans.variable,
+          notoSerifDisplay.variable,
           "font-sans bg-background-light text-primary-text antialiased",
         )}
       >
-        {children}
+        <LocaleProvider>{children}</LocaleProvider>
       </body>
     </html>
   )
