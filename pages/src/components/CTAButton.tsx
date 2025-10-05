@@ -1,11 +1,15 @@
 import { Image } from "@/components/Image"
 import { cn } from "@/lib/utils"
+import { getDict } from "@/features/locale"
+import type { LangType } from "@/types/locale"
 
 interface CTAButtonProps {
   className?: string
+  lang: LangType
 }
 
 export function CTAButton(props: CTAButtonProps) {
+  const t = getDict(props.lang).lp
   const href =
     "https://chromewebstore.google.com/detail/nfdmafefekbbiahffhaodbdlikficnah?utm_source=github-pages"
 
@@ -27,9 +31,9 @@ export function CTAButton(props: CTAButtonProps) {
         width={200}
         height={64}
       />
-      <p className="inline-block text-base md:text-lg md:break-keep font-semibold text-left text-zinc-600 leading-normal">
-        <span className="font-logo tracking-wide mr-1">Prompt history</span>を
-        無料インストール
+      <p className="inline-block text-base md:text-lg md:break-keep font-semibold text-left text-zinc-600 leading-normal whitespace-pre-line">
+        <span className="font-logo tracking-wide mr-1">Prompt history</span>
+        {t.cta.buttonText}
       </p>
     </a>
   )

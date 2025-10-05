@@ -28,66 +28,50 @@ export default async function Home({ params }: { params: Promise<LangProps> }) {
         </p>
       </section>
 
-      <section
-        id="hero"
-        className="py-20 md:py-28 text-center px-4 sm:px-6 lg:px-8"
-      >
-        <div className="max-w-4xl mx-auto whitespace-normal wrap-normal break-keep mb-14">
-          <h2 className="text-3xl md:text-5xl font-serif font-bold text-zinc-700 leading-tight tracking-wide mb-8">
-            {t.hero.mainCopy}
-          </h2>
-          <p className="text-lg md:text-xl leading-relaxed">{t.hero.subCopy}</p>
+      <section id="hero" className="py-20 md:py-28 px-4 sm:px-6 lg:px-8">
+        <div className="w-fit lg:w-full mb-16 mx-auto lg:flex justify-center gap-2">
+          <div className="flex flex-col justify-center max-w-xl md:max-w-2xl mb-10 lg:mb-0 whitespace-pre-line">
+            <h2 className="text-xl md:text-3xl lg:text-4xl font-serif font-bold text-zinc-700 leading-tight tracking-wide mb-8">
+              {t.hero.mainCopy}
+            </h2>
+            <p className="text-lg lg:text-xl leading-relaxed">
+              {t.hero.subCopy}
+            </p>
+          </div>
+          <div className="w-xl mx-auto lg:mx-0">
+            <video
+              disablePictureInPicture
+              className="rounded-md aspect-[3/2]"
+              autoPlay
+              loop
+              muted
+            >
+              <source src="/demo.mp4" type="video/mp4" />
+            </video>
+          </div>
         </div>
-        <div>
-          <p className="text-base md:text-lg text-zinc-600 mb-14 max-w-3xl mx-auto leading-relaxed">
+
+        <div className="text-center">
+          <p className="text-base md:text-lg mb-14 max-w-3xl mx-auto leading-relaxed whitespace-pre-line">
             {t.hero.description}
           </p>
-          <CTAButton />
+          <CTAButton lang={lang} />
         </div>
       </section>
 
       <section id="issues" className="py-20 bg-zinc-100">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <SectionHeading>
-            AIを使うほどに感じる、「ちょっとした不満」
-          </SectionHeading>
+          <SectionHeading>{t.issues.heading}</SectionHeading>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <IssueCard
-              emoji="😩"
-              title="毎回同じプロンプトを打ち直し"
-              description="わずかな違いのプロンプトを毎回手入力。非効率な時間が積み重なっていきます。"
-            />
-
-            <IssueCard
-              emoji="📂"
-              title="定型プロンプトを探すのが大変"
-              description="いつか作ったあの渾身のプロンプト、再び使う時に探し回っていませんか？"
-            />
-
-            <IssueCard
-              emoji="⏰"
-              title="設定・準備に時間をかけたくない"
-              description="業務効率化が真の目的。ツールの事前準備に時間を費やすのは本末転倒です。"
-            />
-
-            <IssueCard
-              emoji="💭"
-              title="別のモデルで試したい"
-              description="プロンプトを別のモデルで試したいけど、コピペが面倒。サクサク試せたら、改善が加速しませんか？"
-            />
-
-            <IssueCard
-              emoji="🌐"
-              title="サービス横断での再利用が困難"
-              description="ChatGPTやGeminiなど、複数のAIサービスを使うとプロンプトが分散し、また探すのが大変に..."
-            />
-
-            <IssueCard
-              emoji="💡"
-              title="良いプロンプトの保存し忘れ"
-              description="一度きりの最高のプロンプト、どこかに行ってしまった経験はありませんか？"
-            />
+            {t.issues.cards.map((card) => (
+              <IssueCard
+                key={card.title}
+                emoji={card.emoji}
+                title={card.title}
+                description={card.description}
+              />
+            ))}
             <div className="hidden lg:block"></div>
           </div>
         </div>
@@ -95,65 +79,43 @@ export default async function Home({ params }: { params: Promise<LangProps> }) {
 
       <section id="solutions" className="py-20 md:py-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
-          <SectionHeading>
-            その不満、「Prompt history」が解決します
-          </SectionHeading>
+          <SectionHeading>{t.solutions.heading}</SectionHeading>
 
           <div className="grid md:grid-cols-1 lg:grid-cols-3 gap-6">
-            <SolutionCard
-              emoji="📝"
-              title="自動保存：手間ゼロでプロンプトを資産化"
-              description="AIチャットサービスでのプロンプト送信時に自動で履歴を保存します。これで「保存し忘れ」の心配はゼロ！業務効率化を邪魔する手動のコピペ作業から完全に解放されます。"
-            />
-
-            <SolutionCard
-              emoji="⚡"
-              title="爆速再利用：思考を途切れさせない即時補完"
-              description="保存されたプロンプトは、メニューバーから一覧表示できる他、AIチャットの入力欄に自動補完として表示されます。プロンプトを探す時間がゼロに。思考を途切れさせず、即座に作業を再開できます。"
-            />
-
-            <SolutionCard
-              emoji="🌐"
-              title="AIサービス横断：いろんなモデルで使い回し"
-              description="ChatGPT、Gemini、Claude、Perplexityに対応。サービスをまたいで同じプロンプトを使い回せます。複数のAIサービスを使う方でも、もうプロンプトを探し回る必要はありません。"
-            />
+            {t.solutions.cards.map((card) => (
+              <SolutionCard
+                key={card.title}
+                emoji={card.emoji}
+                title={card.title}
+                description={card.description}
+              />
+            ))}
           </div>
 
           <div className="my-16 mx-auto w-32 h-1 bg-gradient-to-r from-transparent via-zinc-300 to-transparent" />
 
-          <p className="max-w-4xl mt-12 mx-auto text-lg text-center text-zinc-800 leading-relaxed">
-            プロンプトの入力や整理に時間を取られず、もっと大切なことに集中したい方へ。
-            <br />
-            あなたが本来取り組みたい、創造的な作業や学びの時間を、最大化するようサポートします。
+          <p className="max-w-4xl mt-12 mx-auto text-lg text-center text-zinc-800 leading-relaxed whitespace-pre-line">
+            {t.solutions.closing}
           </p>
         </div>
       </section>
 
       <section className="py-24 md:py-32 text-center px-4 sm:px-6 lg:px-8 bg-zinc-100">
-        <SectionHeading className="mb-6">
-          いますぐ、プロンプト管理のストレスから解放されましょう
-        </SectionHeading>
-        <p className="text-lg text-zinc-600 mb-4">
-          インストールはたったの10秒、効果は今日から
-        </p>
+        <SectionHeading className="mb-6">{t.cta.heading}</SectionHeading>
+        <p className="text-lg text-zinc-600 mb-4">{t.cta.subheading}</p>
 
-        <CTAButton />
+        <CTAButton lang={lang} />
 
         <div className="mt-24 max-w-3xl mx-auto">
-          <h4 className="text-xl font-semibold mb-8">よくある質問</h4>
+          <h4 className="text-xl font-semibold mb-8">{t.faq.heading}</h4>
           <div className="text-left space-y-6">
-            <FAQItem
-              question="Q: データのセキュリティは大丈夫ですか？"
-              answer="A: はい。Prompt historyは、あなたのプロンプトデータを外部サーバーに送信したり保存したりしません。全てのデータはあなたのブラウザ内で安全に管理されます。"
-            />
-            <FAQItem
-              question="Q: 事前設定なしですぐに使えますか？"
-              answer="A: はい。インストールするだけで、あなたが次にプロンプトを送信した瞬間から自動保存と再利用機能が有効になります。"
-            />
-            <FAQItem
-              question="Q: サポートするAIサービスは増えますか？"
-              answer="A: はい。今後も主要なAIチャットサービスへの対応を拡大していく予定です。ご要望があればChrome Web Storeのレビュー欄からぜひお知らせください。"
-            />
+            {t.faq.items.map((item) => (
+              <FAQItem
+                key={item.question}
+                question={item.question}
+                answer={item.answer}
+              />
+            ))}
           </div>
         </div>
       </section>
