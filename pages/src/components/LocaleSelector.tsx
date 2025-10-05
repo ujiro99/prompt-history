@@ -10,8 +10,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Labels } from "@/features/locale"
-import { cn } from "@/lib/utils"
 import { useLocale } from "@/hooks/useLocale"
+import { cn } from "@/lib/utils"
 
 export function LocaleSelector() {
   const { lang, switchLocale } = useLocale()

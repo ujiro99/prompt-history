@@ -1,6 +1,6 @@
 import { Image } from "@/components/Image"
-import { cn } from "@/lib/utils"
 import { getDict } from "@/features/locale"
+import { cn } from "@/lib/utils"
 import type { LangType } from "@/types/locale"
 
 interface CTAButtonProps {

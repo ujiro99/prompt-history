@@ -1,8 +1,9 @@
-import type React from "react"
 import NextImage from "next/image"
+import type React from "react"
 import { cn } from "@/lib/utils"
 
 import nextConfig from "../../next.config"
+
 const BASE_PATH = nextConfig.basePath || ""
 
 type Props = {

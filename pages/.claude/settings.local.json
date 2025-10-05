@@ -14,7 +14,8 @@
       "Bash(pnpm compile:*)",
       "WebSearch",
       "Bash(cat:*)",
-      "WebFetch(domain:ai-sdk.dev)"
+      "WebFetch(domain:ai-sdk.dev)",
+      "Bash(pnpm lint:*)"
     ],
     "deny": [],
     "ask": []

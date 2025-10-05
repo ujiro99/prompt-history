@@ -1,10 +1,10 @@
+import type { Metadata } from "next"
 import {
   Geist_Mono,
   Noto_Sans,
   Noto_Serif_Display,
   Oranienbaum,
 } from "next/font/google"
-import type { Metadata } from "next"
 import { LocaleProvider } from "@/components/LocaleProvider"
 import { cn } from "@/lib/utils"
 import "./globals.css"

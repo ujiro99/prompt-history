@@ -1,8 +1,9 @@
-import { useEffect, useState, useCallback } from "react"
 import { usePathname, useRouter } from "next/navigation"
+import { useCallback, useEffect, useState } from "react"
+
+import { DefaultLanguage, getDict, isSupportedLang } from "@/features/locale"
 
 import type { LangType } from "@/types/locale"
-import { isSupportedLang, DefaultLanguage, getDict } from "@/features/locale"
 
 export function useLocale() {
   const [browserLang, setBrowserLang] = useState<LangType>(DefaultLanguage)

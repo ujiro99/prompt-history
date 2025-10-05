@@ -21,9 +21,9 @@ export const Labels = Languages.reduce(
 )
 
 export const isSupportedLang = (
-  lang: any | undefined,
+  lang: unknown | undefined,
 ): lang is LanguageType => {
-  return Languages.includes(lang)
+  return Languages.includes(lang as LanguageType)
 }
 
 export const getDict = (lang: LanguageType) => {
