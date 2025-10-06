@@ -1,3 +1,4 @@
+import { GoogleTagManager } from "@next/third-parties/google"
 import type { Metadata } from "next"
 import {
   Geist_Mono,
@@ -45,6 +46,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <GoogleTagManager gtmId="GTM-W7PKB5DT" />
+      </head>
       <body
         className={cn(
           geistMono.variable,
