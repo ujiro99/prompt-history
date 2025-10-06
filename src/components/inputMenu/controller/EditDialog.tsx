@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button"
 import { ButtonGroup } from "@/components/ui/button-group"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { useContainer } from "@/hooks/useContainer"
 import { analytics } from "#imports"
 
@@ -110,9 +111,11 @@ export const EditDialog: React.FC<EditDialogProps> = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="w-xl sm:max-w-xl"
+        className="w-xl sm:max-w-xl max-h-9/10"
         onKeyDown={handleKeyDown}
         container={container}
+        onWheel={(e) => e.stopPropagation()}
+        onTouchMove={(e) => e.stopPropagation()}
       >
         <DialogHeader>
           <DialogTitle>
@@ -164,6 +167,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
               onChange={(e) => setContent(e.target.value)}
               placeholder={i18n.t("placeholders.enterPromptContent")}
               disabled={isLoading}
+              className="max-h-100"
               rows={6}
             />
           </div>
