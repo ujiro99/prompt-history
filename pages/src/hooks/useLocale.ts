@@ -1,0 +1,57 @@
+import { usePathname, useRouter } from "next/navigation"
+import { useCallback, useEffect, useState } from "react"
+
+import { DefaultLanguage, getDict, isSupportedLang } from "@/features/locale"
+
+import type { LangType } from "@/types/locale"
+
+export function useLocale() {
+  const [browserLang, setBrowserLang] = useState<LangType>(DefaultLanguage)
+  const pathname = usePathname()
+  const router = useRouter()
+
+  const current = pathname.split("/")[1]
+  let lang = DefaultLanguage as LangType
+  if (isSupportedLang(current)) {
+    lang = current
+  }
+
+  const dict = getDict(lang)
+
+  const switchLocale = (next: LangType) => {
+    let newPath: string
+    if (isSupportedLang(current)) {
+      newPath = pathname.replace(current, next)
+    } else {
+      newPath = `/${next}${pathname}`
+    }
+    router.push(newPath)
+  }
+
+  // detect the browser's default language
+  const getBrowserLang = useCallback(() => {
+    const browser = navigator.language.split("-")[0] as LangType // "en-US" -> "en"
+    if (isSupportedLang(browser)) {
+      return browser
+    }
+    return DefaultLanguage
+  }, [])
+
+  const switchBrowserLocale = () => {
+    const lang = getBrowserLang()
+    router.replace(`/${lang}`)
+  }
+
+  useEffect(() => {
+    const browser = getBrowserLang()
+    setBrowserLang(browser)
+  }, [getBrowserLang])
+
+  return {
+    lang,
+    browserLang,
+    dict,
+    switchLocale,
+    switchBrowserLocale,
+  }
+}

@@ -524,7 +524,7 @@ export class PromptServiceFacade {
   /**
    * Error handling
    */
-  private handleError(code: string, message: string, details: any): void {
+  private handleError(code: string, message: string, details: unknown): void {
     const error: PromptError = { code, message, details }
 
     this.onErrorCallbacks.forEach((callback) => {
