@@ -2,7 +2,7 @@ import NextImage from "next/image"
 import type React from "react"
 import { cn } from "@/lib/utils"
 
-import nextConfig from "../../next.config"
+import nextConfig from "../../next.config.mjs"
 
 const BASE_PATH = nextConfig.basePath || ""
 
