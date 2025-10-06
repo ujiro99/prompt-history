@@ -1,6 +1,8 @@
 import { googleAnalytics4 } from "@wxt-dev/analytics/providers/google-analytics-4"
 import { storage } from "#imports"
 
+const isProduction = import.meta.env.MODE === "production"
+
 export default defineAppConfig({
   analytics: {
     providers: [
@@ -13,7 +15,7 @@ export default defineAppConfig({
       init: () => crypto.randomUUID() as string,
     }),
     enabled: storage.defineItem("local:analytics-enabled", {
-      fallback: true,
+      fallback: isProduction,
     }),
   },
 })
