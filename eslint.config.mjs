@@ -164,7 +164,7 @@ export default [
   },
   // Configuration for Next.js files
   {
-    files: ["pages/**/*.{js,jsx,ts,tsx}"],
+    files: ["pages/**/*.{js,jsx,ts,tsx,mjs}"],
     languageOptions: {
       globals: {
         ...globals.browser,
