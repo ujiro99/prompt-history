@@ -185,6 +185,7 @@ export default [
       ".wxt/**",
       "coverage/**",
       "pages/.next/**",
+      "pages/out/**",
     ],
   },
 ]
