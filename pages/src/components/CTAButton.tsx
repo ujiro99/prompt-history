@@ -32,7 +32,7 @@ export function CTAButton(props: CTAButtonProps) {
         height={64}
       />
       <p className="inline-block text-base md:text-lg md:break-keep font-semibold text-left text-zinc-600 leading-normal whitespace-pre-line">
-        <span className="font-logo tracking-wide mr-1">Prompt history</span>
+        <span className="font-logo tracking-wide mr-1">Prompt History</span>
         {t.cta.buttonText}
       </p>
     </a>
