@@ -1,10 +1,6 @@
 import NextImage from "next/image"
 import type React from "react"
-import { cn } from "@/lib/utils"
-
-import nextConfig from "../../next.config.mjs"
-
-const BASE_PATH = nextConfig.basePath || ""
+import { cn, getBasePath } from "@/lib/utils"
 
 type Props = {
   src: string
@@ -20,7 +16,7 @@ type Props = {
 function Image(props: Props): React.JSX.Element {
   let { src } = props
   if (src.startsWith("/")) {
-    src = `${BASE_PATH}${props.src}`
+    src = `${getBasePath()}${props.src}`
     return (
       <NextImage
         {...props}

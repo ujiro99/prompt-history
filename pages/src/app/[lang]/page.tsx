@@ -5,6 +5,7 @@ import { IssueCard } from "@/components/IssueCard"
 import { SectionHeading } from "@/components/SectionHeading"
 import { SolutionCard } from "@/components/SolutionCard"
 import { getDict } from "@/features/locale"
+import { getBasePath } from "@/lib/utils"
 import type { LangProps } from "@/types/locale"
 
 export default async function Home({ params }: { params: Promise<LangProps> }) {
@@ -46,7 +47,7 @@ export default async function Home({ params }: { params: Promise<LangProps> }) {
               loop
               muted
             >
-              <source src="/demo.mp4" type="video/mp4" />
+              <source src={`${getBasePath()}/demo.mp4`} type="video/mp4" />
             </video>
           </div>
         </div>

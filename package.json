@@ -82,5 +82,11 @@
     "vite-plugin-remove-console": "^2.2.0",
     "vitest": "^3.2.4",
     "wxt": "^0.20.6"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": false,
+    "tabWidth": 2,
+    "trailingComma": "all"
   }
 }

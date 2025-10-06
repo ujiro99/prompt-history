@@ -6,10 +6,13 @@ import { StorageService } from "../../storage"
 // eslint-disable-next-line no-undef
 global.fetch = vi.fn()
 
+const endpoint =
+  "https://ujiro99.github.io/prompt-history/data/promptHistory.json"
+
 // Mock import.meta.env
 vi.mock("import.meta", () => ({
   env: {
-    WXT_CONFIG_ENDPOINT: "https://ujiro99.github.io/selection-command/data/promptHistory.json",
+    WXT_CONFIG_ENDPOINT: endpoint,
   },
 }))
 
@@ -80,7 +83,7 @@ describe("getAiServices integration", () => {
       const services = await getAiServices()
 
       expect(mockStorage.getTodaysAiConfigCache).toHaveBeenCalledOnce()
-      expect(fetch).toHaveBeenCalledWith("https://ujiro99.github.io/selection-command/data/promptHistory.json")
+      expect(fetch).toHaveBeenCalledWith(endpoint)
       expect(mockStorage.saveAiConfigCache).toHaveBeenCalledWith(fetchedConfigs)
       expect(services).toHaveLength(5)
     })
@@ -103,7 +106,7 @@ describe("getAiServices integration", () => {
       const services = await getAiServices()
 
       expect(mockStorage.getTodaysAiConfigCache).toHaveBeenCalledOnce()
-      expect(fetch).toHaveBeenCalledWith("https://ujiro99.github.io/selection-command/data/promptHistory.json")
+      expect(fetch).toHaveBeenCalledWith(endpoint)
       expect(mockStorage.saveAiConfigCache).not.toHaveBeenCalled()
       expect(mockStorage.getLatestAiConfigCache).toHaveBeenCalledOnce()
       expect(services).toHaveLength(5)
@@ -119,7 +122,7 @@ describe("getAiServices integration", () => {
       )
 
       expect(mockStorage.getTodaysAiConfigCache).toHaveBeenCalledOnce()
-      expect(fetch).toHaveBeenCalledWith("https://ujiro99.github.io/selection-command/data/promptHistory.json")
+      expect(fetch).toHaveBeenCalledWith(endpoint)
       expect(mockStorage.getLatestAiConfigCache).toHaveBeenCalledOnce()
     })
   })
