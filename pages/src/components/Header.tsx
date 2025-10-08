@@ -2,6 +2,7 @@
 
 import { Image } from "@/components/Image"
 import { StoreUrl } from "@/const"
+import { cn } from "@/lib/utils"
 import styles from "./Header.module.css"
 
 export function Header() {
@@ -10,7 +11,10 @@ export function Header() {
       <a
         href={`${StoreUrl}&utm_medium=link&utm_campaign=floating_cta`}
         target="_blank"
-        className="hidden md:fixed top-2 right-2 bg-white border border-stone-200 rounded-lg shadow-md transition duration-200 hover:shadow-lg hidden sm:block z-10"
+        className={cn(
+          "hidden sm:block sm:fixed",
+          "top-2 right-2 bg-white border border-stone-200 rounded-lg shadow-md transition duration-200 hover:shadow-lg z-10",
+        )}
         data-gtm-click="chrome-web-store"
         rel="noreferrer"
       >
