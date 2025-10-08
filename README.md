@@ -1,6 +1,11 @@
 # Prompt History
 
+<img src="https://github.com/ujiro99/prompt-history/blob/main/docs/chrome%20web%20store/1400%C3%97560.png?raw=true" alt="Logo" />
+
 **Prompt History** is a Chrome extension that enables instant reuse of prompts through auto-saving and auto-completion.
+
+[Introduction Page](https://ujiro99.github.io/prompt-history/)
+
 
 ## Install
 <a href="https://chromewebstore.google.com/detail/nfdmafefekbbiahffhaodbdlikficnah?utm_source=github" title="open chrome webstore">
