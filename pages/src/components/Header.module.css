@@ -1,0 +1,18 @@
+@keyframes header-scroll-shrink {
+  from {
+    width: 200px;
+    height: 64px;
+  }
+
+  to {
+    width: 66px;
+    height: 64px;
+  }
+}
+
+.headerLinkImage {
+  animation: header-scroll-shrink linear both;
+  animation-timeline: scroll(root);
+  animation-range: 100px 180px;
+  overflow: hidden;
+}

@@ -1,4 +1,5 @@
 import { Image } from "@/components/Image"
+import { StoreUrl } from "@/const"
 import { getDict } from "@/features/locale"
 import { cn } from "@/lib/utils"
 import type { LangType } from "@/types/locale"
@@ -10,12 +11,10 @@ interface CTAButtonProps {
 
 export function CTAButton(props: CTAButtonProps) {
   const t = getDict(props.lang).lp
-  const href =
-    "https://chromewebstore.google.com/detail/nfdmafefekbbiahffhaodbdlikficnah?utm_source=github-pages"
 
   return (
     <a
-      href={href}
+      href={`${StoreUrl}&utm_medium=link&utm_campaign=inline_cta`}
       className={cn(
         "inline-flex items-center gap-2 md:max-w-100 px-5 py-4 rounded-lg transition-all duration-200 ease-out bg-white",
         "text-lg font-semibold text-zinc-700 ring-1 ring-zinc-200/80",

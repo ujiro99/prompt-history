@@ -39,7 +39,7 @@ export default async function Home({ params }: { params: Promise<LangProps> }) {
               {t.hero.subCopy}
             </p>
           </div>
-          <div className="w-xl mx-auto lg:mx-0">
+          <div className="w-full md:w-xl mx-auto lg:mx-0">
             <video
               disablePictureInPicture
               className="rounded-md aspect-[3/2]"
