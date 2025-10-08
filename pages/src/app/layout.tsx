@@ -47,6 +47,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/* Google Search Console verification */}
+        <meta
+          name="google-site-verification"
+          content="MhXlQWtyoEkz6jOLkdC4V2aXrZVn1xWFDyV3slv5QBA"
+        />
         <GoogleTagManager gtmId="GTM-W7PKB5DT" />
       </head>
       <body
