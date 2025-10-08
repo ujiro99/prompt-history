@@ -4,7 +4,7 @@
 
 **Prompt History** is a Chrome extension that enables instant reuse of prompts through auto-saving and auto-completion.
 
-[Introduction Page](https://ujiro99.github.io/prompt-history/)
+[Introduction / サービス紹介](https://ujiro99.github.io/prompt-history/)
 
 
 ## Install
