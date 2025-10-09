@@ -24,6 +24,10 @@ import {
   ClaudeService,
   supportHosts as claudeSupportHosts,
 } from "./claude/ClaudeService"
+import {
+  SkyworkService,
+  supportHosts as skyworkSupportHosts,
+} from "./skywork/SkyworkService"
 import { StorageService } from "../storage"
 
 export const supportHosts = [
@@ -32,6 +36,7 @@ export const supportHosts = [
   ...geminiSupporHosts,
   ...perplexitySupportHosts,
   ...claudeSupportHosts,
+  ...skyworkSupportHosts,
 ]
 
 const createServices = (configs: Record<string, AIServiceConfigData>) => {
@@ -41,6 +46,7 @@ const createServices = (configs: Record<string, AIServiceConfigData>) => {
     new GeminiService(configs),
     new PerplexityService(configs),
     new ClaudeService(configs),
+    new SkyworkService(configs),
   ]
 }
 

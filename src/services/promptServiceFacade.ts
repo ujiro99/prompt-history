@@ -343,6 +343,13 @@ export class PromptServiceFacade {
   }
 
   /**
+   * Get AI service instance (for debugging purposes)
+   */
+  getAIService(): AIServiceInterface | null {
+    return this.aiService
+  }
+
+  /**
    * Execute prompt
    */
   async executePrompt(

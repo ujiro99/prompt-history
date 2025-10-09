@@ -3,6 +3,7 @@ import App from "./content/App.tsx"
 import "./content/App.css"
 import { supportHosts } from "@/services/aiService"
 import { analytics } from "#imports"
+import { DebugInterface } from "@/services/debug/debugInterface"
 
 let _supportHosts = [...supportHosts]
 
@@ -52,5 +53,11 @@ export default defineContentScript({
     })
 
     ui.mount()
+
+    // Expose debug interface in non-production environments
+    if (import.meta.env.MODE !== "production") {
+      window.promptHistoryDebug = DebugInterface.getInstance()
+      console.log("🔍 Debug interface available at window.promptHistoryDebug")
+    }
   },
 })

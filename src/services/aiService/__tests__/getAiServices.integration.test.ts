@@ -6,15 +6,14 @@ import { StorageService } from "../../storage"
 // eslint-disable-next-line no-undef
 global.fetch = vi.fn()
 
+// Get endpoint from environment variables
+// Defaults to development endpoint if not specified
 const endpoint =
-  "https://ujiro99.github.io/prompt-history/data/promptHistory.json"
+  import.meta.env.WXT_CONFIG_ENDPOINT ||
+  "http://192.168.1.130:3000/data/promptHistory.json"
 
-// Mock import.meta.env
-vi.mock("import.meta", () => ({
-  env: {
-    WXT_CONFIG_ENDPOINT: endpoint,
-  },
-}))
+const ServiceCount = 6 // Total number of AI services
+// TestPage, ChatGpt, Gemini, Perplexity, Claude, Skywork
 
 // Mock storage service
 vi.mock("../../storage", () => ({
@@ -61,7 +60,7 @@ describe("getAiServices integration", () => {
       expect(mockStorage.getTodaysAiConfigCache).toHaveBeenCalledOnce()
       expect(fetch).not.toHaveBeenCalled()
       expect(mockStorage.saveAiConfigCache).not.toHaveBeenCalled()
-      expect(services).toHaveLength(5) // TestPage, ChatGpt, Gemini, Perplexity, Claude
+      expect(services).toHaveLength(ServiceCount)
     })
   })
 
@@ -85,7 +84,7 @@ describe("getAiServices integration", () => {
       expect(mockStorage.getTodaysAiConfigCache).toHaveBeenCalledOnce()
       expect(fetch).toHaveBeenCalledWith(endpoint)
       expect(mockStorage.saveAiConfigCache).toHaveBeenCalledWith(fetchedConfigs)
-      expect(services).toHaveLength(5)
+      expect(services).toHaveLength(ServiceCount)
     })
   })
 
@@ -109,7 +108,7 @@ describe("getAiServices integration", () => {
       expect(fetch).toHaveBeenCalledWith(endpoint)
       expect(mockStorage.saveAiConfigCache).not.toHaveBeenCalled()
       expect(mockStorage.getLatestAiConfigCache).toHaveBeenCalledOnce()
-      expect(services).toHaveLength(5)
+      expect(services).toHaveLength(ServiceCount)
     })
 
     it("should throw error when both fetch and fallback fail", async () => {
@@ -154,7 +153,7 @@ describe("getAiServices integration", () => {
       const services = await getAiServices()
 
       expect(mockStorage.getLatestAiConfigCache).toHaveBeenCalledOnce()
-      expect(services).toHaveLength(5)
+      expect(services).toHaveLength(ServiceCount)
     })
   })
 
@@ -172,7 +171,7 @@ describe("getAiServices integration", () => {
 
       const services = await getAiServices()
 
-      expect(services).toHaveLength(5)
+      expect(services).toHaveLength(ServiceCount)
 
       // Check that TestPageService receives the configs
       const testPageService = services[0]
@@ -183,6 +182,7 @@ describe("getAiServices integration", () => {
       expect(services[2].constructor.name).toBe("GeminiService")
       expect(services[3].constructor.name).toBe("PerplexityService")
       expect(services[4].constructor.name).toBe("ClaudeService")
+      expect(services[5].constructor.name).toBe("SkyworkService")
     })
   })
 })
