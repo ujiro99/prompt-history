@@ -75,5 +75,16 @@
       "alignOffset": -16,
       "sideOffset": 20
     }
+  },
+  "Skywork": {
+    "serviceName": "Skywork",
+    "selectors": {
+      "textInput": [".el-textarea div[contenteditable='true']"],
+      "sendButton": [".footer-container svg.cursor-pointer"]
+    },
+    "popupPlacement": {
+      "alignOffset": -18,
+      "sideOffset": 14
+    }
   }
 }
