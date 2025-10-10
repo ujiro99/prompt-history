@@ -12,8 +12,9 @@ const endpoint =
   import.meta.env.WXT_CONFIG_ENDPOINT ||
   "http://192.168.1.130:3000/data/promptHistory.json"
 
-const ServiceCount = 6 // Total number of AI services
+// Total number of AI services
 // TestPage, ChatGpt, Gemini, Perplexity, Claude, Skywork
+const ServiceCount = 6
 
 // Mock storage service
 vi.mock("../../storage", () => ({
