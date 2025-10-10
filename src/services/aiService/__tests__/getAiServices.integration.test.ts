@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
-import { getAiServices } from "../index"
+import { getAiServices, supportHosts } from "../index"
 import { StorageService } from "../../storage"
 
 // Mock fetch
@@ -13,8 +13,7 @@ const endpoint =
   "http://192.168.1.130:3000/data/promptHistory.json"
 
 // Total number of AI services
-// TestPage, ChatGpt, Gemini, Perplexity, Claude, Skywork
-const ServiceCount = 6
+const ServiceCount = supportHosts.length
 
 // Mock storage service
 vi.mock("../../storage", () => ({

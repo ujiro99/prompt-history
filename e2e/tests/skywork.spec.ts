@@ -73,7 +73,7 @@ test.describe("Skywork Extension Tests", () => {
 
     // Clear input field
     await skyworkPage.typePrompt("")
-    await page.waitForTimeout(500) // Wait a bit as this often fails
+    await page.waitForTimeout(100) // Wait a bit as this often fails
     await promptInput.clear()
     await promptInput.press("Control+A") // Execute multiple times as this often fails
     await promptInput.press("Delete")
