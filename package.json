@@ -27,7 +27,9 @@
     "e2e:install": "playwright install --with-deps",
     "e2e:report": "playwright show-report",
     "pre-e2e": "pnpm build && pnpm e2e:install",
-    "postinstall": "wxt prepare"
+    "postinstall": "wxt prepare",
+    "submit:dry": "wxt submit --dry-run",
+    "submit": "wxt submit"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
