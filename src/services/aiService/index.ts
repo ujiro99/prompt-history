@@ -4,50 +4,27 @@ import type { AIServiceConfigData } from "@/services/aiService/base/types"
  * AI Service exports
  */
 
-import {
-  TestPageService,
-  supportHosts as testPageSupportHosts,
-} from "./testPage/TestPageService"
-import {
-  ChatGptService,
-  supportHosts as chatGptSupportHosts,
-} from "./chatgpt/ChatGptService"
-import {
-  GeminiService,
-  supportHosts as geminiSupporHosts,
-} from "./gemini/GeminiService"
-import {
-  PerplexityService,
-  supportHosts as perplexitySupportHosts,
-} from "./perplexity/PerplexityService"
-import {
-  ClaudeService,
-  supportHosts as claudeSupportHosts,
-} from "./claude/ClaudeService"
-import {
-  SkyworkService,
-  supportHosts as skyworkSupportHosts,
-} from "./skywork/SkyworkService"
+import { TestPageService } from "./testPage/TestPageService"
+import { ChatGptService } from "./chatgpt/ChatGptService"
+import { GeminiService } from "./gemini/GeminiService"
+import { PerplexityService } from "./perplexity/PerplexityService"
+import { ClaudeService } from "./claude/ClaudeService"
+import { SkyworkService } from "./skywork/SkyworkService"
 import { StorageService } from "../storage"
 
-export const supportHosts = [
-  ...testPageSupportHosts,
-  ...chatGptSupportHosts,
-  ...geminiSupporHosts,
-  ...perplexitySupportHosts,
-  ...claudeSupportHosts,
-  ...skyworkSupportHosts,
+export const Services = [
+  TestPageService,
+  ChatGptService,
+  GeminiService,
+  PerplexityService,
+  ClaudeService,
+  SkyworkService,
 ]
 
+export const supportHosts = Services.flatMap((service) => service.supportHosts)
+
 const createServices = (configs: Record<string, AIServiceConfigData>) => {
-  return [
-    new TestPageService(configs),
-    new ChatGptService(configs),
-    new GeminiService(configs),
-    new PerplexityService(configs),
-    new ClaudeService(configs),
-    new SkyworkService(configs),
-  ]
+  return Services.map((service) => new service(configs))
 }
 
 export const getAiServices = async () => {
