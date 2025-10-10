@@ -2,12 +2,14 @@ import { BaseAIService } from "@/services/aiService/base/BaseAIService"
 import type { AIServiceConfigData } from "@/services/aiService/base/types"
 
 const ServiceName = "TestPage"
-export const supportHosts: string[] = ["ujiro99.github.io"]
+const supportHosts: string[] = ["ujiro99.github.io"]
 
 /**
  * TestPage service implementation
  */
 export class TestPageService extends BaseAIService {
+  static supportHosts = supportHosts
+
   constructor(configs: Record<string, AIServiceConfigData> = {}) {
     const config = configs[ServiceName] || {}
     super(config, supportHosts)

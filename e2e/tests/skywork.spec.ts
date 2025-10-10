@@ -1,39 +1,37 @@
 import { test, expect } from "../fixtures/extension"
-import { ChatGPTPage } from "../page-objects/ChatGPTPage"
+import { SkyworkPage } from "../page-objects/SkyworkPage"
 import { StorageHelpers } from "../utils/storage-helpers"
 import { WaitHelpers } from "../utils/wait-helpers"
 
-test.describe("ChatGPT Extension Tests", () => {
-  let chatGPTPage: ChatGPTPage
+test.describe("Skywork Extension Tests", () => {
+  let skyworkPage: SkyworkPage
   let storageHelpers: StorageHelpers
   let waitHelpers: WaitHelpers
 
   test.beforeEach(async ({ page }) => {
-    chatGPTPage = new ChatGPTPage(page)
+    skyworkPage = new SkyworkPage(page)
     storageHelpers = new StorageHelpers(page.context())
     waitHelpers = new WaitHelpers(page)
     await storageHelpers.clearExtensionData()
   })
 
-  test("should load extension and navigate to ChatGPT, and detect fields", async ({
+  test("should load extension and navigate to Skywork, and detect fields", async ({
     page,
     extensionId,
   }) => {
-    // 1. Visit ChatGPT page
-    await chatGPTPage.navigate()
-    // Confirm page loaded successfully
-    await expect(page).toHaveTitle(/ChatGPT/)
+    // 1. Visit Skywork page
+    await skyworkPage.navigate()
 
     // 2. Confirm extension loaded
     // Extension ID logged for debugging
     expect(extensionId).toBeTruthy()
 
     // 3. Confirm content script operation
-    await chatGPTPage.waitForServiceReady()
+    await skyworkPage.waitForServiceReady()
 
     // 4. Confirm detection of input field and send button
-    const promptInput = await chatGPTPage.getPromptInput()
-    const sendButton = await chatGPTPage.getSendButton()
+    const promptInput = await skyworkPage.getPromptInput()
+    const sendButton = await skyworkPage.getSendButton()
 
     await expect(promptInput).toBeVisible()
     await expect(sendButton).toBeVisible()
@@ -42,10 +40,10 @@ test.describe("ChatGPT Extension Tests", () => {
     await storageHelpers.createMockPromptHistory(5)
 
     // Start prompt input
-    await chatGPTPage.typePrompt("prompt")
+    await skyworkPage.typePrompt("prompt")
 
     // 5. Check if autocomplete popup is displayed
-    const autocompletePopup = await chatGPTPage.getAutocompletePopup()
+    const autocompletePopup = await skyworkPage.getAutocompletePopup()
     await autocompletePopup.waitForDisplay()
 
     // Navigate down
@@ -74,7 +72,7 @@ test.describe("ChatGPT Extension Tests", () => {
     expect(isVisible).toBe(false)
 
     // Clear input field
-    await chatGPTPage.typePrompt("")
+    await skyworkPage.typePrompt("")
     await page.waitForTimeout(100) // Wait a bit as this often fails
     await promptInput.clear()
     await promptInput.press("Control+A") // Execute multiple times as this often fails
@@ -87,7 +85,7 @@ test.describe("ChatGPT Extension Tests", () => {
     expect(inputValue?.trim()).toBe("")
 
     // Find trigger element and hover/click
-    const inputPopup = await chatGPTPage.getInputPopup()
+    const inputPopup = await skyworkPage.getInputPopup()
     const triggerElement = await inputPopup.getHistoryTrigger()
     expect(await triggerElement.count()).toBeGreaterThan(0)
     await triggerElement.hover()

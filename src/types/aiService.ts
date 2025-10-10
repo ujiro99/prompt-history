@@ -1,5 +1,8 @@
 // Type definitions for AI service functionality
-import type { AIServiceConfig } from "@/services/aiService/base/types"
+import type {
+  AIServiceConfig,
+  ServiceElementInfo,
+} from "@/services/aiService/base/types"
 
 /**
  * AI service abstraction interface
@@ -33,6 +36,10 @@ export interface AIServiceInterface {
   destroy(): void
   /** Legacy mode flag */
   legacyMode: boolean
+  /** Get element information (for debugging) */
+  getElementInfo(): ServiceElementInfo
+  /** Test selectors (for debugging) */
+  testSelectors(): void
 }
 
 export interface PopupPlacement {

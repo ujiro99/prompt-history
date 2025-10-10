@@ -46,6 +46,8 @@ const createMockAIService = (): AIServiceInterface => ({
   shouldTriggerSend: vi.fn(),
   destroy: vi.fn(),
   legacyMode: false,
+  getElementInfo: vi.fn(),
+  testSelectors: vi.fn(),
 })
 
 // Test data
