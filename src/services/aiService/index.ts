@@ -10,6 +10,7 @@ import { GeminiService } from "./GeminiService"
 import { PerplexityService } from "./PerplexityService"
 import { ClaudeService } from "./ClaudeService"
 import { SkyworkService } from "./SkyworkService"
+import { StableDiffusionService } from "./StableDiffusionService"
 import { StorageService } from "../storage"
 
 export const Services = [
@@ -19,6 +20,7 @@ export const Services = [
   PerplexityService,
   ClaudeService,
   SkyworkService,
+  StableDiffusionService,
 ]
 
 export const supportHosts = Services.flatMap((service) => service.supportHosts)

@@ -86,5 +86,16 @@
       "alignOffset": -18,
       "sideOffset": 14
     }
+  },
+  "Stable Diffusion": {
+    "serviceName": "Stable Diffusion",
+    "selectors": {
+      "textInput": ["form input", "textarea#prompts"],
+      "sendButton": ["form button.bg-primary"]
+    },
+    "popupPlacement": {
+      "alignOffset": 0,
+      "sideOffset": 4
+    }
   }
 }
