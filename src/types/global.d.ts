@@ -24,6 +24,11 @@ export interface PromptHistoryDebugInterface {
    * Extract the current prompt content from the text input
    */
   extractPromptContent(): string | null
+
+  /**
+   * Remove cached AI service configurations
+   */
+  removeConfig(): Promise<void>
 }
 
 declare global {
@@ -32,7 +37,7 @@ declare global {
      * Debug interface for prompt-history extension
      * Only available in non-production environments
      */
-    promptHistoryDebug?: PromptHistoryDebugInterface
+    debug?: PromptHistoryDebugInterface
   }
 }
 

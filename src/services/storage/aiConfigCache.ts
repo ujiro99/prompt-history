@@ -62,6 +62,13 @@ export class AiConfigCacheService {
   }
 
   /**
+   * Remove cached configs
+   */
+  async removeCache(): Promise<void> {
+    await aiConfigCacheStorage.removeValue()
+  }
+
+  /**
    * Check if a date string represents today
    * @param dateString - Date in YYYY-MM-DD format
    * @returns true if the date is today, false otherwise
