@@ -4,12 +4,12 @@ import type { AIServiceConfigData } from "@/services/aiService/base/types"
  * AI Service exports
  */
 
-import { TestPageService } from "./testPage/TestPageService"
-import { ChatGptService } from "./chatgpt/ChatGptService"
-import { GeminiService } from "./gemini/GeminiService"
-import { PerplexityService } from "./perplexity/PerplexityService"
-import { ClaudeService } from "./claude/ClaudeService"
-import { SkyworkService } from "./skywork/SkyworkService"
+import { TestPageService } from "./TestPageService"
+import { ChatGptService } from "./ChatGptService"
+import { GeminiService } from "./GeminiService"
+import { PerplexityService } from "./PerplexityService"
+import { ClaudeService } from "./ClaudeService"
+import { SkyworkService } from "./SkyworkService"
 import { StorageService } from "../storage"
 
 export const Services = [
