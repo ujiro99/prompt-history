@@ -12,14 +12,19 @@ export class StableDiffusionPage extends BasePage {
   }
 
   async waitForServiceReady(): Promise<void> {
+    const email = process.env.STABLE_DIFFUSION_ID
+    const password = process.env.STABLE_DIFFUSION_PW
+
+    if (!email || !password) {
+      throw new Error(
+        "STABLE_DIFFUSION_ID and STABLE_DIFFUSION_PW must be set in .env.e2e",
+      )
+    }
+
     // login form
     await this.page.waitForSelector('input[name="email"]', { timeout: 10000 })
-    await this.page
-      .locator('input[name="email"]')
-      .fill(process.env.STABLE_DIFFUSION_ID as string)
-    await this.page
-      .locator('input[name="password"]')
-      .fill(process.env.STABLE_DIFFUSION_PW as string)
+    await this.page.locator('input[name="email"]').fill(email)
+    await this.page.locator('input[name="password"]').fill(password)
     await this.page.getByRole("button", { name: "Sign in" }).click()
 
     // Wait until input field is displayed

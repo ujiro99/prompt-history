@@ -96,5 +96,6 @@ export class DebugInterface implements PromptHistoryDebugInterface {
    */
   async removeConfig(): Promise<void> {
     await storage.removeAiConfigCache()
+    console.log("✅ AI config cache cleared successfully")
   }
 }
