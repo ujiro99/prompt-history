@@ -3,7 +3,8 @@ import path from "path"
 import { fileURLToPath } from "url"
 import * as dotenv from "dotenv"
 
-dotenv.config()
+// Load .env.e2e file for E2E tests
+dotenv.config({ path: ".env.e2e" })
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
