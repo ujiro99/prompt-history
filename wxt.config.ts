@@ -36,4 +36,9 @@ export default defineConfig({
       minify: configEnv.mode === "production" ? true : false,
     },
   }),
+  dev: {
+    server: {
+      port: 3005,
+    },
+  },
 })
