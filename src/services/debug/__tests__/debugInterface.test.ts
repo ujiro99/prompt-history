@@ -98,7 +98,7 @@ describe("DebugInterface", () => {
   describe("Service Integration", () => {
     it("should get PromptServiceFacade instance", () => {
       // Access private method through any type
-      const service = (debugInterface as any).getService()
+      const service = (debugInterface as any).getFacade()
 
       expect(PromptServiceFacade.getInstance).toHaveBeenCalled()
       expect(service).toBe(mockPromptServiceFacade)
