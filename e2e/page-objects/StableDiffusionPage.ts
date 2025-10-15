@@ -1,9 +1,10 @@
 import { BasePage, Selectors } from "./BasePage"
+import { Page } from "@playwright/test"
 
 export class StableDiffusionPage extends BasePage {
   static readonly url = "https://stablediffusionweb.com/app/image-generator"
 
-  constructor(page: any) {
+  constructor(page: Page) {
     super(page, "Stable Diffusion")
   }
 

@@ -19,102 +19,109 @@ test.describe("Stable Diffusion Extension Tests", () => {
     page,
     extensionId,
   }) => {
-    // 1. Visit Stable Diffusion page
-    await stableDiffusionPage.navigate()
-    // Confirm page loaded successfully
-    await expect(page).toHaveTitle(/Stable Diffusion/)
+    await test.step("Visit Stable Diffusion page and confirm page loaded", async () => {
+      await stableDiffusionPage.navigate()
+      await expect(page).toHaveTitle(/Stable Diffusion/)
 
-    // 2. Confirm extension loaded
-    // Extension ID logged for debugging
-    expect(extensionId).toBeTruthy()
+      // Confirm extension loaded
+      // Extension ID logged for debugging
+      expect(extensionId).toBeTruthy()
 
-    // 3. Confirm content script operation
-    page.waitForTimeout(100)
-    await stableDiffusionPage.waitForServiceReady()
-
-    // 4. Confirm detection of input field and send button
-    const promptInput = await stableDiffusionPage.getPromptInput()
-    const sendButton = await stableDiffusionPage.getSendButton()
-
-    await expect(promptInput).toBeVisible()
-    await expect(sendButton).toBeVisible()
-
-    // should verify autocomplete behavior
-    await storageHelpers.createMockPromptHistory(5)
-
-    // Start prompt input
-    await stableDiffusionPage.typePrompt("prompt")
-
-    // 5. Check if autocomplete popup is displayed
-    const autocompletePopup = await stableDiffusionPage.getAutocompletePopup()
-    await autocompletePopup.waitForDisplay()
-
-    // Navigate down
-    await autocompletePopup.pressCtrlN() // 1
-    await autocompletePopup.pressCtrlN() // 2
-
-    // Navigate up
-    await autocompletePopup.pressCtrlP() // 1
-
-    // Wait until active item exists
-    await autocompletePopup.waitActiveItem()
-
-    // Select with Tab key
-    await autocompletePopup.pressTab()
-
-    // 6. Check the value of prompt input field
-    await waitHelpers.waitForCondition(async () => {
-      const val = await promptInput.inputValue()
-      return val === "Mock prompt 1 for testing"
+      // Confirm content script operation
+      await page.waitForTimeout(100)
+      await stableDiffusionPage.waitForServiceReady()
     })
-    let inputValue = await promptInput.inputValue()
-    expect(inputValue).toBe("Mock prompt 1 for testing")
 
-    // Confirm that popup is closed
-    const isVisible = await autocompletePopup.isVisible()
-    expect(isVisible).toBe(false)
+    let promptInput: any
+    let sendButton: any
 
-    // Clear input field
-    await stableDiffusionPage.typePrompt("")
-    await page.waitForTimeout(100) // Wait a bit as this often fails
-    await promptInput.clear()
-    await promptInput.press("Control+A") // Execute multiple times as this often fails
-    await promptInput.press("Delete")
-    await waitHelpers.waitForCondition(async () => {
-      const val = await promptInput.inputValue()
-      return val?.trim() === ""
+    await test.step("Confirm detection of input field and send button", async () => {
+      promptInput = await stableDiffusionPage.getPromptInput()
+      sendButton = await stableDiffusionPage.getSendButton()
+
+      await expect(promptInput).toBeVisible()
+      await expect(sendButton).toBeVisible()
     })
-    inputValue = await promptInput.inputValue()
-    expect(inputValue?.trim()).toBe("")
 
-    // Find trigger element and hover/click
-    const inputPopup = await stableDiffusionPage.getInputPopup()
-    const triggerElement = await inputPopup.getHistoryTrigger()
-    expect(await triggerElement.count()).toBeGreaterThan(0)
-    await triggerElement.hover()
+    await test.step("Verify autocomplete behavior", async () => {
+      await storageHelpers.createMockPromptHistory(5)
 
-    // 7. Confirm that history list is displayed
-    const historyList = await inputPopup.getHistoryList()
-    const isVisibleList = await historyList.isVisible()
-    expect(isVisibleList).toBe(true)
+      // Start prompt input
+      await stableDiffusionPage.typePrompt("prompt")
 
-    // 8. Confirm that history items are displayed
-    const historyItems = await inputPopup.getHistoryItems()
-    expect(historyItems.length).toBeGreaterThan(0)
+      // Check if autocomplete popup is displayed
+      const autocompletePopup = await stableDiffusionPage.getAutocompletePopup()
+      await autocompletePopup.waitForDisplay()
 
-    // Select the first item
-    await inputPopup.selectHistoryItem(0)
+      // Navigate down
+      await autocompletePopup.pressCtrlN() // 1
+      await autocompletePopup.pressCtrlN() // 2
 
-    // The sort order is `Recent usage & execution count score`.
-    // If it appears under the menu, the previously entered ID 1 will be selected.
-    // If it appears above the menu, the order will be reversed, and the oldest ID 2 will be selected.
+      // Navigate up
+      await autocompletePopup.pressCtrlP() // 1
 
-    // 9. Check the value of prompt input field
-    await waitHelpers.waitForCondition(async () => {
-      const val = await promptInput.inputValue()
-      return val === "Mock prompt 1 for testing"
+      // Wait until active item exists
+      await autocompletePopup.waitActiveItem()
+
+      // Select with Tab key
+      await autocompletePopup.pressTab()
+
+      // Check the value of prompt input field
+      await waitHelpers.waitForCondition(async () => {
+        const val = await promptInput.inputValue()
+        return val === "Mock prompt 1 for testing"
+      })
+      const inputValue = await promptInput.inputValue()
+      expect(inputValue).toBe("Mock prompt 1 for testing")
+
+      // Confirm that popup is closed
+      const isVisible = await autocompletePopup.isVisible()
+      expect(isVisible).toBe(false)
+
+      // Clear input field
+      await stableDiffusionPage.typePrompt("")
+      await page.waitForTimeout(100) // Wait a bit as this often fails
+      await promptInput.clear()
+      await promptInput.press("Control+A") // Execute multiple times as this often fails
+      await promptInput.press("Delete")
+      await waitHelpers.waitForCondition(async () => {
+        const val = await promptInput.inputValue()
+        return val?.trim() === ""
+      })
+      const inputValueCleared = await promptInput.inputValue()
+      expect(inputValueCleared?.trim()).toBe("")
     })
-    inputValue = await promptInput.inputValue()
-    expect(inputValue).toBe("Mock prompt 1 for testing") // Most recent history should be input
+
+    await test.step("Verify InputPopup behavior", async () => {
+      // Find trigger element and hover/click
+      const inputPopup = await stableDiffusionPage.getInputPopup()
+      const triggerElement = await inputPopup.getHistoryTrigger()
+      expect(await triggerElement.count()).toBeGreaterThan(0)
+      await triggerElement.hover()
+
+      // Confirm that history list is displayed
+      const historyList = await inputPopup.getHistoryList()
+      const isVisibleList = await historyList.isVisible()
+      expect(isVisibleList).toBe(true)
+
+      // Confirm that history items are displayed
+      const historyItems = await inputPopup.getHistoryItems()
+      expect(historyItems.length).toBeGreaterThan(0)
+
+      // Select the first item
+      await inputPopup.selectHistoryItem(0)
+
+      // The sort order is `Recent usage & execution count score`.
+      // If it appears under the menu, the previously entered ID 1 will be selected.
+      // If it appears above the menu, the order will be reversed, and the oldest ID 2 will be selected.
+
+      // Check the value of prompt input field
+      await waitHelpers.waitForCondition(async () => {
+        const val = await promptInput.inputValue()
+        return val === "Mock prompt 1 for testing"
+      })
+      const inputValue = await promptInput.inputValue()
+      expect(inputValue).toBe("Mock prompt 1 for testing") // Most recent history should be input
+    })
   })
 })
