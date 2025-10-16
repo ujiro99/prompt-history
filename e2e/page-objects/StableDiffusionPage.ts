@@ -26,6 +26,8 @@ export class StableDiffusionPage extends BasePage {
     await this.page.waitForSelector('input[name="email"]', { timeout: 10000 })
     await this.page.locator('input[name="email"]').fill(email)
     await this.page.locator('input[name="password"]').fill(password)
+
+    await this.page.waitForTimeout(100)
     await this.page.getByRole("button", { name: "Sign in" }).click()
 
     // Wait until input field is displayed

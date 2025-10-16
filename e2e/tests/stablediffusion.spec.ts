@@ -28,7 +28,6 @@ test.describe("Stable Diffusion Extension Tests", () => {
       expect(extensionId).toBeTruthy()
 
       // Confirm content script operation
-      await page.waitForTimeout(100)
       await stableDiffusionPage.waitForServiceReady()
     })
 
