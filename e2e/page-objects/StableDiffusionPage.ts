@@ -3,7 +3,7 @@ import { Page } from "@playwright/test"
 import { WaitHelpers } from "../utils/wait-helpers"
 
 export class StableDiffusionPage extends BasePage {
-  static readonly url = "https://stablediffusionweb.com/app/image-generator"
+  static readonly url = "https://stablediffusionweb.com/ja/auth/login"
 
   constructor(page: Page) {
     super(page, "Stable Diffusion")
@@ -28,7 +28,9 @@ export class StableDiffusionPage extends BasePage {
     await this.page.waitForSelector('input[name="email"]', { timeout: 10000 })
     const emailInput = this.page.locator('input[name="email"]')
     const passwordInput = this.page.locator('input[name="password"]')
-    const signInButton = this.page.getByRole("button", { name: "Sign in" })
+    const signInButton = this.page.locator('button[type="submit"]')
+
+    await this.page.waitForTimeout(1000)
 
     // Fill in the form
     await emailInput.fill(email)
@@ -39,20 +41,6 @@ export class StableDiffusionPage extends BasePage {
       return emailText === email && passwordText === password
     }, 5000)
     await signInButton.click()
-
-    await this.page.waitForTimeout(200)
-
-    if ((await emailInput.isVisible()) && (await signInButton.isVisible())) {
-      // Retry if login form is still visible
-      await emailInput.fill(email)
-      await passwordInput.fill(password)
-      await waitHelpers.waitForCondition(async () => {
-        const emailText = await emailInput.inputValue()
-        const passwordText = await passwordInput.inputValue()
-        return emailText === email && passwordText === password
-      }, 5000)
-      await signInButton.click({ timeout: 5000 })
-    }
 
     // Wait until input field is displayed
     await this.page.waitForSelector(this.selectors.textInput[1], {
