@@ -313,6 +313,14 @@ export class StorageService {
   }
 
   /**
+   * Remove AI config cache
+   * (for debugging)
+   */
+  async removeAiConfigCache(): Promise<void> {
+    return await aiConfigCacheService.removeCache()
+  }
+
+  /**
    * Complete storage clear (for debugging)
    */
   async clearAllData(): Promise<void> {

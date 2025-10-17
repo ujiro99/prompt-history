@@ -1,11 +1,15 @@
 import { PromptServiceFacade } from "../promptServiceFacade"
 import type { ServiceElementInfo } from "../aiService/base/types"
+import { StorageService } from "@/services/storage"
+import type { PromptHistoryDebugInterface } from "@/types/global.d.ts"
+
+const storage = StorageService.getInstance()
 
 /**
  * Debug interface for testing and debugging prompt-history extension
  * Only available in non-production environments
  */
-export class DebugInterface {
+export class DebugInterface implements PromptHistoryDebugInterface {
   private static instance: DebugInterface | null = null
 
   private constructor() {}
@@ -23,7 +27,7 @@ export class DebugInterface {
   /**
    * Get the PromptServiceFacade instance
    */
-  private getService(): PromptServiceFacade {
+  private getFacade(): PromptServiceFacade {
     return PromptServiceFacade.getInstance()
   }
 
@@ -31,8 +35,8 @@ export class DebugInterface {
    * Test all selectors for the current AI service
    */
   testSelectors(): void {
-    const service = this.getService()
-    const aiService = service.getAIService()
+    const facade = this.getFacade()
+    const aiService = facade.getAIService()
 
     if (!aiService) {
       console.warn("⚠️ AI service not initialized yet")
@@ -46,8 +50,8 @@ export class DebugInterface {
    * Get information about currently detected elements
    */
   getElementInfo(): ServiceElementInfo | null {
-    const service = this.getService()
-    const aiService = service.getAIService()
+    const facade = this.getFacade()
+    const aiService = facade.getAIService()
 
     if (!aiService) {
       console.warn("⚠️ AI service not initialized yet")
@@ -61,8 +65,8 @@ export class DebugInterface {
    * Get the name of the current AI service
    */
   getServiceName(): string | null {
-    const service = this.getService()
-    const aiService = service.getAIService()
+    const facade = this.getFacade()
+    const aiService = facade.getAIService()
 
     if (!aiService) {
       console.warn("⚠️ AI service not initialized yet")
@@ -76,8 +80,8 @@ export class DebugInterface {
    * Extract the current prompt content from the text input
    */
   extractPromptContent(): string | null {
-    const service = this.getService()
-    const aiService = service.getAIService()
+    const facade = this.getFacade()
+    const aiService = facade.getAIService()
 
     if (!aiService) {
       console.warn("⚠️ AI service not initialized yet")
@@ -85,5 +89,13 @@ export class DebugInterface {
     }
 
     return aiService.extractPromptContent()
+  }
+
+  /**
+   * Remove cached AI service configurations
+   */
+  async removeConfig(): Promise<void> {
+    await storage.removeAiConfigCache()
+    console.log("✅ AI config cache cleared successfully")
   }
 }

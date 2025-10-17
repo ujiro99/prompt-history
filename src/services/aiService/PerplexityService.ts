@@ -1,4 +1,4 @@
-import { BaseAIService } from "../base/BaseAIService"
+import { BaseAIService } from "./base/BaseAIService"
 import type { AIServiceConfigData } from "@/services/aiService/base/types"
 
 const ServiceName = "Perplexity"

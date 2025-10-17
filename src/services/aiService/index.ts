@@ -4,12 +4,13 @@ import type { AIServiceConfigData } from "@/services/aiService/base/types"
  * AI Service exports
  */
 
-import { TestPageService } from "./testPage/TestPageService"
-import { ChatGptService } from "./chatgpt/ChatGptService"
-import { GeminiService } from "./gemini/GeminiService"
-import { PerplexityService } from "./perplexity/PerplexityService"
-import { ClaudeService } from "./claude/ClaudeService"
-import { SkyworkService } from "./skywork/SkyworkService"
+import { TestPageService } from "./TestPageService"
+import { ChatGptService } from "./ChatGptService"
+import { GeminiService } from "./GeminiService"
+import { PerplexityService } from "./PerplexityService"
+import { ClaudeService } from "./ClaudeService"
+import { SkyworkService } from "./SkyworkService"
+import { StableDiffusionService } from "./StableDiffusionService"
 import { StorageService } from "../storage"
 
 export const Services = [
@@ -19,6 +20,7 @@ export const Services = [
   PerplexityService,
   ClaudeService,
   SkyworkService,
+  StableDiffusionService,
 ]
 
 export const supportHosts = Services.flatMap((service) => service.supportHosts)

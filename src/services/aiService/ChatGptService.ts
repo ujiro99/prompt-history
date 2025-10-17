@@ -1,13 +1,13 @@
-import { BaseAIService } from "../base/BaseAIService"
+import { BaseAIService } from "./base/BaseAIService"
 import type { AIServiceConfigData } from "@/services/aiService/base/types"
 
-const ServiceName = "Skywork"
-const supportHosts: string[] = ["skywork.ai"]
+const ServiceName = "ChatGPT"
+const supportHosts: string[] = ["chatgpt.com", "openai.com"]
 
 /**
- * Skywork AI service implementation
+ * ChatGPT AI service implementation
  */
-export class SkyworkService extends BaseAIService {
+export class ChatGptService extends BaseAIService {
   static supportHosts = supportHosts
 
   constructor(configs: Record<string, AIServiceConfigData> = {}) {

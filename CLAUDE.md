@@ -8,7 +8,7 @@ This is a browser extension built with WXT (Web Extension Toolkit) and React. Th
 
 ## Development Commands
 
-- `pnpm dev` - Start development server for Chrome
+- `pnpm dev` - Start development server for Chrome. Uses port 3005
 - `pnpm dev:firefox` - Start development server for Firefox
 - `pnpm build` - Build extension for Chrome
 - `pnpm build:firefox` - Build extension for Firefox
@@ -149,7 +149,7 @@ The `pages/` directory contains a separate Next.js project for the Prompt Histor
 
 **Development Commands** (run from `pages/` directory):
 
-- `pnpm dev` - Start Next.js development server with Turbopack
+- `pnpm dev` - Start Next.js development server with Turbopack. Uses port 3000 (to avoid conflicts with the extension dev server)
 - `pnpm build` - Build static site export for production
 - `pnpm start` - Start production server (development only)
 - `pnpm lint` - Run Biome linter and formatter

@@ -31,7 +31,10 @@ jobs:
 
       - name: Create .env file from secrets
         run: |
-          echo "WXT_CONFIG_ENDPOINT=${{ secrets.WXT_CONFIG_ENDPOINT }}" >> .env
+          echo "WXT_E2E=${{ secrets.WXT_E2E }}" >> .env.e2e
+          echo "WXT_CONFIG_ENDPOINT=${{ secrets.WXT_CONFIG_ENDPOINT }}" >> .env.e2e
+          echo "STABLE_DIFFUSION_ID=${{ secrets.STABLE_DIFFUSION_ID }}" >> .env.e2e
+          echo "STABLE_DIFFUSION_PW=${{ secrets.STABLE_DIFFUSION_PW }}" >> .env.e2e
         shell: bash
 
       - name: Build extension
@@ -54,3 +57,13 @@ jobs:
 
       - name: Run E2E tests
         run: pnpm e2e
+
+      - name: Upload test results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 30

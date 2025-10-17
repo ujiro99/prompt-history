@@ -8,7 +8,7 @@
 
 ## 開発コマンド
 
-- `pnpm dev` - Chrome用開発サーバーを起動
+- `pnpm dev` - Chrome用開発サーバーを起動。3005番ポートを使用
 - `pnpm dev:firefox` - Firefox用開発サーバーを起動
 - `pnpm build` - Chrome用拡張機能をビルド
 - `pnpm build:firefox` - Firefox用拡張機能をビルド
@@ -149,7 +149,7 @@
 
 **開発コマンド**（`pages/` ディレクトリから実行）:
 
-- `pnpm dev` - TurbopackでNext.js開発サーバーを起動
+- `pnpm dev` - TurbopackでNext.js開発サーバーを起動。3000番ポートを使用(extensionのdevサーバーと衝突を避ける)
 - `pnpm build` - 本番環境用の静的サイトエクスポートをビルド
 - `pnpm start` - 本番サーバーを起動（開発用のみ）
 - `pnpm lint` - Biomeリンターとフォーマッターを実行

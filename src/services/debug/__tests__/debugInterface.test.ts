@@ -13,14 +13,19 @@ vi.mock("#imports", () => ({
 }))
 
 // Mock all storage dependencies
-vi.mock("../../storage", () => ({
-  StorageService: {
-    getInstance: vi.fn(() => ({
-      getPrompts: vi.fn().mockResolvedValue([]),
-      savePrompt: vi.fn().mockResolvedValue(undefined),
-    })),
-  },
-}))
+vi.mock("../../storage", () => {
+  const mockRemoveAiConfigCache = vi.fn().mockResolvedValue(undefined)
+  return {
+    StorageService: {
+      getInstance: vi.fn(() => ({
+        getPrompts: vi.fn().mockResolvedValue([]),
+        savePrompt: vi.fn().mockResolvedValue(undefined),
+        removeAiConfigCache: mockRemoveAiConfigCache,
+      })),
+    },
+    mockRemoveAiConfigCache,
+  }
+})
 
 // Mock PromptServiceFacade completely
 vi.mock("../../promptServiceFacade", () => {
@@ -35,6 +40,7 @@ vi.mock("../../promptServiceFacade", () => {
 import { describe, it, expect, beforeEach, afterEach } from "vitest"
 import { DebugInterface } from "../debugInterface"
 import { PromptServiceFacade } from "../../promptServiceFacade"
+import { StorageService } from "../../storage"
 import type { ServiceElementInfo } from "../../aiService/base/types"
 
 describe("DebugInterface", () => {
@@ -98,7 +104,7 @@ describe("DebugInterface", () => {
   describe("Service Integration", () => {
     it("should get PromptServiceFacade instance", () => {
       // Access private method through any type
-      const service = (debugInterface as any).getService()
+      const service = (debugInterface as any).getFacade()
 
       expect(PromptServiceFacade.getInstance).toHaveBeenCalled()
       expect(service).toBe(mockPromptServiceFacade)
@@ -213,6 +219,30 @@ describe("DebugInterface", () => {
       const result = debugInterface.extractPromptContent()
 
       expect(result).toBe("")
+    })
+  })
+
+  describe("removeConfig() Method", () => {
+    it("should clear AI config cache and log success message", async () => {
+      const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {})
+      const storageInstance = StorageService.getInstance()
+
+      await debugInterface.removeConfig()
+
+      expect(storageInstance.removeAiConfigCache).toHaveBeenCalled()
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "✅ AI config cache cleared successfully",
+      )
+
+      consoleSpy.mockRestore()
+    })
+
+    it("should handle errors when clearing AI config cache fails", async () => {
+      const storageInstance = StorageService.getInstance()
+      const mockError = new Error("Storage error")
+      vi.mocked(storageInstance.removeAiConfigCache).mockRejectedValueOnce(mockError)
+
+      await expect(debugInterface.removeConfig()).rejects.toThrow("Storage error")
     })
   })
 })

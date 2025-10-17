@@ -16,7 +16,7 @@ async function globalSetup(_config: FullConfig) {
   if (!fs.existsSync(extensionPath)) {
     console.log("📦 Extension not found. Building...")
     try {
-      execSync("pnpm build", { stdio: "inherit" })
+      execSync("pnpm build:e2e", { stdio: "inherit" })
       console.log("✅ Extension built successfully")
     } catch (error) {
       console.error("❌ Failed to build extension:", error)
