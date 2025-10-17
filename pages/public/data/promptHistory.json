@@ -91,7 +91,7 @@
     "serviceName": "Stable Diffusion",
     "selectors": {
       "textInput": ["form input", "textarea#prompts"],
-      "sendButton": ["form button.bg-primary"]
+      "sendButton": ["form button.bg-primary", "main button.font-caption"]
     },
     "popupPlacement": {
       "alignOffset": 0,
