@@ -1,11 +1,19 @@
-import { describe, it, expect, vi } from "vitest"
+import { describe, it, expect, vi, afterEach } from "vitest"
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import { VariableInputDialog } from "../VariableInputDialog"
+import { ContainerProvider } from "@/contexts/ContainerContext"
 import type { VariableConfig, VariableValues } from "@/types/prompt"
 
 describe("VariableInputDialog", () => {
   const mockOnOpenChange = vi.fn()
   const mockOnSubmit = vi.fn()
+
+  // Helper function to render with ContainerProvider
+  const renderWithContainer = (ui: React.ReactElement) => {
+    return render(
+      <ContainerProvider container={document.body}>{ui}</ContainerProvider>,
+    )
+  }
 
   afterEach(() => {
     vi.clearAllMocks()
@@ -21,7 +29,7 @@ describe("VariableInputDialog", () => {
         },
       ]
 
-      render(
+      renderWithContainer(
         <VariableInputDialog
           open={true}
           onOpenChange={mockOnOpenChange}
@@ -45,7 +53,7 @@ describe("VariableInputDialog", () => {
         },
       ]
 
-      render(
+      renderWithContainer(
         <VariableInputDialog
           open={true}
           onOpenChange={mockOnOpenChange}
@@ -72,7 +80,7 @@ describe("VariableInputDialog", () => {
         },
       ]
 
-      render(
+      renderWithContainer(
         <VariableInputDialog
           open={true}
           onOpenChange={mockOnOpenChange}
@@ -84,7 +92,8 @@ describe("VariableInputDialog", () => {
       expect(screen.getByText("weather:")).toBeInTheDocument()
       const select = screen.getByRole("combobox")
       expect(select).toBeInTheDocument()
-      expect(select).toHaveValue("sunny")
+      // For Radix UI Select, the selected value is displayed in the trigger
+      expect(screen.getByText("sunny")).toBeInTheDocument()
     })
 
     it("should not render exclude type variable", () => {
@@ -99,7 +108,7 @@ describe("VariableInputDialog", () => {
         },
       ]
 
-      render(
+      renderWithContainer(
         <VariableInputDialog
           open={true}
           onOpenChange={mockOnOpenChange}
@@ -119,7 +128,7 @@ describe("VariableInputDialog", () => {
         { name: "bio", type: "textarea" },
       ]
 
-      render(
+      renderWithContainer(
         <VariableInputDialog
           open={true}
           onOpenChange={mockOnOpenChange}
@@ -139,7 +148,7 @@ describe("VariableInputDialog", () => {
         { name: "age", type: "text", defaultValue: "25" },
       ]
 
-      render(
+      renderWithContainer(
         <VariableInputDialog
           open={true}
           onOpenChange={mockOnOpenChange}
@@ -159,7 +168,7 @@ describe("VariableInputDialog", () => {
         { name: "name", type: "text", defaultValue: "" },
       ]
 
-      render(
+      renderWithContainer(
         <VariableInputDialog
           open={true}
           onOpenChange={mockOnOpenChange}
@@ -179,7 +188,7 @@ describe("VariableInputDialog", () => {
         { name: "bio", type: "textarea", defaultValue: "" },
       ]
 
-      render(
+      renderWithContainer(
         <VariableInputDialog
           open={true}
           onOpenChange={mockOnOpenChange}
@@ -200,7 +209,7 @@ describe("VariableInputDialog", () => {
         { name: "age", type: "text", defaultValue: "30" },
       ]
 
-      render(
+      renderWithContainer(
         <VariableInputDialog
           open={true}
           onOpenChange={mockOnOpenChange}
@@ -210,7 +219,7 @@ describe("VariableInputDialog", () => {
       )
 
       const submitButton = screen.getByRole("button", {
-        name: /submit|ok|実行/i,
+        name: "common.execute",
       })
       fireEvent.click(submitButton)
 
@@ -227,7 +236,7 @@ describe("VariableInputDialog", () => {
     it("should call onOpenChange(false) when cancel button is clicked", () => {
       const variables: VariableConfig[] = [{ name: "name", type: "text" }]
 
-      render(
+      renderWithContainer(
         <VariableInputDialog
           open={true}
           onOpenChange={mockOnOpenChange}
@@ -237,7 +246,7 @@ describe("VariableInputDialog", () => {
       )
 
       const cancelButton = screen.getByRole("button", {
-        name: /cancel|キャンセル/i,
+        name: "common.cancel",
       })
       fireEvent.click(cancelButton)
 
@@ -250,7 +259,7 @@ describe("VariableInputDialog", () => {
         { name: "name", type: "text", defaultValue: "John" },
       ]
 
-      render(
+      renderWithContainer(
         <VariableInputDialog
           open={true}
           onOpenChange={mockOnOpenChange}
@@ -263,7 +272,7 @@ describe("VariableInputDialog", () => {
       fireEvent.change(input, { target: { value: "Alice" } })
 
       const submitButton = screen.getByRole("button", {
-        name: /submit|ok|実行/i,
+        name: "common.execute",
       })
       fireEvent.click(submitButton)
 
@@ -280,7 +289,7 @@ describe("VariableInputDialog", () => {
         { name: "optional", type: "text", defaultValue: "" },
       ]
 
-      render(
+      renderWithContainer(
         <VariableInputDialog
           open={true}
           onOpenChange={mockOnOpenChange}
@@ -293,7 +302,7 @@ describe("VariableInputDialog", () => {
       fireEvent.change(inputs[0], { target: { value: "" } })
 
       const submitButton = screen.getByRole("button", {
-        name: /submit|ok|実行/i,
+        name: "common.execute",
       })
       fireEvent.click(submitButton)
 
