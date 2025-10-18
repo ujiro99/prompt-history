@@ -225,7 +225,7 @@ describe("mergeVariableConfigs", () => {
     expect(result).toEqual([])
   })
 
-  it("should maintain order: existing configs first, then new variables", () => {
+  it("should maintain order: variables appear in the order they appear in content", () => {
     const content = "{{new1}} {{old1}} {{new2}} {{old2}}"
     const existingConfigs: VariableConfig[] = [
       { name: "old1", type: "text" },
@@ -235,9 +235,9 @@ describe("mergeVariableConfigs", () => {
     const result = mergeVariableConfigs(content, existingConfigs)
 
     expect(result).toHaveLength(4)
-    expect(result[0].name).toBe("old1")
-    expect(result[1].name).toBe("old2")
-    expect(result[2].name).toBe("new1")
-    expect(result[3].name).toBe("new2")
+    expect(result[0].name).toBe("new1")
+    expect(result[1].name).toBe("old1")
+    expect(result[2].name).toBe("new2")
+    expect(result[3].name).toBe("old2")
   })
 })

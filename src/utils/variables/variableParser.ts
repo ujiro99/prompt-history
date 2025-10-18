@@ -70,9 +70,10 @@ export function isValidVariableName(name: string): boolean {
  * - Existing configs are preserved for variables still in content
  * - New variables get default config (type: 'text')
  * - Configs for removed variables are excluded
+ * - Order follows the order variables appear in content
  * @param content - Prompt content
  * @param configs - Existing variable configs
- * @returns Merged variable configs
+ * @returns Merged variable configs in content order
  */
 export function mergeVariableConfigs(
   content: string,
@@ -94,21 +95,13 @@ export function mergeVariableConfigs(
   }
 
   const result: VariableConfig[] = []
-  const processedVars = new Set<string>()
 
-  // First, add existing configs that are still present in content
-  if (configs) {
-    for (const config of configs) {
-      if (variableNames.includes(config.name)) {
-        result.push(config)
-        processedVars.add(config.name)
-      }
-    }
-  }
-
-  // Then, add new variables with default config
+  // Add variables in the order they appear in content
   for (const varName of variableNames) {
-    if (!processedVars.has(varName)) {
+    const existingConfig = configMap.get(varName)
+    if (existingConfig) {
+      result.push(existingConfig)
+    } else {
       result.push({
         name: varName,
         type: "text",

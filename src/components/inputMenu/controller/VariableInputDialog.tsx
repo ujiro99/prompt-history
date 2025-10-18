@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { ChevronDownIcon } from "lucide-react"
 import {
   Dialog,
   DialogTitle,
@@ -105,7 +106,7 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
           <DialogTitle>{i18n.t("dialogs.variables.title")}</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-2">
           {visibleVariables.map((variable) => (
             <div key={variable.name} className="space-y-2">
               <label
@@ -150,6 +151,7 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
                     <SelectValue
                       placeholder={i18n.t("placeholders.selectOption")}
                     />
+                    <ChevronDownIcon className="size-4 opacity-50" />
                   </SelectTrigger>
                   <SelectContent>
                     {variable.selectOptions.options.map((option) => (

@@ -17,6 +17,10 @@ common:
   update: Update
   prompt: Prompt
   promptDescription: The content that will be entered into the chat
+  execute: Execute
+  variableType: Variable Type
+  defaultValue: Default Value
+  options: Options
 
 # Buttons
 buttons:
@@ -43,11 +47,14 @@ placeholders:
   enterPromptName: Enter prompt name...
   enterPromptContent: Enter prompt content...
   searchPrompts: Search prompts...
+  enterValue: Enter value
+  selectOption: Select option
 
 # Dialog titles and messages
 dialogs:
   edit:
     title: Edit Prompt
+    variableSettings: Variable Settings
   delete:
     title: Delete Prompt
     message: Are you sure you want to remove? This action cannot be undone.
@@ -55,6 +62,8 @@ dialogs:
     title: Save Prompt
   copy:
     title: Copy Prompt
+  variables:
+    title: Variable Input
 
 # Tabs
 tabs:
@@ -196,3 +205,10 @@ importDialog:
 # Accessibility labels
 accessibility:
   groupLabel: "$1 group, $2 items"
+
+# Variable types
+variableTypes:
+  text: Single-line Text
+  textarea: Multi-line Text
+  select: Select
+  exclude: Exclude

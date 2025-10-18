@@ -1,16 +1,19 @@
 import React, { useEffect, useRef, useState } from "react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import "./ScrollAreaWithGradient.css"
+import { cn } from "@/lib/utils"
 
 type ScrollAreaWithGradientProps = {
   className?: string
   children: React.ReactNode
+  gradientHeight?: number
   ref?: React.Ref<HTMLDivElement>
 }
 
 export function ScrollAreaWithGradient({
   className,
   children,
+  gradientHeight,
   ref,
 }: ScrollAreaWithGradientProps): React.ReactElement {
   const [isScrollable, setIsScrollable] = useState(false)
@@ -53,22 +56,21 @@ export function ScrollAreaWithGradient({
   }, [viewport])
 
   return (
-    <div
-      className="relative scroll-gradient-container"
+    <ScrollArea
+      className="scroll-gradient-container"
+      scrollbarClassName="scrollbar"
+      viewportRef={scrollViewportRef}
+      viewportClassName={cn("scroll-viewport-timeline", className)}
       data-scrollable={isScrollable}
     >
-      <ScrollArea
-        className={className}
-        scrollbarClassName="scrollbar"
-        viewportRef={scrollViewportRef}
-        viewportClassName="scroll-viewport-timeline"
-      >
-        {/* Top gradient cover */}
-        <div className="scroll-gradient-top" />
-        {children}
-        {/* Bottom gradient cover */}
-        <div className="scroll-gradient-bottom" />
-      </ScrollArea>
-    </div>
+      {/* Top gradient cover */}
+      <div className="scroll-gradient-top" style={{ height: gradientHeight }} />
+      {children}
+      {/* Bottom gradient cover */}
+      <div
+        className="scroll-gradient-bottom"
+        style={{ height: gradientHeight }}
+      />
+    </ScrollArea>
   )
 }

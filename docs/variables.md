@@ -481,53 +481,24 @@ AIサービスへプロンプト送信
     - [x] `expandPrompt()`
 - [x] コンポーネント実装
   - [x] `VariableInputDialog.tsx` - 変数入力ダイアログ
+  - [x] `VariableConfigField.tsx` - 変数設定フィールド
+- [x] EditDialog への変数設定UI追加
+  - [x] プロンプト内容の変更を監視
+  - [x] `parseVariables()` を使用して変数を自動検出
+  - [x] 検出された変数ごとに設定UIを動的生成
+  - [x] `mergeVariableConfigs()` を使用して既存設定とマージ
+  - [x] 保存時に変数設定を `SaveDialogData` に含める
+- [x] i18n対応
+  - [x] 変数入力ダイアログのラベル・メッセージ追加
+  - [x] EditDialog の変数設定UI用のラベル追加
+- [x] ExecuteManager への統合（プロンプト実行時の変数展開）
+  - [x] プロンプト実行時の変数チェック機能
+  - [x] 変数入力ダイアログの表示
+  - [x] プロンプトの展開と実行
 
 ### 🚧 TODO
 
-#### 1. EditDialog への変数設定UI追加
-
-**ファイル**: `src/components/inputMenu/controller/EditDialog.tsx`
-
-**作業内容**:
-
-- [ ] プロンプト内容の変更を監視
-- [ ] `parseVariables()` を使用して変数を自動検出
-- [ ] 検出された変数ごとに設定UIを動的生成
-  - [ ] 変数の型選択 (text/textarea/select/exclude)
-  - [ ] デフォルト値入力
-  - [ ] 選択肢入力（型がselectの場合）
-- [ ] `mergeVariableConfigs()` を使用して既存設定とマージ
-- [ ] 保存時に変数設定を `SaveDialogData` に含める
-- [ ] VariableConfigField コンポーネントの作成（オプション）
-
-**参考実装箇所**:
-
-- 既存の EditDialog: `src/components/inputMenu/controller/EditDialog.tsx:44-219`
-- 型定義: `src/types/prompt.ts`
-- ユーティリティ: `src/utils/variables/variableParser.ts`
-
-#### 2. ExecuteManager への統合
-
-**ファイル**: `src/services/promptHistory/executeManager.ts`
-
-**作業内容**:
-
-- [ ] `executePrompt()` メソッドの拡張
-  - [ ] プロンプトの変数設定をチェック
-  - [ ] 変数が存在する場合、VariableInputDialog を表示
-  - [ ] ダイアログからの入力値を受け取る
-  - [ ] `expandPrompt()` を使用してプロンプトを展開
-  - [ ] 展開後のプロンプトをAIサービスへ送信
-- [ ] 変数入力ダイアログの状態管理
-  - [ ] InputPopup コンポーネントへの統合も検討
-
-**参考実装箇所**:
-
-- 既存の ExecuteManager: `src/services/promptHistory/executeManager.ts:20-79`
-- InputPopup: `src/components/inputMenu/InputPopup.tsx:136-151`
-- ユーティリティ: `src/utils/variables/variableFormatter.ts`
-
-#### 3. インポート/エクスポート機能への対応（必要に応じて）
+#### 1. インポート/エクスポート機能への対応（必要に応じて）
 
 **ファイル**: インポート/エクスポート関連のファイル
 
@@ -538,33 +509,12 @@ AIサービスへプロンプト送信
 - [ ] 既存のインポート/エクスポート機能を調査
 - [ ] 必要に応じて型定義の調整
 
-#### 4. i18n対応
-
-**ファイル**: 国際化リソースファイル
-
-**作業内容**:
-
-- [ ] 変数入力ダイアログのラベル・メッセージ追加
-  - [ ] `dialogs.variables.title` - "変数の入力" / "Variable Input"
-  - [ ] `placeholders.enterValue` - "値を入力" / "Enter value"
-  - [ ] `placeholders.selectOption` - "選択してください" / "Select option"
-  - [ ] `common.execute` - "実行" / "Execute" (既存の可能性あり)
-- [ ] EditDialog の変数設定UI用のラベル追加
-  - [ ] `dialogs.edit.variableSettings` - "変数設定" / "Variable Settings"
-  - [ ] `common.variableType` - "変数の型" / "Variable Type"
-  - [ ] `common.defaultValue` - "デフォルト値" / "Default Value"
-  - [ ] `common.options` - "選択肢" / "Options"
-  - [ ] `variableTypes.text` - "一行文字列" / "Single-line Text"
-  - [ ] `variableTypes.textarea` - "複数行文字列" / "Multi-line Text"
-  - [ ] `variableTypes.select` - "選択肢" / "Select"
-  - [ ] `variableTypes.exclude` - "対象外" / "Exclude"
-
-#### 5. テストの追加
+#### 2. テストの追加
 
 **作業内容**:
 
 - [ ] EditDialog の変数設定UI部分のユニットテスト
-- [ ] ExecuteManager の変数展開フローのユニットテスト
+- [ ] InputPopup の変数展開フローのユニットテスト
 - [ ] 統合テスト（E2E）の追加（任意）
 
 ## 注意事項

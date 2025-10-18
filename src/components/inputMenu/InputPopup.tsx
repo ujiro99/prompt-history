@@ -12,6 +12,7 @@ import { useContainer } from "@/hooks/useContainer"
 import { PromptPreview } from "./PromptPreview"
 import { RemoveDialog } from "@/components/inputMenu/controller/RemoveDialog"
 import { EditDialog } from "@/components/inputMenu/controller/EditDialog"
+import { VariableInputDialog } from "@/components/inputMenu/controller/VariableInputDialog"
 import { BridgeArea } from "@/components/BridgeArea"
 import { PromptServiceFacade } from "@/services/promptServiceFacade"
 import { SaveMode } from "@/types/prompt"
@@ -19,7 +20,13 @@ import { MENU, TestIds } from "@/components/const"
 import { PromptList } from "@/components/inputMenu/PromptList"
 import { SettingsMenu } from "./SettingsMenu"
 import { cn, isEmpty } from "@/lib/utils"
-import type { Prompt, SaveDialogData } from "@/types/prompt"
+import type {
+  Prompt,
+  SaveDialogData,
+  VariableConfig,
+  VariableValues,
+} from "@/types/prompt"
+import { expandPrompt } from "@/utils/variables/variableFormatter"
 import { i18n } from "#imports"
 
 const serviceFacade = PromptServiceFacade.getInstance()
@@ -72,6 +79,11 @@ export function InputMenu(props: Props): React.ReactElement {
   const [saveDialogData, setSaveDialogData] = useState<SaveDialogData | null>(
     null,
   )
+  const [variableInputData, setVariableInputData] = useState<{
+    promptId: string
+    variables: VariableConfig[]
+    content: string
+  } | null>(null)
   const [historySideFlipped, setHistorySideFlipped] = useState(false)
   const [pinnedSideFlipped, setPinnedSideFlipped] = useState(false)
 
@@ -134,7 +146,7 @@ export function InputMenu(props: Props): React.ReactElement {
   }, [])
 
   const handleItemClick = useCallback(
-    (promptId: string) => {
+    async (promptId: string) => {
       // Clear hoveredItem immediately when item is clicked
       if (hoverTimeoutRef.current) {
         clearTimeout(hoverTimeoutRef.current)
@@ -142,12 +154,69 @@ export function InputMenu(props: Props): React.ReactElement {
       setHoveredItem(null)
 
       try {
-        serviceFacade.executePrompt(promptId, nodeAtCaret)
+        // Get prompt to check for variables
+        const prompt = await serviceFacade.getPrompt(promptId)
+
+        // Check if prompt has variables that need user input
+        const hasVariables = prompt.variables && prompt.variables.length > 0
+        const hasInputVariables =
+          hasVariables && prompt.variables!.some((v) => v.type !== "exclude")
+
+        if (hasInputVariables) {
+          // Show variable input dialog
+          setVariableInputData({
+            promptId,
+            variables: prompt.variables!,
+            content: prompt.content,
+          })
+        } else {
+          // Execute directly if no variables
+          serviceFacade.executePrompt(promptId, nodeAtCaret)
+        }
       } catch (error) {
         console.error("Execute failed:", error)
       }
     },
     [nodeAtCaret],
+  )
+
+  /**
+   * Handle variable input submission
+   */
+  const handleVariableSubmit = useCallback(
+    async (values: VariableValues) => {
+      if (!variableInputData) return
+
+      try {
+        const { promptId, content } = variableInputData
+
+        // Expand prompt with variable values
+        const expandedContent = expandPrompt(content, values)
+
+        // Get the original prompt to update with expanded content
+        const prompt = await serviceFacade.getPrompt(promptId)
+
+        // Create a modified match object with expanded content
+        const match = {
+          id: prompt.id,
+          name: prompt.name,
+          content: expandedContent,
+          isPinned: prompt.isPinned,
+          matchStart: 0,
+          matchEnd: expandedContent.length,
+          searchTerm: "",
+        }
+
+        // Execute the prompt with expanded content
+        serviceFacade.executePrompt(promptId, nodeAtCaret, match)
+
+        // Close the variable input dialog
+        setVariableInputData(null)
+      } catch (error) {
+        console.error("Variable expansion failed:", error)
+      }
+    },
+    [variableInputData, nodeAtCaret],
   )
 
   /**
@@ -200,6 +269,7 @@ export function InputMenu(props: Props): React.ReactElement {
       content: prompt.content,
       saveMode: SaveMode.Overwrite,
       isPinned: prompt.isPinned,
+      variables: prompt.variables,
     })
     setEditId(promptId)
   }
@@ -214,6 +284,7 @@ export function InputMenu(props: Props): React.ReactElement {
       content: prompt.content,
       saveMode: SaveMode.Copy,
       isPinned: prompt.isPinned,
+      variables: prompt.variables,
     })
     setEditId("")
   }
@@ -367,6 +438,7 @@ export function InputMenu(props: Props): React.ReactElement {
           onOpenChange={(val) => setEditId(val ? editId : null)}
           initialName={saveDialogData.name}
           initialContent={saveDialogData.content}
+          initialVariables={saveDialogData.variables}
           displayMode={saveDialogData.saveMode}
           onSave={handleEditPrompt}
         />
@@ -381,6 +453,18 @@ export function InputMenu(props: Props): React.ReactElement {
       >
         <span className="text-base break-all">{removePrompt?.name}</span>
       </RemoveDialog>
+
+      {/* Variable Input Dialog */}
+      {variableInputData && (
+        <VariableInputDialog
+          open={variableInputData !== null}
+          onOpenChange={(val) =>
+            setVariableInputData(val ? variableInputData : null)
+          }
+          variables={variableInputData.variables}
+          onSubmit={handleVariableSubmit}
+        />
+      )}
     </div>
   )
 }
