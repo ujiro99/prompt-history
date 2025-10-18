@@ -169,7 +169,9 @@ The weather is {{weather}}.
       name: "John",
     }
     const result = expandPrompt(content, values)
+    // Content ends with \n\n, and we add \n\n, so we get 4 newlines total
     expect(result).toBe(`Hello {{name}}.
+
 
 
 # variables:

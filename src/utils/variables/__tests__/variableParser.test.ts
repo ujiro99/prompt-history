@@ -45,6 +45,63 @@ describe("parseVariables", () => {
     const result = parseVariables(content)
     expect(result).toEqual(["var1", "var2", "var3"])
   })
+
+  it("should handle Japanese variable names (hiragana, katakana, kanji)", () => {
+    const content = "{{なまえ}} {{ユーザー名}} {{値1}}"
+    const result = parseVariables(content)
+    expect(result).toEqual(["なまえ", "ユーザー名", "値1"])
+  })
+
+  it("should handle Chinese variable names (simplified and traditional)", () => {
+    const content = "{{名字}} {{用户名}} {{數值}}"
+    const result = parseVariables(content)
+    expect(result).toEqual(["名字", "用户名", "數值"])
+  })
+
+  it("should handle Korean variable names (Hangul)", () => {
+    const content = "{{이름}} {{사용자}} {{값1}}"
+    const result = parseVariables(content)
+    expect(result).toEqual(["이름", "사용자", "값1"])
+  })
+
+  it("should handle European language variable names with accents", () => {
+    const content = "{{café}} {{naïve}} {{Müller}}"
+    const result = parseVariables(content)
+    expect(result).toEqual(["café", "naïve", "Müller"])
+  })
+
+  it("should handle mixed language variable names", () => {
+    const content = "{{user_名前}} {{usuario_1}} {{사용자_name}}"
+    const result = parseVariables(content)
+    expect(result).toEqual(["user_名前", "usuario_1", "사용자_name"])
+  })
+
+  it("should exclude control characters and invisible characters", () => {
+    const content = "{{name\u200B}} {{user\u00AD}} {{value\u200D}}"
+    const result = parseVariables(content)
+    expect(result).toEqual([])
+  })
+
+  it("should normalize Unicode variable names (NFC normalization)", () => {
+    // é as composed (U+00E9) vs decomposed (U+0065 U+0301)
+    const composed = "{{café}}"
+    const decomposed = "{{café}}" // This uses decomposed é
+    const resultComposed = parseVariables(composed)
+    const resultDecomposed = parseVariables(decomposed)
+
+    // Both should produce the same normalized result
+    expect(resultComposed).toEqual(["café"])
+    expect(resultDecomposed).toEqual(["café"])
+    expect(resultComposed).toEqual(resultDecomposed)
+  })
+
+  it("should handle emoji variable names", () => {
+    // Emoji are technically allowed in the permissive approach
+    const content = "{{😀_value}} {{test_🎉}}"
+    const result = parseVariables(content)
+    // Emoji don't match \p{L} or \p{N}, so they should be excluded
+    expect(result).toEqual([])
+  })
 })
 
 describe("isValidVariableName", () => {
@@ -68,6 +125,28 @@ describe("isValidVariableName", () => {
 
   it("should return false for names starting with numbers", () => {
     expect(isValidVariableName("1name")).toBe(false)
+  })
+
+  it("should return true for Unicode variable names", () => {
+    expect(isValidVariableName("なまえ")).toBe(true)
+    expect(isValidVariableName("名字")).toBe(true)
+    expect(isValidVariableName("이름")).toBe(true)
+    expect(isValidVariableName("café")).toBe(true)
+    expect(isValidVariableName("user_名前")).toBe(true)
+  })
+
+  it("should return false for names with control characters", () => {
+    expect(isValidVariableName("name\u200B")).toBe(false) // Zero Width Space
+    expect(isValidVariableName("user\u00AD")).toBe(false) // Soft Hyphen
+    expect(isValidVariableName("value\u200D")).toBe(false) // Zero Width Joiner
+  })
+
+  it("should normalize Unicode names before validation", () => {
+    // Composed vs decomposed é
+    const composed = "café"
+    const decomposed = "café" // Uses decomposed é
+    expect(isValidVariableName(composed)).toBe(true)
+    expect(isValidVariableName(decomposed)).toBe(true)
   })
 })
 
