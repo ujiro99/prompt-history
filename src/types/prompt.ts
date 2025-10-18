@@ -1,6 +1,43 @@
 // Type definitions for prompt management functionality
 
 /**
+ * Variable type
+ */
+export type VariableType = "text" | "textarea" | "select" | "exclude"
+
+/**
+ * Select options configuration (for extensibility)
+ */
+export interface SelectOptions {
+  /** List of options */
+  options: string[]
+  // Future extension fields (examples)
+  // allowCustomInput?: boolean  // Allow custom input
+  // multiSelect?: boolean        // Allow multiple selection
+}
+
+/**
+ * Variable configuration
+ */
+export interface VariableConfig {
+  /** Variable name */
+  name: string
+  /** Variable type */
+  type: VariableType
+  /** Default value */
+  defaultValue?: string
+  /** Select options (when type='select') */
+  selectOptions?: SelectOptions
+}
+
+/**
+ * Variable input values
+ */
+export interface VariableValues {
+  [variableName: string]: string
+}
+
+/**
  * Basic structure of prompt data
  */
 export interface Prompt {
@@ -22,6 +59,8 @@ export interface Prompt {
   createdAt: Date
   /** Update date */
   updatedAt: Date
+  /** Variable configurations */
+  variables?: VariableConfig[]
 }
 
 /**
@@ -46,6 +85,8 @@ export interface StoredPrompt {
   createdAt: string
   /** Update date */
   updatedAt: string
+  /** Variable configurations */
+  variables?: VariableConfig[]
 }
 
 /**
@@ -81,6 +122,8 @@ export interface SaveDialogData {
   saveMode: SaveMode
   /** Pin flag */
   isPinned: boolean
+  /** Variable configurations */
+  variables?: VariableConfig[]
 }
 
 /**
