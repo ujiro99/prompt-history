@@ -2,6 +2,7 @@ import { describe, it, expect, vi, afterEach } from "vitest"
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import { VariableInputDialog } from "../VariableInputDialog"
 import { ContainerProvider } from "@/contexts/ContainerContext"
+import { TestIds } from "@/components/const"
 import type { VariableConfig, VariableValues } from "@/types/prompt"
 
 describe("VariableInputDialog", () => {
@@ -218,9 +219,9 @@ describe("VariableInputDialog", () => {
         />,
       )
 
-      const submitButton = screen.getByRole("button", {
-        name: "common.execute",
-      })
+      const submitButton = screen.getByTestId(
+        TestIds.variableInputDialog.submit,
+      )
       fireEvent.click(submitButton)
 
       await waitFor(() => {
@@ -246,7 +247,7 @@ describe("VariableInputDialog", () => {
       )
 
       const cancelButton = screen.getByRole("button", {
-        name: "common.cancel",
+        name: "Close",
       })
       fireEvent.click(cancelButton)
 
@@ -271,9 +272,9 @@ describe("VariableInputDialog", () => {
       const input = screen.getByRole("textbox")
       fireEvent.change(input, { target: { value: "Alice" } })
 
-      const submitButton = screen.getByRole("button", {
-        name: "common.execute",
-      })
+      const submitButton = screen.getByTestId(
+        TestIds.variableInputDialog.submit,
+      )
       fireEvent.click(submitButton)
 
       await waitFor(() => {
@@ -301,9 +302,9 @@ describe("VariableInputDialog", () => {
       const inputs = screen.getAllByRole("textbox")
       fireEvent.change(inputs[0], { target: { value: "" } })
 
-      const submitButton = screen.getByRole("button", {
-        name: "common.execute",
-      })
+      const submitButton = screen.getByTestId(
+        TestIds.variableInputDialog.submit,
+      )
       fireEvent.click(submitButton)
 
       await waitFor(() => {
