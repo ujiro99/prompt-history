@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { ChevronDownIcon } from "lucide-react"
+import { ChevronDownIcon, CornerDownLeft } from "lucide-react"
 import {
   Dialog,
   DialogTitle,
@@ -17,8 +17,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Key } from "@/components/Key"
 import { useContainer } from "@/hooks/useContainer"
 import type { VariableConfig, VariableValues } from "@/types/prompt"
+import { TestIds } from "@/components/const"
+import { isMac } from "@/utils/platform"
 import { i18n } from "#imports"
 
 /**
@@ -74,19 +77,19 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
   }
 
   /**
-   * Handle cancel
-   */
-  const handleCancel = () => {
-    onOpenChange(false)
-  }
-
-  /**
    * Keyboard event handling
    */
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
       event.preventDefault()
       handleSubmit()
+    }
+    if (event.key === "Tab" && !event.shiftKey) {
+      const elm = event.target as HTMLElement
+      if (elm.dataset.testid === TestIds.variableInputDialog.submit) {
+        event.preventDefault()
+        handleSubmit()
+      }
     }
   }
 
@@ -167,11 +170,20 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
         </div>
 
         <DialogFooter className="mt-3">
-          <Button variant="secondary" onClick={handleCancel}>
-            {i18n.t("common.cancel")}
-          </Button>
-          <Button onClick={handleSubmit}>
+          <Button
+            className="group gap-1 pr-2"
+            onClick={handleSubmit}
+            data-testid={TestIds.variableInputDialog.submit}
+          >
             {i18n.t("common.execute") || "Execute"}
+            <Key className="text-gray-600 bg-gray-100/90 ml-1">
+              {isMac() ? "⌘ +" : "Ctrl +"}
+              <CornerDownLeft className="inline size-3 ml-1" />
+            </Key>
+            <span className="hidden group-focus:inline text-gray-300">/</span>
+            <Key className="text-gray-600 bg-gray-100/90 hidden group-focus:inline">
+              <span className="">Tab</span>
+            </Key>
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,5 +1,5 @@
 import React from "react"
-import { Star, ChevronRight, CornerDownLeft } from "lucide-react"
+import { Star, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { TestIds } from "@/components/const"
 import { Key } from "@/components/Key"
@@ -69,7 +69,6 @@ export const AutoCompleteItem: React.FC<AutoCompleteItemProps> = ({
       {isSelected && (
         <div className="text-xs text-gray-500 flex items-center space-x-0.5">
           <Key>Tab</Key>
-          <CornerDownLeft className="text-gray-400" size={14} />
         </div>
       )}
     </button>
