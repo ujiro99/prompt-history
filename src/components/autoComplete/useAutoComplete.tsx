@@ -1,9 +1,10 @@
-import { useEffect, useState, useRef, useMemo } from "react"
+import { useEffect, useState, useRef, useMemo, useCallback } from "react"
 import { PromptServiceFacade } from "@/services/promptServiceFacade"
 import { AutoCompleteManager } from "../../services/autoComplete/autoCompleteManager"
 import { useCaretNode } from "../../hooks/useCaretNode"
 import type { AutoCompleteMatch } from "../../services/autoComplete/types"
-import type { Prompt } from "../../types/prompt"
+import type { Prompt, VariableConfig, VariableValues } from "../../types/prompt"
+import { expandPrompt } from "@/utils/variables/variableFormatter"
 
 const serviceFacade = PromptServiceFacade.getInstance()
 
@@ -16,8 +17,17 @@ export const useAutoComplete = ({ prompts }: UseAutoCompleteOptions) => {
   const [matches, setMatches] = useState<AutoCompleteMatch[]>([])
   const [selectedIndex, setSelectedIndex] = useState(-1)
   const [position, setPosition] = useState({ x: 0, y: 0, height: 0 })
+  const [variableInputData, setVariableInputData] = useState<{
+    promptId: string
+    variables: VariableConfig[]
+    content: string
+    match: AutoCompleteMatch
+    nodeAtCaret: Node | null
+  } | null>(null)
   const managerRef = useRef<AutoCompleteManager | null>(null)
   const { nodeAtCaret } = useCaretNode()
+
+  console.log("1", nodeAtCaret)
 
   const callbacks = useMemo(
     () => ({
@@ -34,16 +44,40 @@ export const useAutoComplete = ({ prompts }: UseAutoCompleteOptions) => {
         setIsVisible(false)
       },
       onExecute: async (match: AutoCompleteMatch) => {
-        await serviceFacade.executePrompt(match.id, nodeAtCaret, match)
+        try {
+          // Get prompt to check for variables
+          const prompt = await serviceFacade.getPrompt(match.id)
 
-        // Refocus the text input after executing the prompt
-        const textInput = serviceFacade.getTextInput() as HTMLElement
-        if (textInput) {
-          textInput.focus()
+          // Check if prompt has variables that need user input
+          const hasVariables = prompt.variables && prompt.variables.length > 0
+          const hasInputVariables =
+            hasVariables && prompt.variables!.some((v) => v.type !== "exclude")
+
+          if (hasInputVariables) {
+            // Show variable input dialog
+            setVariableInputData({
+              promptId: match.id,
+              variables: prompt.variables!,
+              content: prompt.content,
+              match,
+              nodeAtCaret,
+            })
+          } else {
+            // Execute directly if no variables
+            await serviceFacade.executePrompt(match.id, nodeAtCaret, match)
+
+            // Refocus the text input after executing the prompt
+            const textInput = serviceFacade.getTextInput() as HTMLElement
+            if (textInput) {
+              textInput.focus()
+            }
+
+            setMatches([])
+            managerRef.current?.selectReset()
+          }
+        } catch (error) {
+          console.error("Execute failed:", error)
         }
-
-        setMatches([])
-        managerRef.current?.selectReset()
       },
       onSelectChange: (index: number) => {
         setSelectedIndex(index)
@@ -117,6 +151,42 @@ export const useAutoComplete = ({ prompts }: UseAutoCompleteOptions) => {
     managerRef.current?.selectPrevious()
   }
 
+  const handleVariableSubmit = useCallback(
+    async (values: VariableValues) => {
+      if (!variableInputData) return
+
+      try {
+        const { promptId, content, match, nodeAtCaret } = variableInputData
+
+        // Expand prompt with variable values
+        const expandedContent = expandPrompt(content, values)
+
+        // Create a modified match object with expanded content
+        const expandedMatch = {
+          ...match,
+          content: expandedContent,
+        }
+
+        // Execute the prompt with expanded content
+        await serviceFacade.executePrompt(promptId, nodeAtCaret, expandedMatch)
+
+        // Refocus the text input after executing the prompt
+        const textInput = serviceFacade.getTextInput() as HTMLElement
+        if (textInput) {
+          textInput.focus()
+        }
+
+        // Close the variable input dialog and autocomplete
+        setVariableInputData(null)
+        setMatches([])
+        managerRef.current?.selectReset()
+      } catch (error) {
+        console.error("Variable expansion failed:", error)
+      }
+    },
+    [variableInputData],
+  )
+
   return {
     isVisible,
     matches,
@@ -127,5 +197,8 @@ export const useAutoComplete = ({ prompts }: UseAutoCompleteOptions) => {
     selectIndex,
     selectNext,
     selectPrevious,
+    variableInputData,
+    setVariableInputData,
+    handleVariableSubmit,
   }
 }

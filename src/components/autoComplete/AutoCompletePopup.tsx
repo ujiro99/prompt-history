@@ -10,6 +10,7 @@ import { Key } from "@/components/Key"
 import { isWindows } from "@/utils/platform"
 import { i18n } from "#imports"
 import type { Prompt } from "../../types/prompt"
+import { VariableInputDialog } from "@/components/inputMenu/controller/VariableInputDialog"
 
 const serviceFacade = PromptServiceFacade.getInstance()
 
@@ -56,6 +57,9 @@ const AutoCompletePopupInner: React.FC<AutoCompletePopupInnerProps> = ({
     selectIndex,
     selectNext,
     selectPrevious,
+    variableInputData,
+    setVariableInputData,
+    handleVariableSubmit,
   } = useAutoComplete({ prompts })
   const inputRef = useRef<HTMLElement>(null)
   const popupRef = useRef<HTMLDivElement>(null)
@@ -230,86 +234,111 @@ const AutoCompletePopupInner: React.FC<AutoCompletePopupInnerProps> = ({
   }, [position, isVisible])
 
   if (!isVisible || matches.length === 0) {
-    return null
+    return (
+      variableInputData && (
+        <VariableInputDialog
+          open={!!variableInputData}
+          onOpenChange={(open) => {
+            if (!open) setVariableInputData(null)
+          }}
+          variables={variableInputData.variables}
+          onSubmit={handleVariableSubmit}
+        />
+      )
+    )
   }
 
   return (
-    <Popover open={isVisible} onOpenChange={handleOpenChange}>
-      <PopoverAnchor asChild>
-        <div
-          ref={anchorRef}
-          className="fixed w-0 pointer-events-none"
-          style={{
-            left: `${position.x}px`,
-            top: `${position.y}px`,
-            height: `${position.height}px`,
-          }}
-        />
-      </PopoverAnchor>
-      <PopoverContent
-        ref={popupRef}
-        className={cn(
-          "min-w-64 max-w-md p-0 border border-gray-200 shadow-lg overflow-hidden",
-          "focus-visible:ring-1 focus-visible:ring-gray-400",
-        )}
-        align="start"
-        side={shouldShowAbove ? "top" : "bottom"}
-        sideOffset={5}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
-        onEscapeKeyDown={handleEscapeDown}
-        onOpenAutoFocus={noFocus}
-        data-testid={TestIds.autocomplete.popup}
-      >
-        <div>
-          {matches.map((match, index) => (
-            <AutoCompleteItem
-              key={`${match.name}-${index}`}
-              match={match}
-              isSelected={index === selectedIndex}
-              onClick={handleExecute}
-              onMouseEnter={() => selectIndex(index)}
-            />
-          ))}
-        </div>
-        <div className="flex justify-end p-2 py-1.5 text-xs text-gray-500 border-t gap-1 empty:hidden">
-          {(!isFocused && !userInteracted) || (!isFocused && isSingleMatch) ? (
-            <p className="inline">
-              <Key className="text-[10px]">Tab</Key>{" "}
-              <span>{i18n.t("autocomplete.toFocus")}</span>
-              {!isSingleMatch ? <span>,</span> : null}
-            </p>
-          ) : null}
-          {isSingleMatch ? null : (
-            <p className="inline">
-              {!isWindows() ? (
-                <>
-                  <Key className="text-[10px]">Ctrl + P</Key>
-                  <span className="mx-0.5">/</span>
-                  <Key className="text-[10px]">Ctrl + N</Key>
-                  {isFocused && (
+    <>
+      <Popover open={isVisible} onOpenChange={handleOpenChange}>
+        <PopoverAnchor asChild>
+          <div
+            ref={anchorRef}
+            className="fixed w-0 pointer-events-none"
+            style={{
+              left: `${position.x}px`,
+              top: `${position.y}px`,
+              height: `${position.height}px`,
+            }}
+          />
+        </PopoverAnchor>
+        <PopoverContent
+          ref={popupRef}
+          className={cn(
+            "min-w-64 max-w-md p-0 border border-gray-200 shadow-lg overflow-hidden",
+            "focus-visible:ring-1 focus-visible:ring-gray-400",
+          )}
+          align="start"
+          side={shouldShowAbove ? "top" : "bottom"}
+          sideOffset={5}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          onEscapeKeyDown={handleEscapeDown}
+          onOpenAutoFocus={noFocus}
+          data-testid={TestIds.autocomplete.popup}
+        >
+          <div>
+            {matches.map((match, index) => (
+              <AutoCompleteItem
+                key={`${match.name}-${index}`}
+                match={match}
+                isSelected={index === selectedIndex}
+                onClick={handleExecute}
+                onMouseEnter={() => selectIndex(index)}
+              />
+            ))}
+          </div>
+          <div className="flex justify-end p-2 py-1.5 text-xs text-gray-500 border-t gap-1 empty:hidden">
+            {(!isFocused && !userInteracted) ||
+            (!isFocused && isSingleMatch) ? (
+              <p className="inline">
+                <Key className="text-[10px]">Tab</Key>{" "}
+                <span>{i18n.t("autocomplete.toFocus")}</span>
+                {!isSingleMatch ? <span>,</span> : null}
+              </p>
+            ) : null}
+            {isSingleMatch ? null : (
+              <p className="inline">
+                {!isWindows() ? (
+                  <>
+                    <Key className="text-[10px]">Ctrl + P</Key>
+                    <span className="mx-0.5">/</span>
+                    <Key className="text-[10px]">Ctrl + N</Key>
+                    {isFocused && (
+                      <>
+                        <span className="mx-0.5">/</span>
+                        <Key className="text-[10px]">↑</Key>
+                        <span className="mx-0.5">/</span>
+                        <Key className="text-[10px]">↓</Key>
+                      </>
+                    )}
+                  </>
+                ) : (
+                  isFocused && (
                     <>
-                      <span className="mx-0.5">/</span>
                       <Key className="text-[10px]">↑</Key>
                       <span className="mx-0.5">/</span>
                       <Key className="text-[10px]">↓</Key>
                     </>
-                  )}
-                </>
-              ) : (
-                isFocused && (
-                  <>
-                    <Key className="text-[10px]">↑</Key>
-                    <span className="mx-0.5">/</span>
-                    <Key className="text-[10px]">↓</Key>
-                  </>
-                )
-              )}{" "}
-              {i18n.t("autocomplete.toMove")}
-            </p>
-          )}
-        </div>
-      </PopoverContent>
-    </Popover>
+                  )
+                )}{" "}
+                {i18n.t("autocomplete.toMove")}
+              </p>
+            )}
+          </div>
+        </PopoverContent>
+      </Popover>
+
+      {variableInputData && (
+        <VariableInputDialog
+          open={!!variableInputData}
+          onOpenChange={(open) => {
+            if (!open) setVariableInputData(null)
+          }}
+          variables={variableInputData.variables}
+          onSubmit={handleVariableSubmit}
+        />
+      )}
+    </>
   )
 }
