@@ -8,6 +8,7 @@ import { Popover, PopoverContent, PopoverAnchor } from "../ui/popover"
 import { TestIds } from "@/components/const"
 import { Key } from "@/components/Key"
 import { isWindows } from "@/utils/platform"
+import { setCaretPosition } from "@/services/dom/caretUtils"
 import { i18n } from "#imports"
 import type { Prompt } from "../../types/prompt"
 import { VariableInputDialog } from "@/components/inputMenu/controller/VariableInputDialog"
@@ -95,8 +96,14 @@ const AutoCompletePopupInner: React.FC<AutoCompletePopupInnerProps> = ({
 
   // When Escape is pressed, close popup and return focus to input.
   const handleEscapeDown = useCallback(() => {
-    inputRef.current?.focus({ preventScroll: true })
-  }, [])
+    if (inputRef.current) {
+      inputRef.current.focus({ preventScroll: true })
+      if (variableInputData && variableInputData.match) {
+        const match = variableInputData.match
+        setCaretPosition(inputRef.current, match.matchEnd, match.newlineCount)
+      }
+    }
+  }, [variableInputData])
 
   useEffect(() => {
     inputRef.current = serviceFacade.getTextInput() as HTMLElement
@@ -324,6 +331,7 @@ const AutoCompletePopupInner: React.FC<AutoCompletePopupInnerProps> = ({
           }}
           variables={variableInputData.variables}
           onSubmit={handleVariableSubmit}
+          onDismiss={handleEscapeDown}
         />
       )}
     </>

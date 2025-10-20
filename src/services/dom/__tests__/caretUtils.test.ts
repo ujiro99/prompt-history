@@ -25,8 +25,14 @@ describe("caretUtils", () => {
 
   describe("getCaretPosition", () => {
     it("should return 0 for null/undefined elements", () => {
-      expect(getCaretPosition(null as any)).toBe(0)
-      expect(getCaretPosition(undefined as any)).toBe(0)
+      expect(getCaretPosition(null as any)).toEqual({
+        position: 0,
+        newlineCount: 0,
+      })
+      expect(getCaretPosition(undefined as any)).toEqual({
+        position: 0,
+        newlineCount: 0,
+      })
     })
 
     it("should get caret position from input elements", () => {
@@ -34,7 +40,7 @@ describe("caretUtils", () => {
       helperSetCaretPosition(input, 5)
 
       const position = getCaretPosition(input)
-      expect(position).toBe(5)
+      expect(position).toEqual({ position: 5, newlineCount: 0 })
     })
 
     it("should get caret position from textarea elements", () => {
@@ -42,7 +48,8 @@ describe("caretUtils", () => {
       helperSetCaretPosition(textarea, 8)
 
       const position = getCaretPosition(textarea)
-      expect(position).toBe(8)
+      // "Multi\nli" = position 8, includes 1 newline
+      expect(position).toEqual({ position: 8, newlineCount: 1 })
     })
 
     it("should handle input with null selectionStart", () => {
@@ -53,7 +60,7 @@ describe("caretUtils", () => {
       })
 
       const position = getCaretPosition(input)
-      expect(position).toBe(0)
+      expect(position).toEqual({ position: 0, newlineCount: 0 })
     })
 
     it("should get caret position from contenteditable elements", () => {
@@ -67,7 +74,7 @@ describe("caretUtils", () => {
       mockRange.cloneContents.mockReturnValue(mockFragment)
 
       const position = getCaretPosition(editable)
-      expect(position).toBe(4) // Length of "Edit"
+      expect(position).toEqual({ position: 4, newlineCount: 0 }) // Length of "Edit"
       expect(mockSelection.getRangeAt).toHaveBeenCalledWith(0)
     })
     it("should handle contenteditable with no selection", () => {
@@ -79,7 +86,7 @@ describe("caretUtils", () => {
       })
 
       const position = getCaretPosition(editable)
-      expect(position).toBe(0)
+      expect(position).toEqual({ position: 0, newlineCount: 0 })
     })
 
     it("should handle contenteditable with no ranges", () => {
@@ -95,7 +102,7 @@ describe("caretUtils", () => {
       })
 
       const position = getCaretPosition(editable)
-      expect(position).toBe(0)
+      expect(position).toEqual({ position: 0, newlineCount: 0 })
     })
 
     it("should return 0 for non-input elements", () => {
@@ -103,7 +110,7 @@ describe("caretUtils", () => {
       div.textContent = "regular div"
 
       const position = getCaretPosition(div)
-      expect(position).toBe(0)
+      expect(position).toEqual({ position: 0, newlineCount: 0 })
     })
 
     it("should handle contenteditable with complex selection", () => {
@@ -125,7 +132,8 @@ describe("caretUtils", () => {
       mockRange.cloneContents.mockReturnValue(mockFragment)
 
       const position = getCaretPosition(editable)
-      expect(position).toBe(9) // Length of "First" + "\n"+ "Sec"
+      // "First" + "\n"+ "Sec" = 9 characters, 1 newline
+      expect(position).toEqual({ position: 9, newlineCount: 1 })
     })
 
     it("should handle contenteditable with line breaks correctly", () => {
@@ -149,7 +157,8 @@ describe("caretUtils", () => {
 
       const position = getCaretPosition(editable)
       // Extra newlines at the end is trimmed
-      expect(position).toBe(13) // "Line 1" (6) + "\n" (1) + "Line 2" (6) = 13
+      // "Line 1" (6) + "\n" (1) + "Line 2" (6) = 13, 1 newline (trailing newline removed)
+      expect(position).toEqual({ position: 13, newlineCount: 1 })
     })
 
     it("should handle contenteditable with div elements correctly", () => {
@@ -174,7 +183,8 @@ describe("caretUtils", () => {
       mockRange.cloneContents.mockReturnValue(mockFragment)
 
       const position = getCaretPosition(editable)
-      expect(position).toBe(18) // "First" (5) + "\n" (1) + "Second" (6) + "\n" (1) + "Third" (5) = 18
+      // "First" (5) + "\n" (1) + "Second" (6) + "\n" (1) + "Third" (5) = 18, 2 newlines
+      expect(position).toEqual({ position: 18, newlineCount: 2 })
     })
   })
 

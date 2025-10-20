@@ -32,6 +32,7 @@ interface VariableInputDialogProps {
   onOpenChange: (open: boolean) => void
   variables: VariableConfig[]
   onSubmit: (values: VariableValues) => void
+  onDismiss?: () => void
 }
 
 /**
@@ -43,6 +44,7 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
   onOpenChange,
   variables,
   onSubmit,
+  onDismiss,
 }) => {
   const [values, setValues] = useState<VariableValues>({})
   const { container } = useContainer()
@@ -101,6 +103,7 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
       <DialogContent
         className="w-xl sm:max-w-xl max-h-9/10"
         onKeyDown={handleKeyDown}
+        onEscapeKeyDown={onDismiss}
         container={container}
         onWheel={(e) => e.stopPropagation()}
         onTouchMove={(e) => e.stopPropagation()}

@@ -132,6 +132,7 @@ export const usePromptExecution = (
             isPinned: prompt.isPinned,
             matchStart: 0,
             matchEnd: expandedContent.length,
+            newlineCount: 0,
             searchTerm: "",
           }
         }
