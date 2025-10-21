@@ -1,14 +1,14 @@
-import { ChevronDownIcon } from "lucide-react"
 import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { SelectField } from "@/components/inputMenu/controller/SelectField"
 import type { VariableConfig, VariableType } from "@/types/prompt"
 import { i18n } from "#imports"
+
+const VariableTypeOptions: { label: string; value: VariableType }[] = [
+  { label: i18n.t("variableTypes.text"), value: "text" },
+  { label: i18n.t("variableTypes.textarea"), value: "textarea" },
+  { label: i18n.t("variableTypes.select"), value: "select" },
+  { label: i18n.t("variableTypes.exclude"), value: "exclude" },
+]
 
 /**
  * Props for variable configuration field
@@ -80,7 +80,6 @@ export const VariableConfigField: React.FC<VariableConfigFieldProps> = ({
     // Unique options
     const uniqueOptions = Array.from(new Set(options))
 
-    console.log("Options input:", options)
     onChange({
       ...variable,
       selectOptions: {
@@ -117,29 +116,13 @@ export const VariableConfigField: React.FC<VariableConfigFieldProps> = ({
           >
             {i18n.t("common.variableType")}
           </label>
-          <Select value={variable.type} onValueChange={handleTypeChange}>
-            <SelectTrigger
-              id={`var-type-${variable.name}`}
-              className="bg-white"
-            >
-              <SelectValue />
-              <ChevronDownIcon className="size-4 opacity-50" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="text">
-                {i18n.t("variableTypes.text")}
-              </SelectItem>
-              <SelectItem value="textarea">
-                {i18n.t("variableTypes.textarea")}
-              </SelectItem>
-              <SelectItem value="select">
-                {i18n.t("variableTypes.select")}
-              </SelectItem>
-              <SelectItem value="exclude">
-                {i18n.t("variableTypes.exclude")}
-              </SelectItem>
-            </SelectContent>
-          </Select>
+          <SelectField
+            options={VariableTypeOptions}
+            name="variable-type"
+            value={variable.type}
+            onValueChange={(_, v) => handleTypeChange(v as VariableType)}
+            className="bg-white"
+          />
         </div>
 
         {/* Default value input (only for text, textarea, select) */}

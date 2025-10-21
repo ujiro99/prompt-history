@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
-import { ChevronDownIcon, CornerDownLeft } from "lucide-react"
+import { CornerDownLeft } from "lucide-react"
+import { i18n } from "#imports"
 import {
   Dialog,
   DialogTitle,
@@ -10,19 +11,12 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Key } from "@/components/Key"
+import { SelectField } from "@/components/inputMenu/controller/SelectField"
 import { useContainer } from "@/hooks/useContainer"
 import type { VariableConfig, VariableValues } from "@/types/prompt"
 import { TestIds } from "@/components/const"
 import { isMac } from "@/utils/platform"
-import { i18n } from "#imports"
 
 /**
  * Props for variable input dialog
@@ -85,6 +79,7 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
     if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
       event.preventDefault()
       handleSubmit()
+      return
     }
     if (event.key === "Tab" && !event.shiftKey) {
       const elm = event.target as HTMLElement
@@ -92,7 +87,9 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
         event.preventDefault()
         handleSubmit()
       }
+      return
     }
+    event.stopPropagation()
   }
 
   // Filter out exclude type variables
@@ -147,26 +144,15 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
               )}
 
               {variable.type === "select" && variable.selectOptions && (
-                <Select
-                  value={values[variable.name] || ""}
-                  onValueChange={(value) =>
-                    handleValueChange(variable.name, value)
-                  }
-                >
-                  <SelectTrigger id={`var-${variable.name}`}>
-                    <SelectValue
-                      placeholder={i18n.t("placeholders.selectOption")}
-                    />
-                    <ChevronDownIcon className="size-4 opacity-50" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {variable.selectOptions.options.map((option) => (
-                      <SelectItem key={option} value={option}>
-                        {option}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <SelectField
+                  options={variable.selectOptions.options.map((opt) => ({
+                    label: opt,
+                    value: opt,
+                  }))}
+                  name={variable.name}
+                  value={values[variable.name]}
+                  onValueChange={handleValueChange}
+                />
               )}
             </div>
           ))}

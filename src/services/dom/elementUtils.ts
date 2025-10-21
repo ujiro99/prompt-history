@@ -79,3 +79,27 @@ export const getFocusNode = (e: Event): HTMLElement | null => {
   }
   return null
 }
+
+/**
+ * Get the next or previous sibling element in a cyclic manner.
+ * If there is no next/previous sibling, it wraps around to the first/last child.
+ * @param {Element} elem The reference element.
+ * @return {Element} The next or previous sibling element cyclically.
+ */
+export function nextCyclic(elem: Element): Element {
+  const parent = elem.parentElement
+  if (!parent) return elem
+  return (elem.nextElementSibling ?? parent.firstElementChild)!
+}
+
+/**
+ * Get the previous sibling element in a cyclic manner.
+ * If there is no previous sibling, it wraps around to the last child.
+ * @param {Element} elem The reference element.
+ * @return {Element} The previous sibling element cyclically.
+ */
+export function prevCyclic(elem: Element): Element {
+  const parent = elem.parentElement
+  if (!parent) return elem
+  return (elem.previousElementSibling ?? parent.lastElementChild)!
+}
