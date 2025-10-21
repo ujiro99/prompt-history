@@ -157,7 +157,10 @@ export const PromptHistoryWidget: React.FC = () => {
     <div ref={containerRef} data-testid={TestIds.widget.container}>
       <SettingsProvider>
         <ContainerProvider container={containerRef.current}>
-          <CaretProvider inputElement={targetElement}>
+          <CaretProvider
+            inputElement={targetElement}
+            extensionContainer={containerRef.current}
+          >
             <InputPopup
               targetElm={targetElement}
               prompts={prompts}

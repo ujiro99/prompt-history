@@ -10,7 +10,7 @@ import { Key } from "@/components/Key"
 import { isWindows } from "@/utils/platform"
 import { setCaretPosition } from "@/services/dom/caretUtils"
 import { i18n } from "#imports"
-import type { Prompt } from "../../types/prompt"
+import type { Prompt, VariableValues } from "@/types/prompt"
 import { VariableInputDialog } from "@/components/inputMenu/controller/VariableInputDialog"
 
 const serviceFacade = PromptServiceFacade.getInstance()
@@ -80,6 +80,17 @@ const AutoCompletePopupInner: React.FC<AutoCompletePopupInnerProps> = ({
   const shouldShowAbove =
     availableSpaceBelow < POPUP_HEIGHT && availableSpaceAbove > POPUP_HEIGHT
 
+  const match = variableInputData?.match
+
+  const restoreCaret = useCallback(() => {
+    if (inputRef.current) {
+      inputRef.current.focus({ preventScroll: true })
+      if (match) {
+        setCaretPosition(inputRef.current, match.matchEnd, match.newlineCount)
+      }
+    }
+  }, [match])
+
   // Close popup and reset states
   const handlePopupClose = useCallback(() => {
     handleClose()
@@ -94,16 +105,18 @@ const AutoCompletePopupInner: React.FC<AutoCompletePopupInnerProps> = ({
     [handlePopupClose],
   )
 
+  const handleOnSubmit = useCallback(
+    (values: VariableValues) => {
+      restoreCaret()
+      handleVariableSubmit(values)
+    },
+    [restoreCaret, handleVariableSubmit],
+  )
+
   // When Escape is pressed, close popup and return focus to input.
   const handleEscapeDown = useCallback(() => {
-    if (inputRef.current) {
-      inputRef.current.focus({ preventScroll: true })
-      if (variableInputData && variableInputData.match) {
-        const match = variableInputData.match
-        setCaretPosition(inputRef.current, match.matchEnd, match.newlineCount)
-      }
-    }
-  }, [variableInputData])
+    restoreCaret()
+  }, [restoreCaret])
 
   useEffect(() => {
     inputRef.current = serviceFacade.getTextInput() as HTMLElement
@@ -330,7 +343,7 @@ const AutoCompletePopupInner: React.FC<AutoCompletePopupInnerProps> = ({
             if (!open) clearVariableInputData()
           }}
           variables={variableInputData.variables}
-          onSubmit={handleVariableSubmit}
+          onSubmit={handleOnSubmit}
           onDismiss={handleEscapeDown}
         />
       )}

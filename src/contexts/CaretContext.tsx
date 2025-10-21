@@ -8,11 +8,13 @@ const CaretContext = createContext<CaretContextType | undefined>(undefined)
 
 interface CaretProviderProps {
   inputElement: Element | null
+  extensionContainer: HTMLElement | null
   children: React.ReactNode
 }
 
 export const CaretProvider: React.FC<CaretProviderProps> = ({
   inputElement,
+  extensionContainer,
   children,
 }) => {
   const [nodeAtCaret, setNodeAtCaret] = useState<Node | null>(null)
@@ -24,8 +26,18 @@ export const CaretProvider: React.FC<CaretProviderProps> = ({
         return
       }
       const range = selection.getRangeAt(0)
-      if (inputElement && inputElement.contains(range.startContainer)) {
-        setNodeAtCaret(range.startContainer)
+      const startContainer = range.startContainer
+
+      // Skip update if selection is within extension container
+      if (
+        extensionContainer?.contains(startContainer) ||
+        startContainer === document.body
+      ) {
+        return
+      }
+
+      if (inputElement && inputElement.contains(startContainer)) {
+        setNodeAtCaret(startContainer)
       } else {
         setNodeAtCaret(null)
       }
@@ -35,7 +47,7 @@ export const CaretProvider: React.FC<CaretProviderProps> = ({
     return () => {
       document.removeEventListener("selectionchange", updateNode)
     }
-  }, [inputElement])
+  }, [inputElement, extensionContainer])
 
   const value: CaretContextType = {
     nodeAtCaret,

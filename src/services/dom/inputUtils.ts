@@ -103,7 +103,7 @@ async function deleteTextAtCaret(
       const inputEvent = new Event("input", { bubbles: true })
       element.dispatchEvent(inputEvent)
 
-      await sleep(20) // Wait a bit for execCommand to complete
+      await sleep(20) // Wait a bit for to complete
     }
   }
 }

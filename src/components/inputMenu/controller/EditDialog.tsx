@@ -210,7 +210,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
           {/* Variable configuration section */}
           {variables.length > 0 && (
             <div className="space-y-2">
-              <div className="pt-3">
+              <div>
                 <label className="text-sm font-semibold text-foreground">
                   {i18n.t("dialogs.edit.variableSettings")}
                 </label>
@@ -286,6 +286,8 @@ interface SaveAsNewProps extends React.ComponentProps<"button"> {
 }
 
 export function SaveAsNew(props: SaveAsNewProps) {
+  const { container } = useContainer()
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger {...props} asChild>
@@ -293,7 +295,7 @@ export function SaveAsNew(props: SaveAsNewProps) {
           <ChevronDown />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="start">
+      <DropdownMenuContent className="w-56" align="start" container={container}>
         <DropdownMenuItem onClick={props.onSaveAsNew}>
           {i18n.t("buttons.saveAsNew")}
         </DropdownMenuItem>

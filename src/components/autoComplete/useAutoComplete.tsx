@@ -1,10 +1,11 @@
 import { useEffect, useState, useRef, useMemo } from "react"
 import { PromptServiceFacade } from "@/services/promptServiceFacade"
-import { AutoCompleteManager } from "../../services/autoComplete/autoCompleteManager"
-import { useCaretNode } from "../../hooks/useCaretNode"
+import { AutoCompleteManager } from "@/services/autoComplete/autoCompleteManager"
+import { useCaretNode } from "@/hooks/useCaretNode"
 import { usePromptExecution } from "@/hooks/usePromptExecution"
-import type { AutoCompleteMatch } from "../../services/autoComplete/types"
-import type { Prompt } from "../../types/prompt"
+import { setCaretPosition } from "@/services/dom/caretUtils"
+import type { AutoCompleteMatch } from "@/services/autoComplete/types"
+import type { Prompt } from "@/types/prompt"
 
 const serviceFacade = PromptServiceFacade.getInstance()
 
