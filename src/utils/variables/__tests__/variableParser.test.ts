@@ -3,6 +3,7 @@ import {
   parseVariables,
   isValidVariableName,
   mergeVariableConfigs,
+  extractPromptTemplate,
 } from "../variableParser"
 import type { VariableConfig } from "@/types/prompt"
 
@@ -239,5 +240,69 @@ describe("mergeVariableConfigs", () => {
     expect(result[1].name).toBe("old1")
     expect(result[2].name).toBe("new2")
     expect(result[3].name).toBe("old2")
+  })
+})
+
+describe("extractPromptTemplate", () => {
+  it("should extract template from prompt with variable section", () => {
+    const content = `Hello {{name}}, how are you?
+
+# variables:
+{{name}}: "John"`
+    const result = extractPromptTemplate(content)
+    expect(result).toBe("Hello {{name}}, how are you?")
+  })
+
+  it("should return original content when no variable section", () => {
+    const content = "Hello {{name}}, how are you?"
+    const result = extractPromptTemplate(content)
+    expect(result).toBe(content)
+  })
+
+  it("should handle multi-line template with variable section", () => {
+    const content = `Hello {{name}},
+How are you today?
+The weather is {{weather}}.
+
+# variables:
+{{name}}: "John"
+{{weather}}: "sunny"`
+    const result = extractPromptTemplate(content)
+    expect(result).toBe(`Hello {{name}},
+How are you today?
+The weather is {{weather}}.`)
+  })
+
+  it("should handle multi-line variables in variable section", () => {
+    const content = `Analyze this: {{text}}
+
+# variables:
+{{text}}: """
+This is a long text.
+It spans multiple lines.
+"""`
+    const result = extractPromptTemplate(content)
+    expect(result).toBe("Analyze this: {{text}}")
+  })
+
+  it("should trim trailing whitespace from template", () => {
+    const content = `Hello {{name}}
+
+# variables:
+{{name}}: "John"`
+    const result = extractPromptTemplate(content)
+    expect(result).toBe("Hello {{name}}")
+  })
+
+  it("should handle content without variables", () => {
+    const content = "This is a regular prompt without variables."
+    const result = extractPromptTemplate(content)
+    expect(result).toBe(content)
+  })
+
+  it("should handle empty content", () => {
+    const content = ""
+    const result = extractPromptTemplate(content)
+    expect(result).toBe("")
   })
 })

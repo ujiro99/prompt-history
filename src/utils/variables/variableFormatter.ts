@@ -1,4 +1,5 @@
 import type { VariableValues } from "@/types/prompt"
+import { VARIABLE_SECTION_HEADER } from "./variableParser"
 
 /**
  * Format a value with appropriate quotes
@@ -39,7 +40,7 @@ export function formatVariableSection(values: VariableValues): string {
     return ""
   }
 
-  const lines = ["# variables:"]
+  const lines = [VARIABLE_SECTION_HEADER]
 
   for (const [name, value] of nonEmptyEntries) {
     const formattedValue = formatValue(value)

@@ -434,6 +434,130 @@ describe("StorageHelper", () => {
         "https://example.com",
       )
     })
+
+    it("should skip saving when template already exists (variables with different values)", async () => {
+      // Existing prompt with variables
+      const existingPrompt = {
+        ...mockPrompt,
+        content: `Hello {{name}}, how are you?
+
+# variables:
+{{name}}: "Alice"`,
+      }
+
+      // New content with same template but different variable values
+      const newContent = `Hello {{name}}, how are you?
+
+# variables:
+{{name}}: "Bob"`
+
+      vi.mocked(mockStorage.getAllPrompts).mockResolvedValue([existingPrompt])
+
+      await storageHelper.handleAutoSave(newContent)
+
+      // Should not save because template is the same
+      expect(mockStorage.savePrompt).not.toHaveBeenCalled()
+    })
+
+    it("should save when template is different even with variables", async () => {
+      // Existing prompt with variables
+      const existingPrompt = {
+        ...mockPrompt,
+        content: `Hello {{name}}, how are you?
+
+# variables:
+{{name}}: "Alice"`,
+      }
+
+      // New content with different template
+      const newContent = `Goodbye {{name}}, see you later!
+
+# variables:
+{{name}}: "Bob"`
+
+      vi.mocked(mockStorage.getAllPrompts).mockResolvedValue([existingPrompt])
+      vi.mocked(mockStorage.savePrompt).mockResolvedValue(mockPrompt)
+
+      await storageHelper.handleAutoSave(newContent)
+
+      // Should save because template is different
+      expect(mockStorage.savePrompt).toHaveBeenCalled()
+    })
+
+    it("should save when no existing prompts have variables", async () => {
+      // Existing prompt without variables
+      const existingPrompt = {
+        ...mockPrompt,
+        content: "Regular prompt without variables",
+      }
+
+      // New content with variables
+      const newContent = `Hello {{name}}
+
+# variables:
+{{name}}: "Alice"`
+
+      vi.mocked(mockStorage.getAllPrompts).mockResolvedValue([existingPrompt])
+      vi.mocked(mockStorage.savePrompt).mockResolvedValue(mockPrompt)
+
+      await storageHelper.handleAutoSave(newContent)
+
+      // Should save because existing prompt has no variables
+      expect(mockStorage.savePrompt).toHaveBeenCalled()
+    })
+
+    it("should save when content has no variables", async () => {
+      // Existing prompt with variables
+      const existingPrompt = {
+        ...mockPrompt,
+        content: `Hello {{name}}
+
+# variables:
+{{name}}: "Alice"`,
+      }
+
+      // New content without variables
+      const newContent = "Regular prompt without variables"
+
+      vi.mocked(mockStorage.getAllPrompts).mockResolvedValue([existingPrompt])
+      vi.mocked(mockStorage.savePrompt).mockResolvedValue(mockPrompt)
+
+      await storageHelper.handleAutoSave(newContent)
+
+      // Should save because new content has no variables (different logic path)
+      expect(mockStorage.savePrompt).toHaveBeenCalled()
+    })
+
+    it("should skip saving with multi-line variables when template matches", async () => {
+      // Existing prompt with multi-line variables
+      const existingPrompt = {
+        ...mockPrompt,
+        content: `Analyze this: {{text}}
+
+# variables:
+{{text}}: """
+Original text.
+Multiple lines.
+"""`,
+      }
+
+      // New content with same template but different multi-line value
+      const newContent = `Analyze this: {{text}}
+
+# variables:
+{{text}}: """
+Different text.
+Also multiple lines.
+Different content.
+"""`
+
+      vi.mocked(mockStorage.getAllPrompts).mockResolvedValue([existingPrompt])
+
+      await storageHelper.handleAutoSave(newContent)
+
+      // Should not save because template is the same
+      expect(mockStorage.savePrompt).not.toHaveBeenCalled()
+    })
   })
 
   describe("updatePrompt", () => {

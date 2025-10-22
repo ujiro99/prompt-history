@@ -291,7 +291,8 @@ interface SaveAsNewProps extends React.ComponentProps<"button"> {
   onSaveAsNew?: () => void
 }
 
-export function SaveAsNew(props: SaveAsNewProps) {
+export function SaveAsNew(_props: SaveAsNewProps) {
+  const { onSaveAsNew, ...props } = _props
   const { container } = useContainer()
 
   return (
@@ -302,7 +303,7 @@ export function SaveAsNew(props: SaveAsNewProps) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="start" container={container}>
-        <DropdownMenuItem onClick={props.onSaveAsNew}>
+        <DropdownMenuItem onClick={onSaveAsNew}>
           {i18n.t("buttons.saveAsNew")}
         </DropdownMenuItem>
       </DropdownMenuContent>

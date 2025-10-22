@@ -1,6 +1,11 @@
 import type { VariableConfig } from "@/types/prompt"
 
 /**
+ * Header for the variable section in prompt content
+ */
+export const VARIABLE_SECTION_HEADER = "# variables:"
+
+/**
  * Regular expression to match variables in format {{variableName}}
  * Matches Unicode letters, numbers, and underscores
  * Uses Unicode property escapes:
@@ -110,4 +115,17 @@ export function mergeVariableConfigs(
   }
 
   return result
+}
+
+/**
+ * Extract prompt template by removing variable section
+ * Removes variable section and everything after it
+ * @param content - Prompt content (may include variable section)
+ * @returns Prompt template without variable section
+ */
+export function extractPromptTemplate(content: string): string {
+  // Split by variable section header and take the first part
+  const pattern = new RegExp(`\\n\\n${VARIABLE_SECTION_HEADER}\\n`)
+  const parts = content.split(pattern)
+  return parts[0].trim()
 }
