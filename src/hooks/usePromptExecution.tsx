@@ -1,10 +1,6 @@
 import { useState, useCallback } from "react"
 import { PromptServiceFacade } from "@/services/promptServiceFacade"
-import { expandPrompt } from "@/utils/variables/variableFormatter"
-import type {
-  VariableConfig,
-  VariableValues,
-} from "@/types/prompt"
+import type { VariableConfig, VariableValues } from "@/types/prompt"
 import type { AutoCompleteMatch } from "@/services/autoComplete/types"
 
 const serviceFacade = PromptServiceFacade.getInstance()
@@ -86,11 +82,9 @@ export const usePromptExecution = (
           })
         } else {
           // Execute directly if no variables
-          await serviceFacade.executePrompt(
-            promptId,
-            nodeAtCaret ?? null,
+          await serviceFacade.executePrompt(promptId, nodeAtCaret ?? null, {
             match,
-          )
+          })
           onExecuteComplete?.()
         }
       } catch (error) {
@@ -108,40 +102,18 @@ export const usePromptExecution = (
       if (!variableInputData) return
 
       try {
-        const { promptId, content, match, nodeAtCaret: savedNodeAtCaret } =
+        const { promptId, match, nodeAtCaret: savedNodeAtCaret } =
           variableInputData
 
-        // Expand prompt with variable values
-        const expandedContent = expandPrompt(content, values)
-
-        // Create or update match object with expanded content
-        let expandedMatch: AutoCompleteMatch | undefined
-        if (match) {
-          // Use existing match (autocomplete case)
-          expandedMatch = {
-            ...match,
-            content: expandedContent,
-          }
-        } else {
-          // Create new match (InputPopup case)
-          const prompt = await serviceFacade.getPrompt(promptId)
-          expandedMatch = {
-            id: prompt.id,
-            name: prompt.name,
-            content: expandedContent,
-            isPinned: prompt.isPinned,
-            matchStart: 0,
-            matchEnd: expandedContent.length,
-            newlineCount: 0,
-            searchTerm: "",
-          }
-        }
-
-        // Execute the prompt with expanded content
+        // Execute the prompt with variable values
+        // Variable expansion and match creation are handled by executeManager
         await serviceFacade.executePrompt(
           promptId,
           savedNodeAtCaret ?? nodeAtCaret ?? null,
-          expandedMatch,
+          {
+            match,
+            variableValues: values,
+          },
         )
 
         // Close the variable input dialog

@@ -6,6 +6,7 @@ import type {
   SaveDialogData,
   NotificationData,
   PromptError,
+  VariableValues,
 } from "../types/prompt"
 import type { ImportResult } from "./importExport/types"
 import { SessionManager } from "./promptHistory/sessionManager"
@@ -321,7 +322,10 @@ export class PromptServiceFacade {
   async executePrompt(
     promptId: string,
     nodeAtCaret: Node | null,
-    match?: AutoCompleteMatch,
+    options?: {
+      match?: AutoCompleteMatch
+      variableValues?: VariableValues
+    },
   ): Promise<void> {
     this.ensureInitialized()
 
@@ -334,7 +338,7 @@ export class PromptServiceFacade {
       promptId,
       this.aiService,
       nodeAtCaret,
-      match,
+      options,
       (prompt) => {
         this.notify({
           id: uuid(),
