@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { CornerDownLeft } from "lucide-react"
 import { i18n } from "#imports"
 import {
@@ -14,9 +14,11 @@ import { Textarea } from "@/components/ui/textarea"
 import { Key } from "@/components/Key"
 import { SelectField } from "@/components/inputMenu/controller/SelectField"
 import { useContainer } from "@/hooks/useContainer"
+import { useDebounce } from "@/hooks/useDebounce"
 import type { VariableConfig, VariableValues } from "@/types/prompt"
 import { TestIds } from "@/components/const"
 import { isMac } from "@/utils/platform"
+import { expandPrompt } from "@/utils/variables/variableFormatter"
 
 /**
  * Props for variable input dialog
@@ -25,6 +27,7 @@ interface VariableInputDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   variables: VariableConfig[]
+  content: string
   onSubmit: (values: VariableValues) => void
   onDismiss?: () => void
 }
@@ -37,11 +40,20 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
   open,
   onOpenChange,
   variables,
+  content,
   onSubmit,
   onDismiss,
 }) => {
   const [values, setValues] = useState<VariableValues>({})
   const { container } = useContainer()
+
+  // Debounce values for preview
+  const debouncedValues = useDebounce(values, 200)
+
+  // Generate preview with debounced values
+  const preview = useMemo(() => {
+    return expandPrompt(content, debouncedValues)
+  }, [content, debouncedValues])
 
   // Initialize values from variable configs
   useEffect(() => {
@@ -111,6 +123,19 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
           <DialogTitle>{i18n.t("dialogs.variables.title")}</DialogTitle>
         </DialogHeader>
 
+        {/* Preview Section */}
+        <section>
+          <h3 className="text-sm font-medium text-foreground">
+            {i18n.t("dialogs.variables.preview") || "Preview"}
+          </h3>
+          <div className="mt-1 bg-gray-50 border border-gray-200 rounded-md p-3 max-h-48 overflow-y-auto">
+            <pre className="text-xs text-gray-800 whitespace-pre-wrap break-words font-mono">
+              {preview}
+            </pre>
+          </div>
+        </section>
+
+        {/* Input Section */}
         <div className="space-y-2">
           {visibleVariables.map((variable) => (
             <div key={variable.name} className="space-y-2">

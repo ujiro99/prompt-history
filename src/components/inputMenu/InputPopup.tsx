@@ -398,6 +398,7 @@ export function InputMenu(props: Props): React.ReactElement {
             if (!open) clearVariableInputData()
           }}
           variables={variableInputData.variables}
+          content={variableInputData.content}
           onSubmit={handleVariableSubmit}
         />
       )}

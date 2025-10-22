@@ -8,6 +8,7 @@ import type { VariableConfig, VariableValues } from "@/types/prompt"
 describe("VariableInputDialog", () => {
   const mockOnOpenChange = vi.fn()
   const mockOnSubmit = vi.fn()
+  const testContent = "Hello {{name}}, you are {{age}} years old. {{bio}}"
 
   // Helper function to render with ContainerProvider
   const renderWithContainer = (ui: React.ReactElement) => {
@@ -35,6 +36,7 @@ describe("VariableInputDialog", () => {
           open={true}
           onOpenChange={mockOnOpenChange}
           variables={variables}
+          content={testContent}
           onSubmit={mockOnSubmit}
         />,
       )
@@ -59,6 +61,7 @@ describe("VariableInputDialog", () => {
           open={true}
           onOpenChange={mockOnOpenChange}
           variables={variables}
+          content={testContent}
           onSubmit={mockOnSubmit}
         />,
       )
@@ -86,6 +89,7 @@ describe("VariableInputDialog", () => {
           open={true}
           onOpenChange={mockOnOpenChange}
           variables={variables}
+          content={testContent}
           onSubmit={mockOnSubmit}
         />,
       )
@@ -114,6 +118,7 @@ describe("VariableInputDialog", () => {
           open={true}
           onOpenChange={mockOnOpenChange}
           variables={variables}
+          content={testContent}
           onSubmit={mockOnSubmit}
         />,
       )
@@ -134,6 +139,7 @@ describe("VariableInputDialog", () => {
           open={true}
           onOpenChange={mockOnOpenChange}
           variables={variables}
+          content={testContent}
           onSubmit={mockOnSubmit}
         />,
       )
@@ -154,6 +160,7 @@ describe("VariableInputDialog", () => {
           open={true}
           onOpenChange={mockOnOpenChange}
           variables={variables}
+          content={testContent}
           onSubmit={mockOnSubmit}
         />,
       )
@@ -174,6 +181,7 @@ describe("VariableInputDialog", () => {
           open={true}
           onOpenChange={mockOnOpenChange}
           variables={variables}
+          content={testContent}
           onSubmit={mockOnSubmit}
         />,
       )
@@ -194,6 +202,7 @@ describe("VariableInputDialog", () => {
           open={true}
           onOpenChange={mockOnOpenChange}
           variables={variables}
+          content={testContent}
           onSubmit={mockOnSubmit}
         />,
       )
@@ -215,6 +224,7 @@ describe("VariableInputDialog", () => {
           open={true}
           onOpenChange={mockOnOpenChange}
           variables={variables}
+          content={testContent}
           onSubmit={mockOnSubmit}
         />,
       )
@@ -242,6 +252,7 @@ describe("VariableInputDialog", () => {
           open={true}
           onOpenChange={mockOnOpenChange}
           variables={variables}
+          content={testContent}
           onSubmit={mockOnSubmit}
         />,
       )
@@ -265,6 +276,7 @@ describe("VariableInputDialog", () => {
           open={true}
           onOpenChange={mockOnOpenChange}
           variables={variables}
+          content={testContent}
           onSubmit={mockOnSubmit}
         />,
       )
@@ -295,6 +307,7 @@ describe("VariableInputDialog", () => {
           open={true}
           onOpenChange={mockOnOpenChange}
           variables={variables}
+          content={testContent}
           onSubmit={mockOnSubmit}
         />,
       )
@@ -313,6 +326,96 @@ describe("VariableInputDialog", () => {
           optional: "",
         })
       })
+    })
+  })
+
+  describe("Preview", () => {
+    it("should display preview with expanded variables", async () => {
+      const variables: VariableConfig[] = [
+        { name: "name", type: "text", defaultValue: "John" },
+        { name: "age", type: "text", defaultValue: "30" },
+      ]
+      const content = "Hello {{name}}, you are {{age}} years old."
+
+      renderWithContainer(
+        <VariableInputDialog
+          open={true}
+          onOpenChange={mockOnOpenChange}
+          variables={variables}
+          content={content}
+          onSubmit={mockOnSubmit}
+        />,
+      )
+
+      // Wait for debounce
+      await waitFor(
+        () => {
+          const preview = screen.getByText((content) => {
+            return content.includes('{{name}}: "John"')
+          })
+          expect(preview).toBeInTheDocument()
+          expect(preview.textContent).toContain('{{age}}: "30"')
+        },
+        { timeout: 500 },
+      )
+    })
+
+    it("should update preview when user changes input values", async () => {
+      const variables: VariableConfig[] = [
+        { name: "name", type: "text", defaultValue: "John" },
+      ]
+      const content = "Hello {{name}}!"
+
+      renderWithContainer(
+        <VariableInputDialog
+          open={true}
+          onOpenChange={mockOnOpenChange}
+          variables={variables}
+          content={content}
+          onSubmit={mockOnSubmit}
+        />,
+      )
+
+      const input = screen.getByRole("textbox")
+      fireEvent.change(input, { target: { value: "Alice" } })
+
+      // Wait for debounce
+      await waitFor(
+        () => {
+          const preview = screen.getByText((content) => {
+            return content.includes('{{name}}: "Alice"')
+          })
+          expect(preview).toBeInTheDocument()
+        },
+        { timeout: 500 },
+      )
+    })
+
+    it("should show original content when no values are entered", async () => {
+      const variables: VariableConfig[] = [
+        { name: "name", type: "text", defaultValue: "" },
+      ]
+      const content = "Hello {{name}}!"
+
+      renderWithContainer(
+        <VariableInputDialog
+          open={true}
+          onOpenChange={mockOnOpenChange}
+          variables={variables}
+          content={content}
+          onSubmit={mockOnSubmit}
+        />,
+      )
+
+      // Wait for debounce
+      await waitFor(
+        () => {
+          // When no values are entered, expandPrompt should return the original content
+          const preview = screen.getByText(content)
+          expect(preview).toBeInTheDocument()
+        },
+        { timeout: 500 },
+      )
     })
   })
 })

@@ -343,6 +343,7 @@ const AutoCompletePopupInner: React.FC<AutoCompletePopupInnerProps> = ({
             if (!open) clearVariableInputData()
           }}
           variables={variableInputData.variables}
+          content={variableInputData.content}
           onSubmit={handleOnSubmit}
           onDismiss={handleEscapeDown}
         />
