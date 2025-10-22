@@ -57,7 +57,7 @@ export const MenuItemPopup = ({
       <PopoverContent
         className="relative p-1 text-gray-700"
         side={"top"}
-        align={"end"}
+        align={"center"}
         sideOffset={-1}
         onOpenAutoFocus={noFocus}
       >

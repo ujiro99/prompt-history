@@ -232,6 +232,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
                   <VariableConfigField
                     key={variable.name}
                     variable={variable}
+                    initialVariable={initialVariables?.[index]}
                     onChange={(config) => handleVariableChange(index, config)}
                   />
                 ))}
