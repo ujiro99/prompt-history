@@ -129,7 +129,7 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
             {i18n.t("dialogs.variables.preview") || "Preview"}
           </h3>
           <div className="mt-1 bg-gray-50 border border-gray-200 rounded-md p-3 max-h-48 overflow-y-auto">
-            <pre className="text-xs text-gray-800 whitespace-pre-wrap break-words font-mono">
+            <pre className="text-xs/5 text-gray-800 whitespace-pre-wrap break-words font-mono">
               {preview}
             </pre>
           </div>

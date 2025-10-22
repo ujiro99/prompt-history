@@ -57,6 +57,7 @@ export class PromptExportService {
       lastExecutionUrl: prompt.lastExecutionUrl,
       createdAt: prompt.createdAt.toISOString(),
       updatedAt: prompt.updatedAt.toISOString(),
+      variables: prompt.variables ? JSON.stringify(prompt.variables) : "",
     }))
 
     // Use Papa Parse to generate CSV with headers and proper escaping
@@ -71,6 +72,7 @@ export class PromptExportService {
           "lastExecutionUrl",
           "createdAt",
           "updatedAt",
+          "variables",
         ],
         data: csvData,
       },

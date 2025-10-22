@@ -31,6 +31,7 @@ vi.mock("@wxt-dev/i18n", () => {
 
 import { PromptImportService } from "../promptImportService"
 import { generatePromptId } from "@/utils/idGenerator"
+import Papa from "papaparse"
 
 // Mock FileReader
 const mockFileReader = {
@@ -110,6 +111,7 @@ describe("PromptImportService", () => {
     lastExecutionUrl: "https://example.com",
     createdAt: new Date("2024-01-01T10:00:00.000Z"),
     updatedAt: new Date("2024-01-01T10:00:00.000Z"),
+    variables: undefined,
     ...overrides,
   })
 
@@ -306,9 +308,146 @@ newline and, comma",1,2024-01-10T10:00:00.000Z,false,https://example.com,2024-01
         saveBulkPrompts: vi.fn().mockRejectedValue(new Error("Database error")),
       }
 
-      expect((service as any).importPrompts(prompts)).rejects.toThrow(
+      await expect((service as any).importPrompts(prompts)).rejects.toThrow(
         "importDialog.error.bulkImportFailed",
       )
+    })
+  })
+
+  describe("parseRowData with variables", () => {
+    it("should parse valid variables JSON string", () => {
+      const rowData = createMockCSVRowData({
+        variables: JSON.stringify([
+          {
+            name: "name",
+            type: "text",
+            defaultValue: "John",
+          },
+          {
+            name: "age",
+            type: "select",
+            defaultValue: "30",
+            selectOptions: {
+              options: ["20", "30", "40"],
+            },
+          },
+        ]),
+      })
+
+      const result = (service as any).parseRowData(rowData)
+
+      expect(result.variables).toBeDefined()
+      expect(result.variables).toHaveLength(2)
+      expect(result.variables[0].name).toBe("name")
+      expect(result.variables[0].type).toBe("text")
+      expect(result.variables[0].defaultValue).toBe("John")
+      expect(result.variables[1].name).toBe("age")
+      expect(result.variables[1].type).toBe("select")
+      expect(result.variables[1].selectOptions?.options).toEqual([
+        "20",
+        "30",
+        "40",
+      ])
+    })
+
+    it("should handle empty variables string", () => {
+      const rowData = createMockCSVRowData({
+        variables: "",
+      })
+
+      const result = (service as any).parseRowData(rowData)
+
+      expect(result.variables).toBeUndefined()
+    })
+
+    it("should handle undefined variables", () => {
+      const rowData = createMockCSVRowData({
+        variables: undefined,
+      })
+
+      const result = (service as any).parseRowData(rowData)
+
+      expect(result.variables).toBeUndefined()
+    })
+
+    it("should handle invalid JSON gracefully", () => {
+      const rowData = createMockCSVRowData({
+        variables: "invalid json",
+      })
+
+      const result = (service as any).parseRowData(rowData)
+
+      // Should not throw, variables should be undefined
+      expect(result.variables).toBeUndefined()
+    })
+
+    it("should handle non-array JSON gracefully", () => {
+      const rowData = createMockCSVRowData({
+        variables: JSON.stringify({ not: "an array" }),
+      })
+
+      const result = (service as any).parseRowData(rowData)
+
+      // Should not throw, variables should be undefined
+      expect(result.variables).toBeUndefined()
+    })
+
+    it("should handle empty array", () => {
+      const rowData = createMockCSVRowData({
+        variables: JSON.stringify([]),
+      })
+
+      const result = (service as any).parseRowData(rowData)
+
+      expect(result.variables).toBeDefined()
+      expect(result.variables).toHaveLength(0)
+    })
+  })
+
+  describe("parseCSV with variables", () => {
+    it("should parse CSV with variables field", () => {
+      // Use Papa.unparse to properly format the CSV
+      const csvData = {
+        fields: [
+          "name",
+          "content",
+          "executionCount",
+          "lastExecutedAt",
+          "isPinned",
+          "lastExecutionUrl",
+          "createdAt",
+          "updatedAt",
+          "variables",
+        ],
+        data: [
+          {
+            name: "Test Prompt",
+            content: "Content",
+            executionCount: 1,
+            lastExecutedAt: "2024-01-10T10:00:00.000Z",
+            isPinned: false,
+            lastExecutionUrl: "https://example.com",
+            createdAt: "2024-01-01T10:00:00.000Z",
+            updatedAt: "2024-01-01T10:00:00.000Z",
+            variables: JSON.stringify([
+              { name: "name", type: "text", defaultValue: "John" },
+            ]),
+          },
+        ],
+      }
+      const csvText = Papa.unparse(csvData, {
+        header: true,
+        quotes: true,
+        delimiter: ",",
+      })
+
+      const result = (service as any).parseCSV(csvText)
+
+      expect(result).toHaveLength(1)
+      expect(result[0].name).toBe("Test Prompt")
+      expect(result[0].variables).toBeDefined()
+      expect(result[0].variables).toHaveLength(1)
+      expect(result[0].variables[0].name).toBe("name")
     })
   })
 })

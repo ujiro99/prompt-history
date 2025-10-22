@@ -1,7 +1,7 @@
 import Papa from "papaparse"
 import { PromptServiceFacade } from "@/services/promptServiceFacade"
 import type { ImportResult } from "./types"
-import type { Prompt } from "@/types/prompt"
+import type { Prompt, VariableConfig } from "@/types/prompt"
 import { generatePromptId } from "@/utils/idGenerator"
 import { ImportError } from "./ImportError"
 import { i18n } from "#imports"
@@ -18,6 +18,7 @@ interface CSVRowData {
   lastExecutionUrl: string
   createdAt: string
   updatedAt: string
+  variables?: string
 }
 
 /**
@@ -144,6 +145,20 @@ export class PromptImportService {
       }
     }
 
+    // Parse variables from JSON string if present
+    let variables: VariableConfig[] | undefined
+    if (row.variables && typeof row.variables === "string") {
+      try {
+        const parsed = JSON.parse(row.variables)
+        if (Array.isArray(parsed)) {
+          variables = parsed
+        }
+      } catch (error) {
+        // Ignore parse errors for backwards compatibility
+        console.warn("Failed to parse variables:", error)
+      }
+    }
+
     // Generate a new unique ID for the imported prompt
     const newId = generatePromptId()
 
@@ -157,6 +172,7 @@ export class PromptImportService {
       lastExecutionUrl: String(row.lastExecutionUrl),
       createdAt: new Date(row.createdAt),
       updatedAt: new Date(row.updatedAt),
+      variables,
     }
   }
 

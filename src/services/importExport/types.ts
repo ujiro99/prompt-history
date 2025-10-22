@@ -28,6 +28,7 @@ export interface PromptCSVRow {
   lastExecutionUrl: string
   createdAt: string
   updatedAt: string
+  variables?: string // JSON string format
 }
 
 /**
