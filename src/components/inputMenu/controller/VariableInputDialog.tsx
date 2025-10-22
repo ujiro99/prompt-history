@@ -185,7 +185,7 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
           ))}
         </div>
 
-        <DialogFooter className="mt-3">
+        <DialogFooter>
           <Button
             className="group gap-1 pr-2"
             onClick={handleSubmit}

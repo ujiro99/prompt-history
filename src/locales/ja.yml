@@ -21,6 +21,7 @@ common:
   variableType: 変数の型
   defaultValue: デフォルト値
   options: 選択肢
+  commaSeparatedValues: カンマ区切りで入力
 
 # Buttons
 buttons:
@@ -49,12 +50,14 @@ placeholders:
   searchPrompts: プロンプトを検索...
   enterValue: 値を入力
   selectOption: 選択してください
+  enterOptions: 選択肢1, 選択肢2, ...
 
 # Dialog titles and messages
 dialogs:
   edit:
     title: プロンプトを編集
     variableSettings: 変数設定
+    variableSettingsDescription: プロンプト内で見つかった変数を設定します
   delete:
     title: プロンプトを削除
     message: 削除してもよろしいですか？この操作は元に戻すことができません。
@@ -64,6 +67,7 @@ dialogs:
     title: プロンプトをコピー
   variables:
     title: 変数の入力
+    preview: プレビュー
 
 # Tabs
 tabs:

@@ -221,7 +221,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
                   {i18n.t("dialogs.edit.variableSettings")}
                 </label>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Configure variables found in the prompt
+                  {i18n.t("dialogs.edit.variableSettingsDescription")}
                 </p>
               </div>
               <ScrollAreaWithGradient

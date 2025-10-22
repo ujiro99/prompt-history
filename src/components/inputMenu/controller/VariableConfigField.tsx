@@ -175,11 +175,11 @@ export const VariableConfigField: React.FC<VariableConfigFieldProps> = ({
               type="text"
               defaultValue={getOptionsString()}
               onBlur={(e) => handleOptionsBlur(e.target.value)}
-              placeholder="option1, option2, option3"
+              placeholder={i18n.t("placeholders.enterOptions")}
               className="bg-white"
             />
             <p className="text-xs text-muted-foreground">
-              Comma-separated values
+              {i18n.t("common.commaSeparatedValues")}
             </p>
           </div>
         )}

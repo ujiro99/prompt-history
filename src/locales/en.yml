@@ -21,6 +21,7 @@ common:
   variableType: Variable Type
   defaultValue: Default Value
   options: Options
+  commaSeparatedValues: Comma-separated values
 
 # Buttons
 buttons:
@@ -49,12 +50,14 @@ placeholders:
   searchPrompts: Search prompts...
   enterValue: Enter value
   selectOption: Select option
+  enterOptions: option1, option2, ...
 
 # Dialog titles and messages
 dialogs:
   edit:
     title: Edit Prompt
     variableSettings: Variable Settings
+    variableSettingsDescription: Configure variables found in the prompt
   delete:
     title: Delete Prompt
     message: Are you sure you want to remove? This action cannot be undone.
@@ -64,6 +67,7 @@ dialogs:
     title: Copy Prompt
   variables:
     title: Variable Input
+    preview: Preview
 
 # Tabs
 tabs:
