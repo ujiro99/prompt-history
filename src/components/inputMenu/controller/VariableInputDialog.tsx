@@ -98,10 +98,12 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
+        container={container}
         className="w-xl sm:max-w-xl max-h-9/10"
         onKeyDown={handleKeyDown}
+        onKeyPress={(e) => e.stopPropagation()} // For chatgpt
+        onKeyUp={(e) => e.stopPropagation()}
         onEscapeKeyDown={onDismiss}
-        container={container}
         onWheel={(e) => e.stopPropagation()}
         onTouchMove={(e) => e.stopPropagation()}
       >

@@ -141,14 +141,20 @@ export const EditDialog: React.FC<EditDialogProps> = ({
       event.preventDefault()
       handleSave(displayMode)
     }
+    // Prevent propagation to avoid unwanted side effects on AI service input
+    event.persist()
+    event.stopPropagation()
+    event.nativeEvent.stopImmediatePropagation()
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
+        container={container}
         className="w-xl sm:max-w-xl max-h-9/10"
         onKeyDown={handleKeyDown}
-        container={container}
+        onKeyPress={(e) => e.stopPropagation()} // For chatgpt
+        onKeyUp={(e) => e.stopPropagation()}
         onWheel={(e) => e.stopPropagation()}
         onTouchMove={(e) => e.stopPropagation()}
       >
