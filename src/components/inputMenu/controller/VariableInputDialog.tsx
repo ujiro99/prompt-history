@@ -167,12 +167,14 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
             data-testid={TestIds.variableInputDialog.submit}
           >
             {i18n.t("common.execute") || "Execute"}
-            <Key className="text-gray-600 bg-gray-100/90 ml-1">
-              {isMac() ? "⌘ +" : "Ctrl +"}
-              <CornerDownLeft className="inline size-3 ml-1" />
+            <Key className="text-gray-200 bg-white/20 border border-gray-200/20 ml-1">
+              <span className="group-focus:hidden">
+                {isMac() ? "⌘ +" : "Ctrl +"}
+              </span>
+              <CornerDownLeft className="inline size-3 ml-1 group-focus:ml-0" />
             </Key>
             <span className="hidden group-focus:inline text-gray-300">/</span>
-            <Key className="text-gray-600 bg-gray-100/90 hidden group-focus:inline">
+            <Key className="text-gray-200 bg-white/20 border border-gray-200/20 hidden group-focus:inline">
               <span className="">Tab</span>
             </Key>
           </Button>
