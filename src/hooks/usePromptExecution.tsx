@@ -102,8 +102,11 @@ export const usePromptExecution = (
       if (!variableInputData) return
 
       try {
-        const { promptId, match, nodeAtCaret: savedNodeAtCaret } =
-          variableInputData
+        const {
+          promptId,
+          match,
+          nodeAtCaret: savedNodeAtCaret,
+        } = variableInputData
 
         // Execute the prompt with variable values
         // Variable expansion and match creation are handled by executeManager

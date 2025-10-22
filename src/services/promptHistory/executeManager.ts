@@ -14,7 +14,7 @@ export class ExecuteManager {
   constructor(
     private storage: StorageService,
     private sessionManager: SessionManager,
-  ) { }
+  ) {}
 
   /**
    * Execute prompt
@@ -36,32 +36,37 @@ export class ExecuteManager {
         throw new Error(`Prompt not found: ${promptId}`)
       }
 
-      // Expand prompt content with variable values if provided
       let content = prompt.content
-      if (options?.variableValues) {
+      if (
+        options?.variableValues &&
+        Object.values(options.variableValues).some((v) => v !== "")
+      ) {
+        // Expand prompt content with variable values if provided
         content = expandPrompt(prompt.content, options.variableValues)
+      } else {
+        // Add a space to prevent the art complete message from reappearing.
+        content = content + " "
       }
 
       // Inject prompt into AI service
       const textInput = aiService.getTextInput()
       if (textInput) {
         // Create or update match with expanded content
-        const _match: AutoCompleteMatch =
-          options?.match
-            ? {
-                ...options.match,
-                content,
-              }
-            : {
-                id: prompt.id,
-                name: prompt.name,
-                content,
-                isPinned: prompt.isPinned,
-                matchStart: 0,
-                matchEnd: content.length,
-                newlineCount: 0,
-                searchTerm: "",
-              }
+        const _match: AutoCompleteMatch = options?.match
+          ? {
+              ...options.match,
+              content,
+            }
+          : {
+              id: prompt.id,
+              name: prompt.name,
+              content,
+              isPinned: prompt.isPinned,
+              matchStart: 0,
+              matchEnd: content.length,
+              newlineCount: 0,
+              searchTerm: "",
+            }
 
         // Execute text replacement at caret
         await replaceTextAtCaret(
