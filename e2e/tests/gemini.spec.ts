@@ -64,10 +64,10 @@ test.describe("Gemini Extension Tests", () => {
     // 6. Check the value of prompt input field
     await waitHelpers.waitForCondition(async () => {
       const val = await promptInput.textContent()
-      return val === "Mock prompt 1 for testing"
+      return val === "Mock prompt 1 for testing "
     })
     let inputValue = await promptInput.textContent()
-    expect(inputValue).toBe("Mock prompt 1 for testing")
+    expect(inputValue).toBe("Mock prompt 1 for testing ")
 
     // Confirm that popup is closed
     const isVisible = await autocompletePopup.isVisible()
@@ -108,9 +108,9 @@ test.describe("Gemini Extension Tests", () => {
     // - Intended to be displayed under the menu
     await waitHelpers.waitForCondition(async () => {
       const val = await promptInput.textContent()
-      return val === "Mock prompt 2 for testing"
+      return val === "Mock prompt 2 for testing "
     })
     inputValue = await promptInput.textContent()
-    expect(inputValue).toBe("Mock prompt 2 for testing") // Most recent history should be input
+    expect(inputValue).toBe("Mock prompt 2 for testing ") // Most recent history should be input
   })
 })
