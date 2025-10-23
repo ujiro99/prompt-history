@@ -303,7 +303,11 @@ export function SaveAsNew(_props: SaveAsNewProps) {
           <ChevronDown />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="start" container={container}>
+      <DropdownMenuContent
+        className="min-w-40"
+        align="start"
+        container={container}
+      >
         <DropdownMenuItem onClick={onSaveAsNew}>
           {i18n.t("buttons.saveAsNew")}
         </DropdownMenuItem>
