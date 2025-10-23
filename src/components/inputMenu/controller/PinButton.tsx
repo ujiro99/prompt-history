@@ -24,7 +24,7 @@ export const PinButton = ({
     <button
       type="button"
       className={cn(
-        "outline-gray-200 p-1.5 rounded-md transition hover:bg-gray-200 cursor-pointer",
+        "outline-neutral-200 p-1.5 rounded-md transition hover:bg-neutral-200 cursor-pointer",
         "group/button",
         className,
       )}
@@ -36,7 +36,7 @@ export const PinButton = ({
           "group-hover/button:scale-125 transition",
           isPinned
             ? "fill-yellow-300 stroke-yellow-400"
-            : "stroke-gray-400 fill-gray-100",
+            : "stroke-neutral-400 fill-neutral-100",
         )}
       />
     </button>

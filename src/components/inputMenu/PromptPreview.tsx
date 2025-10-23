@@ -51,12 +51,12 @@ export const PromptPreview = ({
         sideOffset={8}
         onOpenAutoFocus={noFocus}
       >
-        <div className="space-y-2 text-gray-700">
-          <p className="font-mono break-all text-sm whitespace-pre-line">
+        <div className="space-y-2 text-foreground">
+          <p className="font-mono break-all text-sm whitespace-pre-line text-foreground/80">
             {prompt.content}
           </p>
           <hr />
-          <div className="flex items-center justify-end gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+          <div className="flex items-center justify-end gap-1.5 text-xs">
             <span>
               {i18n.t("preview.usedTimes", [`${prompt.executionCount}`])}
             </span>

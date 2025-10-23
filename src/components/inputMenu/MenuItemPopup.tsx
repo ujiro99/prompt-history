@@ -45,17 +45,17 @@ export const MenuItemPopup = ({
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="outline-gray-200 p-1.5 rounded-md transition group/button hover:bg-gray-200 cursor-pointer"
+          className="outline-neutral-200 p-1.5 rounded-md transition group/button hover:bg-neutral-200 cursor-pointer"
           onClick={handleClick}
         >
           <EllipsisVertical
             size={butttonSize}
-            className="stroke-gray-500 group-hover/button:scale-125 transition"
+            className="stroke-neutral-500 group-hover/button:scale-125 transition"
           />
         </button>
       </PopoverTrigger>
       <PopoverContent
-        className="relative p-1 text-gray-700"
+        className="relative p-1 text-foreground"
         side={"top"}
         align={"center"}
         sideOffset={-1}

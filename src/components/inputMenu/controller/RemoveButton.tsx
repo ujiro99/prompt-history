@@ -22,7 +22,7 @@ export const RemoveButton = ({
     <button
       type="button"
       className={cn(
-        "outline-gray-200 px-2 py-1.5 rounded-md transition group/remove-button hover:bg-gray-100 cursor-pointer",
+        "outline-neutral-200 px-2 py-1.5 rounded-md transition group/remove-button hover:bg-neutral-100 cursor-pointer",
         "flex items-center gap-2",
         className,
       )}
@@ -30,7 +30,7 @@ export const RemoveButton = ({
     >
       <Trash
         className={cn(
-          "stroke-gray-400 transition",
+          "stroke-neutral-400 transition",
           "group-hover/remove-button:scale-120 group-hover/remove-button:stroke-red-500",
         )}
         size={size}

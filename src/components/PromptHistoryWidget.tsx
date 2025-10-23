@@ -128,10 +128,10 @@ export const PromptHistoryWidget: React.FC = () => {
   if (isInitializing) {
     return (
       <div
-        className="flex items-center justify-center p-5 bg-white dark:bg-gray-800 rounded-lg shadow-lg"
+        className="flex items-center justify-center p-5 bg-white dark:bg-neutral-800 rounded-lg shadow-lg"
         data-testid={TestIds.widget.loading}
       >
-        <div className="text-gray-500 dark:text-gray-300 text-sm">
+        <div className="text-foreground/80 text-sm">
           {i18n.t("status.loading")}
         </div>
       </div>

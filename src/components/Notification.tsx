@@ -79,7 +79,7 @@ export const Notification: React.FC<NotificationProps> = ({
           : "translate-x-1/2 opacity-0 pointer-events-none",
       )}
     >
-      <div className="flex items-start justify-end gap-1 flex-1 min-w-0 text-gray-800 dark:text-gray-200">
+      <div className="flex items-start justify-end gap-1 flex-1 min-w-0 text-foreground">
         <span className="mt-1 flex-shrink-0 text-base">
           {getIcon(notification.type)}
         </span>

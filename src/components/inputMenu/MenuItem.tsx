@@ -87,7 +87,7 @@ export const MenuItem = (props: MenuItemProps) => {
       onMouseLeave={handleMouseLeave}
       className={cn(
         "hover:bg-accent focus:bg-accent focus:text-accent-foreground cursor-default items-center gap-2 rounded-sm text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg:not([class*='size-'])]:size-4",
-        "relative flex justify-between px-2 pr-1 py-1 text-sm font-normal font-sans text-gray-700 cursor-pointer outline-gray-300",
+        "relative flex justify-between px-2 pr-1 py-1 text-sm font-normal font-sans text-foreground cursor-pointer outline-neutral-300",
       )}
       style={{ outlineColor: "#d1d5db" }}
       data-testid={props.testId}

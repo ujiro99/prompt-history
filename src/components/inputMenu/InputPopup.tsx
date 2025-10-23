@@ -271,7 +271,7 @@ export function InputMenu(props: Props): React.ReactElement {
             onMouseEnter={() => handleMenuEnter(MENU.History)}
             data-testid={TestIds.inputPopup.historyTrigger}
           >
-            <History size={16} className="stroke-gray-600" />
+            <History size={16} className="stroke-neutral-600" />
           </MenuTrigger>
           <MenubarContent
             side="top"
@@ -280,6 +280,7 @@ export function InputMenu(props: Props): React.ReactElement {
             ref={setHistoryContentElm}
             data-testid={TestIds.inputPopup.historyList}
             container={container}
+            onWheel={(e) => e.stopPropagation()}
           >
             <PromptList
               menuType="history"
@@ -310,7 +311,7 @@ export function InputMenu(props: Props): React.ReactElement {
             onMouseEnter={() => handleMenuEnter(MENU.Pinned)}
             data-testid={TestIds.inputPopup.pinnedTrigger}
           >
-            <Star size={16} className="stroke-gray-600" />
+            <Star size={16} className="stroke-neutral-600" />
           </MenuTrigger>
           <MenubarContent
             side="top"
@@ -319,6 +320,7 @@ export function InputMenu(props: Props): React.ReactElement {
             ref={setPinnedContentElm}
             data-testid={TestIds.inputPopup.pinnedList}
             container={container}
+            onWheel={(e) => e.stopPropagation()}
           >
             <PromptList
               menuType="pinned"
@@ -349,7 +351,7 @@ export function InputMenu(props: Props): React.ReactElement {
             onClick={openEditDialogNew}
             data-testid={TestIds.inputPopup.editTrigger}
           >
-            <Save size={16} className="stroke-gray-600" />
+            <Save size={16} className="stroke-neutral-600" />
           </MenuTrigger>
         </MenubarMenu>
 
@@ -413,7 +415,7 @@ function MenuTrigger(
   return (
     <MenubarTrigger
       className={cn(
-        "p-1.5 text-xs gap-0.5 font-normal font-sans text-gray-700 cursor-pointer",
+        "p-1.5 text-xs gap-0.5 font-normal font-sans text-foreground cursor-pointer",
         props.disabled && "opacity-50 pointer-events-none",
       )}
       {...props}

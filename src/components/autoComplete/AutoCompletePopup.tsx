@@ -271,8 +271,8 @@ const AutoCompletePopupInner: React.FC<AutoCompletePopupInnerProps> = ({
           <PopoverContent
             ref={popupRef}
             className={cn(
-              "min-w-64 max-w-md p-0 border border-gray-200 shadow-lg overflow-hidden",
-              "focus-visible:ring-1 focus-visible:ring-gray-400",
+              "min-w-64 max-w-md p-0 border border-neutral-200 shadow-lg overflow-hidden",
+              "focus-visible:ring-1 focus-visible:ring-neutral-400",
             )}
             align="start"
             side={shouldShowAbove ? "top" : "bottom"}
@@ -294,7 +294,7 @@ const AutoCompletePopupInner: React.FC<AutoCompletePopupInnerProps> = ({
                 />
               ))}
             </div>
-            <div className="flex justify-end p-2 py-1.5 text-xs text-gray-500 border-t gap-1 empty:hidden">
+            <div className="flex justify-end p-2 py-1.5 text-xs text-neutral-500 border-t gap-1 empty:hidden">
               {(!isFocused && !userInteracted) ||
               (!isFocused && isSingleMatch) ? (
                 <p className="inline">

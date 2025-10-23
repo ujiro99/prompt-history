@@ -128,8 +128,8 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
           <h3 className="text-sm font-medium text-foreground">
             {i18n.t("dialogs.variables.preview") || "Preview"}
           </h3>
-          <div className="mt-1 bg-gray-50 border border-gray-200 rounded-md p-3 max-h-48 overflow-y-auto">
-            <pre className="text-xs/5 text-gray-800 whitespace-pre-wrap break-words font-mono">
+          <div className="mt-1 bg-neutral-50 border border-neutral-200 rounded-md p-3 max-h-48 overflow-y-auto">
+            <pre className="text-xs/5 text-neutral-800 whitespace-pre-wrap break-words font-mono">
               {preview}
             </pre>
           </div>
@@ -192,14 +192,16 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
             data-testid={TestIds.variableInputDialog.submit}
           >
             {i18n.t("common.execute") || "Execute"}
-            <Key className="text-gray-200 bg-white/20 border border-gray-200/20 ml-1">
+            <Key className="text-neutral-200 bg-white/20 border border-neutral-200/20 ml-1">
               <span className="group-focus:hidden">
                 {isMac() ? "⌘ +" : "Ctrl +"}
               </span>
               <CornerDownLeft className="inline size-3 ml-1 group-focus:ml-0" />
             </Key>
-            <span className="hidden group-focus:inline text-gray-300">/</span>
-            <Key className="text-gray-200 bg-white/20 border border-gray-200/20 hidden group-focus:inline">
+            <span className="hidden group-focus:inline text-neutral-300">
+              /
+            </span>
+            <Key className="text-neutral-200 bg-white/20 border border-neutral-200/20 hidden group-focus:inline">
               <span className="">Tab</span>
             </Key>
           </Button>
