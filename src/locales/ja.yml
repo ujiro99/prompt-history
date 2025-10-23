@@ -163,6 +163,7 @@ settings:
   autoSave: プロンプト自動保存
   autoComplete: 入力補完
   notifications: ステータス通知
+  variableExpansion: 変数展開
   autoCompleteTarget:
     all: すべてのプロンプト
     pinned: スター付きのみ

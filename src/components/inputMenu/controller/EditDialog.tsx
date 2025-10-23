@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { ScrollAreaWithGradient } from "@/components/inputMenu/ScrollAreaWithGradient"
 import { useContainer } from "@/hooks/useContainer"
+import { useSettings } from "@/hooks/useSettings"
 import { analytics } from "#imports"
 
 /**
@@ -64,13 +65,21 @@ export const EditDialog: React.FC<EditDialogProps> = ({
   const isEdit = displayMode === SaveMode.Overwrite
   const isCopy = displayMode === SaveMode.Copy
   const { container } = useContainer()
+  const { settings } = useSettings()
+
+  // Check if variable expansion is enabled (default: true)
+  const variableExpansionEnabled = settings?.variableExpansionEnabled ?? true
 
   // Update initial values
   useEffect(() => {
     setName(initialName)
     setContent(initialContent)
-    setVariables(initialVariables || mergeVariableConfigs(initialContent))
-  }, [initialName, initialContent, initialVariables])
+    setVariables(
+      variableExpansionEnabled
+        ? initialVariables || mergeVariableConfigs(initialContent)
+        : [],
+    )
+  }, [initialName, initialContent, initialVariables, variableExpansionEnabled])
 
   // Clear values on close
   useEffect(() => {
@@ -81,12 +90,16 @@ export const EditDialog: React.FC<EditDialogProps> = ({
     }
   }, [open, initialName, initialContent, initialVariables])
 
-  // Parse and merge variables when content changes
+  // Parse and merge variables when content changes (only if variable expansion is enabled)
   useEffect(() => {
-    setVariables((prevVariables) =>
-      mergeVariableConfigs(content, prevVariables),
-    )
-  }, [content])
+    if (variableExpansionEnabled) {
+      setVariables((prevVariables) =>
+        mergeVariableConfigs(content, prevVariables),
+      )
+    } else {
+      setVariables([])
+    }
+  }, [content, variableExpansionEnabled])
 
   /**
    * Handle variable configuration change

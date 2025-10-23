@@ -5,7 +5,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest"
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import { EditDialog } from "../EditDialog"
 import { SaveMode } from "@/types/prompt"
-import type { SaveDialogData, VariableConfig } from "@/types/prompt"
+import type { SaveDialogData, VariableConfig, AppSettings } from "@/types/prompt"
 import { ContainerProvider } from "@/contexts/ContainerContext"
 
 // Mock @wxt-dev/analytics
@@ -25,6 +25,15 @@ vi.mock("#imports", () => ({
   },
 }))
 
+// Mock useSettings
+const { useSettingsMock } = vi.hoisted(() => ({
+  useSettingsMock: vi.fn(),
+}))
+vi.mock("@/hooks/useSettings", () => ({
+  useSettings: useSettingsMock,
+}))
+import { useSettings } from "@/hooks/useSettings"
+
 const TestWrapper = ({ children }: { children: React.ReactNode }) => {
   return <ContainerProvider container={document.body}>{children}</ContainerProvider>
 }
@@ -32,9 +41,24 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => {
 describe("EditDialog - Variable Configuration UI", () => {
   const mockOnSave = vi.fn()
   const mockOnOpenChange = vi.fn()
+  const mockUpdate = vi.fn()
+
+  const defaultSettings: AppSettings = {
+    autoSaveEnabled: true,
+    autoCompleteEnabled: true,
+    maxPrompts: 100,
+    sortOrder: "recent",
+    showNotifications: true,
+    autoCompleteTarget: "all",
+    variableExpansionEnabled: true,
+  }
 
   beforeEach(() => {
     vi.clearAllMocks()
+    ;(useSettings as any).mockReturnValue({
+      settings: defaultSettings,
+      update: mockUpdate,
+    })
   })
 
   describe("Variable Detection and UI Generation", () => {
@@ -500,6 +524,139 @@ describe("EditDialog - Variable Configuration UI", () => {
       )
 
       expect(screen.getByText("dialogs.copy.title")).toBeInTheDocument()
+    })
+  })
+
+  describe("Variable Expansion Disabled", () => {
+    beforeEach(() => {
+      // Set variableExpansionEnabled to false
+      ;(useSettings as any).mockReturnValue({
+        settings: {
+          ...defaultSettings,
+          variableExpansionEnabled: false,
+        },
+        update: mockUpdate,
+      })
+    })
+
+    it("should not display variable settings when variableExpansionEnabled is false", () => {
+      render(
+        <TestWrapper>
+          <EditDialog
+            open={true}
+            onOpenChange={mockOnOpenChange}
+            initialContent="Hello {{name}}, how are you?"
+            displayMode={SaveMode.New}
+            onSave={mockOnSave}
+          />
+        </TestWrapper>,
+      )
+
+      // Variable settings section should not be displayed
+      expect(screen.queryByText("dialogs.edit.variableSettings")).not.toBeInTheDocument()
+    })
+
+    it("should not parse variables when variableExpansionEnabled is false", async () => {
+      render(
+        <TestWrapper>
+          <EditDialog
+            open={true}
+            onOpenChange={mockOnOpenChange}
+            initialContent="Hello {{name}} and {{friend}}"
+            displayMode={SaveMode.New}
+            onSave={mockOnSave}
+          />
+        </TestWrapper>,
+      )
+
+      // No variable type selectors should be present
+      expect(screen.queryByText("common.variableType")).not.toBeInTheDocument()
+    })
+
+    it("should not include variables in save data when variableExpansionEnabled is false", async () => {
+      render(
+        <TestWrapper>
+          <EditDialog
+            open={true}
+            onOpenChange={mockOnOpenChange}
+            initialContent="Hello {{name}}"
+            displayMode={SaveMode.New}
+            onSave={mockOnSave}
+          />
+        </TestWrapper>,
+      )
+
+      // Fill in required fields
+      const nameInput = screen.getByPlaceholderText("placeholders.enterPromptName")
+      fireEvent.change(nameInput, { target: { value: "Test Prompt" } })
+
+      // Click save button
+      const saveButton = screen.getByText("common.save")
+      fireEvent.click(saveButton)
+
+      // Verify onSave was called without variables
+      await waitFor(() => {
+        expect(mockOnSave).toHaveBeenCalled()
+        const saveData: SaveDialogData = mockOnSave.mock.calls[0][0]
+        expect(saveData.variables).toBeUndefined()
+      })
+    })
+
+    it("should not display variable settings when content changes with variableExpansionEnabled false", async () => {
+      render(
+        <TestWrapper>
+          <EditDialog
+            open={true}
+            onOpenChange={mockOnOpenChange}
+            initialContent="Hello world"
+            displayMode={SaveMode.New}
+            onSave={mockOnSave}
+          />
+        </TestWrapper>,
+      )
+
+      // Initially no variables
+      expect(screen.queryByText("dialogs.edit.variableSettings")).not.toBeInTheDocument()
+
+      // Update content to include variables
+      const textarea = screen.getByPlaceholderText("placeholders.enterPromptContent")
+      fireEvent.change(textarea, { target: { value: "Hello {{name}} and {{age}}" } })
+
+      // Wait a bit to ensure any potential state updates occur
+      await new Promise(resolve => setTimeout(resolve, 100))
+
+      // Variable settings should still not appear
+      expect(screen.queryByText("dialogs.edit.variableSettings")).not.toBeInTheDocument()
+      expect(screen.queryByText("common.variableType")).not.toBeInTheDocument()
+    })
+
+    it("should not preserve initial variables when variableExpansionEnabled is false", async () => {
+      const initialVariables: VariableConfig[] = [
+        {
+          name: "name",
+          type: "text",
+          defaultValue: "John",
+        },
+      ]
+
+      render(
+        <TestWrapper>
+          <EditDialog
+            open={true}
+            onOpenChange={mockOnOpenChange}
+            initialContent="Hello {{name}}"
+            initialVariables={initialVariables}
+            displayMode={SaveMode.Overwrite}
+            onSave={mockOnSave}
+          />
+        </TestWrapper>,
+      )
+
+      // Variable settings section should not be displayed
+      expect(screen.queryByText("dialogs.edit.variableSettings")).not.toBeInTheDocument()
+
+      // Default value input should not exist
+      expect(screen.queryByDisplayValue("John")).not.toBeInTheDocument()
     })
   })
 })

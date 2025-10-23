@@ -163,6 +163,7 @@ settings:
   autoSave: Auto-save prompts
   autoComplete: Auto-complete
   notifications: Status notifications
+  variableExpansion: Variable expansion
   autoCompleteTarget:
     all: All prompts
     pinned: Starred only

@@ -158,6 +158,8 @@ export interface AppSettings {
   minimalMode?: boolean
   /** Auto-complete target selection */
   autoCompleteTarget?: "all" | "pinned"
+  /** Enable/disable variable expansion feature */
+  variableExpansionEnabled?: boolean
 }
 
 /**

@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react"
 import { PromptServiceFacade } from "@/services/promptServiceFacade"
+import { useSettings } from "@/hooks/useSettings"
 import type { VariableConfig, VariableValues } from "@/types/prompt"
 import type { AutoCompleteMatch } from "@/services/autoComplete/types"
 
@@ -54,6 +55,10 @@ export const usePromptExecution = (
   const { nodeAtCaret, onExecuteStart, onExecuteComplete } = options
   const [variableInputData, setVariableInputData] =
     useState<VariableInputData | null>(null)
+  const { settings } = useSettings()
+
+  // Check if variable expansion is enabled (default: true)
+  const variableExpansionEnabled = settings?.variableExpansionEnabled ?? true
 
   /**
    * Execute a prompt, checking for variables first
@@ -66,12 +71,12 @@ export const usePromptExecution = (
         // Get prompt to check for variables
         const prompt = await serviceFacade.getPrompt(promptId)
 
-        // Check if prompt has variables that need user input
+        // Check if prompt has variables that need user input (only if variable expansion is enabled)
         const hasVariables = prompt.variables && prompt.variables.length > 0
         const hasInputVariables =
           hasVariables && prompt.variables!.some((v) => v.type !== "exclude")
 
-        if (hasInputVariables) {
+        if (variableExpansionEnabled && hasInputVariables) {
           // Show variable input dialog
           setVariableInputData({
             promptId,
@@ -81,7 +86,7 @@ export const usePromptExecution = (
             nodeAtCaret,
           })
         } else {
-          // Execute directly if no variables
+          // Execute directly if no variables or variable expansion is disabled
           await serviceFacade.executePrompt(promptId, nodeAtCaret ?? null, {
             match,
           })
@@ -91,7 +96,7 @@ export const usePromptExecution = (
         console.error("Execute failed:", error)
       }
     },
-    [nodeAtCaret, onExecuteStart, onExecuteComplete],
+    [nodeAtCaret, onExecuteStart, onExecuteComplete, variableExpansionEnabled],
   )
 
   /**

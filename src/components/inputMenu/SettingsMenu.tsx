@@ -147,6 +147,16 @@ export function SettingsMenu({ onMouseEnter }: Props): React.ReactElement {
               {i18n.t("settings.notifications")}
             </MenubarCheckboxItem>
 
+            <MenubarCheckboxItem
+              checked={settings.variableExpansionEnabled ?? true}
+              onCheckedChange={(checked) =>
+                handleSettingChange("variableExpansionEnabled", checked)
+              }
+              onSelect={handleMenuItemClick}
+            >
+              {i18n.t("settings.variableExpansion")}
+            </MenubarCheckboxItem>
+
             <MenubarSeparator />
 
             {/* Selection Settings Group */}
