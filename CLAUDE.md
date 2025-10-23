@@ -39,18 +39,11 @@ This is a browser extension built with WXT (Web Extension Toolkit) and React. Th
         - `domManager.ts` - DOM manipulation and event handling
         - `types.ts` - Common type definitions for AI services
         - `selectorDebugger.ts` - Debug utilities for DOM selectors
-      - `chatgpt/` - ChatGPT service (chat.openai.com, chatgpt.com)
-        - `ChatGptService.ts` - ChatGPT service implementation
-      - `gemini/` - Google Gemini service (gemini.google.com)
-        - `GeminiService.ts` - Gemini service implementation
-      - `claude/` - Claude service (claude.ai)
-        - `ClaudeService.ts` - Claude service implementation
-      - `perplexity/` - Perplexity service
-        - `PerplexityService.ts` - Perplexity service implementation
-      - `skywork/` - Skywork service
-        - `SkyworkService.ts` - Skywork service implementation
-      - `testPage/` - Test page for development
-        - `TestPageService.ts` - Test service implementation
+      - `ChatGptService.ts` - ChatGPT service implementation
+      - `GeminiService.ts` - Gemini service implementation
+      - `ClaudeService.ts` - Claude service implementation
+      - `TestPageService.ts` - Test service implementation
+      - `***Service.ts` - Implementation file for each AI service
       - `index.ts` - Exports all AI services and config fetching logic
     - `autoComplete/` - Auto-completion functionality
     - `dom/` - DOM utility functions
@@ -122,6 +115,32 @@ The extension uses a simplified, configuration-driven architecture for supportin
     - Comprehensive testing of extension features: autocomplete, history management, import/export
 - **Code Quality**: ESLint with TypeScript and React rules
 - **UI Framework**: Shadcn/ui components with Tailwind CSS styling
+
+**Key Features**:
+
+- **Prompt History Management**
+  - Auto-save and manual save with customizable names
+  - Pin frequently used prompts for quick access
+  - Import/Export functionality for backup and sharing
+
+- **Auto-completion**
+  - Real-time prompt suggestions as you type
+  - Keyboard navigation (↑↓ to select, Enter to apply, Esc to close)
+
+- **Smart Organization**
+  - Multiple sort options: Recent, Execution count, Name, Composite score
+  - Intelligent grouping for efficient prompt discovery
+
+- **Multi-AI Service Support**
+  - Configuration-driven architecture supporting multiple AI platforms
+  - See AI Service Architecture section for details on adding new services
+
+- **Variable Expansion**
+  - Dynamic variables in prompts using `{{variableName}}` syntax
+  - Configure variable types: single-line text, multi-line text, select options, or exclude
+  - Set default values and options for each variable
+  - Variable input dialog appears when executing prompts with variables
+  - See `docs/variables.md` for detailed design
 
 **Build System**:
 

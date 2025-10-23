@@ -17,6 +17,11 @@ common:
   update: 更新
   prompt: プロンプト
   promptDescription: チャットに入力される内容です
+  execute: 実行
+  variableType: 変数の型
+  defaultValue: デフォルト値
+  options: 選択肢
+  commaSeparatedValues: カンマ区切りで入力
 
 # Buttons
 buttons:
@@ -43,11 +48,16 @@ placeholders:
   enterPromptName: プロンプト名を入力...
   enterPromptContent: プロンプト内容を入力...
   searchPrompts: プロンプトを検索...
+  enterValue: 値を入力
+  selectOption: 選択してください
+  enterOptions: 選択肢1, 選択肢2, ...
 
 # Dialog titles and messages
 dialogs:
   edit:
     title: プロンプトを編集
+    variableSettings: 変数設定
+    variableSettingsDescription: プロンプト内で見つかった変数を設定します
   delete:
     title: プロンプトを削除
     message: 削除してもよろしいですか？この操作は元に戻すことができません。
@@ -55,6 +65,9 @@ dialogs:
     title: プロンプトを保存
   copy:
     title: プロンプトをコピー
+  variables:
+    title: 変数の入力
+    preview: プレビュー
 
 # Tabs
 tabs:
@@ -150,6 +163,7 @@ settings:
   autoSave: プロンプト自動保存
   autoComplete: 入力補完
   notifications: ステータス通知
+  variableExpansion: 変数展開
   autoCompleteTarget:
     all: すべてのプロンプト
     pinned: スター付きのみ
@@ -196,3 +210,10 @@ importDialog:
 # Accessibility labels
 accessibility:
   groupLabel: "$1 グループ、$2件"
+
+# Variable types
+variableTypes:
+  text: 一行文字列
+  textarea: 複数行文字列
+  select: 選択肢
+  exclude: 対象外

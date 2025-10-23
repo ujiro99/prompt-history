@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react"
 import { ChevronDown } from "lucide-react"
 import { SaveMode } from "@/types/prompt"
-import type { SaveDialogData } from "@/types/prompt"
+import type { SaveDialogData, VariableConfig } from "@/types/prompt"
+import { mergeVariableConfigs } from "@/utils/variables/variableParser"
+import { VariableConfigField } from "./VariableConfigField"
 import {
   Dialog,
   DialogTitle,
@@ -19,7 +21,9 @@ import { Button } from "@/components/ui/button"
 import { ButtonGroup } from "@/components/ui/button-group"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { ScrollAreaWithGradient } from "@/components/inputMenu/ScrollAreaWithGradient"
 import { useContainer } from "@/hooks/useContainer"
+import { useSettings } from "@/hooks/useSettings"
 import { analytics } from "#imports"
 
 /**
@@ -32,6 +36,8 @@ interface EditDialogProps {
   initialName?: string
   /** Initial prompt content */
   initialContent: string
+  /** Initial variable configurations (when editing) */
+  initialVariables?: VariableConfig[]
   /** Dialog display mode */
   displayMode: SaveMode
   /** Callback on save */
@@ -46,21 +52,63 @@ export const EditDialog: React.FC<EditDialogProps> = ({
   onOpenChange,
   initialName = "",
   initialContent,
+  initialVariables,
   displayMode,
   onSave,
 }) => {
   const [name, setName] = useState(initialName)
   const [content, setContent] = useState(initialContent)
+  const [variables, setVariables] = useState<VariableConfig[]>(
+    initialVariables || [],
+  )
   const [isLoading, setIsLoading] = useState(false)
   const isEdit = displayMode === SaveMode.Overwrite
   const isCopy = displayMode === SaveMode.Copy
   const { container } = useContainer()
+  const { settings } = useSettings()
+
+  // Check if variable expansion is enabled (default: true)
+  const variableExpansionEnabled = settings?.variableExpansionEnabled ?? true
 
   // Update initial values
   useEffect(() => {
     setName(initialName)
     setContent(initialContent)
-  }, [initialName, initialContent])
+    setVariables(
+      variableExpansionEnabled
+        ? initialVariables || mergeVariableConfigs(initialContent)
+        : [],
+    )
+  }, [initialName, initialContent, initialVariables, variableExpansionEnabled])
+
+  // Clear values on close
+  useEffect(() => {
+    if (!open) {
+      setName(initialName)
+      setContent(initialContent)
+      setVariables(initialVariables || [])
+    }
+  }, [open, initialName, initialContent, initialVariables])
+
+  // Parse and merge variables when content changes (only if variable expansion is enabled)
+  useEffect(() => {
+    if (variableExpansionEnabled) {
+      setVariables((prevVariables) =>
+        mergeVariableConfigs(content, prevVariables),
+      )
+    } else {
+      setVariables([])
+    }
+  }, [content, variableExpansionEnabled])
+
+  /**
+   * Handle variable configuration change
+   */
+  const handleVariableChange = (index: number, config: VariableConfig) => {
+    const updatedVariables = [...variables]
+    updatedVariables[index] = config
+    setVariables(updatedVariables)
+  }
 
   /**
    * Save processing
@@ -78,6 +126,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
         content: content.trim(),
         saveMode: saveMode,
         isPinned: true,
+        variables: variables.length > 0 ? variables : undefined,
       }
 
       try {
@@ -105,14 +154,20 @@ export const EditDialog: React.FC<EditDialogProps> = ({
       event.preventDefault()
       handleSave(displayMode)
     }
+    // Prevent propagation to avoid unwanted side effects on AI service input
+    event.persist()
+    event.stopPropagation()
+    event.nativeEvent.stopImmediatePropagation()
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
+        container={container}
         className="w-xl sm:max-w-xl max-h-9/10"
         onKeyDown={handleKeyDown}
-        container={container}
+        onKeyPress={(e) => e.stopPropagation()} // For chatgpt
+        onKeyUp={(e) => e.stopPropagation()}
         onWheel={(e) => e.stopPropagation()}
         onTouchMove={(e) => e.stopPropagation()}
       >
@@ -131,7 +186,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
           <div className="space-y-2">
             <label
               htmlFor="prompt-name"
-              className="text-sm font-medium text-foreground"
+              className="text-sm font-semibold text-foreground"
             >
               {i18n.t("common.name")}
             </label>
@@ -153,7 +208,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
           <div className="space-y-2">
             <label
               htmlFor="prompt-content"
-              className="text-sm font-medium text-foreground"
+              className="text-sm font-semibold text-foreground"
             >
               {i18n.t("common.prompt")}
             </label>
@@ -166,10 +221,37 @@ export const EditDialog: React.FC<EditDialogProps> = ({
               onChange={(e) => setContent(e.target.value)}
               placeholder={i18n.t("placeholders.enterPromptContent")}
               disabled={isLoading}
-              className="max-h-100"
+              className="max-h-60"
               rows={6}
             />
           </div>
+
+          {/* Variable configuration section */}
+          {variables.length > 0 && (
+            <div className="space-y-2">
+              <div>
+                <label className="text-sm font-semibold text-foreground">
+                  {i18n.t("dialogs.edit.variableSettings")}
+                </label>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {i18n.t("dialogs.edit.variableSettingsDescription")}
+                </p>
+              </div>
+              <ScrollAreaWithGradient
+                className="max-h-60 border-t-1"
+                gradientHeight={25}
+              >
+                {variables.map((variable, index) => (
+                  <VariableConfigField
+                    key={variable.name}
+                    variable={variable}
+                    initialVariable={initialVariables?.[index]}
+                    onChange={(config) => handleVariableChange(index, config)}
+                  />
+                ))}
+              </ScrollAreaWithGradient>
+            </div>
+          )}
         </div>
 
         <DialogFooter className="mt-3">
@@ -223,7 +305,10 @@ interface SaveAsNewProps extends React.ComponentProps<"button"> {
   onSaveAsNew?: () => void
 }
 
-export function SaveAsNew(props: SaveAsNewProps) {
+export function SaveAsNew(_props: SaveAsNewProps) {
+  const { onSaveAsNew, ...props } = _props
+  const { container } = useContainer()
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger {...props} asChild>
@@ -231,8 +316,12 @@ export function SaveAsNew(props: SaveAsNewProps) {
           <ChevronDown />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="start">
-        <DropdownMenuItem onClick={props.onSaveAsNew}>
+      <DropdownMenuContent
+        className="min-w-40"
+        align="start"
+        container={container}
+      >
+        <DropdownMenuItem onClick={onSaveAsNew}>
           {i18n.t("buttons.saveAsNew")}
         </DropdownMenuItem>
       </DropdownMenuContent>

@@ -9,9 +9,11 @@ import {
 } from "@/components/ui/menubar"
 import { useCaretNode } from "@/hooks/useCaretNode"
 import { useContainer } from "@/hooks/useContainer"
+import { usePromptExecution } from "@/hooks/usePromptExecution"
 import { PromptPreview } from "./PromptPreview"
 import { RemoveDialog } from "@/components/inputMenu/controller/RemoveDialog"
 import { EditDialog } from "@/components/inputMenu/controller/EditDialog"
+import { VariableInputDialog } from "@/components/inputMenu/controller/VariableInputDialog"
 import { BridgeArea } from "@/components/BridgeArea"
 import { PromptServiceFacade } from "@/services/promptServiceFacade"
 import { SaveMode } from "@/types/prompt"
@@ -87,6 +89,12 @@ export function InputMenu(props: Props): React.ReactElement {
 
   const { nodeAtCaret } = useCaretNode()
   const { container } = useContainer()
+  const {
+    variableInputData,
+    executePrompt,
+    handleVariableSubmit,
+    clearVariableInputData,
+  } = usePromptExecution({ nodeAtCaret })
 
   const handleMenuEnter = (val: MENU) => {
     setSelectedMenu(val)
@@ -134,20 +142,17 @@ export function InputMenu(props: Props): React.ReactElement {
   }, [])
 
   const handleItemClick = useCallback(
-    (promptId: string) => {
+    async (promptId: string) => {
       // Clear hoveredItem immediately when item is clicked
       if (hoverTimeoutRef.current) {
         clearTimeout(hoverTimeoutRef.current)
       }
       setHoveredItem(null)
 
-      try {
-        serviceFacade.executePrompt(promptId, nodeAtCaret)
-      } catch (error) {
-        console.error("Execute failed:", error)
-      }
+      // Execute prompt (with variable check)
+      await executePrompt(promptId)
     },
-    [nodeAtCaret],
+    [executePrompt],
   )
 
   /**
@@ -182,10 +187,11 @@ export function InputMenu(props: Props): React.ReactElement {
   const openEditDialogNew = async () => {
     const data = await serviceFacade.prepareSaveDialogData()
     setSaveDialogData({
-      name: data.initialName ?? "",
-      content: data.initialContent,
+      name: data.name ?? "",
+      content: data.content ?? "",
       saveMode: data.isOverwriteAvailable ? SaveMode.Overwrite : SaveMode.New,
       isPinned: true,
+      variables: data.variables ?? [],
     })
     setEditId("")
   }
@@ -200,6 +206,7 @@ export function InputMenu(props: Props): React.ReactElement {
       content: prompt.content,
       saveMode: SaveMode.Overwrite,
       isPinned: prompt.isPinned,
+      variables: prompt.variables,
     })
     setEditId(promptId)
   }
@@ -214,6 +221,7 @@ export function InputMenu(props: Props): React.ReactElement {
       content: prompt.content,
       saveMode: SaveMode.Copy,
       isPinned: prompt.isPinned,
+      variables: prompt.variables,
     })
     setEditId("")
   }
@@ -263,7 +271,7 @@ export function InputMenu(props: Props): React.ReactElement {
             onMouseEnter={() => handleMenuEnter(MENU.History)}
             data-testid={TestIds.inputPopup.historyTrigger}
           >
-            <History size={16} className="stroke-gray-600" />
+            <History size={16} className="stroke-neutral-600" />
           </MenuTrigger>
           <MenubarContent
             side="top"
@@ -272,6 +280,7 @@ export function InputMenu(props: Props): React.ReactElement {
             ref={setHistoryContentElm}
             data-testid={TestIds.inputPopup.historyList}
             container={container}
+            onWheel={(e) => e.stopPropagation()}
           >
             <PromptList
               menuType="history"
@@ -302,7 +311,7 @@ export function InputMenu(props: Props): React.ReactElement {
             onMouseEnter={() => handleMenuEnter(MENU.Pinned)}
             data-testid={TestIds.inputPopup.pinnedTrigger}
           >
-            <Star size={16} className="stroke-gray-600" />
+            <Star size={16} className="stroke-neutral-600" />
           </MenuTrigger>
           <MenubarContent
             side="top"
@@ -311,6 +320,7 @@ export function InputMenu(props: Props): React.ReactElement {
             ref={setPinnedContentElm}
             data-testid={TestIds.inputPopup.pinnedList}
             container={container}
+            onWheel={(e) => e.stopPropagation()}
           >
             <PromptList
               menuType="pinned"
@@ -341,7 +351,7 @@ export function InputMenu(props: Props): React.ReactElement {
             onClick={openEditDialogNew}
             data-testid={TestIds.inputPopup.editTrigger}
           >
-            <Save size={16} className="stroke-gray-600" />
+            <Save size={16} className="stroke-neutral-600" />
           </MenuTrigger>
         </MenubarMenu>
 
@@ -367,6 +377,7 @@ export function InputMenu(props: Props): React.ReactElement {
           onOpenChange={(val) => setEditId(val ? editId : null)}
           initialName={saveDialogData.name}
           initialContent={saveDialogData.content}
+          initialVariables={saveDialogData.variables}
           displayMode={saveDialogData.saveMode}
           onSave={handleEditPrompt}
         />
@@ -381,6 +392,19 @@ export function InputMenu(props: Props): React.ReactElement {
       >
         <span className="text-base break-all">{removePrompt?.name}</span>
       </RemoveDialog>
+
+      {/* Variable Input Dialog */}
+      {variableInputData && (
+        <VariableInputDialog
+          open={variableInputData !== null}
+          onOpenChange={(open) => {
+            if (!open) clearVariableInputData()
+          }}
+          variables={variableInputData.variables}
+          content={variableInputData.content}
+          onSubmit={handleVariableSubmit}
+        />
+      )}
     </div>
   )
 }
@@ -391,7 +415,7 @@ function MenuTrigger(
   return (
     <MenubarTrigger
       className={cn(
-        "p-1.5 text-xs gap-0.5 font-normal font-sans text-gray-700 cursor-pointer",
+        "p-1.5 text-xs gap-0.5 font-normal font-sans text-foreground cursor-pointer",
         props.disabled && "opacity-50 pointer-events-none",
       )}
       {...props}

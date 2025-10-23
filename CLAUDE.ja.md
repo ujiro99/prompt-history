@@ -39,18 +39,11 @@
         - `domManager.ts` - DOM操作とイベント処理
         - `types.ts` - AIサービス共通の型定義
         - `selectorDebugger.ts` - DOMセレクターのデバッグユーティリティ
-      - `chatgpt/` - ChatGPTサービス（chat.openai.com、chatgpt.com）
-        - `ChatGptService.ts` - ChatGPTサービス実装
-      - `gemini/` - Google Geminiサービス（gemini.google.com）
-        - `GeminiService.ts` - Geminiサービス実装
-      - `claude/` - Claudeサービス（claude.ai）
-        - `ClaudeService.ts` - Claudeサービス実装
-      - `perplexity/` - Perplexityサービス
-        - `PerplexityService.ts` - Perplexityサービス実装
-      - `skywork/` - Skyworkサービス
-        - `SkyworkService.ts` - Skyworkサービス実装
-      - `testPage/` - 開発用テストページ
-        - `TestPageService.ts` - テストサービス実装
+      - `ChatGptService.ts` - ChatGPTサービス実装
+      - `GeminiService.ts` - Geminiサービス実装
+      - `ClaudeService.ts` - Claudeサービス実装
+      - `TestPageService.ts` - テストサービス実装
+      - `***Service.ts` - AIサービスごとの実装ファイル
       - `index.ts` - すべてのAIサービスと設定取得ロジックをエクスポート
     - `autoComplete/` - 自動補完機能
     - `dom/` - DOMユーティリティ関数
@@ -122,6 +115,32 @@
     - 拡張機能の機能を包括的にテスト：自動補完、履歴管理、インポート/エクスポート
 - **コード品質**: TypeScriptとReactルールを使用したESLint
 - **UIフレームワーク**: Tailwind CSSスタイリングを使用したShadcn/uiコンポーネント
+
+**主要機能**:
+
+- **プロンプト履歴管理**
+  - 自動保存とカスタマイズ可能な名前での手動保存
+  - 頻繁に使用するプロンプトのピン留めによるクイックアクセス
+  - バックアップと共有のためのインポート/エクスポート機能
+
+- **オートコンプリート**
+  - 入力中のリアルタイム候補表示
+  - キーボードナビゲーション（↑↓で選択、Enterで適用、Escで閉じる）
+
+- **スマート整理**
+  - 複数のソートオプション：最近使用順、実行回数順、名前順、複合スコア順
+  - インテリジェントなグルーピングによる効率的な検索
+
+- **複数AIサービス対応**
+  - 設定駆動型アーキテクチャにより複数のAIプラットフォームをサポート
+  - 新サービス追加方法はAIサービスアーキテクチャのセクションを参照
+
+- **変数展開**
+  - `{{変数名}}` 構文による動的変数のサポート
+  - 変数の型を設定可能：一行文字列、複数行文字列、選択肢、対象外
+  - 各変数のデフォルト値と選択肢を設定
+  - 変数を含むプロンプトを実行する際に変数入力ダイアログが表示
+  - 詳細設計は `docs/variables.md` を参照
 
 **ビルドシステム**:
 

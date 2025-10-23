@@ -1,5 +1,5 @@
 import React from "react"
-import { Star, ChevronRight, CornerDownLeft } from "lucide-react"
+import { Star, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { TestIds } from "@/components/const"
 import { Key } from "@/components/Key"
@@ -37,17 +37,17 @@ export const AutoCompleteItem: React.FC<AutoCompleteItemProps> = ({
     <button
       type="button"
       className={cn(
-        "w-full text-left px-3 py-1.5 text-sm cursor-pointer border-b border-gray-100 last:border-b-0 transition",
+        "w-full text-left px-3 py-1.5 text-sm cursor-pointer border-b border-neutral-100 last:border-b-0 transition",
         "flex items-center space-x-1",
         isSelected
-          ? "bg-gray-50 text-gray-800 px-2 active"
-          : "bg-white text-gray-800 hover:bg-gray-50",
+          ? "bg-neutral-50 text-neutral-800 px-2 active"
+          : "bg-white text-neutral-800 hover:bg-neutral-50",
       )}
       onClick={handleClick}
       onMouseEnter={onMouseEnter}
       data-testid={TestIds.autocomplete.item}
     >
-      {isSelected && <ChevronRight size={18} className="text-gray-500" />}
+      {isSelected && <ChevronRight size={18} className="text-neutral-500" />}
       <div className="w-full overflow-hidden">
         <p className="truncate">
           {name1}
@@ -62,14 +62,13 @@ export const AutoCompleteItem: React.FC<AutoCompleteItemProps> = ({
             />
           )}
         </p>
-        <div className="text-xs text-gray-600 truncate mt-0.5 font-light">
+        <div className="text-xs text-neutral-600 truncate mt-0.5 font-light">
           {match.content}
         </div>
       </div>
       {isSelected && (
-        <div className="text-xs text-gray-500 flex items-center space-x-0.5">
+        <div className="text-xs text-neutral-500 flex items-center space-x-0.5">
           <Key>Tab</Key>
-          <CornerDownLeft className="text-gray-400" size={14} />
         </div>
       )}
     </button>

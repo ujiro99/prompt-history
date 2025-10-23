@@ -31,7 +31,7 @@ function MenuTrigger(props: MenuTriggerProps): React.ReactElement {
   return (
     <MenubarTrigger
       className={cn(
-        "p-1.5 text-xs gap-0.5 font-normal font-sans text-gray-700 cursor-pointer",
+        "p-1.5 text-xs gap-0.5 font-normal font-sans text-foreground cursor-pointer",
         props.disabled && "opacity-50 pointer-events-none",
       )}
       {...props}
@@ -103,7 +103,7 @@ export function SettingsMenu({ onMouseEnter }: Props): React.ReactElement {
         onMouseEnter={onMouseEnter}
         data-testid={TestIds.inputPopup.settingsTrigger}
       >
-        <EllipsisVertical size={16} className="stroke-gray-600" />
+        <EllipsisVertical size={16} className="stroke-neutral-600" />
       </MenuTrigger>
       <MenubarContent
         side="top"
@@ -145,6 +145,16 @@ export function SettingsMenu({ onMouseEnter }: Props): React.ReactElement {
               onSelect={handleMenuItemClick}
             >
               {i18n.t("settings.notifications")}
+            </MenubarCheckboxItem>
+
+            <MenubarCheckboxItem
+              checked={settings.variableExpansionEnabled ?? true}
+              onCheckedChange={(checked) =>
+                handleSettingChange("variableExpansionEnabled", checked)
+              }
+              onSelect={handleMenuItemClick}
+            >
+              {i18n.t("settings.variableExpansion")}
             </MenubarCheckboxItem>
 
             <MenubarSeparator />

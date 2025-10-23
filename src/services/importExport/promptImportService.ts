@@ -1,24 +1,10 @@
 import Papa from "papaparse"
 import { PromptServiceFacade } from "@/services/promptServiceFacade"
-import type { ImportResult } from "./types"
-import type { Prompt } from "@/types/prompt"
+import type { ImportResult, PromptCSVRow } from "./types"
+import type { Prompt, VariableConfig } from "@/types/prompt"
 import { generatePromptId } from "@/utils/idGenerator"
 import { ImportError } from "./ImportError"
 import { i18n } from "#imports"
-
-/**
- * Type for CSV row data from Papa Parse (without id field)
- */
-interface CSVRowData {
-  name: string
-  content: string
-  executionCount: number | string
-  lastExecutedAt: string
-  isPinned: boolean | string
-  lastExecutionUrl: string
-  createdAt: string
-  updatedAt: string
-}
 
 /**
  * Service for importing prompt data
@@ -88,7 +74,7 @@ export class PromptImportService {
    * Parse CSV text to prompt objects using Papa Parse
    */
   private parseCSV(csvText: string): Prompt[] {
-    const parseResult = Papa.parse<CSVRowData>(csvText, {
+    const parseResult = Papa.parse<PromptCSVRow>(csvText, {
       header: true,
       dynamicTyping: true,
       skipEmptyLines: true,
@@ -125,8 +111,9 @@ export class PromptImportService {
 
   /**
    * Parse Papa Parse row data to prompt object
+   * Note: Uses any type because Papa Parse may not fully convert types despite dynamicTyping option
    */
-  private parseRowData(row: CSVRowData): Prompt {
+  private parseRowData(row: any): Prompt {
     const requiredFields = [
       "name",
       "content",
@@ -144,6 +131,20 @@ export class PromptImportService {
       }
     }
 
+    // Parse variables from JSON string if present
+    let variables: VariableConfig[] | undefined
+    if (row.variables && typeof row.variables === "string") {
+      try {
+        const parsed = JSON.parse(row.variables)
+        if (Array.isArray(parsed)) {
+          variables = parsed
+        }
+      } catch (error) {
+        // Ignore parse errors for backwards compatibility
+        console.warn("Failed to parse variables:", error)
+      }
+    }
+
     // Generate a new unique ID for the imported prompt
     const newId = generatePromptId()
 
@@ -157,6 +158,7 @@ export class PromptImportService {
       lastExecutionUrl: String(row.lastExecutionUrl),
       createdAt: new Date(row.createdAt),
       updatedAt: new Date(row.updatedAt),
+      variables,
     }
   }
 

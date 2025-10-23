@@ -16,6 +16,7 @@ vi.mock("@/services/promptServiceFacade", () => ({
 
 import { PromptExportService } from "../promptExportService"
 import { PromptServiceFacade } from "@/services/promptServiceFacade"
+import Papa from "papaparse"
 
 // Mock DOM APIs
 const mockCreateObjectURL = vi.fn()
@@ -85,6 +86,7 @@ describe("PromptExportService", () => {
     lastExecutionUrl: "https://example.com",
     createdAt: new Date("2024-01-01T10:00:00.000Z"),
     updatedAt: new Date("2024-01-01T10:00:00.000Z"),
+    variables: undefined,
     ...overrides,
   })
 
@@ -93,7 +95,7 @@ describe("PromptExportService", () => {
       const result = (service as any).convertToCSV([])
 
       expect(result).toContain(
-        `"name","content","executionCount","lastExecutedAt","isPinned","lastExecutionUrl","createdAt","updatedAt"`,
+        `"name","content","executionCount","lastExecutedAt","isPinned","lastExecutionUrl","createdAt","updatedAt","variables"`,
       )
       expect(result.split("\n")).toHaveLength(2) // Header + empty line
     })
@@ -289,6 +291,64 @@ describe("PromptExportService", () => {
       await expect(service.exportToCSV()).resolves.not.toThrow()
       expect((service as any).serviceFacade.getPrompts).toHaveBeenCalled()
       expect(mockClick).toHaveBeenCalled()
+    })
+  })
+
+  describe("convertToCSV with variables", () => {
+    it("should export prompt with variables as JSON string", () => {
+      const prompt = createMockPrompt({
+        variables: [
+          {
+            name: "name",
+            type: "text",
+            defaultValue: "John",
+          },
+          {
+            name: "age",
+            type: "select",
+            defaultValue: "30",
+            selectOptions: {
+              options: ["20", "30", "40"],
+            },
+          },
+        ],
+      })
+      const result = (service as any).convertToCSV([prompt])
+
+      expect(result).toContain("Test Prompt")
+      // Variables should be exported as JSON string
+      // Use Papa Parse to parse the CSV back and verify variables
+      const parsed = Papa.parse<{ variables: string }>(result, { header: true })
+      const row = parsed.data[0]
+      expect(row.variables).toBeDefined()
+      const variables = JSON.parse(row.variables)
+      expect(variables).toHaveLength(2)
+      expect(variables[0].name).toBe("name")
+      expect(variables[0].type).toBe("text")
+      expect(variables[0].defaultValue).toBe("John")
+    })
+
+    it("should export prompt without variables as empty string", () => {
+      const prompt = createMockPrompt({
+        variables: undefined,
+      })
+      const result = (service as any).convertToCSV([prompt])
+
+      expect(result).toContain("Test Prompt")
+      // Variables column should be empty
+      const lines = result.split("\n")
+      expect(lines[1]).toContain('""') // Empty string for variables column
+    })
+
+    it("should export prompt with empty variables array", () => {
+      const prompt = createMockPrompt({
+        variables: [],
+      })
+      const result = (service as any).convertToCSV([prompt])
+
+      expect(result).toContain("Test Prompt")
+      // Empty array should be serialized as "[]"
+      expect(result).toContain("[]")
     })
   })
 })

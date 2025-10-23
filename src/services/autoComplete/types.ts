@@ -10,6 +10,7 @@ export interface AutoCompleteMatch {
   // Indices of the match within the name
   matchStart: number
   matchEnd: number
+  newlineCount: number
   // The term that was matched
   searchTerm: string
 }

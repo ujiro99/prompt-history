@@ -24,7 +24,7 @@ export const EditButton = ({
     <button
       type="button"
       className={cn(
-        "outline-gray-200 px-2 py-1.5 rounded-md transition group/edit-button hover:bg-gray-100 cursor-pointer",
+        "outline-neutral-200 px-2 py-1.5 rounded-md transition group/edit-button hover:bg-neutral-100 cursor-pointer",
         "flex items-center gap-2",
         className,
       )}
@@ -32,7 +32,7 @@ export const EditButton = ({
     >
       <Pencil
         className={cn(
-          "stroke-gray-400 transition",
+          "stroke-neutral-400 transition",
           "group-hover/edit-button:scale-120 group-hover/edit-button:stroke-sky-500",
         )}
         size={size}

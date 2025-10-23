@@ -1,4 +1,8 @@
-import { getCaretPosition, getCaretCoordinates } from "../dom"
+import {
+  getCaretPosition,
+  getCaretCoordinates,
+  CaretPositionInfo,
+} from "../dom"
 import type { Prompt } from "../../types/prompt"
 import type {
   AutoCompleteMatch,
@@ -76,8 +80,8 @@ export class AutoCompleteManager {
       return
     }
 
-    const caretPos = getCaretPosition(this.element)
-    const matches = this.findMatches(content, caretPos)
+    const caret = getCaretPosition(this.element)
+    const matches = this.findMatches(content, caret)
 
     if (matches.length > 0) {
       this.show(matches)
@@ -90,8 +94,11 @@ export class AutoCompleteManager {
    * Find matching prompts based on input and caret position
    * Supports matching 1-3 words, prioritizing longer matches
    */
-  private findMatches(input: string, caretPos: number): AutoCompleteMatch[] {
-    const textBeforeCaret = input.substring(0, caretPos)
+  private findMatches(
+    input: string,
+    caret: CaretPositionInfo,
+  ): AutoCompleteMatch[] {
+    const textBeforeCaret = input.substring(0, caret.position)
 
     // Collect matches from all word counts
     const allMatches: (AutoCompleteMatch & { wordCount: number })[] = []
@@ -105,7 +112,7 @@ export class AutoCompleteManager {
       const matches = this.tryMatchWithWordCount(
         textBeforeCaret,
         wordCount,
-        caretPos,
+        caret,
       )
 
       // Add word count information for prioritization
@@ -147,7 +154,7 @@ export class AutoCompleteManager {
   private tryMatchWithWordCount(
     textBeforeCaret: string,
     wordCount: number,
-    caretPos: number,
+    caret: CaretPositionInfo,
   ): AutoCompleteMatch[] {
     // Create regex pattern for specified number of words
     // Pattern matches wordCount number of words separated by whitespace
@@ -167,7 +174,7 @@ export class AutoCompleteManager {
     }
 
     // Calculate the position of the search term in the input
-    const inputMatchStart = caretPos - searchTerm.length
+    const inputMatchStart = caret.position - searchTerm.length
 
     // Filter prompts by case-insensitive partial match
     return this.prompts
@@ -182,7 +189,8 @@ export class AutoCompleteManager {
           content: prompt.content,
           isPinned: prompt.isPinned || false,
           matchStart: inputMatchStart,
-          matchEnd: caretPos,
+          matchEnd: caret.position,
+          newlineCount: caret.newlineCount,
           searchTerm,
         }
       })

@@ -3,6 +3,11 @@ import type { Prompt, SaveDialogData } from "../../types/prompt"
 import type { StorageService } from "../storage"
 import type { ImportResult } from "../importExport/types"
 import { SessionManager } from "./sessionManager"
+import {
+  parseVariables,
+  mergeVariableConfigs,
+  extractPromptTemplate,
+} from "@/utils/variables/variableParser"
 
 /**
  * Class responsible for prompt save and delete operations (Storage write operations)
@@ -156,6 +161,7 @@ export class StorageHelper {
           name: saveData.name,
           content: saveData.content,
           isPinned: true, // Manual saves are automatically pinned
+          variables: saveData.variables,
         })
       } else {
         savedPrompt = await this.storage.savePrompt({
@@ -165,6 +171,7 @@ export class StorageHelper {
           lastExecutedAt: new Date(),
           isPinned: true, // Manual saves are automatically pinned
           lastExecutionUrl: window.location.href,
+          variables: saveData.variables,
         })
       }
 
@@ -212,6 +219,32 @@ export class StorageHelper {
         return // Skip saving if duplicate content already exists
       }
 
+      // Check if the content contains variables
+      const variables = parseVariables(content)
+      if (variables.length > 0) {
+        // Extract template (remove variable section)
+        const template = extractPromptTemplate(content)
+
+        // Check if any existing prompt has the same template
+        const templateExists = existingPrompts.some((prompt) => {
+          // If prompt has variables metadata, use it directly
+          if (prompt.variables && prompt.variables.length > 0) {
+            return prompt.content === template
+          }
+          // Parse if no metadata
+          const existingVariables = parseVariables(prompt.content)
+          if (existingVariables.length > 0) {
+            const existingTemplate = extractPromptTemplate(prompt.content)
+            return existingTemplate === template
+          }
+          return false
+        })
+
+        if (templateExists) {
+          return // Skip saving if template already exists
+        }
+      }
+
       // Save as new prompt (regardless of session state)
       const savedPrompt = await this.storage.savePrompt({
         name: this.generatePromptName(content),
@@ -220,6 +253,10 @@ export class StorageHelper {
         lastExecutedAt: new Date(),
         isPinned: false,
         lastExecutionUrl: window.location.href,
+        variables:
+          variables.length > 0
+            ? variables.map((name) => ({ name, type: "text" as const }))
+            : undefined,
       })
 
       // If session exists, also increment execution count of original prompt
@@ -330,28 +367,30 @@ export class StorageHelper {
   /**
    * Prepare data for save dialog
    */
-  async prepareSaveDialogData(aiService: AIServiceInterface | null): Promise<{
-    initialContent: string
-    isOverwriteAvailable: boolean
-    initialName?: string
-  }> {
-    const content = aiService?.extractPromptContent()?.trim() || ""
+  async prepareSaveDialogData(aiService: AIServiceInterface | null): Promise<
+    Partial<SaveDialogData> & {
+      isOverwriteAvailable: boolean
+    }
+  > {
     const session = await this.sessionManager.getCurrentSession()
-    console.log("Preparing save dialog data. Active session:", session)
-    const isOverwriteAvailable = Boolean(session?.activePromptId)
-
-    let initialName: string | undefined
+    const content = aiService?.extractPromptContent()?.trim() || ""
+    let prompt: Partial<Prompt> | null = null
     if (session?.activePromptId) {
-      const activePrompt = await this.storage.getPrompt(session.activePromptId)
-      initialName = activePrompt?.name
-    } else {
-      initialName = this.generatePromptName(content)
+      prompt = await this.storage.getPrompt(session.activePromptId)
+      if (prompt) prompt.content = content // Update content to current
+    }
+
+    if (!prompt) {
+      prompt = {
+        content: content,
+        name: this.generatePromptName(content),
+        variables: mergeVariableConfigs(content),
+      }
     }
 
     return {
-      initialContent: content,
-      isOverwriteAvailable,
-      initialName,
+      ...prompt,
+      isOverwriteAvailable: Boolean(session?.activePromptId),
     }
   }
 

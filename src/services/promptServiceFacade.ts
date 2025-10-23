@@ -6,6 +6,7 @@ import type {
   SaveDialogData,
   NotificationData,
   PromptError,
+  VariableValues,
 } from "../types/prompt"
 import type { ImportResult } from "./importExport/types"
 import { SessionManager } from "./promptHistory/sessionManager"
@@ -132,40 +133,6 @@ export class PromptServiceFacade {
         "popstate",
         this.sessionManager.handlePageChange.bind(this.sessionManager),
       )
-    }
-  }
-
-  // ===================
-  // Session Management
-  // ===================
-
-  /**
-   * Start session
-   */
-  async startSession(promptId: string): Promise<void> {
-    this.ensureInitialized()
-
-    try {
-      const session = await this.sessionManager.startSession(promptId)
-      this.notifySessionChange(session)
-      console.debug("Session started for prompt:", promptId)
-    } catch (error) {
-      this.handleError("SESSION_START_FAILED", "Failed to start session", error)
-    }
-  }
-
-  /**
-   * End session
-   */
-  async endSession(): Promise<void> {
-    this.ensureInitialized()
-
-    try {
-      await this.sessionManager.endSession()
-      this.notifySessionChange(null)
-      console.debug("Session ended")
-    } catch (error) {
-      this.handleError("SESSION_END_FAILED", "Failed to end session", error)
     }
   }
 
@@ -355,7 +322,10 @@ export class PromptServiceFacade {
   async executePrompt(
     promptId: string,
     nodeAtCaret: Node | null,
-    match?: AutoCompleteMatch,
+    options?: {
+      match?: AutoCompleteMatch
+      variableValues?: VariableValues
+    },
   ): Promise<void> {
     this.ensureInitialized()
 
@@ -368,7 +338,7 @@ export class PromptServiceFacade {
       promptId,
       this.aiService,
       nodeAtCaret,
-      match,
+      options,
       (prompt) => {
         this.notify({
           id: uuid(),
@@ -386,11 +356,11 @@ export class PromptServiceFacade {
   /**
    * Prepare data for save dialog
    */
-  async prepareSaveDialogData(): Promise<{
-    initialContent: string
-    isOverwriteAvailable: boolean
-    initialName?: string
-  }> {
+  async prepareSaveDialogData(): Promise<
+    Partial<SaveDialogData> & {
+      isOverwriteAvailable: boolean
+    }
+  > {
     this.ensureInitialized()
     return await this.storageHelper.prepareSaveDialogData(this.aiService)
   }

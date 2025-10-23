@@ -5,6 +5,7 @@
       "Bash(pnpm biome:*)",
       "Bash(pnpm build:*)",
       "Bash(pnpm compile:*)",
+      "Bash(pnpm dev:*)",
       "Bash(pnpm e2e:*)",
       "Bash(pnpm eslint:*)",
       "Bash(pnpm exec tsc:*)",
@@ -12,6 +13,7 @@
       "Bash(pnpm list:*)",
       "Bash(pnpm run:*)",
       "Bash(pnpm test:*)",
+      "Bash(pnpm vitest run *)",
       "Bash(tsc:*)",
       "Bash(yarn lint)",
       "WebFetch(domain:biomejs.dev)",
@@ -38,8 +40,7 @@
       "mcp__serena__search_for_pattern",
       "mcp__serena__think_about_collected_information",
       "mcp__serena__think_about_task_adherence",
-      "mcp__serena__write_memory",
-      "Bash(pnpm dev:*)"
+      "mcp__serena__write_memory"
     ],
     "deny": [],
     "ask": []

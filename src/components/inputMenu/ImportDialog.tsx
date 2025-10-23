@@ -160,7 +160,7 @@ export function ImportDialog({
   const getStatusIcon = () => {
     switch (state) {
       case ImportState.Checking:
-        return <CircleCheckBig className="text-gray-700" size={20} />
+        return <CircleCheckBig className="text-neutral-700" size={20} />
       case ImportState.Importing:
         return <Loader2 className="animate-spin" size={20} />
       case ImportState.Success:
@@ -179,7 +179,7 @@ export function ImportDialog({
       case ImportState.Error:
         return "text-red-700"
       default:
-        return "text-gray-600"
+        return "text-neutral-600"
     }
   }
 
@@ -219,8 +219,8 @@ export function ImportDialog({
               className={cn(
                 "border-2 border-dashed rounded-lg p-6 text-center transition-colors",
                 state === ImportState.Idle
-                  ? "border-gray-300 hover:border-gray-400"
-                  : "border-gray-200",
+                  ? "border-neutral-300 hover:border-neutral-400"
+                  : "border-neutral-200",
                 isDragging &&
                   state === ImportState.Idle &&
                   "border-blue-400 bg-blue-50",
@@ -247,7 +247,7 @@ export function ImportDialog({
                     )}
                   </p>
                   {selectedFile && (
-                    <p className="text-sm text-gray-500 flex items-center justify-center gap-1">
+                    <p className="text-sm text-neutral-500 flex items-center justify-center gap-1">
                       <FileText size={14} />
                       {selectedFile.name}
                     </p>
@@ -270,19 +270,19 @@ export function ImportDialog({
           {/* Checking */}
           {state === ImportState.Checking && result == null && (
             <div
-              className="bg-gray-50 border border-gray-200 rounded-lg p-6 space-y-2"
+              className="bg-neutral-50 border border-neutral-200 rounded-lg p-6 space-y-2"
               role="status"
               aria-label={i18n.t("importDialog.status.checking")}
             >
               <h4
-                className="font-medium text-gray-800 flex flex-col items-center gap-2"
+                className="font-medium text-neutral-800 flex flex-col items-center gap-2"
                 id="file-status-text"
               >
                 <Loader2 className="animate-spin" size={20} />
                 {i18n.t("importDialog.status.checking")}
               </h4>
               {selectedFile && (
-                <p className="text-sm text-gray-500 flex items-center justify-center gap-1">
+                <p className="text-sm text-neutral-500 flex items-center justify-center gap-1">
                   <FileText size={14} />
                   {selectedFile.name}
                 </p>
@@ -296,19 +296,19 @@ export function ImportDialog({
           {/* Checking result */}
           {state === ImportState.Checking && result && (
             <div
-              className="bg-gray-50 border border-gray-200 rounded-lg p-6 space-y-2"
+              className="bg-neutral-50 border border-neutral-200 rounded-lg p-6 space-y-2"
               role="status"
               aria-label={i18n.t("importDialog.status.checkOk")}
             >
               <h4
-                className="font-medium text-gray-800 flex flex-col items-center gap-2"
+                className="font-medium text-neutral-800 flex flex-col items-center gap-2"
                 id="file-status-text"
               >
                 {getStatusIcon()}
                 {i18n.t("importDialog.status.checkOk")}
               </h4>
               {selectedFile && (
-                <p className="text-sm text-gray-500 flex items-center justify-center gap-1">
+                <p className="text-sm text-neutral-500 flex items-center justify-center gap-1">
                   <FileText size={14} />
                   {selectedFile.name}
                 </p>
@@ -357,14 +357,14 @@ export function ImportDialog({
               aria-label={i18n.t("importDialog.status.importResult")}
             >
               <h4
-                className="font-medium text-gray-800 flex flex-col items-center gap-2"
+                className="font-medium text-neutral-800 flex flex-col items-center gap-2"
                 id="file-status-text"
               >
                 {getStatusIcon()}
                 {i18n.t("importDialog.status.importResult")}
               </h4>
               {selectedFile && (
-                <p className="text-sm text-gray-500 flex items-center justify-center gap-1">
+                <p className="text-sm text-neutral-500 flex items-center justify-center gap-1">
                   <FileText size={14} />
                   {selectedFile.name}
                 </p>

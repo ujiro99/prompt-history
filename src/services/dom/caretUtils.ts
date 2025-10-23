@@ -13,6 +13,16 @@ export interface CaretCoordinates {
 }
 
 /**
+ * Caret position with newline count
+ */
+export interface CaretPositionInfo {
+  /** Character position including newlines */
+  position: number
+  /** Number of newline characters before the caret */
+  newlineCount: number
+}
+
+/**
  * Get the visual coordinates of the caret in an element
  */
 export function getCaretCoordinates(element: Element): CaretCoordinates | null {
@@ -152,8 +162,9 @@ export function getCaretCoordinates(element: Element): CaretCoordinates | null {
  * Calculate text length from DOM range using the same algorithm as normalizeHtmlNewlines
  * This ensures consistency with content extraction for position calculations
  */
-function getTextLengthFromRange(range: Range): number {
+function getTextLengthFromRange(range: Range): CaretPositionInfo {
   let result = ""
+  let newlineCount = 0
 
   function traverse(nodes: Node[]) {
     nodes.forEach((node) => {
@@ -162,10 +173,17 @@ function getTextLengthFromRange(range: Range): number {
         result += node.textContent || ""
       } else if (node.nodeName === "BR") {
         result += "\n"
+        newlineCount++
       } else if (node.nodeName === "DIV" || node.nodeName === "P") {
-        if (result && !result.endsWith("\n")) result += "\n"
+        if (result && !result.endsWith("\n")) {
+          result += "\n"
+          newlineCount++
+        }
         traverse(Array.from(node.childNodes))
-        if (!result.endsWith("\n")) result += "\n"
+        if (!result.endsWith("\n")) {
+          result += "\n"
+          newlineCount++
+        }
       } else {
         traverse(Array.from(node.childNodes))
       }
@@ -179,28 +197,39 @@ function getTextLengthFromRange(range: Range): number {
   // Remove extra newlines at the end (same as normalizeHtmlNewlines)
   const normalizedResult = result.replace(/\n+$/g, "")
 
-  return normalizedResult.length
+  // Count how many newlines were removed
+  const removedNewlines = result.length - normalizedResult.length
+  newlineCount -= removedNewlines
+
+  return {
+    position: normalizedResult.length,
+    newlineCount: newlineCount,
+  }
 }
 
 /**
  * Get caret position in text input or contenteditable element
  */
-export function getCaretPosition(element: Element): number {
+export function getCaretPosition(element: Element): CaretPositionInfo {
   if (!element) {
-    return 0
+    return { position: 0, newlineCount: 0 }
   }
 
   // For textarea and input elements
   if (isInputOrTextarea(element)) {
     const inputElement = element as HTMLInputElement | HTMLTextAreaElement
-    return inputElement.selectionStart || 0
+    const position = inputElement.selectionStart || 0
+    const text = inputElement.value.substring(0, position)
+    const newlineCount = (text.match(/\n/g) || []).length
+
+    return { position, newlineCount }
   }
 
   // For contenteditable elements
   if (element.getAttribute("contenteditable") === "true") {
     const selection = window.getSelection()
     if (!selection || selection.rangeCount === 0) {
-      return 0
+      return { position: 0, newlineCount: 0 }
     }
 
     const range = selection.getRangeAt(0)
@@ -212,5 +241,69 @@ export function getCaretPosition(element: Element): number {
     return getTextLengthFromRange(preCaretRange)
   }
 
-  return 0
+  return { position: 0, newlineCount: 0 }
+}
+
+/**
+ * Set caret position in text input or contenteditable element
+ * @param el - Target element (input, textarea, contenteditable)
+ * @param pos - Text position (excluding newlines for contenteditable)
+ * @param newlineCount - Number of newlines before the position (for contenteditable)
+ */
+export function setCaretPosition(
+  el: HTMLElement,
+  pos: number,
+  newlineCount: number = 0,
+): void {
+  if (!el) return
+
+  el.focus()
+
+  // For input or textarea elements
+  if (isInputOrTextarea(el)) {
+    const length = el.value?.length ?? 0
+    const newPos = Math.max(0, Math.min(pos, length))
+    el.setSelectionRange(newPos, newPos)
+    return
+  }
+
+  // For contenteditable elements
+  if (isEditable(el)) {
+    const range = document.createRange()
+
+    // Traverse text nodes sequentially to find the target position
+    // Adjust position by subtracting newlineCount to get pure text offset
+    const targetPos = pos - newlineCount
+    let currentNode = null
+    let offset = 0
+
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null)
+
+    while (walker.nextNode()) {
+      const node = walker.currentNode
+      const nextOffset = offset + (node.textContent?.length ?? 0)
+
+      if (targetPos <= nextOffset) {
+        currentNode = node
+        const localOffset = targetPos - offset
+        range.setStart(node, localOffset)
+        range.collapse(true)
+        break
+      }
+      offset = nextOffset
+    }
+
+    // If position exceeds text length, place caret at the end
+    if (!currentNode) {
+      range.selectNodeContents(el)
+      range.collapse(false)
+    }
+
+    const selection = window.getSelection()
+    selection?.removeAllRanges()
+    selection?.addRange(range)
+    return
+  }
+
+  console.warn("Unsupported element type", el)
 }

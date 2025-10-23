@@ -40,6 +40,9 @@ export const TestIds = {
     popup: "autocomplete-popup",
     item: "suggestion-item",
   },
+  variableInputDialog: {
+    submit: "variable-input-submit",
+  },
 } as const
 
 export enum MENU {

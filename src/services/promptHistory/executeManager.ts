@@ -1,9 +1,10 @@
 import type { AIServiceInterface } from "../../types/aiService"
-import type { Prompt } from "../../types/prompt"
+import type { Prompt, VariableValues } from "../../types/prompt"
 import type { StorageService } from "../storage"
 import { SessionManager } from "./sessionManager"
 import { replaceTextAtCaret } from "@/services/dom/inputUtils"
 import type { AutoCompleteMatch } from "@/services/autoComplete/types"
+import { expandPrompt } from "@/utils/variables/variableFormatter"
 import { analytics } from "#imports"
 
 /**
@@ -13,7 +14,7 @@ export class ExecuteManager {
   constructor(
     private storage: StorageService,
     private sessionManager: SessionManager,
-  ) { }
+  ) {}
 
   /**
    * Execute prompt
@@ -22,7 +23,10 @@ export class ExecuteManager {
     promptId: string,
     aiService: AIServiceInterface,
     nodeAtCaret: Node | null,
-    match?: AutoCompleteMatch,
+    options?: {
+      match?: AutoCompleteMatch
+      variableValues?: VariableValues
+    },
     onSuccess?: (prompt: Prompt) => void,
     onError?: (error: Error) => void,
   ): Promise<void> {
@@ -32,18 +36,37 @@ export class ExecuteManager {
         throw new Error(`Prompt not found: ${promptId}`)
       }
 
+      let content = prompt.content
+      if (
+        options?.variableValues &&
+        Object.values(options.variableValues).some((v) => v !== "")
+      ) {
+        // Expand prompt content with variable values if provided
+        content = expandPrompt(prompt.content, options.variableValues)
+      } else {
+        // Add a space to prevent the art complete message from reappearing.
+        content = content + " "
+      }
+
       // Inject prompt into AI service
       const textInput = aiService.getTextInput()
       if (textInput) {
-        const _match =
-          match ??
-          ({
-            name: prompt.name,
-            content: prompt.content,
-            matchStart: 0,
-            matchEnd: prompt.content.length,
-            searchTerm: "",
-          } as AutoCompleteMatch)
+        // Create or update match with expanded content
+        const _match: AutoCompleteMatch = options?.match
+          ? {
+              ...options.match,
+              content,
+            }
+          : {
+              id: prompt.id,
+              name: prompt.name,
+              content,
+              isPinned: prompt.isPinned,
+              matchStart: 0,
+              matchEnd: content.length,
+              newlineCount: 0,
+              searchTerm: "",
+            }
 
         // Execute text replacement at caret
         await replaceTextAtCaret(

@@ -145,7 +145,7 @@ export const PromptList = ({
     <>
       {isListEmpty && isEmpty(searchQuery) ? null : (
         <div className="flex items-center py-0.5 pl-3 pr-1 border-b">
-          <Search size={20} className="stroke-gray-400" />
+          <Search size={20} className="stroke-neutral-400" />
           <Input
             type="text"
             placeholder={i18n.t("placeholders.searchPrompts")}
@@ -162,7 +162,7 @@ export const PromptList = ({
         ref={setViewportElm}
       >
         {isListEmpty ? (
-          <div className="px-3 py-2 text-xs text-gray-500">
+          <div className="px-3 py-2 text-xs text-foreground">
             {searchQuery.length > 0
               ? i18n.t("messages.notFound")
               : emptyMessage}
@@ -218,7 +218,7 @@ const SortOrderSelect = ({ sortOrder, className }: SortOrderSelectProps) => {
       <Select onValueChange={handleSortOrderChange} value={sortOrder}>
         <TooltipTrigger asChild>
           <SelectTrigger
-            className={cn("transition hover:bg-gray-100", className)}
+            className={cn("transition hover:bg-neutral-100", className)}
             size="sm"
           >
             <Settings2 className="size-4" />

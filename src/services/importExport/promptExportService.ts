@@ -1,6 +1,6 @@
 import Papa from "papaparse"
 import { PromptServiceFacade } from "@/services/promptServiceFacade"
-import type { ExportOptions } from "./types"
+import type { ExportOptions, PromptCSVRow } from "./types"
 import type { Prompt } from "@/types/prompt"
 
 /**
@@ -47,8 +47,8 @@ export class PromptExportService {
    * Convert prompts to CSV format using Papa Parse
    */
   private convertToCSV(prompts: Prompt[]): string {
-    // Transform prompts to plain objects with proper field formatting (excluding id)
-    const csvData = prompts.map((prompt) => ({
+    // Transform prompts to CSV row objects with proper field formatting (excluding id)
+    const csvData: PromptCSVRow[] = prompts.map((prompt) => ({
       name: prompt.name,
       content: prompt.content,
       executionCount: prompt.executionCount,
@@ -57,6 +57,7 @@ export class PromptExportService {
       lastExecutionUrl: prompt.lastExecutionUrl,
       createdAt: prompt.createdAt.toISOString(),
       updatedAt: prompt.updatedAt.toISOString(),
+      variables: prompt.variables ? JSON.stringify(prompt.variables) : "",
     }))
 
     // Use Papa Parse to generate CSV with headers and proper escaping
@@ -71,6 +72,7 @@ export class PromptExportService {
           "lastExecutionUrl",
           "createdAt",
           "updatedAt",
+          "variables",
         ],
         data: csvData,
       },

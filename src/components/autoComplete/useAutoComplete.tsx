@@ -1,9 +1,10 @@
 import { useEffect, useState, useRef, useMemo } from "react"
 import { PromptServiceFacade } from "@/services/promptServiceFacade"
-import { AutoCompleteManager } from "../../services/autoComplete/autoCompleteManager"
-import { useCaretNode } from "../../hooks/useCaretNode"
-import type { AutoCompleteMatch } from "../../services/autoComplete/types"
-import type { Prompt } from "../../types/prompt"
+import { AutoCompleteManager } from "@/services/autoComplete/autoCompleteManager"
+import { useCaretNode } from "@/hooks/useCaretNode"
+import { usePromptExecution } from "@/hooks/usePromptExecution"
+import type { AutoCompleteMatch } from "@/services/autoComplete/types"
+import type { Prompt } from "@/types/prompt"
 
 const serviceFacade = PromptServiceFacade.getInstance()
 
@@ -18,6 +19,26 @@ export const useAutoComplete = ({ prompts }: UseAutoCompleteOptions) => {
   const [position, setPosition] = useState({ x: 0, y: 0, height: 0 })
   const managerRef = useRef<AutoCompleteManager | null>(null)
   const { nodeAtCaret } = useCaretNode()
+
+  const {
+    variableInputData,
+    executePrompt,
+    handleVariableSubmit,
+    clearVariableInputData,
+  } = usePromptExecution({
+    nodeAtCaret,
+    onExecuteComplete: () => {
+      // Refocus the text input after executing the prompt
+      const textInput = serviceFacade.getTextInput() as HTMLElement
+      if (textInput) {
+        textInput.focus()
+      }
+
+      // Reset autocomplete state
+      setMatches([])
+      managerRef.current?.selectReset()
+    },
+  })
 
   const callbacks = useMemo(
     () => ({
@@ -34,22 +55,14 @@ export const useAutoComplete = ({ prompts }: UseAutoCompleteOptions) => {
         setIsVisible(false)
       },
       onExecute: async (match: AutoCompleteMatch) => {
-        await serviceFacade.executePrompt(match.id, nodeAtCaret, match)
-
-        // Refocus the text input after executing the prompt
-        const textInput = serviceFacade.getTextInput() as HTMLElement
-        if (textInput) {
-          textInput.focus()
-        }
-
-        setMatches([])
-        managerRef.current?.selectReset()
+        // Execute prompt (with variable check)
+        await executePrompt(match.id, match)
       },
       onSelectChange: (index: number) => {
         setSelectedIndex(index)
       },
     }),
-    [nodeAtCaret],
+    [executePrompt],
   )
 
   useEffect(() => {
@@ -127,5 +140,8 @@ export const useAutoComplete = ({ prompts }: UseAutoCompleteOptions) => {
     selectIndex,
     selectNext,
     selectPrevious,
+    variableInputData,
+    clearVariableInputData,
+    handleVariableSubmit,
   }
 }

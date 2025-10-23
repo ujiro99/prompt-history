@@ -29,14 +29,16 @@ export const GroupHeader = ({
   return (
     <div
       className={cn(
-        "flex items-center justify-between px-2 py-1.5 bg-gray-100 text-[11px] font-medium text-gray-600",
+        "flex items-center justify-between px-2 py-1.5 text-xs",
         className,
       )}
       role="group"
       aria-label={i18n.t("accessibility.groupLabel", [displayLabel, count])}
     >
-      <span className="truncate">{displayLabel}</span>
-      <span className="text-gray-400 flex-shrink-0">{count}</span>
+      <span className="text-muted-foreground truncate">{displayLabel}</span>
+      <span className="text-muted-foreground flex-shrink-0 bg-neutral-100 p-1 py-0.5 min-w-5 rounded text-center">
+        {count}
+      </span>
     </div>
   )
 }

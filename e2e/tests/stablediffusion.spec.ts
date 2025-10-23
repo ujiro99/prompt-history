@@ -68,10 +68,10 @@ test.describe("Stable Diffusion Extension Tests", () => {
       // Check the value of prompt input field
       await waitHelpers.waitForCondition(async () => {
         const val = await promptInput.inputValue()
-        return val === "Mock prompt 1 for testing"
+        return val === "Mock prompt 1 for testing "
       })
       const inputValue = await promptInput.inputValue()
-      expect(inputValue).toBe("Mock prompt 1 for testing")
+      expect(inputValue).toBe("Mock prompt 1 for testing ")
 
       // Confirm that popup is closed
       const isVisible = await autocompletePopup.isVisible()
@@ -117,10 +117,10 @@ test.describe("Stable Diffusion Extension Tests", () => {
       // Check the value of prompt input field
       await waitHelpers.waitForCondition(async () => {
         const val = await promptInput.inputValue()
-        return val === "Mock prompt 1 for testing"
+        return val === "Mock prompt 1 for testing "
       })
       const inputValue = await promptInput.inputValue()
-      expect(inputValue).toBe("Mock prompt 1 for testing") // Most recent history should be input
+      expect(inputValue).toBe("Mock prompt 1 for testing ") // Most recent history should be input
     })
   })
 })

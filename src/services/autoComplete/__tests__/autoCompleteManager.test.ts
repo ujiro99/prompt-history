@@ -111,7 +111,7 @@ describe("AutoCompleteManager", () => {
       const managerAny = manager as any
 
       const input = "hello"
-      const caretPos = 5
+      const caretPos = { position: 5, newlineCount: 0 }
       const matches = managerAny.findMatches(input, caretPos)
 
       expect(matches).toHaveLength(2)
@@ -125,7 +125,7 @@ describe("AutoCompleteManager", () => {
       const managerAny = manager as any
 
       const input = "HELLO"
-      const caretPos = 5
+      const caretPos = { position: 5, newlineCount: 0 }
       const matches = managerAny.findMatches(input, caretPos)
 
       expect(matches).toHaveLength(2)
@@ -137,7 +137,7 @@ describe("AutoCompleteManager", () => {
       const managerAny = manager as any
 
       const input = "test"
-      const caretPos = 4
+      const caretPos = { position: 4, newlineCount: 0 }
       const matches = managerAny.findMatches(input, caretPos)
 
       expect(matches).toHaveLength(1)
@@ -149,13 +149,13 @@ describe("AutoCompleteManager", () => {
 
       // Characters below minSearchLength should not match (minSearchLength = 3)
       let input = "h"
-      let caretPos = 1
+      let caretPos = { position: 1, newlineCount: 0 }
       let matches = managerAny.findMatches(input, caretPos)
       expect(matches).toHaveLength(0)
 
       // 2 characters should not match
       input = "he"
-      caretPos = 2
+      caretPos = { position: 2, newlineCount: 0 }
       matches = managerAny.findMatches(input, caretPos)
       expect(matches).toHaveLength(0)
     })
@@ -165,19 +165,19 @@ describe("AutoCompleteManager", () => {
 
       // 1 character should not match
       let input = "h"
-      let caretPos = 1
+      let caretPos = { position: 1, newlineCount: 0 }
       let matches = managerAny.findMatches(input, caretPos)
       expect(matches).toHaveLength(0)
 
       // 2 characters should not match
       input = "he"
-      caretPos = 2
+      caretPos = { position: 2, newlineCount: 0 }
       matches = managerAny.findMatches(input, caretPos)
       expect(matches).toHaveLength(0)
 
       // 3 characters should match
       input = "hel"
-      caretPos = 3
+      caretPos = { position: 3, newlineCount: 0 }
       matches = managerAny.findMatches(input, caretPos)
       expect(matches).toHaveLength(2) // "Hello World" and "hello-world-special"
     })
@@ -191,7 +191,7 @@ describe("AutoCompleteManager", () => {
       const limitedManagerAny = limitedManager as any
 
       const input = "hello"
-      const caretPos = 5
+      const caretPos = { position: 5, newlineCount: 0 }
       const matches = limitedManagerAny.findMatches(input, caretPos)
 
       expect(matches).toHaveLength(1)
@@ -202,7 +202,7 @@ describe("AutoCompleteManager", () => {
 
       // Test with text before the search term
       const input = "This is hello"
-      const caretPos = 13
+      const caretPos = { position: 13, newlineCount: 0 }
       const matches = managerAny.findMatches(input, caretPos)
 
       expect(matches).toHaveLength(2)
@@ -214,7 +214,7 @@ describe("AutoCompleteManager", () => {
       const managerAny = manager as any
 
       const input = "nonexistent"
-      const caretPos = 11
+      const caretPos = { position: 11, newlineCount: 0 }
       const matches = managerAny.findMatches(input, caretPos)
 
       expect(matches).toHaveLength(0)
@@ -224,7 +224,7 @@ describe("AutoCompleteManager", () => {
       const managerAny = manager as any
 
       const input = ""
-      const caretPos = 0
+      const caretPos = { position: 0, newlineCount: 0 }
       const matches = managerAny.findMatches(input, caretPos)
 
       expect(matches).toHaveLength(0)
@@ -234,7 +234,7 @@ describe("AutoCompleteManager", () => {
       const managerAny = manager as any
 
       const input = "hello world"
-      const caretPos = 0
+      const caretPos = { position: 0, newlineCount: 0 }
       const matches = managerAny.findMatches(input, caretPos)
 
       expect(matches).toHaveLength(0)
@@ -244,7 +244,7 @@ describe("AutoCompleteManager", () => {
       const managerAny = manager as any
 
       const input = "hello-"
-      const caretPos = 6
+      const caretPos = { position: 6, newlineCount: 0 }
       const matches = managerAny.findMatches(input, caretPos)
 
       expect(matches).toHaveLength(1)
@@ -272,7 +272,7 @@ describe("AutoCompleteManager", () => {
       manager.setPrompts(unicodePrompts)
 
       const input = "日本語"
-      const caretPos = 3
+      const caretPos = { position: 3, newlineCount: 0 }
       const matches = managerAny.findMatches(input, caretPos)
 
       expect(matches).toHaveLength(1)
@@ -283,7 +283,7 @@ describe("AutoCompleteManager", () => {
       const managerAny = manager as any
 
       const input = "   "
-      const caretPos = 3
+      const caretPos = { position: 3, newlineCount: 0 }
       const matches = managerAny.findMatches(input, caretPos)
 
       expect(matches).toHaveLength(0)
@@ -294,7 +294,7 @@ describe("AutoCompleteManager", () => {
 
       // Test case sensitivity
       const input = "javascript"
-      const caretPos = 10
+      const caretPos = { position: 10, newlineCount: 0 }
       const matches = managerAny.findMatches(input, caretPos)
 
       expect(matches).toHaveLength(1)
@@ -305,7 +305,7 @@ describe("AutoCompleteManager", () => {
       const managerAny = manager as any
 
       const input = "I need some test"
-      const caretPos = 16
+      const caretPos = { position: 16, newlineCount: 0 }
       const matches = managerAny.findMatches(input, caretPos)
 
       expect(matches).toHaveLength(1)
@@ -319,7 +319,7 @@ describe("AutoCompleteManager", () => {
 
       // Test "hello world" matching "Hello World"
       let input = "Type hello world"
-      let caretPos = 16
+      let caretPos = { position: 16, newlineCount: 0 }
       let matches = managerAny.findMatches(input, caretPos)
 
       expect(matches.length).toBeGreaterThanOrEqual(1)
@@ -331,7 +331,7 @@ describe("AutoCompleteManager", () => {
 
       // Test "test prompt" matching "Test Prompt"
       input = "Run test prompt"
-      caretPos = 15
+      caretPos = { position: 15, newlineCount: 0 }
       matches = managerAny.findMatches(input, caretPos)
 
       expect(matches.length).toBeGreaterThanOrEqual(1)
@@ -363,7 +363,7 @@ describe("AutoCompleteManager", () => {
       manager.setPrompts(threeWordPrompts)
 
       const input = "Use python programming guide"
-      const caretPos = input.length // Use full length: 28
+      const caretPos = { position: input.length, newlineCount: 0 } // Use full length: 28
       const matches = managerAny.findMatches(input, caretPos)
 
       expect(matches.length).toBeGreaterThanOrEqual(1)
@@ -396,7 +396,7 @@ describe("AutoCompleteManager", () => {
 
       // Should find both matches but prioritize "Hello World" (2 words) over "World" (1 word)
       const input = "Say hello world"
-      const caretPos = 15
+      const caretPos = { position: 15, newlineCount: 0 }
       const matches: AutoCompleteMatch[] = managerAny.findMatches(
         input,
         caretPos,
@@ -418,7 +418,7 @@ describe("AutoCompleteManager", () => {
 
       // Test with multiple spaces - should fall back to single word match since double space won't match single space in prompt names
       let input = "Type hello  world"
-      let caretPos = 17
+      let caretPos = { position: 17, newlineCount: 0 }
       let matches = managerAny.findMatches(input, caretPos)
 
       // This should fall back to matching "world" (single word) since "hello  world" won't match "Hello World"
@@ -428,7 +428,7 @@ describe("AutoCompleteManager", () => {
 
       // Test with single space - should match the 2-word pattern
       input = "Type hello world"
-      caretPos = 16
+      caretPos = { position: 16, newlineCount: 0 }
       matches = managerAny.findMatches(input, caretPos)
 
       expect(matches.length).toBeGreaterThanOrEqual(1)
@@ -442,14 +442,14 @@ describe("AutoCompleteManager", () => {
 
       // 2 words but total less than 3 characters should not match
       let input = "a b"
-      let caretPos = 3
+      let caretPos = { position: 3, newlineCount: 0 }
       let matches = managerAny.findMatches(input, caretPos)
 
       expect(matches).toHaveLength(0)
 
       // 2 words with exactly 3 characters should match if there's a matching prompt
       input = "a bc"
-      caretPos = 4
+      caretPos = { position: 4, newlineCount: 0 }
       matches = managerAny.findMatches(input, caretPos)
 
       expect(matches).toHaveLength(0) // No prompt matches "a bc"
@@ -460,7 +460,7 @@ describe("AutoCompleteManager", () => {
 
       // "nonexistent hello" should find both 2-word and 1-word matches
       const input = "Type nonexistent hello"
-      const caretPos = 22
+      const caretPos = { position: 22, newlineCount: 0 }
       const matches = managerAny.findMatches(input, caretPos)
 
       expect(matches).toHaveLength(2)
@@ -503,7 +503,7 @@ describe("AutoCompleteManager", () => {
       manager.setPrompts(multiPrompts)
 
       const input = "Type hello world"
-      const caretPos = 16
+      const caretPos = { position: 16, newlineCount: 0 }
       const matches: AutoCompleteMatch[] = managerAny.findMatches(
         input,
         caretPos,
@@ -533,7 +533,10 @@ describe("AutoCompleteManager", () => {
     it("should handle content change and trigger callbacks", async () => {
       // Mock getCaretPosition to return a specific position
       const { getCaretPosition } = await import("../../dom")
-      vi.mocked(getCaretPosition).mockReturnValue(5)
+      vi.mocked(getCaretPosition).mockReturnValue({
+        position: 5,
+        newlineCount: 0,
+      })
 
       // Trigger content change
       manager.setCallbacks(mockCallbacks)
@@ -547,16 +550,25 @@ describe("AutoCompleteManager", () => {
 
     it("should hide autocomplete when no matches found", async () => {
       const { getCaretPosition } = await import("../../dom")
-      vi.mocked(getCaretPosition).mockReturnValue(11)
+      vi.mocked(getCaretPosition).mockReturnValue({
+        position: 11,
+        newlineCount: 0,
+      })
 
       // First, show autocomplete to ensure it's visible
-      vi.mocked(getCaretPosition).mockReturnValue(5)
+      vi.mocked(getCaretPosition).mockReturnValue({
+        position: 5,
+        newlineCount: 0,
+      })
       manager.setCallbacks(mockCallbacks)
       manager.handleContentChange("hello")
       await new Promise((resolve) => setTimeout(resolve, 100))
 
       // Then test hiding with no matches
-      vi.mocked(getCaretPosition).mockReturnValue(11)
+      vi.mocked(getCaretPosition).mockReturnValue({
+        position: 11,
+        newlineCount: 0,
+      })
       manager.handleContentChange("nonexistent")
 
       await new Promise((resolve) => setTimeout(resolve, 100))
@@ -565,7 +577,10 @@ describe("AutoCompleteManager", () => {
 
     it("should handle element not set", async () => {
       const { getCaretPosition } = await import("../../dom")
-      vi.mocked(getCaretPosition).mockReturnValue(5)
+      vi.mocked(getCaretPosition).mockReturnValue({
+        position: 5,
+        newlineCount: 0,
+      })
 
       // First, show autocomplete to ensure it's visible
       manager.setCallbacks(mockCallbacks)
