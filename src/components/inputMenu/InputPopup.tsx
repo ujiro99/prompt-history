@@ -187,10 +187,11 @@ export function InputMenu(props: Props): React.ReactElement {
   const openEditDialogNew = async () => {
     const data = await serviceFacade.prepareSaveDialogData()
     setSaveDialogData({
-      name: data.initialName ?? "",
-      content: data.initialContent,
+      name: data.name ?? "",
+      content: data.content ?? "",
       saveMode: data.isOverwriteAvailable ? SaveMode.Overwrite : SaveMode.New,
       isPinned: true,
+      variables: data.variables ?? [],
     })
     setEditId("")
   }

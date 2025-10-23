@@ -356,11 +356,11 @@ export class PromptServiceFacade {
   /**
    * Prepare data for save dialog
    */
-  async prepareSaveDialogData(): Promise<{
-    initialContent: string
-    isOverwriteAvailable: boolean
-    initialName?: string
-  }> {
+  async prepareSaveDialogData(): Promise<
+    Partial<SaveDialogData> & {
+      isOverwriteAvailable: boolean
+    }
+  > {
     this.ensureInitialized()
     return await this.storageHelper.prepareSaveDialogData(this.aiService)
   }

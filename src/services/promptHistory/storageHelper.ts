@@ -5,6 +5,7 @@ import type { ImportResult } from "../importExport/types"
 import { SessionManager } from "./sessionManager"
 import {
   parseVariables,
+  mergeVariableConfigs,
   extractPromptTemplate,
 } from "@/utils/variables/variableParser"
 
@@ -366,28 +367,30 @@ export class StorageHelper {
   /**
    * Prepare data for save dialog
    */
-  async prepareSaveDialogData(aiService: AIServiceInterface | null): Promise<{
-    initialContent: string
-    isOverwriteAvailable: boolean
-    initialName?: string
-  }> {
-    const content = aiService?.extractPromptContent()?.trim() || ""
+  async prepareSaveDialogData(aiService: AIServiceInterface | null): Promise<
+    Partial<SaveDialogData> & {
+      isOverwriteAvailable: boolean
+    }
+  > {
     const session = await this.sessionManager.getCurrentSession()
-    console.log("Preparing save dialog data. Active session:", session)
-    const isOverwriteAvailable = Boolean(session?.activePromptId)
-
-    let initialName: string | undefined
+    const content = aiService?.extractPromptContent()?.trim() || ""
+    let prompt: Partial<Prompt> | null = null
     if (session?.activePromptId) {
-      const activePrompt = await this.storage.getPrompt(session.activePromptId)
-      initialName = activePrompt?.name
-    } else {
-      initialName = this.generatePromptName(content)
+      prompt = await this.storage.getPrompt(session.activePromptId)
+      if (prompt) prompt.content = content // Update content to current
+    }
+
+    if (!prompt) {
+      prompt = {
+        content: content,
+        name: this.generatePromptName(content),
+        variables: mergeVariableConfigs(content),
+      }
     }
 
     return {
-      initialContent: content,
-      isOverwriteAvailable,
-      initialName,
+      ...prompt,
+      isOverwriteAvailable: Boolean(session?.activePromptId),
     }
   }
 

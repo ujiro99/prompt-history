@@ -696,9 +696,9 @@ Different content.
       const result = await storageHelper.prepareSaveDialogData(mockAIService)
 
       expect(result).toEqual({
-        initialContent: content,
+        ...mockPrompt,
         isOverwriteAvailable: true,
-        initialName: "Active Prompt",
+        name: "Active Prompt",
       })
     })
 
@@ -711,9 +711,10 @@ Different content.
       const result = await storageHelper.prepareSaveDialogData(mockAIService)
 
       expect(result).toEqual({
-        initialContent: content,
+        content: content,
+        name: content, // Auto-generated name
         isOverwriteAvailable: false,
-        initialName: content, // Auto-generated name
+        variables: [],
       })
     })
 
@@ -721,9 +722,10 @@ Different content.
       const result = await storageHelper.prepareSaveDialogData(null)
 
       expect(result).toEqual({
-        initialContent: "",
+        content: "",
+        name: "",
         isOverwriteAvailable: false,
-        initialName: "",
+        variables: [],
       })
     })
   })
