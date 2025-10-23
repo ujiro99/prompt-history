@@ -39,10 +39,47 @@ Line 3
 """`)
   })
 
-  it("should handle value with special characters", () => {
+  it("should escape double quotes in single-line value", () => {
     const value = 'Hello "World"'
     const result = formatValue(value)
-    expect(result).toBe('"Hello "World""')
+    expect(result).toBe('"Hello \\"World\\""')
+  })
+
+  it("should escape backslashes in single-line value", () => {
+    const value = 'C:\\Users\\test'
+    const result = formatValue(value)
+    expect(result).toBe('"C:\\\\Users\\\\test"')
+  })
+
+  it("should escape both backslashes and double quotes", () => {
+    const value = 'Path: "C:\\Users\\test"'
+    const result = formatValue(value)
+    expect(result).toBe('"Path: \\"C:\\\\Users\\\\test\\""')
+  })
+
+  it("should handle multiple double quotes", () => {
+    const value = 'He said "Hello" and "Goodbye"'
+    const result = formatValue(value)
+    expect(result).toBe('"He said \\"Hello\\" and \\"Goodbye\\""')
+  })
+
+  it("should preserve literal escape sequences", () => {
+    const value = 'Line 1\\nLine 2'
+    const result = formatValue(value)
+    expect(result).toBe('"Line 1\\\\nLine 2"')
+  })
+
+  it("should escape triple quotes in multi-line value", () => {
+    const value = 'Line 1\nTriple quotes: """\nLine 3'
+    const result = formatValue(value)
+    // When triple quotes are found in multi-line value, escape them
+    expect(result).toBe('"""\nLine 1\nTriple quotes: \\"\\"\\"\nLine 3\n"""')
+  })
+
+  it("should handle backslashes in multi-line value", () => {
+    const value = 'Line 1\nC:\\Users\\test\nLine 3'
+    const result = formatValue(value)
+    expect(result).toBe('"""\nLine 1\nC:\\Users\\test\nLine 3\n"""')
   })
 })
 

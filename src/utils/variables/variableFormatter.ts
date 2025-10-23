@@ -2,6 +2,28 @@ import type { VariableValues } from "@/types/prompt"
 import { VARIABLE_SECTION_HEADER } from "./variableParser"
 
 /**
+ * Escape special characters in single-line values
+ * @param value - Value to escape
+ * @returns Escaped value
+ */
+function escapeSingleLineValue(value: string): string {
+  // Order is important: escape backslashes first, then double quotes
+  return value
+    .replace(/\\/g, "\\\\")  // Escape backslashes
+    .replace(/"/g, '\\"')     // Escape double quotes
+}
+
+/**
+ * Escape triple quotes in multi-line values
+ * @param value - Value to escape
+ * @returns Escaped value
+ */
+function escapeMultiLineValue(value: string): string {
+  // Escape triple quotes to prevent breaking the triple-quote syntax
+  return value.replace(/"""/g, '\\"\\"\\"')
+}
+
+/**
  * Format a value with appropriate quotes
  * - Single-line values use double quotes: "value"
  * - Multi-line values use triple quotes: """value"""
@@ -12,10 +34,12 @@ export function formatValue(value: string): string {
   const hasNewline = value.includes("\n")
 
   if (hasNewline) {
-    return `"""\n${value}\n"""`
+    const escaped = escapeMultiLineValue(value)
+    return `"""\n${escaped}\n"""`
   }
 
-  return `"${value}"`
+  const escaped = escapeSingleLineValue(value)
+  return `"${escaped}"`
 }
 
 /**
