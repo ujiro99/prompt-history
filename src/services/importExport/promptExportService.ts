@@ -1,6 +1,6 @@
 import Papa from "papaparse"
 import { PromptServiceFacade } from "@/services/promptServiceFacade"
-import type { ExportOptions } from "./types"
+import type { ExportOptions, PromptCSVRow } from "./types"
 import type { Prompt } from "@/types/prompt"
 
 /**
@@ -47,8 +47,8 @@ export class PromptExportService {
    * Convert prompts to CSV format using Papa Parse
    */
   private convertToCSV(prompts: Prompt[]): string {
-    // Transform prompts to plain objects with proper field formatting (excluding id)
-    const csvData = prompts.map((prompt) => ({
+    // Transform prompts to CSV row objects with proper field formatting (excluding id)
+    const csvData: PromptCSVRow[] = prompts.map((prompt) => ({
       name: prompt.name,
       content: prompt.content,
       executionCount: prompt.executionCount,
