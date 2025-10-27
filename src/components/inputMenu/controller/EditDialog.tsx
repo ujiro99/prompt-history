@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react"
-import { ChevronDown } from "lucide-react"
+import { ChevronDown, HelpCircle } from "lucide-react"
 import { SaveMode } from "@/types/prompt"
 import type { SaveDialogData, VariableConfig } from "@/types/prompt"
 import { mergeVariableConfigs } from "@/utils/variables/variableParser"
 import { VariableConfigField } from "./VariableConfigField"
+import { VariableExpansionInfoDialog } from "./VariableExpansionInfoDialog"
 import {
   Dialog,
   DialogTitle,
@@ -62,6 +63,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
     initialVariables || [],
   )
   const [isLoading, setIsLoading] = useState(false)
+  const [isInfoDialogOpen, setIsInfoDialogOpen] = useState(false)
   const isEdit = displayMode === SaveMode.Overwrite
   const isCopy = displayMode === SaveMode.Copy
   const { container } = useContainer()
@@ -161,143 +163,162 @@ export const EditDialog: React.FC<EditDialogProps> = ({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        container={container}
-        className="w-xl sm:max-w-xl max-h-9/10"
-        onKeyDown={handleKeyDown}
-        onKeyPress={(e) => e.stopPropagation()} // For chatgpt
-        onKeyUp={(e) => e.stopPropagation()}
-        onWheel={(e) => e.stopPropagation()}
-        onTouchMove={(e) => e.stopPropagation()}
-      >
-        <DialogHeader>
-          <DialogTitle>
-            {isEdit
-              ? i18n.t("dialogs.edit.title")
-              : isCopy
-                ? i18n.t("dialogs.copy.title")
-                : i18n.t("dialogs.save.title")}
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="space-y-4">
-          {/* Prompt name input */}
-          <div className="space-y-2">
-            <label
-              htmlFor="prompt-name"
-              className="text-sm font-semibold text-foreground"
-            >
-              {i18n.t("common.name")}
-            </label>
-            <p className="text-xs text-muted-foreground">
-              {i18n.t("common.nameDescription")}
-            </p>
-            <Input
-              id="prompt-name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder={i18n.t("placeholders.enterPromptName")}
-              disabled={isLoading}
-              autoFocus
-            />
-          </div>
-
-          {/* Prompt content input */}
-          <div className="space-y-2">
-            <label
-              htmlFor="prompt-content"
-              className="text-sm font-semibold text-foreground"
-            >
-              {i18n.t("common.prompt")}
-            </label>
-            <p className="text-xs text-muted-foreground">
-              {i18n.t("common.promptDescription")}
-            </p>
-            <Textarea
-              id="prompt-content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder={i18n.t("placeholders.enterPromptContent")}
-              disabled={isLoading}
-              className="max-h-60"
-              rows={6}
-            />
-          </div>
-
-          {/* Variable configuration section */}
-          {variables.length > 0 && (
-            <div className="space-y-2">
-              <div>
-                <label className="text-sm font-semibold text-foreground">
-                  {i18n.t("dialogs.edit.variableSettings")}
-                </label>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {i18n.t("dialogs.edit.variableSettingsDescription")}
-                </p>
-              </div>
-              <ScrollAreaWithGradient
-                className="max-h-60 border-t-1"
-                gradientHeight={25}
-              >
-                {variables.map((variable, index) => (
-                  <VariableConfigField
-                    key={variable.name}
-                    variable={variable}
-                    initialVariable={initialVariables?.[index]}
-                    onChange={(config) => handleVariableChange(index, config)}
-                  />
-                ))}
-              </ScrollAreaWithGradient>
-            </div>
-          )}
-        </div>
-
-        <DialogFooter className="mt-3">
-          <Button
-            variant="secondary"
-            onClick={handleCancel}
-            disabled={isLoading}
-          >
-            {i18n.t("common.cancel")}
-          </Button>
-          <ButtonGroup>
-            <Button
-              onClick={() =>
-                handleSave(
-                  isEdit
-                    ? SaveMode.Overwrite
-                    : isCopy
-                      ? SaveMode.Copy
-                      : SaveMode.New,
-                )
-              }
-              disabled={isLoading || !name.trim() || !content.trim()}
-            >
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent
+          container={container}
+          className="w-xl sm:max-w-xl max-h-9/10"
+          onKeyDown={handleKeyDown}
+          onKeyPress={(e) => e.stopPropagation()} // For chatgpt
+          onKeyUp={(e) => e.stopPropagation()}
+          onWheel={(e) => e.stopPropagation()}
+          onTouchMove={(e) => e.stopPropagation()}
+        >
+          <DialogHeader>
+            <DialogTitle>
               {isEdit
-                ? isLoading
-                  ? i18n.t("status.updating")
-                  : i18n.t("common.update")
+                ? i18n.t("dialogs.edit.title")
                 : isCopy
-                  ? isLoading
-                    ? i18n.t("status.saving")
-                    : i18n.t("buttons.saveAsCopy")
-                  : isLoading
-                    ? i18n.t("status.saving")
-                    : i18n.t("common.save")}
-            </Button>
-            {isEdit && !isCopy && (
-              <SaveAsNew
-                disabled={isLoading || !name.trim() || !content.trim()}
-                onSaveAsNew={() => handleSave(SaveMode.New)}
-                className="w-6"
+                  ? i18n.t("dialogs.copy.title")
+                  : i18n.t("dialogs.save.title")}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {/* Prompt name input */}
+            <div className="space-y-2">
+              <label
+                htmlFor="prompt-name"
+                className="text-sm font-semibold text-foreground"
+              >
+                {i18n.t("common.name")}
+              </label>
+              <p className="text-xs text-muted-foreground">
+                {i18n.t("common.nameDescription")}
+              </p>
+              <Input
+                id="prompt-name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder={i18n.t("placeholders.enterPromptName")}
+                disabled={isLoading}
+                autoFocus
               />
+            </div>
+
+            {/* Prompt content input */}
+            <div className="space-y-2">
+              <label
+                htmlFor="prompt-content"
+                className="text-sm font-semibold text-foreground"
+              >
+                {i18n.t("common.prompt")}
+              </label>
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-xs text-muted-foreground">
+                  {i18n.t("common.promptDescription")}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setIsInfoDialogOpen(true)}
+                  className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors whitespace-nowrap cursor-pointer"
+                  aria-label={i18n.t("dialogs.edit.variableExpansionInfo.link")}
+                >
+                  <HelpCircle className="size-3.5" />
+                  <span>
+                    {i18n.t("dialogs.edit.variableExpansionInfo.link")}
+                  </span>
+                </button>
+              </div>
+              <Textarea
+                id="prompt-content"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder={i18n.t("placeholders.enterPromptContent")}
+                disabled={isLoading}
+                className="max-h-60"
+                rows={6}
+              />
+            </div>
+
+            {/* Variable configuration section */}
+            {variables.length > 0 && (
+              <div className="space-y-2">
+                <div>
+                  <label className="text-sm font-semibold text-foreground">
+                    {i18n.t("dialogs.edit.variableSettings")}
+                  </label>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {i18n.t("dialogs.edit.variableSettingsDescription")}
+                  </p>
+                </div>
+                <ScrollAreaWithGradient
+                  className="max-h-60 border-t-1"
+                  gradientHeight={25}
+                >
+                  {variables.map((variable, index) => (
+                    <VariableConfigField
+                      key={variable.name}
+                      variable={variable}
+                      initialVariable={initialVariables?.[index]}
+                      onChange={(config) => handleVariableChange(index, config)}
+                    />
+                  ))}
+                </ScrollAreaWithGradient>
+              </div>
             )}
-          </ButtonGroup>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          </div>
+
+          <DialogFooter className="mt-3">
+            <Button
+              variant="secondary"
+              onClick={handleCancel}
+              disabled={isLoading}
+            >
+              {i18n.t("common.cancel")}
+            </Button>
+            <ButtonGroup>
+              <Button
+                onClick={() =>
+                  handleSave(
+                    isEdit
+                      ? SaveMode.Overwrite
+                      : isCopy
+                        ? SaveMode.Copy
+                        : SaveMode.New,
+                  )
+                }
+                disabled={isLoading || !name.trim() || !content.trim()}
+              >
+                {isEdit
+                  ? isLoading
+                    ? i18n.t("status.updating")
+                    : i18n.t("common.update")
+                  : isCopy
+                    ? isLoading
+                      ? i18n.t("status.saving")
+                      : i18n.t("buttons.saveAsCopy")
+                    : isLoading
+                      ? i18n.t("status.saving")
+                      : i18n.t("common.save")}
+              </Button>
+              {isEdit && !isCopy && (
+                <SaveAsNew
+                  disabled={isLoading || !name.trim() || !content.trim()}
+                  onSaveAsNew={() => handleSave(SaveMode.New)}
+                  className="w-6"
+                />
+              )}
+            </ButtonGroup>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <VariableExpansionInfoDialog
+        open={isInfoDialogOpen}
+        onOpenChange={setIsInfoDialogOpen}
+      />
+    </>
   )
 }
 

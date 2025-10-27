@@ -102,6 +102,8 @@ The extension uses a simplified, configuration-driven architecture for supportin
 **Technology Stack**:
 
 - **Internationalization**: @wxt-dev/i18n for multi-language support
+  - Translation files are stored in `src/locales/` as YAML files (en.yml, ja.yml)
+  - YAML files are automatically converted to JSON format during build
 - **Data Persistence**: WXT Storage API for cross-browser data storage
 - **Analytics**: @wxt-dev/analytics for user behavior analysis
 - **Testing**:
@@ -204,6 +206,9 @@ The `pages/` directory contains a separate Next.js project for the Prompt Histor
 
 - `wxt.config.ts` - WXT configuration with React module
 - `src/types/prompt.ts` - Core type definitions
+- `src/locales/` - Internationalization (i18n) translation files
+  - `en.yml` - English translations
+  - `ja.yml` - Japanese translations
 - `vitest.config.ts` - Test configuration
 - `eslint.config.mjs` - Linting configuration
 

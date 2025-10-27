@@ -102,6 +102,8 @@
 **技術スタック**:
 
 - **多言語化**: @wxt-dev/i18n による多言語サポート
+  - 翻訳ファイルは `src/locales/` に YAML ファイル形式で保存 (en.yml, ja.yml)
+  - YAML ファイルはビルド時に自動的に JSON 形式に変換される
 - **データ永続化**: クロスブラウザデータストレージ用のWXT Storage API
 - **分析**: ユーザー行動分析用の@wxt-dev/analytics
 - **テスト**:
@@ -204,6 +206,9 @@
 
 - `wxt.config.ts` - Reactモジュール付きWXT設定
 - `src/types/prompt.ts` - コア型定義
+- `src/locales/` - 国際化（i18n）翻訳ファイル
+  - `en.yml` - 英語翻訳
+  - `ja.yml` - 日本語翻訳
 - `vitest.config.ts` - テスト設定
 - `eslint.config.mjs` - リント設定
 
