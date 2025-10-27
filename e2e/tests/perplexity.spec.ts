@@ -54,6 +54,17 @@ test.describe("Perplexity Extension Tests", () => {
     const autocompletePopup = await perplexityPage.getAutocompletePopup()
     await autocompletePopup.waitForDisplay()
 
+    // Close google modal if present (e.g. sign-in prompt)
+    const frame = page
+      .locator("#credential_picker_container iframe")
+      .contentFrame()
+    if (frame) {
+      const closeButton = frame.locator("#close")
+      if (await closeButton.isVisible()) {
+        await closeButton.click()
+      }
+    }
+
     // Navigate down
     await autocompletePopup.pressCtrlN() // 1
     await autocompletePopup.pressCtrlN() // 2
@@ -92,17 +103,6 @@ test.describe("Perplexity Extension Tests", () => {
     inputValue = await promptInput.textContent()
     expect(inputValue?.trim()).toBe("")
 
-    // Close google modal if present (e.g. sign-in prompt)
-    const frame = page
-      .locator("#credential_picker_container iframe")
-      .contentFrame()
-    if (frame) {
-      const closeButton = frame.locator("#close")
-      if (await closeButton.isVisible()) {
-        await closeButton.click()
-      }
-    }
-
     // Find trigger element and hover/click
     const inputPopup = await perplexityPage.getInputPopup()
     const triggerElement = await inputPopup.getHistoryTrigger()
@@ -121,12 +121,15 @@ test.describe("Perplexity Extension Tests", () => {
     // Select the first item
     await inputPopup.selectHistoryItem(0)
 
+    // The sort order is `Recent usage & execution count score`.
+    // If historyItems appear above the menu, the order will be reversed, and the oldest ID 2 will be selected.
+
     // 9. Check the value of prompt input field
     await waitHelpers.waitForCondition(async () => {
       const val = await promptInput.textContent()
-      return val === "Mock prompt 1 for testing "
+      return val === "Mock prompt 2 for testing "
     })
     inputValue = await promptInput.textContent()
-    expect(inputValue).toBe("Mock prompt 1 for testing ") // Most recent history should be input
+    expect(inputValue).toBe("Mock prompt 2 for testing ") // Most recent history should be input
   })
 })
