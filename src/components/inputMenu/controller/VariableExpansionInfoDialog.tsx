@@ -36,6 +36,10 @@ export const VariableExpansionInfoDialog: React.FC<
     "https://ujiro99.github.io/prompt-history/variable-expansion-insert.mp4"
 
   useEffect(() => {
+    if (!open) {
+      return
+    }
+
     let objectUrl: string | null = null
 
     const loadVideo = async () => {
@@ -58,10 +62,12 @@ export const VariableExpansionInfoDialog: React.FC<
     // Cleanup: revoke the blob URL when component unmounts
     return () => {
       if (objectUrl) {
+        setIsVideoLoaded(false)
+        setBlobUrl(null)
         URL.revokeObjectURL(objectUrl)
       }
     }
-  }, [])
+  }, [open])
 
   const handleVideoLoad = () => {
     setIsVideoLoaded(true)
