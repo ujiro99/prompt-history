@@ -36,6 +36,7 @@ export default defineConfig({
           args: [
             `--disable-extensions-except=${path.join(__dirname, ".output/chrome-mv3-e2e")}`,
             `--load-extension=${path.join(__dirname, ".output/chrome-mv3-e2e")}`,
+            `--ip-address-space-overrides=127.0.0.1:3000=public`,
           ],
         },
       },

@@ -19,6 +19,7 @@ export const test = base.extend<{
       args: [
         `--disable-extensions-except=${pathToExtension}`,
         `--load-extension=${pathToExtension}`,
+        `--ip-address-space-overrides=127.0.0.1:3000=public`,
       ],
     })
     await use(context)
