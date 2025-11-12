@@ -91,7 +91,7 @@ export function InputMenu(props: Props): React.ReactElement {
   const { container } = useContainer()
   const {
     variableInputData,
-    executePrompt,
+    insertPrompt,
     handleVariableSubmit,
     clearVariableInputData,
   } = usePromptExecution({ nodeAtCaret })
@@ -149,10 +149,10 @@ export function InputMenu(props: Props): React.ReactElement {
       }
       setHoveredItem(null)
 
-      // Execute prompt (with variable check)
-      await executePrompt(promptId)
+      // Insert prompt (with variable check)
+      await insertPrompt(promptId)
     },
-    [executePrompt],
+    [insertPrompt],
   )
 
   /**

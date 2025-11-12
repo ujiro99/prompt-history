@@ -35,8 +35,8 @@ export interface UsePromptExecutionOptions {
 export interface UsePromptExecutionReturn {
   /** Current variable input data */
   variableInputData: VariableInputData | null
-  /** Execute a prompt with optional match data */
-  executePrompt: (promptId: string, match?: AutoCompleteMatch) => Promise<void>
+  /** Insert a prompt into text input with optional match data */
+  insertPrompt: (promptId: string, match?: AutoCompleteMatch) => Promise<void>
   /** Handle variable submission */
   handleVariableSubmit: (values: VariableValues) => Promise<void>
   /** Clear variable input data */
@@ -61,9 +61,9 @@ export const usePromptExecution = (
   const variableExpansionEnabled = settings?.variableExpansionEnabled ?? true
 
   /**
-   * Execute a prompt, checking for variables first
+   * Insert a prompt into text input, checking for variables first
    */
-  const executePrompt = useCallback(
+  const insertPrompt = useCallback(
     async (promptId: string, match?: AutoCompleteMatch) => {
       try {
         onExecuteStart?.()
@@ -86,14 +86,14 @@ export const usePromptExecution = (
             nodeAtCaret,
           })
         } else {
-          // Execute directly if no variables or variable expansion is disabled
-          await serviceFacade.executePrompt(promptId, nodeAtCaret ?? null, {
+          // Insert directly if no variables or variable expansion is disabled
+          await serviceFacade.insertPrompt(promptId, nodeAtCaret ?? null, {
             match,
           })
           onExecuteComplete?.()
         }
       } catch (error) {
-        console.error("Execute failed:", error)
+        console.error("Insert failed:", error)
       }
     },
     [nodeAtCaret, onExecuteStart, onExecuteComplete, variableExpansionEnabled],
@@ -114,8 +114,8 @@ export const usePromptExecution = (
         } = variableInputData
 
         // Execute the prompt with variable values
-        // Variable expansion and match creation are handled by executeManager
-        await serviceFacade.executePrompt(
+        // Variable expansion and match creation are handled by insertManager
+        await serviceFacade.insertPrompt(
           promptId,
           savedNodeAtCaret ?? nodeAtCaret ?? null,
           {
@@ -143,7 +143,7 @@ export const usePromptExecution = (
 
   return {
     variableInputData,
-    executePrompt,
+    insertPrompt,
     handleVariableSubmit,
     clearVariableInputData,
   }

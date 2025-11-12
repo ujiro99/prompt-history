@@ -17,9 +17,9 @@ export class ExecuteManager {
   ) {}
 
   /**
-   * Execute prompt
+   * Insert prompt into text input
    */
-  async executePrompt(
+  async insertPrompt(
     promptId: string,
     aiService: AIServiceInterface,
     nodeAtCaret: Node | null,
@@ -91,13 +91,13 @@ export class ExecuteManager {
 
       onSuccess?.(updatedPrompt)
       try {
-        await analytics.track("execute-prompt")
+        await analytics.track("insert-prompt")
       } catch (error) {
         // Ignore analytics errors to prevent them from affecting core functionality
         console.warn("Analytics tracking failed:", error)
       }
     } catch (error) {
-      const err = error instanceof Error ? error : new Error("Execute failed")
+      const err = error instanceof Error ? error : new Error("Insert failed")
       onError?.(err)
     }
   }

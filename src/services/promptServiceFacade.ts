@@ -317,9 +317,9 @@ export class PromptServiceFacade {
   }
 
   /**
-   * Execute prompt
+   * Insert prompt into text input
    */
-  async executePrompt(
+  async insertPrompt(
     promptId: string,
     nodeAtCaret: Node | null,
     options?: {
@@ -330,11 +330,11 @@ export class PromptServiceFacade {
     this.ensureInitialized()
 
     if (!this.aiService) {
-      this.handleError("EXECUTE_FAILED", "AI service not available", null)
+      this.handleError("INSERT_FAILED", "AI service not available", null)
       return
     }
 
-    await this.executeManager.executePrompt(
+    await this.executeManager.insertPrompt(
       promptId,
       this.aiService,
       nodeAtCaret,
@@ -343,12 +343,12 @@ export class PromptServiceFacade {
         this.notify({
           id: uuid(),
           type: "success",
-          message: `Prompt "${prompt.name}" executed`,
+          message: `Prompt "${prompt.name}" inserted`,
           duration: 2000,
         })
       },
       (error) => {
-        this.handleError("EXECUTE_FAILED", "Failed to execute prompt", error)
+        this.handleError("INSERT_FAILED", "Failed to insert prompt", error)
       },
     )
   }

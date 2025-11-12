@@ -13,7 +13,7 @@ const { mockServiceFacade } = vi.hoisted(() => ({
     getPopupPlacement: vi
       .fn()
       .mockReturnValue({ sideOffset: 10, alignOffset: 0 }),
-    executePrompt: vi.fn(),
+    insertPrompt: vi.fn(),
     deletePrompt: vi.fn(),
     pinPrompt: vi.fn(),
     unpinPrompt: vi.fn(),
@@ -536,8 +536,8 @@ describe("InputPopup Integration Tests", () => {
         ).not.toBeInTheDocument()
       })
 
-      // Verify executePrompt was called
-      expect(mockServiceFacade.executePrompt).toHaveBeenCalled()
+      // Verify insertPrompt was called
+      expect(mockServiceFacade.insertPrompt).toHaveBeenCalled()
     })
 
     it("should execute prompt directly when all variables are excluded", async () => {
@@ -601,8 +601,8 @@ describe("InputPopup Integration Tests", () => {
         ).not.toBeInTheDocument()
       })
 
-      // Verify executePrompt was called
-      expect(mockServiceFacade.executePrompt).toHaveBeenCalled()
+      // Verify insertPrompt was called
+      expect(mockServiceFacade.insertPrompt).toHaveBeenCalled()
     })
 
     it("should submit variable values and execute prompt", async () => {
@@ -666,9 +666,9 @@ describe("InputPopup Integration Tests", () => {
       const executeButton = screen.getByText("common.execute")
       fireEvent.click(executeButton)
 
-      // Verify executePrompt was called with variable values
+      // Verify insertPrompt was called with variable values
       await waitFor(() => {
-        expect(mockServiceFacade.executePrompt).toHaveBeenCalledWith(
+        expect(mockServiceFacade.insertPrompt).toHaveBeenCalledWith(
           "var-prompt-2",
           null,
           expect.objectContaining({
@@ -748,8 +748,8 @@ describe("InputPopup Integration Tests", () => {
         ).not.toBeInTheDocument()
       })
 
-      // executePrompt should NOT have been called
-      expect(mockServiceFacade.executePrompt).not.toHaveBeenCalled()
+      // insertPrompt should NOT have been called
+      expect(mockServiceFacade.insertPrompt).not.toHaveBeenCalled()
     })
   })
 })

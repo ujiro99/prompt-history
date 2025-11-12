@@ -22,13 +22,13 @@ export const useAutoComplete = ({ prompts }: UseAutoCompleteOptions) => {
 
   const {
     variableInputData,
-    executePrompt,
+    insertPrompt,
     handleVariableSubmit,
     clearVariableInputData,
   } = usePromptExecution({
     nodeAtCaret,
     onExecuteComplete: () => {
-      // Refocus the text input after executing the prompt
+      // Refocus the text input after inserting the prompt
       const textInput = serviceFacade.getTextInput() as HTMLElement
       if (textInput) {
         textInput.focus()
@@ -55,14 +55,14 @@ export const useAutoComplete = ({ prompts }: UseAutoCompleteOptions) => {
         setIsVisible(false)
       },
       onExecute: async (match: AutoCompleteMatch) => {
-        // Execute prompt (with variable check)
-        await executePrompt(match.id, match)
+        // Insert prompt (with variable check)
+        await insertPrompt(match.id, match)
       },
       onSelectChange: (index: number) => {
         setSelectedIndex(index)
       },
     }),
-    [executePrompt],
+    [insertPrompt],
   )
 
   useEffect(() => {
