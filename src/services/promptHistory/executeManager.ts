@@ -9,6 +9,20 @@ import { analytics } from "#imports"
 
 /**
  * Class responsible for prompt execution and UI support processing (Storage read operations)
+ *
+ * ## Methods Overview
+ *
+ * ### insertPrompt vs setPrompt
+ *
+ * | Feature             | insertPrompt             | setPrompt                |
+ * |---------------------|--------------------------|--------------------------|
+ * | Input               | `promptId: string`       | `content: string`        |
+ * | Storage reference   | ✓ Required               | ✗ Not required           |
+ * | Variable expansion  | ✓ Supported              | ✓ Supported              |
+ * | Session management  | ✓ Tracked                | ✗ Not tracked            |
+ * | Execution count     | ✓ Incremented            | ✗ Not incremented        |
+ * | Analytics           | ✓ "insert-prompt" event  | ✓ "set-prompt" event     |
+ * | Use case            | Insert saved prompts     | Set arbitrary text       |
  */
 export class ExecuteManager {
   constructor(
@@ -98,6 +112,73 @@ export class ExecuteManager {
       }
     } catch (error) {
       const err = error instanceof Error ? error : new Error("Insert failed")
+      onError?.(err)
+    }
+  }
+
+  /**
+   * Set prompt text directly into text input (without tracking)
+   */
+  async setPrompt(
+    content: string,
+    aiService: AIServiceInterface,
+    nodeAtCaret: Node | null,
+    options?: {
+      variableValues?: VariableValues
+    },
+    onSuccess?: () => void,
+    onError?: (error: Error) => void,
+  ): Promise<void> {
+    try {
+      let finalContent = content
+      if (
+        options?.variableValues &&
+        Object.values(options.variableValues).some((v) => v !== "")
+      ) {
+        // Expand prompt content with variable values if provided
+        finalContent = expandPrompt(content, options.variableValues)
+      } else {
+        // Add a space to prevent the autocomplete message from reappearing
+        finalContent = content + " "
+      }
+
+      // Inject text into AI service
+      const textInput = aiService.getTextInput()
+      if (textInput) {
+        // Get current content to calculate match range
+        const currentContent = aiService.extractPromptContent() || ""
+
+        // Create match object to replace entire content
+        const match: AutoCompleteMatch = {
+          id: "",
+          name: "",
+          content: finalContent,
+          isPinned: false,
+          matchStart: 0,
+          matchEnd: currentContent.length, // Replace entire content
+          newlineCount: 0,
+          searchTerm: currentContent,
+        }
+
+        // Execute text replacement
+        await replaceTextAtCaret(
+          textInput,
+          match,
+          nodeAtCaret,
+          aiService.legacyMode,
+        )
+      }
+
+      onSuccess?.()
+      try {
+        await analytics.track("set-prompt")
+      } catch (error) {
+        // Ignore analytics errors to prevent them from affecting core functionality
+        console.warn("Analytics tracking failed:", error)
+      }
+    } catch (error) {
+      const err =
+        error instanceof Error ? error : new Error("Set prompt failed")
       onError?.(err)
     }
   }

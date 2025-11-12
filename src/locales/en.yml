@@ -12,12 +12,14 @@ common:
   edit: Edit
   copy: Copy
   ok: OK
+  clear: Clear
   name: Name
   nameDescription: The name that will be searched in autocomplete
   update: Update
   prompt: Prompt
   promptDescription: The content that will be entered into the chat
   execute: Execute
+  input: Input
   variableType: Variable Type
   defaultValue: Default Value
   options: Options
@@ -74,6 +76,14 @@ dialogs:
   variables:
     title: Variable Input
     preview: Preview
+  promptImprove:
+    title: Improve Prompt
+    message: Improve this prompt
+    promptTitle: Current Prompt
+    improveButton: Improve with AI
+    improving: Improving...
+    previewTitle: Improved Prompt
+    error: Failed to improve prompt
 
 # Tabs
 tabs:

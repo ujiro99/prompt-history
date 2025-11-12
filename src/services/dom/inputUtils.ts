@@ -158,6 +158,8 @@ export const replaceTextAtCaret = async (
     // For contenteditable elements, clear content first then input new content.
     const htmlElement = element as HTMLElement
 
+    console.log("replaceTextAtCaret:", { match, nodeAtCaret })
+
     // Delete the matched text.
     await deleteTextAtCaret(element, match, nodeAtCaret)
 

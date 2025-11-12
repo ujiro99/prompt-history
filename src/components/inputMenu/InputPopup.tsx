@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useMemo } from "react"
-import { History, Star, Save } from "lucide-react"
+import { History, Star, Sparkles } from "lucide-react"
 import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/popover"
 import {
   Menubar,
@@ -13,6 +13,7 @@ import { usePromptExecution } from "@/hooks/usePromptExecution"
 import { PromptPreview } from "./PromptPreview"
 import { RemoveDialog } from "@/components/inputMenu/controller/RemoveDialog"
 import { EditDialog } from "@/components/inputMenu/controller/EditDialog"
+import { PromptImproveDialog } from "@/components/inputMenu/controller/PromptImproveDialog"
 import { VariableInputDialog } from "@/components/inputMenu/controller/VariableInputDialog"
 import { BridgeArea } from "@/components/BridgeArea"
 import { PromptServiceFacade } from "@/services/promptServiceFacade"
@@ -21,7 +22,7 @@ import { MENU, TestIds } from "@/components/const"
 import { PromptList } from "@/components/inputMenu/PromptList"
 import { SettingsMenu } from "./SettingsMenu"
 import { cn, isEmpty } from "@/lib/utils"
-import type { Prompt, SaveDialogData } from "@/types/prompt"
+import type { Prompt, SaveDialogData, ImprovePromptData } from "@/types/prompt"
 import { i18n } from "#imports"
 
 const serviceFacade = PromptServiceFacade.getInstance()
@@ -74,6 +75,8 @@ export function InputMenu(props: Props): React.ReactElement {
   const [saveDialogData, setSaveDialogData] = useState<SaveDialogData | null>(
     null,
   )
+  const [improvePromptData, setImprovePromptData] =
+    useState<ImprovePromptData | null>(null)
   const [historySideFlipped, setHistorySideFlipped] = useState(false)
   const [pinnedSideFlipped, setPinnedSideFlipped] = useState(false)
 
@@ -92,6 +95,7 @@ export function InputMenu(props: Props): React.ReactElement {
   const {
     variableInputData,
     insertPrompt,
+    setPrompt,
     handleVariableSubmit,
     clearVariableInputData,
   } = usePromptExecution({ nodeAtCaret })
@@ -167,6 +171,17 @@ export function InputMenu(props: Props): React.ReactElement {
   }
 
   /**
+   * Input improved prompt process
+   */
+  const handleInputPrompt = async (data: ImprovePromptData) => {
+    try {
+      await setPrompt(data.content)
+    } catch (error) {
+      console.error("Input improved prompt failed:", error)
+    }
+  }
+
+  /**
    * Toggle pin process
    */
   const handleTogglePin = async (promptId: string, isPinned: boolean) => {
@@ -182,18 +197,13 @@ export function InputMenu(props: Props): React.ReactElement {
   }
 
   /**
-   * Open dialog to save new prompt being entered
+   * Open prompt-improve dialog
    */
-  const openEditDialogNew = async () => {
-    const data = await serviceFacade.prepareSaveDialogData()
-    setSaveDialogData({
-      name: data.name ?? "",
-      content: data.content ?? "",
-      saveMode: data.isOverwriteAvailable ? SaveMode.Overwrite : SaveMode.New,
-      isPinned: true,
-      variables: data.variables ?? [],
+  const openImproveDialog = async () => {
+    const content = serviceFacade.extractPromptContent()
+    setImprovePromptData({
+      content: content ?? "",
     })
-    setEditId("")
   }
 
   /**
@@ -344,14 +354,18 @@ export function InputMenu(props: Props): React.ReactElement {
           </MenubarContent>
         </MenubarMenu>
 
-        {/* Save Menu */}
-        <MenubarMenu value={MENU.Save}>
+        {/* Improve Menu */}
+        <MenubarMenu value={MENU.Improve}>
           <MenuTrigger
             disabled={!props.saveEnabled}
-            onClick={openEditDialogNew}
-            data-testid={TestIds.inputPopup.editTrigger}
+            onClick={openImproveDialog}
+            data-testid={TestIds.inputPopup.improveTrigger}
           >
-            <Save size={16} className="stroke-neutral-600" />
+            <Sparkles
+              size={16}
+              strokeWidth={1.75}
+              className="stroke-neutral-600"
+            />
           </MenuTrigger>
         </MenubarMenu>
 
@@ -392,6 +406,16 @@ export function InputMenu(props: Props): React.ReactElement {
       >
         <span className="text-base break-all">{removePrompt?.name}</span>
       </RemoveDialog>
+
+      {/* Prompt Improve Dialog */}
+      {improvePromptData && (
+        <PromptImproveDialog
+          open={improvePromptData !== null}
+          onOpenChange={() => setImprovePromptData(null)}
+          initialData={improvePromptData}
+          onInput={handleInputPrompt}
+        />
+      )}
 
       {/* Variable Input Dialog */}
       {variableInputData && (

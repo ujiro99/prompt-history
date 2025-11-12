@@ -3,6 +3,7 @@ import { PromptServiceFacade } from "@/services/promptServiceFacade"
 import { useSettings } from "@/hooks/useSettings"
 import type { VariableConfig, VariableValues } from "@/types/prompt"
 import type { AutoCompleteMatch } from "@/services/autoComplete/types"
+import { mergeVariableConfigs } from "@/utils/variables/variableParser"
 
 const serviceFacade = PromptServiceFacade.getInstance()
 
@@ -37,6 +38,8 @@ export interface UsePromptExecutionReturn {
   variableInputData: VariableInputData | null
   /** Insert a prompt into text input with optional match data */
   insertPrompt: (promptId: string, match?: AutoCompleteMatch) => Promise<void>
+  /** Set prompt text directly into text input */
+  setPrompt: (content: string) => Promise<void>
   /** Handle variable submission */
   handleVariableSubmit: (values: VariableValues) => Promise<void>
   /** Clear variable input data */
@@ -100,6 +103,46 @@ export const usePromptExecution = (
   )
 
   /**
+   * Set prompt text directly into text input, checking for variables first
+   */
+  const setPrompt = useCallback(
+    async (content: string) => {
+      try {
+        onExecuteStart?.()
+
+        // Check if content has variables and variable expansion is enabled
+        const variableMatches = content.match(/\{\{(\w+)\}\}/g)
+        const hasVariables = variableMatches && variableMatches.length > 0
+
+        if (variableExpansionEnabled && hasVariables) {
+          // Parse variables from content
+          const variables = mergeVariableConfigs(content)
+          const hasInputVariables = variables.some((v) => v.type !== "exclude")
+
+          if (hasInputVariables) {
+            // Show variable input dialog
+            setVariableInputData({
+              promptId: "", // No promptId for raw text
+              variables,
+              content,
+              match: undefined,
+              nodeAtCaret,
+            })
+            return
+          }
+        }
+
+        // Set directly if no variables or variable expansion is disabled
+        await serviceFacade.setPrompt(content, nodeAtCaret ?? null)
+        onExecuteComplete?.()
+      } catch (error) {
+        console.error("Set prompt failed:", error)
+      }
+    },
+    [nodeAtCaret, onExecuteStart, onExecuteComplete, variableExpansionEnabled],
+  )
+
+  /**
    * Handle variable input submission
    */
   const handleVariableSubmit = useCallback(
@@ -109,26 +152,38 @@ export const usePromptExecution = (
       try {
         const {
           promptId,
+          content,
           match,
           nodeAtCaret: savedNodeAtCaret,
         } = variableInputData
 
-        // Execute the prompt with variable values
-        // Variable expansion and match creation are handled by insertManager
-        await serviceFacade.insertPrompt(
-          promptId,
-          savedNodeAtCaret ?? nodeAtCaret ?? null,
-          {
-            match,
-            variableValues: values,
-          },
-        )
+        if (promptId) {
+          // Use insertPrompt for stored prompts
+          // Variable expansion and match creation are handled by insertManager
+          await serviceFacade.insertPrompt(
+            promptId,
+            savedNodeAtCaret ?? nodeAtCaret ?? null,
+            {
+              match,
+              variableValues: values,
+            },
+          )
+        } else {
+          // Use setPrompt for raw text content
+          await serviceFacade.setPrompt(
+            content,
+            savedNodeAtCaret ?? nodeAtCaret ?? null,
+            {
+              variableValues: values,
+            },
+          )
+        }
 
         // Close the variable input dialog
         setVariableInputData(null)
         onExecuteComplete?.()
       } catch (error) {
-        console.error("Variable expansion failed:", error)
+        console.error("Variable submission failed:", error)
       }
     },
     [variableInputData, nodeAtCaret, onExecuteComplete],
@@ -144,6 +199,7 @@ export const usePromptExecution = (
   return {
     variableInputData,
     insertPrompt,
+    setPrompt,
     handleVariableSubmit,
     clearVariableInputData,
   }

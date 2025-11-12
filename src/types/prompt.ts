@@ -127,6 +127,14 @@ export interface SaveDialogData {
 }
 
 /**
+ * Input data for prompt improvement
+ */
+export interface ImprovePromptData {
+  content: string
+  variables?: VariableConfig[]
+}
+
+/**
  * Type of data to be stored in storage
  */
 export interface StorageData {
