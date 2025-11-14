@@ -1,3 +1,5 @@
+import { GenerateContentConfig } from "@google/genai"
+
 /**
  * Type definitions for Gemini AI service
  */
@@ -34,21 +36,19 @@ export interface GeminiConfig {
   model: string
   /** System instruction for the model */
   systemInstruction?: string
-  /** Temperature for generation (0.0 - 1.0) */
-  temperature?: number
-  /** Maximum tokens to generate */
-  maxOutputTokens?: number
+  /** Configuration for content generation */
+  generateContentConfig?: GenerateContentConfig
 }
 
 /**
  * Error types for Gemini API
  */
 export enum GeminiErrorType {
-  API_KEY_MISSING = 'API_KEY_MISSING',
-  NETWORK_ERROR = 'NETWORK_ERROR',
-  API_ERROR = 'API_ERROR',
-  TIMEOUT = 'TIMEOUT',
-  CANCELLED = 'CANCELLED',
+  API_KEY_MISSING = "API_KEY_MISSING",
+  NETWORK_ERROR = "NETWORK_ERROR",
+  API_ERROR = "API_ERROR",
+  TIMEOUT = "TIMEOUT",
+  CANCELLED = "CANCELLED",
 }
 
 /**
@@ -61,6 +61,6 @@ export class GeminiError extends Error {
     public originalError?: unknown,
   ) {
     super(message)
-    this.name = 'GeminiError'
+    this.name = "GeminiError"
   }
 }

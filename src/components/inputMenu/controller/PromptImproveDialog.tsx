@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { Sparkles, Loader2, Trash } from "lucide-react"
 import type { VariableConfig } from "@/types/prompt"
 import { mergeVariableConfigs } from "@/utils/variables/variableParser"
@@ -61,6 +61,13 @@ export const PromptImproveDialog: React.FC<PromptImproveDialogProps> = ({
   // Check if variable expansion is enabled (default: true)
   const variableExpansionEnabled = settings?.variableExpansionEnabled ?? true
 
+  const cancelImprovement = useCallback(() => {
+    if (isImproving && promptImproverRef.current) {
+      promptImproverRef.current.cancel()
+      setIsImproving(false)
+    }
+  }, [isImproving])
+
   // Initialize PromptImprover
   useEffect(() => {
     if (!promptImproverRef.current) {
@@ -91,12 +98,9 @@ export const PromptImproveDialog: React.FC<PromptImproveDialogProps> = ({
       setImprovedContent("")
       setImprovementError(null)
       // Cancel ongoing improvement if any
-      if (isImproving && promptImproverRef.current) {
-        promptImproverRef.current.cancel()
-        setIsImproving(false)
-      }
+      cancelImprovement()
     }
-  }, [open, initialContent, initialVariables, isImproving])
+  }, [open, initialContent, initialVariables, cancelImprovement])
 
   // Parse and merge variables when content changes (only if variable expansion is enabled)
   useEffect(() => {
@@ -108,6 +112,13 @@ export const PromptImproveDialog: React.FC<PromptImproveDialogProps> = ({
       setVariables([])
     }
   }, [content, variableExpansionEnabled])
+
+  useEffect(() => {
+    // cleanup function
+    return () => {
+      cancelImprovement()
+    }
+  }, [cancelImprovement])
 
   /**
    * Improve prompt using Gemini AI
@@ -156,10 +167,7 @@ export const PromptImproveDialog: React.FC<PromptImproveDialogProps> = ({
    * Cancel improvement and close preview
    */
   const handleCancelImprovement = () => {
-    if (isImproving && promptImproverRef.current) {
-      promptImproverRef.current.cancel()
-      setIsImproving(false)
-    }
+    cancelImprovement()
     setImprovedContent("")
     setImprovementError(null)
   }
@@ -266,16 +274,16 @@ export const PromptImproveDialog: React.FC<PromptImproveDialogProps> = ({
                   </label>
 
                   {improvedContent.trim() !== "" && !isImproving && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleClearImproved}
-                    className="text-xs"
-                  >
-                    <Trash className="size-4 stroke-neutral-500" />
-                    {i18n.t("common.clear")}
-                  </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleClearImproved}
+                      className="text-xs"
+                    >
+                      <Trash className="size-4 stroke-neutral-500" />
+                      {i18n.t("common.clear")}
+                    </Button>
                   )}
                 </div>
 

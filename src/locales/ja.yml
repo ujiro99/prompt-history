@@ -176,6 +176,7 @@ settings:
     feature: 機能のON・OFF
     autocompleteTarget: 入力補完の対象
     importExport: インポート・エクスポート
+    cacheManagement: キャッシュ管理
   autoSave: プロンプト自動保存
   autoComplete: 入力補完
   notifications: ステータス通知
@@ -185,6 +186,9 @@ settings:
     pinned: スター付きのみ
   export: プロンプトをエクスポート
   import: プロンプトをインポート
+  refreshImprovePromptCache: プロンプト改善キャッシュを更新
+  cacheRefreshed: キャッシュを更新しました
+  cacheRefreshFailed: キャッシュの更新に失敗しました
 
 # Import Dialog
 importDialog:

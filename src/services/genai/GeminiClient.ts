@@ -12,7 +12,12 @@ import { GeminiError, GeminiErrorType } from "./types"
  */
 const DEFAULT_CONFIG: Partial<GeminiConfig> = {
   model: "gemini-2.5-flash",
-  temperature: 0.7,
+  generateContentConfig: {
+    thinkingConfig: {
+      includeThoughts: true,
+      thinkingBudget: -1,
+    },
+  },
 }
 
 /**
@@ -98,14 +103,12 @@ export class GeminiClient {
         model: mergedConfig.model,
         contents: [prompt],
         config: {
-          temperature: mergedConfig.temperature,
-          maxOutputTokens: mergedConfig.maxOutputTokens,
           systemInstruction: mergedConfig.systemInstruction,
+          ...mergedConfig.generateContentConfig,
         },
       })
 
       for await (const chunk of responseStream) {
-        console.log("Received chunk:", chunk) // debug log
         if (chunk.text) {
           yield { text: chunk.text }
         }

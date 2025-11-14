@@ -176,6 +176,7 @@ settings:
     feature: Features ON/OFF
     autocompleteTarget: Autocomplete target
     importExport: Import/Export
+    cacheManagement: Cache Management
   autoSave: Auto-save prompts
   autoComplete: Auto-complete
   notifications: Status notifications
@@ -185,6 +186,9 @@ settings:
     pinned: Starred only
   export: Export prompts
   import: Import prompts
+  refreshImprovePromptCache: Refresh Improve Prompt Cache
+  cacheRefreshed: Cache refreshed successfully
+  cacheRefreshFailed: Failed to refresh cache
 
 # Import Dialog
 importDialog:

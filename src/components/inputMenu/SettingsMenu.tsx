@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react"
-import { EllipsisVertical, Download, Upload } from "lucide-react"
+import { EllipsisVertical, Download, Upload, RefreshCw } from "lucide-react"
 import {
   MenubarMenu,
   MenubarTrigger,
@@ -20,6 +20,7 @@ import { MENU, TestIds } from "@/components/const"
 import type { AppSettings } from "@/types/prompt"
 import type { ImportResult } from "@/services/importExport/types"
 import { i18n } from "#imports"
+import { StorageService } from "@/services/storage"
 
 type Props = {
   onMouseEnter: () => void
@@ -45,6 +46,7 @@ export function SettingsMenu({ onMouseEnter }: Props): React.ReactElement {
   const { settings, update } = useSettings()
   const { container } = useContainer()
   const [importDialogOpen, setImportDialogOpen] = useState(false)
+  const storageService = StorageService.getInstance()
 
   /**
    * Handle settings change
@@ -96,6 +98,19 @@ export function SettingsMenu({ onMouseEnter }: Props): React.ReactElement {
       `Import completed: ${result.imported} imported, ${result.duplicates} duplicates`,
     )
   }, [])
+
+  /**
+   * Handle refresh improve prompt cache
+   */
+  const handleRefreshImprovePromptCache = useCallback(async () => {
+    try {
+      // Clear the cache to force refresh
+      await storageService.clearImprovePromptCache()
+      console.log("Improve prompt cache cleared for refresh")
+    } catch (error) {
+      console.error("Failed to refresh improve prompt cache:", error)
+    }
+  }, [storageService])
 
   return (
     <MenubarMenu value={MENU.Settings}>
@@ -197,6 +212,17 @@ export function SettingsMenu({ onMouseEnter }: Props): React.ReactElement {
             >
               <Upload size={16} />
               {i18n.t("settings.import")}
+            </MenubarItem>
+
+            <MenubarSeparator />
+
+            {/* Cache Management Group */}
+            <MenubarLabel className="text-xs font-medium text-muted-foreground">
+              {i18n.t("settings.groups.cacheManagement")}
+            </MenubarLabel>
+            <MenubarItem onClick={handleRefreshImprovePromptCache}>
+              <RefreshCw size={16} />
+              {i18n.t("settings.refreshImprovePromptCache")}
             </MenubarItem>
           </>
         )}

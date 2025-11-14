@@ -1,6 +1,7 @@
 import { storage } from "wxt/utils/storage"
 import type { StoredPrompt, Session, AppSettings } from "../../types/prompt"
 import type { AiConfigCacheData } from "./aiConfigCache"
+import type { ImprovePromptCacheData } from "./improvePromptCache"
 
 /**
  * Default settings values
@@ -75,3 +76,16 @@ export const aiConfigCacheStorage =
     version: 1,
     migrations: {},
   })
+
+/**
+ * Improve Prompt Cache storage definition
+ */
+export const improvePromptCacheStorage =
+  storage.defineItem<ImprovePromptCacheData | null>(
+    "local:improvePromptCache",
+    {
+      fallback: null,
+      version: 1,
+      migrations: {},
+    },
+  )

@@ -6,22 +6,23 @@
 import { GeminiClient } from "./GeminiClient"
 import type { ImproveOptions } from "./types"
 import { GeminiError, GeminiErrorType } from "./types"
+import { improvePromptCacheService } from "../storage/improvePromptCache"
 
 /**
- * System prompt for prompt improvement
+ * Default system prompt for prompt improvement (fallback)
  */
-const SYSTEM_INSTRUCTION = `あなたは優れたPrompt Engineerです。ユーザーが入力したプロンプトを分析し、より効果的なプロンプトに改善してください。
+const DEFAULT_INSTRUCTION = `You are an excellent Prompt Engineer. Analyze the user's input prompt and improve it to be more effective.
 
-改善の指針:
-- プロンプトの意図と目的を維持する
-- 必要に応じて以下の改善を適用する：
-  * 曖昧な表現を具体化して明確性を向上
-  * 箇条書きやセクション分けで構造化
-  * 必要な背景情報や制約条件を補完
-- 冗長にならないよう配慮する
-- プロンプトの特性（シンプル/複雑、技術的/一般的など）に応じて最適な改善方法を判断する
+Improvement Guidelines:
+- Maintain the intent and purpose of the prompt
+- Apply the following improvements as needed:
+  * Clarify ambiguous expressions for better clarity
+  * Structure with bullet points or sections
+  * Add necessary background information or constraints
+- Avoid being overly verbose
+- Determine the optimal improvement approach based on the prompt's characteristics (simple/complex, technical/general, etc.)
 
-改善されたプロンプトのみを出力してください。説明や前置きは不要です。`
+Output only the improved prompt. No explanations or preambles are necessary.`
 
 /**
  * Default timeout in milliseconds (30 seconds)
@@ -35,9 +36,14 @@ export class PromptImprover {
   private client: GeminiClient
   private abortController: AbortController | null = null
   private timeoutId: number | null = null
+  private systemInstruction: string = DEFAULT_INSTRUCTION
 
   constructor() {
     this.client = GeminiClient.getInstance()
+    // Load system instruction asynchronously
+    this.loadSystemInstruction().catch((error) => {
+      console.warn("Failed to load system instruction:", error)
+    })
   }
 
   /**
@@ -105,7 +111,10 @@ export class PromptImprover {
 
     try {
       const stream = this.client.generateContentStream(prompt, {
-        systemInstruction: SYSTEM_INSTRUCTION,
+        systemInstruction: this.systemInstruction,
+        generateContentConfig: {
+          abortSignal: this.abortController.signal,
+        },
       })
 
       for await (const chunk of stream) {
@@ -162,9 +171,50 @@ export class PromptImprover {
   }
 
   /**
+   * Load system instruction from cache or GitHub Gist
+   * 4-tier fallback: Today's cache → Gist fetch → Latest cache → Hardcoded default
+   */
+  private async loadSystemInstruction(): Promise<void> {
+    // 1. Try today's cache
+    const cached = await improvePromptCacheService.getTodaysCache()
+    if (cached) {
+      this.systemInstruction = cached
+      return
+    }
+
+    // 2. Try fetch from Gist
+    try {
+      const url = import.meta.env.WXT_IMPROVE_PROMPT_URL
+      if (url) {
+        const response = await fetch(url)
+        if (!response.ok) {
+          throw new Error(`Failed to fetch: ${response.status}`)
+        }
+        const instruction = await response.text()
+        // Save to cache
+        await improvePromptCacheService.saveCache(instruction)
+        this.systemInstruction = instruction
+        return
+      }
+    } catch (error) {
+      console.warn("Failed to fetch instruction from Gist:", error)
+    }
+
+    // 3. Fallback to latest cache
+    const latestCache = await improvePromptCacheService.getLatestCache()
+    if (latestCache) {
+      this.systemInstruction = latestCache
+      return
+    }
+
+    // 4. Fallback to hardcoded default
+    this.systemInstruction = DEFAULT_INSTRUCTION
+  }
+
+  /**
    * Get the system instruction being used
    */
   public getSystemInstruction(): string {
-    return SYSTEM_INSTRUCTION
+    return this.systemInstruction
   }
 }
