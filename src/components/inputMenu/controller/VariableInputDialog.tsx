@@ -167,6 +167,7 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
                   }
                   placeholder={i18n.t("placeholders.enterValue")}
                   rows={4}
+                  className="max-h-60"
                 />
               )}
 
