@@ -112,6 +112,14 @@ export const PromptImproveDialog: React.FC<PromptImproveDialogProps> = ({
     }
   }, [open, initialContent, initialVariables, cancelImprovement])
 
+  // cleanup function
+  useEffect(() => {
+    return () => {
+      // Stop any ongoing improvement on unmount
+      cancelImprovement()
+    }
+  }, [cancelImprovement])
+
   // Parse and merge variables when content changes (only if variable expansion is enabled)
   useEffect(() => {
     if (variableExpansionEnabled) {
@@ -123,25 +131,26 @@ export const PromptImproveDialog: React.FC<PromptImproveDialogProps> = ({
     }
   }, [content, variableExpansionEnabled])
 
-  useEffect(() => {
-    // cleanup function
-    return () => {
-      cancelImprovement()
-    }
-  }, [cancelImprovement])
-
   // Reload settings when settings dialog closes
   useEffect(() => {
+    let isMounted = true
     if (!settingsDialogOpen && open && promptImproverRef.current) {
       // Settings dialog was closed, reload settings
       promptImproverRef.current
         .loadSettings()
         .then(() => {
-          setIsApiKeyConfigured(promptImproverRef.current!.isApiKeyConfigured())
+          if (isMounted && promptImproverRef.current) {
+            setIsApiKeyConfigured(
+              promptImproverRef.current.isApiKeyConfigured(),
+            )
+          }
         })
         .catch((error) => {
           console.error("Failed to reload settings:", error)
         })
+    }
+    return () => {
+      isMounted = false
     }
   }, [settingsDialogOpen, open])
 

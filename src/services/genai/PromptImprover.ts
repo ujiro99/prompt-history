@@ -39,7 +39,7 @@ const DEFAULT_TIMEOUT = 30000
 export class PromptImprover {
   private client: GeminiClient
   private abortController: AbortController | null = null
-  private timeoutId: number | null = null
+  private timeoutId: ReturnType<typeof setTimeout> | null = null
   private systemInstruction: string = DEFAULT_INSTRUCTION
 
   constructor() {
@@ -148,7 +148,7 @@ export class PromptImprover {
     this.abortController = new AbortController()
 
     // Setup timeout
-    this.timeoutId = window.setTimeout(() => {
+    this.timeoutId = setTimeout(() => {
       this.cancel()
       const error = new GeminiError(
         "Request timed out. Please try again.",
