@@ -32,7 +32,7 @@ describe('ImprovePromptCacheService', () => {
     // Mock Date.now and Date constructor for consistent testing
     originalDateNow = Date.now
     const mockDate = new Date('2024-01-15T12:00:00Z')
-    vi.spyOn(global, 'Date').mockImplementation((() => mockDate) as any)
+    vi.spyOn(globalThis, 'Date').mockImplementation((() => mockDate) as any)
     Date.now = vi.fn(() => mockDate.getTime())
   })
 
@@ -186,7 +186,7 @@ describe('ImprovePromptCacheService', () => {
 
       // Test with a date that has single-digit month and day
       const mockDate = new Date('2024-03-05T12:00:00Z')
-      vi.spyOn(global, 'Date').mockImplementation((() => mockDate) as any)
+      vi.spyOn(globalThis, 'Date').mockImplementation((() => mockDate) as any)
 
       const result = service.getCurrentDateString()
 

@@ -17,7 +17,7 @@ const createFakePort = (name = "test-port") => {
 // Override fake-browser's Browser.runtime.connect
 if (typeof globalThis.browser !== 'undefined') {
   globalThis.browser.runtime.connect = vi.fn((_extId?: string, _info?: { name?: string }) => {
-    return createFakePort(_info?.name) as any
+    return createFakePort(_info?.name) as unknown as browser.runtime.Port
   })
 }
 
@@ -30,15 +30,15 @@ vi.mock('@wxt-dev/analytics', () => ({
 
 // Mock @webext-core/fake-browser to provide Browser.runtime.connect
 vi.mock('@webext-core/fake-browser', async (importOriginal) => {
-  const original = await importOriginal() as any
+  const original = (await importOriginal()) as Record<string, unknown>
   return {
     ...original,
     browser: {
-      ...original.browser,
+      ...(original.browser as Record<string, unknown>),
       runtime: {
-        ...original.browser?.runtime,
+        ...((original.browser as Record<string, unknown>)?.runtime as Record<string, unknown>),
         connect: vi.fn((_extId?: string, _info?: { name?: string }) => {
-          return createFakePort(_info?.name) as any
+          return createFakePort(_info?.name) as unknown as browser.runtime.Port
         }),
       },
     },

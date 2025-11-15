@@ -111,9 +111,9 @@ export class PromptImportService {
 
   /**
    * Parse Papa Parse row data to prompt object
-   * Note: Uses any type because Papa Parse may not fully convert types despite dynamicTyping option
+   * Note: Uses Record type because Papa Parse may not fully convert types despite dynamicTyping option
    */
-  private parseRowData(row: any): Prompt {
+  private parseRowData(row: Record<string, unknown>): Prompt {
     const requiredFields = [
       "name",
       "content",

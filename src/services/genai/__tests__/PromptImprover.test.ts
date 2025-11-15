@@ -4,7 +4,6 @@
 
 import { describe, it, expect, beforeEach, vi } from "vitest"
 import { PromptImprover } from "../PromptImprover"
-import { GeminiError } from "../types"
 
 // Create mocks for GeminiClient
 const mockInitialize = vi.fn()
