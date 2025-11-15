@@ -2,8 +2,12 @@
   "TestPage": {
     "serviceName": "TestPage",
     "selectors": {
-      "textInput": ["div[contenteditable='true'].ql-editor"],
-      "sendButton": ["form button[type='submit']"]
+      "textInput": [
+        "div[contenteditable='true'].ql-editor"
+      ],
+      "sendButton": [
+        "form button[type='submit']"
+      ]
     },
     "popupPlacement": {
       "alignOffset": -10,
@@ -50,7 +54,9 @@
   "Gemini": {
     "serviceName": "Gemini",
     "selectors": {
-      "textInput": [".ql-editor[contenteditable='true']"],
+      "textInput": [
+        ".ql-editor[contenteditable='true']"
+      ],
       "sendButton": [
         "button.send-button",
         "button mat-icon[fonticon='send']",
@@ -65,7 +71,9 @@
   "Perplexity": {
     "serviceName": "Perplexity",
     "selectors": {
-      "textInput": ["div#ask-input"],
+      "textInput": [
+        "div#ask-input"
+      ],
       "sendButton": [
         "button[data-testid='submit-button']",
         "button[type='button'].bg-super:has(svg.tabler-icon)"
@@ -79,8 +87,12 @@
   "Skywork": {
     "serviceName": "Skywork",
     "selectors": {
-      "textInput": [".el-textarea div[contenteditable='true']"],
-      "sendButton": [".footer-container svg.cursor-pointer"]
+      "textInput": [
+        ".el-textarea div[contenteditable='true']"
+      ],
+      "sendButton": [
+        ".footer-container .footer-right svg.cursor-pointer"
+      ]
     },
     "popupPlacement": {
       "alignOffset": -18,
@@ -90,8 +102,14 @@
   "Stable Diffusion": {
     "serviceName": "Stable Diffusion",
     "selectors": {
-      "textInput": ["form input", "textarea#prompts"],
-      "sendButton": ["form button.bg-primary", "main button.font-caption"]
+      "textInput": [
+        "form input",
+        "textarea#prompts"
+      ],
+      "sendButton": [
+        "form button.bg-primary",
+        "main button.font-caption"
+      ]
     },
     "popupPlacement": {
       "alignOffset": 0,
