@@ -52,6 +52,15 @@ export class AutocompletePopup {
     return count > 0 ? activeItem : null
   }
 
+  async getSide(): Promise<"top" | "bottom" | null> {
+    const popup = this.page.locator(this.popupSelector)
+    const side = await popup.getAttribute("data-side")
+    if (side === "top" || side === "bottom") {
+      return side
+    }
+    return null
+  }
+
   async waitActiveItem(): Promise<void> {
     await this.page.waitForSelector(this.activeItemSelector, {
       state: "visible",

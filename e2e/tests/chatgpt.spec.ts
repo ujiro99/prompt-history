@@ -95,6 +95,7 @@ test.describe("ChatGPT Extension Tests", () => {
     // 7. Confirm that history list is displayed
     const historyList = await inputPopup.getHistoryList()
     const isVisibleList = await historyList.isVisible()
+    const historyListSide = await inputPopup.getHistoryListSide()
     expect(isVisibleList).toBe(true)
 
     // 8. Confirm that history items are displayed
@@ -107,13 +108,17 @@ test.describe("ChatGPT Extension Tests", () => {
     // The sort order is `Recent usage & execution count score`.
     // If it appears under the menu, the previously entered ID 1 will be selected.
     // If it appears above the menu, the order will be reversed, and the oldest ID 2 will be selected.
+    const expectedValue =
+      historyListSide === "bottom"
+        ? "Mock prompt 1 for testing "
+        : "Mock prompt 2 for testing "
 
     // 9. Check the value of prompt input field
     await waitHelpers.waitForCondition(async () => {
       const val = await promptInput.textContent()
-      return val === "Mock prompt 1 for testing "
+      return val === expectedValue
     })
     inputValue = await promptInput.textContent()
-    expect(inputValue).toBe("Mock prompt 1 for testing ") // Most recent history should be input
+    expect(inputValue).toBe(expectedValue) // Most recent history should be input
   })
 })
