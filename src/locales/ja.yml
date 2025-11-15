@@ -127,6 +127,7 @@ autocomplete:
 # Tooltips
 tooltips:
   improveMenu: プロンプト改善メニューを起動
+  urlModeDescription: プレーンテキストとして取得可能なURLを指定してください。
 
 # sort order
 sortOrder:
@@ -198,15 +199,15 @@ settings:
     geminiApiKey: Gemini APIキー
     enterApiKey: Gemini APIキーを入力してください
     getApiKeyInfo: APIキーの取得方法：
-    freeApiWarning: 重要：無料のAPIキーはモデルトレーニングに使用される可能性があります。
+    freeApiWarning: 重要：無料のAPIキーはモデルのトレーニングに使用される可能性があります。
     learnMore: 詳細を見る
     systemPromptSettings: システムプロンプト設定
     modeUrl: URL (GitHub Gist など)
-    modeText: テキスト直接入力
-    systemPromptText: システムプロンプトテキスト
+    modeText: 直接入力
+    systemPromptText: システムプロンプト
     promptUrl: プロンプトURL
     enterPromptUrl: "https://gist.github.com/..."
-    fetchPrompt: プロンプトを取得
+    fetchPrompt: プレビューを更新
     fetching: 取得中...
     setDefault: デフォルトに戻す
     preview: プレビュー
@@ -267,3 +268,7 @@ errors:
   apiKeyRequired: APIキーは必須です
   urlRequired: URLは必須です
   invalidUrl: 無効なURL形式です
+  fetchFailed: "取得に失敗しました: $1 $2"
+  notTextContent: "テキストではないコンテンツです: $1"
+  unknownError: 不明なエラーが発生しました
+  fetchPromptFailed: "URLからプロンプトの取得に失敗しました: $1"

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Eye, EyeOff, AlertCircle } from "lucide-react"
+import { Eye, EyeOff, AlertCircle, Info } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -12,6 +12,11 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip"
 import { useContainer } from "@/hooks/useContainer"
 import {
   genaiApiKeyStorage,
@@ -185,9 +190,21 @@ export const PromptImproverSettingsDialog: React.FC<
       const [response] = await Promise.all([fetch(url), sleep(1000)])
       if (!response.ok) {
         throw new Error(
-          `Failed to fetch: ${response.status} ${response.statusText}`,
+          i18n
+            .t("errors.fetchFailed")
+            .replace("$1", response.status.toString())
+            .replace("$2", response.statusText),
         )
       }
+
+      const contentType = response.headers.get("content-type") || ""
+      // Allow only text content types
+      if (!contentType.startsWith("text/")) {
+        throw new Error(
+          i18n.t("errors.notTextContent").replace("$1", contentType),
+        )
+      }
+
       const text = await response.text()
       setPreviewPrompt(text)
 
@@ -200,9 +217,11 @@ export const PromptImproverSettingsDialog: React.FC<
       }
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : "Unknown error occurred"
+        error instanceof Error ? error.message : i18n.t("errors.unknownError")
       if (!isPreview) {
-        setFetchError(`Failed to fetch prompt from URL: ${errorMessage}`)
+        setFetchError(
+          i18n.t("errors.fetchPromptFailed").replace("$1", errorMessage),
+        )
       }
       console.error("Failed to fetch prompt from URL:", error)
     } finally {
@@ -435,9 +454,22 @@ export const PromptImproverSettingsDialog: React.FC<
                 </div>
               ) : (
                 <div className="space-y-1">
-                  <label htmlFor="url-content" className="text-sm font-medium">
-                    {i18n.t("settings.promptImprover.promptUrl")}
-                  </label>
+                  <div className="flex items-center gap-1">
+                    <label
+                      htmlFor="url-content"
+                      className="text-sm font-medium"
+                    >
+                      {i18n.t("settings.promptImprover.promptUrl")}
+                    </label>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="size-4 stroke-neutral-500" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {i18n.t("tooltips.urlModeDescription")}
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
                   <div className="flex gap-2">
                     <Input
                       id="url-content"

@@ -127,6 +127,7 @@ autocomplete:
 # Tooltips
 tooltips:
   improveMenu: Launch prompt improvement menu
+  urlModeDescription: Please specify a URL that can be fetched as plain text.
 
 # sort order
 sortOrder:
@@ -202,11 +203,11 @@ settings:
     learnMore: Learn more
     systemPromptSettings: System Prompt Settings
     modeUrl: URL (GitHub Gist, etc.)
-    modeText: Direct Text Input
-    systemPromptText: System Prompt Text
+    modeText: Direct Input
+    systemPromptText: System Prompt
     promptUrl: Prompt URL
     enterPromptUrl: "https://gist.github.com/..."
-    fetchPrompt: Fetch Prompt
+    fetchPrompt: Fetch Preview
     fetching: Fetching...
     setDefault: Set Default
     preview: Preview
@@ -267,3 +268,7 @@ errors:
   apiKeyRequired: API key is required
   urlRequired: URL is required
   invalidUrl: Invalid URL format
+  fetchFailed: "Failed to fetch: $1 $2"
+  notTextContent: "Not a text content: $1"
+  unknownError: Unknown error occurred
+  fetchPromptFailed: "Failed to fetch prompt from URL: $1"
