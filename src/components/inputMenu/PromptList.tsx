@@ -40,6 +40,7 @@ interface PromptListProps {
   onRemove: (promptId: string) => void
   onCopy: (promptId: string) => void
   onTogglePin: (promptId: string, isPinned: boolean) => void
+  onLockChange: (isLocked: boolean) => void
 }
 
 /**
@@ -56,6 +57,7 @@ export const PromptList = ({
   onRemove,
   onCopy,
   onTogglePin,
+  onLockChange,
 }: PromptListProps) => {
   const [hoveredPromptId, setHoveredPromptId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState<string>("")
@@ -140,6 +142,21 @@ export const PromptList = ({
       viewportElm.scrollTop = viewportElm.scrollHeight
     }
   }, [isLoaded, viewportElm, sideFlipped, sortOrder])
+
+  const isQueryEmpty = isEmpty(searchQuery)
+
+  useEffect(() => {
+    // Notify parent about lock state based on search query.
+    // During list lock, changes to the InputMenu and shifts in its display position are prevented.
+    onLockChange(!isQueryEmpty)
+  }, [onLockChange, isQueryEmpty])
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      onLockChange(false)
+    }
+  }, [onLockChange])
 
   return (
     <>

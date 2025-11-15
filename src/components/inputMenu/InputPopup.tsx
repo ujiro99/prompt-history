@@ -85,6 +85,9 @@ export function InputMenu(props: Props): React.ReactElement {
   const [historySideFlipped, setHistorySideFlipped] = useState(false)
   const [pinnedSideFlipped, setPinnedSideFlipped] = useState(false)
 
+  // PromptList lock status
+  const [listLocked, setListLocked] = useState<boolean>(false)
+
   // For positioning BridgeArea
   const [historyAnchorElm, setHistoryAnchorElm] =
     useState<HTMLButtonElement | null>(null)
@@ -106,10 +109,12 @@ export function InputMenu(props: Props): React.ReactElement {
   } = usePromptExecution({ nodeAtCaret })
 
   const handleMenuEnter = (val: MENU) => {
+    if (listLocked) return
     setSelectedMenu(val)
   }
 
   const handleMenuChange = (val: string) => {
+    if (listLocked) return
     setHoveredItem(null) // Reset preview when menu changes.
     setSelectedMenu(val as MENU)
   }
@@ -201,6 +206,11 @@ export function InputMenu(props: Props): React.ReactElement {
     }
   }
 
+  const handleInteractOutside = useCallback(() => {
+    setSelectedMenu(MENU.None)
+    setListLocked(false)
+  }, [])
+
   /**
    * Open prompt-improve dialog
    */
@@ -290,9 +300,10 @@ export function InputMenu(props: Props): React.ReactElement {
             <History size={16} className="stroke-neutral-600" />
           </MenuTrigger>
           <MenubarContent
-            side="top"
             className="p-0"
+            side={historySideFlipped && listLocked ? "bottom" : "top"}
             onSideFlip={(side) => setHistorySideFlipped(side !== "top")}
+            onInteractOutside={handleInteractOutside}
             ref={setHistoryContentElm}
             data-testid={TestIds.inputPopup.historyList}
             container={container}
@@ -309,6 +320,7 @@ export function InputMenu(props: Props): React.ReactElement {
               onRemove={setRemoveId}
               onCopy={openCopyDialog}
               onTogglePin={handleTogglePin}
+              onLockChange={setListLocked}
             />
             {historyAnchorElm && historyContentElm && (
               <BridgeArea
@@ -330,9 +342,10 @@ export function InputMenu(props: Props): React.ReactElement {
             <Star size={16} className="stroke-neutral-600" />
           </MenuTrigger>
           <MenubarContent
-            side="top"
             className="p-0"
+            side={pinnedSideFlipped && listLocked ? "bottom" : "top"}
             onSideFlip={(side) => setPinnedSideFlipped(side !== "top")}
+            onInteractOutside={handleInteractOutside}
             ref={setPinnedContentElm}
             data-testid={TestIds.inputPopup.pinnedList}
             container={container}
@@ -349,6 +362,7 @@ export function InputMenu(props: Props): React.ReactElement {
               onRemove={setRemoveId}
               onCopy={openCopyDialog}
               onTogglePin={handleTogglePin}
+              onLockChange={setListLocked}
             />
             {pinnedAnchorElm && pinnedContentElm && (
               <BridgeArea
