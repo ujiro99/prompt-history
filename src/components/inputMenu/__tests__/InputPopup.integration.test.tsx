@@ -259,7 +259,7 @@ describe("InputPopup Integration Tests", () => {
 
       // Verify menu button order
       const triggers = screen.getAllByRole("menuitem")
-      expect(triggers).toHaveLength(4) // History, Pinned, Save, Settings
+      expect(triggers).toHaveLength(4) // History, Pinned, Improve, Settings
 
       expect(triggers[0]).toHaveAttribute(
         "data-testid",
@@ -271,7 +271,7 @@ describe("InputPopup Integration Tests", () => {
       )
       expect(triggers[2]).toHaveAttribute(
         "data-testid",
-        TestIds.inputPopup.editTrigger,
+        TestIds.inputPopup.improveTrigger,
       )
       expect(triggers[3]).toHaveAttribute(
         "data-testid",
@@ -320,8 +320,8 @@ describe("InputPopup Integration Tests", () => {
         </TestWrapper>,
       )
 
-      const saveButton = screen.getByTestId(TestIds.inputPopup.editTrigger)
-      expect(saveButton).toBeDisabled()
+      const improveButton = screen.getByTestId(TestIds.inputPopup.improveTrigger)
+      expect(improveButton).toBeDisabled()
 
       // Verify that Settings button is enabled
       const settingsButton = screen.getByTestId(

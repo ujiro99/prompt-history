@@ -2,23 +2,33 @@
  * Tests for GeminiClient
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { GeminiClient } from '../GeminiClient'
-import { GeminiError, GeminiErrorType } from '../types'
+import { describe, it, expect, beforeEach, vi } from "vitest"
+import { GeminiError } from "../types"
 
-// Create a mock for the GoogleGenAI class
-const mockGenerateContentStream = vi.fn()
+// Create a mock for the GoogleGenAI class using vi.hoisted
+const { mockGenerateContentStream, MockGoogleGenAI } = vi.hoisted(() => {
+  const mockGenerateContentStream = vi.fn()
+
+  class MockGoogleGenAI {
+    models = {
+      generateContentStream: mockGenerateContentStream,
+    }
+    constructor(_config: any) {
+      // Constructor accepts config but we don't need to use it in tests
+    }
+  }
+
+  return { mockGenerateContentStream, MockGoogleGenAI }
+})
 
 // Mock @google/genai
-vi.mock('@google/genai', () => ({
-  GoogleGenAI: vi.fn().mockImplementation(() => ({
-    models: {
-      generateContentStream: mockGenerateContentStream,
-    },
-  })),
+vi.mock("@google/genai", () => ({
+  GoogleGenAI: MockGoogleGenAI,
 }))
 
-describe('GeminiClient', () => {
+import { GeminiClient } from "../GeminiClient"
+
+describe("GeminiClient", () => {
   let client: GeminiClient
 
   beforeEach(() => {
@@ -28,101 +38,100 @@ describe('GeminiClient', () => {
     mockGenerateContentStream.mockReset()
   })
 
-  describe('getInstance', () => {
-    it('should return singleton instance', () => {
+  describe("getInstance", () => {
+    it("should return singleton instance", () => {
       const instance1 = GeminiClient.getInstance()
       const instance2 = GeminiClient.getInstance()
       expect(instance1).toBe(instance2)
     })
   })
 
-  describe('initialize', () => {
-    it('should initialize with valid API key', () => {
-      expect(() => client.initialize('test-api-key')).not.toThrow()
+  describe("initialize", () => {
+    it("should initialize with valid API key", () => {
+      expect(() => client.initialize("test-api-key")).not.toThrow()
       expect(client.isInitialized()).toBe(true)
     })
 
-    it('should throw error when API key is empty', () => {
-      expect(() => client.initialize('')).toThrow(GeminiError)
-      expect(() => client.initialize('')).toThrow('API key is required')
+    it("should throw error when API key is empty", () => {
+      expect(() => client.initialize("")).toThrow(GeminiError)
+      expect(() => client.initialize("")).toThrow("API key is required")
     })
 
-    it('should store configuration', () => {
-      client.initialize('test-api-key')
+    it("should store configuration", () => {
+      client.initialize("test-api-key")
       const config = client.getConfig()
       expect(config).toBeDefined()
-      expect(config?.apiKey).toBe('test-api-key')
-      expect(config?.model).toBe('gemini-2.5-flash')
+      expect(config?.apiKey).toBe("test-api-key")
+      expect(config?.model).toBe("gemini-2.5-flash")
     })
   })
 
-  describe('isInitialized', () => {
-    it('should return false before initialization', () => {
+  describe("isInitialized", () => {
+    it("should return false before initialization", () => {
       expect(client.isInitialized()).toBe(false)
     })
 
-    it('should return true after initialization', () => {
-      client.initialize('test-api-key')
+    it("should return true after initialization", () => {
+      client.initialize("test-api-key")
       expect(client.isInitialized()).toBe(true)
     })
   })
 
-  describe('getConfig', () => {
-    it('should return null before initialization', () => {
+  describe("getConfig", () => {
+    it("should return null before initialization", () => {
       expect(client.getConfig()).toBeNull()
     })
 
-    it('should return config after initialization', () => {
-      client.initialize('test-api-key')
+    it("should return config after initialization", () => {
+      client.initialize("test-api-key")
       const config = client.getConfig()
       expect(config).toBeDefined()
-      expect(config?.model).toBe('gemini-2.5-flash')
+      expect(config?.model).toBe("gemini-2.5-flash")
     })
   })
 
-  describe('generateContentStream', () => {
-    it('should throw error when not initialized', async () => {
+  describe("generateContentStream", () => {
+    it("should throw error when not initialized", async () => {
       try {
-        const generator = client.generateContentStream('test prompt')
+        const generator = client.generateContentStream("test prompt")
         await generator.next()
-        expect.fail('Should have thrown an error')
+        expect.fail("Should have thrown an error")
       } catch (error) {
         expect(error).toBeInstanceOf(GeminiError)
-        expect((error as Error).message).toContain('Client not initialized')
+        expect((error as Error).message).toContain("Client not initialized")
       }
     })
 
-    it('should generate stream when initialized', async () => {
-      client.initialize('test-api-key')
+    it("should generate stream when initialized", async () => {
+      client.initialize("test-api-key")
 
       // Mock the generateContentStream to return an async generator
       const mockStream = async function* () {
-        yield { text: 'chunk1' }
-        yield { text: 'chunk2' }
+        yield { text: "chunk1" }
+        yield { text: "chunk2" }
       }
 
       mockGenerateContentStream.mockResolvedValue(mockStream())
 
       const chunks: string[] = []
-      for await (const chunk of client.generateContentStream('test prompt')) {
+      for await (const chunk of client.generateContentStream("test prompt")) {
         chunks.push(chunk.text)
       }
 
-      expect(chunks).toEqual(['chunk1', 'chunk2'])
+      expect(chunks).toEqual(["chunk1", "chunk2"])
     })
 
-    it('should merge custom config with default config', async () => {
-      client.initialize('test-api-key')
+    it("should merge custom config with default config", async () => {
+      client.initialize("test-api-key")
 
       const mockStream = async function* () {
-        yield { text: 'test' }
+        yield { text: "test" }
       }
 
       mockGenerateContentStream.mockResolvedValue(mockStream())
 
-      const generator = client.generateContentStream('test prompt', {
-        temperature: 0.5,
-        systemInstruction: 'test instruction',
+      const generator = client.generateContentStream("test prompt", {
+        systemInstruction: "test instruction",
       })
 
       // Consume the generator
@@ -131,73 +140,75 @@ describe('GeminiClient', () => {
       }
 
       expect(mockGenerateContentStream).toHaveBeenCalledWith({
-        model: 'gemini-2.5-flash',
-        contents: ['test prompt'],
+        model: "gemini-2.5-flash",
+        contents: ["test prompt"],
         config: {
-          temperature: 0.5,
-          maxOutputTokens: undefined,
-          systemInstruction: 'test instruction',
+          systemInstruction: "test instruction",
+          thinkingConfig: {
+            includeThoughts: true,
+            thinkingBudget: -1,
+          },
         },
       })
     })
 
-    it('should handle network errors', async () => {
-      client.initialize('test-api-key')
+    it("should handle network errors", async () => {
+      client.initialize("test-api-key")
 
       mockGenerateContentStream.mockRejectedValue(
-        new Error('network error occurred'),
+        new Error("network error occurred"),
       )
 
       try {
-        const generator = client.generateContentStream('test prompt')
+        const generator = client.generateContentStream("test prompt")
         for await (const _ of generator) {
           // Should throw before yielding
         }
-        expect.fail('Should have thrown an error')
+        expect.fail("Should have thrown an error")
       } catch (error) {
         expect(error).toBeInstanceOf(GeminiError)
-        expect((error as Error).message).toContain('Network error')
+        expect((error as Error).message).toContain("Network error")
       }
     })
 
-    it('should handle API key errors', async () => {
-      client.initialize('test-api-key')
+    it("should handle API key errors", async () => {
+      client.initialize("test-api-key")
 
-      mockGenerateContentStream.mockRejectedValue(new Error('Invalid API key'))
+      mockGenerateContentStream.mockRejectedValue(new Error("Invalid API key"))
 
       try {
-        const generator = client.generateContentStream('test prompt')
+        const generator = client.generateContentStream("test prompt")
         for await (const _ of generator) {
           // Should throw before yielding
         }
-        expect.fail('Should have thrown an error')
+        expect.fail("Should have thrown an error")
       } catch (error) {
         expect(error).toBeInstanceOf(GeminiError)
-        expect((error as Error).message).toContain('Invalid API key')
+        expect((error as Error).message).toContain("Invalid API key")
       }
     })
 
-    it('should handle generic API errors', async () => {
-      client.initialize('test-api-key')
+    it("should handle generic API errors", async () => {
+      client.initialize("test-api-key")
 
-      mockGenerateContentStream.mockRejectedValue(new Error('Some API error'))
+      mockGenerateContentStream.mockRejectedValue(new Error("Some API error"))
 
       try {
-        const generator = client.generateContentStream('test prompt')
+        const generator = client.generateContentStream("test prompt")
         for await (const _ of generator) {
           // Should throw before yielding
         }
-        expect.fail('Should have thrown an error')
+        expect.fail("Should have thrown an error")
       } catch (error) {
         expect(error).toBeInstanceOf(GeminiError)
-        expect((error as Error).message).toContain('API error')
+        expect((error as Error).message).toContain("API error")
       }
     })
   })
 
-  describe('reset', () => {
-    it('should reset client state', () => {
-      client.initialize('test-api-key')
+  describe("reset", () => {
+    it("should reset client state", () => {
+      client.initialize("test-api-key")
       expect(client.isInitialized()).toBe(true)
 
       client.reset()

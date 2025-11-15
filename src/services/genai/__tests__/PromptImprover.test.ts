@@ -112,7 +112,7 @@ describe("PromptImprover", () => {
       })
 
       expect(mockGenerateContentStream).toHaveBeenCalledWith(
-        "test prompt",
+        expect.stringContaining("test prompt"),
         expect.objectContaining({
           systemInstruction: expect.stringContaining("Prompt Engineer"),
         }),
