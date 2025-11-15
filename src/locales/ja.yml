@@ -124,6 +124,10 @@ autocomplete:
   toFocus: フォーカス
   toMove: 移動
 
+# Tooltips
+tooltips:
+  improveMenu: プロンプト改善メニューを起動
+
 # sort order
 sortOrder:
   recent:

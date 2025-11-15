@@ -31,7 +31,7 @@ interface PromptImproverSettingsDialogProps {
 }
 
 // Default URL from environment variable
-const defaultUrl = import.meta.env.WXT_IMPROVE_PROMPT_URL || ""
+const DefaultUrl = import.meta.env.WXT_IMPROVE_PROMPT_URL || ""
 
 /**
  * Prompt Improver Settings Dialog Component
@@ -78,8 +78,8 @@ export const PromptImproverSettingsDialog: React.FC<
           const storedSettings = await improvePromptSettingsStorage.getValue()
 
           // Use default URL if urlContent is empty
-          if (!storedSettings.urlContent && defaultUrl) {
-            storedSettings.urlContent = defaultUrl
+          if (!storedSettings.urlContent && DefaultUrl) {
+            storedSettings.urlContent = DefaultUrl
           }
 
           setSettings(storedSettings)
@@ -149,10 +149,10 @@ export const PromptImproverSettingsDialog: React.FC<
    * Set default URL
    */
   const handleSetDefaultUrl = () => {
-    if (defaultUrl) {
+    if (DefaultUrl) {
       setSettings((prev) => ({
         ...prev,
-        urlContent: defaultUrl,
+        urlContent: DefaultUrl,
       }))
       setUrlError(null)
     }
@@ -464,7 +464,7 @@ export const PromptImproverSettingsDialog: React.FC<
                     <p className="text-sm text-destructive">{urlError}</p>
                   )}
                   <div className="flex items-center justify-between">
-                    {defaultUrl && (
+                    {DefaultUrl && (
                       <Button
                         type="button"
                         variant="ghost"

@@ -7,6 +7,11 @@ import {
   MenubarMenu,
   MenubarTrigger,
 } from "@/components/ui/menubar"
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip"
 import { useCaretNode } from "@/hooks/useCaretNode"
 import { useContainer } from "@/hooks/useContainer"
 import { usePromptExecution } from "@/hooks/usePromptExecution"
@@ -200,6 +205,7 @@ export function InputMenu(props: Props): React.ReactElement {
    * Open prompt-improve dialog
    */
   const openImproveDialog = async () => {
+    if (!props.saveEnabled) return
     const content = serviceFacade.extractPromptContent()
     setImprovePromptData({
       content: content ?? "",
@@ -356,17 +362,29 @@ export function InputMenu(props: Props): React.ReactElement {
 
         {/* Improve Menu */}
         <MenubarMenu value={MENU.Improve}>
-          <MenuTrigger
-            disabled={!props.saveEnabled}
-            onClick={openImproveDialog}
-            data-testid={TestIds.inputPopup.improveTrigger}
-          >
-            <Sparkles
-              size={16}
-              strokeWidth={1.75}
-              className="stroke-neutral-600"
-            />
-          </MenuTrigger>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <MenuTrigger
+                disabled={!props.saveEnabled}
+                onClick={openImproveDialog}
+                data-testid={TestIds.inputPopup.improveTrigger}
+              >
+                <Sparkles
+                  size={16}
+                  strokeWidth={1.75}
+                  className="stroke-neutral-600"
+                />
+              </MenuTrigger>
+            </TooltipTrigger>
+            <TooltipContent
+              className="bg-white dark:bg-neutral-800 text-xs text-foreground shadow-md py-2 border border-neutral-200 dark:border-neutral-700"
+              sideOffset={10}
+              align="start"
+              noArrow={true}
+            >
+              {i18n.t("tooltips.improveMenu")}
+            </TooltipContent>
+          </Tooltip>
         </MenubarMenu>
 
         {/* Settings Menu */}
@@ -440,7 +458,7 @@ function MenuTrigger(
     <MenubarTrigger
       className={cn(
         "p-1.5 text-xs gap-0.5 font-normal font-sans text-foreground cursor-pointer",
-        props.disabled && "opacity-50 pointer-events-none",
+        props.disabled && "opacity-50",
       )}
       {...props}
     >

@@ -124,6 +124,10 @@ autocomplete:
   toFocus: to focus
   toMove: to move
 
+# Tooltips
+tooltips:
+  improveMenu: Launch prompt improvement menu
+
 # sort order
 sortOrder:
   recent:
