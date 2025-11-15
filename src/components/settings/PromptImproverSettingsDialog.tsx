@@ -24,6 +24,7 @@ import {
 } from "@/services/storage/definitions"
 import { improvePromptCacheService } from "@/services/storage/improvePromptCache"
 import type { ImprovePromptSettings } from "@/types/prompt"
+import { ImprovePromptInputMethod } from "@/types/prompt"
 import { i18n } from "#imports"
 import { sleep } from "@/lib/utils"
 
@@ -52,7 +53,7 @@ export const PromptImproverSettingsDialog: React.FC<
 
   // System prompt settings
   const [settings, setSettings] = useState<ImprovePromptSettings>({
-    mode: "url",
+    mode: ImprovePromptInputMethod.URL,
     textContent: "",
     urlContent: "",
     lastModified: 0,
@@ -111,7 +112,7 @@ export const PromptImproverSettingsDialog: React.FC<
   /**
    * Handle mode change
    */
-  const handleModeChange = (mode: "text" | "url") => {
+  const handleModeChange = (mode: ImprovePromptInputMethod) => {
     setSettings((prev) => ({
       ...prev,
       mode,
@@ -409,13 +410,16 @@ export const PromptImproverSettingsDialog: React.FC<
 
             <RadioGroup
               value={settings.mode}
-              onValueChange={(value) =>
-                handleModeChange(value as "text" | "url")
+              onValueChange={(value: ImprovePromptInputMethod) =>
+                handleModeChange(value)
               }
               className="gap-2"
             >
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="url" id="mode-url" />
+                <RadioGroupItem
+                  value={ImprovePromptInputMethod.URL}
+                  id="mode-url"
+                />
                 <label
                   htmlFor="mode-url"
                   className="text-sm font-normal cursor-pointer"
@@ -424,7 +428,10 @@ export const PromptImproverSettingsDialog: React.FC<
                 </label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="text" id="mode-text" />
+                <RadioGroupItem
+                  value={ImprovePromptInputMethod.Text}
+                  id="mode-text"
+                />
                 <label
                   htmlFor="mode-text"
                   className="text-sm font-normal cursor-pointer"

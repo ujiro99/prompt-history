@@ -1,10 +1,11 @@
 import { storage } from "wxt/utils/storage"
+import { ImprovePromptInputMethod } from "@/types/prompt"
 import type {
   StoredPrompt,
   Session,
   AppSettings,
   ImprovePromptSettings,
-} from "../../types/prompt"
+} from "@/types/prompt"
 import type { AiConfigCacheData } from "./aiConfigCache"
 import type { ImprovePromptCacheData } from "./improvePromptCache"
 
@@ -113,7 +114,7 @@ export const genaiApiKeyStorage = storage.defineItem<string>(
 export const improvePromptSettingsStorage =
   storage.defineItem<ImprovePromptSettings>("local:improvePromptSettings", {
     fallback: {
-      mode: "url",
+      mode: ImprovePromptInputMethod.URL,
       textContent: "",
       urlContent: "",
       lastModified: 0,

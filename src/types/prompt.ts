@@ -135,11 +135,19 @@ export interface ImprovePromptData {
 }
 
 /**
+ * Input method for prompt improver's system prompt.
+ */
+export enum ImprovePromptInputMethod {
+  Text = "text",
+  URL = "url",
+}
+
+/**
  * Settings for prompt improver feature
  */
 export interface ImprovePromptSettings {
-  /** Input method: 'text' or 'url' */
-  mode: "text" | "url"
+  /** Input method */
+  mode: ImprovePromptInputMethod
   /** Direct text input content */
   textContent: string
   /** URL content (GitHub Gist, etc.) */
