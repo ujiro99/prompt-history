@@ -39,6 +39,8 @@ declare global {
      */
     debug?: PromptHistoryDebugInterface
   }
+
+  var browser: any
 }
 
 export {}

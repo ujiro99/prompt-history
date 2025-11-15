@@ -3,6 +3,11 @@ import { storage } from "#imports"
 
 const isProduction = import.meta.env.MODE === "production"
 
+// workaround for typing issue with storage.defineItem and generics
+type AnalyticsStorageItem<T> = {
+  getValue(): T | Promise<T>
+}
+
 export default defineAppConfig({
   analytics: {
     providers: [
@@ -13,7 +18,7 @@ export default defineAppConfig({
     ],
     userId: storage.defineItem("local:analytics-user-id", {
       init: () => crypto.randomUUID() as string,
-    }),
+    }) as AnalyticsStorageItem<string>,
     enabled: storage.defineItem("local:analytics-enabled", {
       fallback: isProduction,
     }),

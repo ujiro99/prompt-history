@@ -1,49 +1,12 @@
 import { vi } from "vitest"
 import "@testing-library/jest-dom"
 
-// Mock Browser.runtime.connect BEFORE any other imports to prevent fake-browser errors
-const createFakePort = (name = "test-port") => {
-  const listeners: Array<(msg: unknown) => void> = []
-  return {
-    name,
-    disconnect: vi.fn(),
-    onMessage: { addListener: (fn: (msg: unknown) => void) => listeners.push(fn) },
-    postMessage: vi.fn((msg: unknown) => {
-      for (const l of listeners) l(msg)
-    }),
-  }
-}
-
-// Override fake-browser's Browser.runtime.connect
-if (typeof globalThis.browser !== 'undefined') {
-  globalThis.browser.runtime.connect = vi.fn((_extId?: string, _info?: { name?: string }) => {
-    return createFakePort(_info?.name) as unknown as browser.runtime.Port
-  })
-}
-
 // Mock @wxt-dev/analytics to prevent Browser.runtime.connect errors
-vi.mock('@wxt-dev/analytics', () => ({
+vi.mock("@wxt-dev/analytics", () => ({
   createAnalytics: () => ({
     track: vi.fn().mockResolvedValue(undefined),
   }),
 }))
-
-// Mock @webext-core/fake-browser to provide Browser.runtime.connect
-vi.mock('@webext-core/fake-browser', async (importOriginal) => {
-  const original = (await importOriginal()) as Record<string, unknown>
-  return {
-    ...original,
-    browser: {
-      ...(original.browser as Record<string, unknown>),
-      runtime: {
-        ...((original.browser as Record<string, unknown>)?.runtime as Record<string, unknown>),
-        connect: vi.fn((_extId?: string, _info?: { name?: string }) => {
-          return createFakePort(_info?.name) as unknown as browser.runtime.Port
-        }),
-      },
-    },
-  }
-})
 
 vi.mock("@wxt-dev/i18n", () => {
   return {
@@ -112,22 +75,6 @@ class CompatibleTextDecoder {
 
 vi.stubGlobal("TextEncoder", CompatibleTextEncoder)
 vi.stubGlobal("TextDecoder", CompatibleTextDecoder)
-
-// Mock Browser.runtime.connect for fake-browser compatibility
-if (typeof globalThis.browser !== 'undefined') {
-  globalThis.browser.runtime.connect = vi.fn((_extId?: string, _info?: { name?: string }) => {
-    return createFakePort(_info?.name)
-  })
-}
-
-const BrowserMock = {
-  runtime: {
-    connect: vi.fn((_extId?: string, _info?: { name?: string }) => {
-      return createFakePort(_info?.name)
-    }),
-  },
-}
-vi.stubGlobal("Browser", BrowserMock)
 
 class ResizeObserverMock {
   observe = vi.fn()
