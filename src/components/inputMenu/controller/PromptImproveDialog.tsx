@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react"
-import { Sparkles, Loader2, Trash, AlertCircle } from "lucide-react"
+import { Sparkles, Loader2, AlertCircle } from "lucide-react"
 import type { VariableConfig } from "@/types/prompt"
 import { mergeVariableConfigs } from "@/utils/variables/variableParser"
 import { VariableExpansionInfoDialog } from "./VariableExpansionInfoDialog"
@@ -198,14 +198,6 @@ export const PromptImproveDialog: React.FC<PromptImproveDialogProps> = ({
   }
 
   /**
-   * Clear improved contents
-   */
-  const handleClearImproved = () => {
-    setImprovedContent("")
-    setImprovementError(null)
-  }
-
-  /**
    * Open settings dialog
    */
   const handleOpenSettings = () => {
@@ -325,19 +317,6 @@ export const PromptImproveDialog: React.FC<PromptImproveDialogProps> = ({
                   <label className="text-sm font-semibold text-foreground">
                     {i18n.t("dialogs.promptImprove.previewTitle")}
                   </label>
-
-                  {improvedContent.trim() !== "" && !isImproving && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleClearImproved}
-                      className="text-xs"
-                    >
-                      <Trash className="size-4 stroke-neutral-500" />
-                      {i18n.t("common.clear")}
-                    </Button>
-                  )}
                 </div>
 
                 {improvementError ? (
