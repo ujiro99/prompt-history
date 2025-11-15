@@ -3,6 +3,7 @@ import { PromptServiceFacade } from "@/services/promptServiceFacade"
 import { useSettings } from "@/hooks/useSettings"
 import type { VariableConfig, VariableValues } from "@/types/prompt"
 import type { AutoCompleteMatch } from "@/services/autoComplete/types"
+import { mergeVariableConfigs } from "@/utils/variables/variableParser"
 
 const serviceFacade = PromptServiceFacade.getInstance()
 
@@ -35,8 +36,10 @@ export interface UsePromptExecutionOptions {
 export interface UsePromptExecutionReturn {
   /** Current variable input data */
   variableInputData: VariableInputData | null
-  /** Execute a prompt with optional match data */
-  executePrompt: (promptId: string, match?: AutoCompleteMatch) => Promise<void>
+  /** Insert a prompt into text input with optional match data */
+  insertPrompt: (promptId: string, match?: AutoCompleteMatch) => Promise<void>
+  /** Set prompt text directly into text input */
+  setPrompt: (content: string) => Promise<void>
   /** Handle variable submission */
   handleVariableSubmit: (values: VariableValues) => Promise<void>
   /** Clear variable input data */
@@ -61,9 +64,9 @@ export const usePromptExecution = (
   const variableExpansionEnabled = settings?.variableExpansionEnabled ?? true
 
   /**
-   * Execute a prompt, checking for variables first
+   * Insert a prompt into text input, checking for variables first
    */
-  const executePrompt = useCallback(
+  const insertPrompt = useCallback(
     async (promptId: string, match?: AutoCompleteMatch) => {
       try {
         onExecuteStart?.()
@@ -86,14 +89,54 @@ export const usePromptExecution = (
             nodeAtCaret,
           })
         } else {
-          // Execute directly if no variables or variable expansion is disabled
-          await serviceFacade.executePrompt(promptId, nodeAtCaret ?? null, {
+          // Insert directly if no variables or variable expansion is disabled
+          await serviceFacade.insertPrompt(promptId, nodeAtCaret ?? null, {
             match,
           })
           onExecuteComplete?.()
         }
       } catch (error) {
-        console.error("Execute failed:", error)
+        console.error("Insert failed:", error)
+      }
+    },
+    [nodeAtCaret, onExecuteStart, onExecuteComplete, variableExpansionEnabled],
+  )
+
+  /**
+   * Set prompt text directly into text input, checking for variables first
+   */
+  const setPrompt = useCallback(
+    async (content: string) => {
+      try {
+        onExecuteStart?.()
+
+        // Check if content has variables and variable expansion is enabled
+        const variableMatches = content.match(/\{\{(\w+)\}\}/g)
+        const hasVariables = variableMatches && variableMatches.length > 0
+
+        if (variableExpansionEnabled && hasVariables) {
+          // Parse variables from content
+          const variables = mergeVariableConfigs(content)
+          const hasInputVariables = variables.some((v) => v.type !== "exclude")
+
+          if (hasInputVariables) {
+            // Show variable input dialog
+            setVariableInputData({
+              promptId: "", // No promptId for raw text
+              variables,
+              content,
+              match: undefined,
+              nodeAtCaret,
+            })
+            return
+          }
+        }
+
+        // Set directly if no variables or variable expansion is disabled
+        await serviceFacade.setPrompt(content)
+        onExecuteComplete?.()
+      } catch (error) {
+        console.error("Set prompt failed:", error)
       }
     },
     [nodeAtCaret, onExecuteStart, onExecuteComplete, variableExpansionEnabled],
@@ -109,26 +152,34 @@ export const usePromptExecution = (
       try {
         const {
           promptId,
+          content,
           match,
           nodeAtCaret: savedNodeAtCaret,
         } = variableInputData
 
-        // Execute the prompt with variable values
-        // Variable expansion and match creation are handled by executeManager
-        await serviceFacade.executePrompt(
-          promptId,
-          savedNodeAtCaret ?? nodeAtCaret ?? null,
-          {
-            match,
+        if (promptId) {
+          // Use insertPrompt for stored prompts
+          // Variable expansion and match creation are handled by insertManager
+          await serviceFacade.insertPrompt(
+            promptId,
+            savedNodeAtCaret ?? nodeAtCaret ?? null,
+            {
+              match,
+              variableValues: values,
+            },
+          )
+        } else {
+          // Use setPrompt for raw text content
+          await serviceFacade.setPrompt(content, {
             variableValues: values,
-          },
-        )
+          })
+        }
 
         // Close the variable input dialog
         setVariableInputData(null)
         onExecuteComplete?.()
       } catch (error) {
-        console.error("Variable expansion failed:", error)
+        console.error("Variable submission failed:", error)
       }
     },
     [variableInputData, nodeAtCaret, onExecuteComplete],
@@ -143,7 +194,8 @@ export const usePromptExecution = (
 
   return {
     variableInputData,
-    executePrompt,
+    insertPrompt,
+    setPrompt,
     handleVariableSubmit,
     clearVariableInputData,
   }

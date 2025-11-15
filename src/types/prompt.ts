@@ -127,6 +127,36 @@ export interface SaveDialogData {
 }
 
 /**
+ * Input data for prompt improvement
+ */
+export interface ImprovePromptData {
+  content: string
+  variables?: VariableConfig[]
+}
+
+/**
+ * Input method for prompt improver's system prompt.
+ */
+export enum ImprovePromptInputMethod {
+  Text = "text",
+  URL = "url",
+}
+
+/**
+ * Settings for prompt improver feature
+ */
+export interface ImprovePromptSettings {
+  /** Input method */
+  mode: ImprovePromptInputMethod
+  /** Direct text input content */
+  textContent: string
+  /** URL content (GitHub Gist, etc.) */
+  urlContent: string
+  /** Last modified timestamp */
+  lastModified: number
+}
+
+/**
  * Type of data to be stored in storage
  */
 export interface StorageData {

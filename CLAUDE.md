@@ -155,9 +155,9 @@ The extension uses a simplified, configuration-driven architecture for supportin
 - Store design and technical documents in the `docs/` directory
 - A design document should include:
   - Feature concepts and requirements
+  - UI flows
   - Feature architecture
   - External specifications
-  - UI flows
   - Key type definitions
   - Test design
 - A design document should not include:

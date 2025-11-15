@@ -1,6 +1,13 @@
 import { storage } from "wxt/utils/storage"
-import type { StoredPrompt, Session, AppSettings } from "../../types/prompt"
+import { ImprovePromptInputMethod } from "@/types/prompt"
+import type {
+  StoredPrompt,
+  Session,
+  AppSettings,
+  ImprovePromptSettings,
+} from "@/types/prompt"
 import type { AiConfigCacheData } from "./aiConfigCache"
+import type { ImprovePromptCacheData } from "./improvePromptCache"
 
 /**
  * Default settings values
@@ -72,6 +79,46 @@ export const settingsStorage = storage.defineItem<AppSettings>(
 export const aiConfigCacheStorage =
   storage.defineItem<AiConfigCacheData | null>("local:aiConfigCache", {
     fallback: null,
+    version: 1,
+    migrations: {},
+  })
+
+/**
+ * Improve Prompt Cache storage definition
+ */
+export const improvePromptCacheStorage =
+  storage.defineItem<ImprovePromptCacheData | null>(
+    "local:improvePromptCache",
+    {
+      fallback: null,
+      version: 1,
+      migrations: {},
+    },
+  )
+
+/**
+ * Gemini API Key storage definition
+ */
+export const genaiApiKeyStorage = storage.defineItem<string>(
+  "local:genaiApiKey",
+  {
+    fallback: "",
+    version: 1,
+    migrations: {},
+  },
+)
+
+/**
+ * Improve Prompt Settings storage definition
+ */
+export const improvePromptSettingsStorage =
+  storage.defineItem<ImprovePromptSettings>("local:improvePromptSettings", {
+    fallback: {
+      mode: ImprovePromptInputMethod.URL,
+      textContent: "",
+      urlContent: "",
+      lastModified: 0,
+    },
     version: 1,
     migrations: {},
   })

@@ -111,6 +111,7 @@ test.describe("Perplexity Extension Tests", () => {
 
     // 7. Confirm that history list is displayed
     const historyList = await inputPopup.getHistoryList()
+    const historyListSide = await inputPopup.getHistoryListSide()
     const isVisibleList = await historyList.isVisible()
     expect(isVisibleList).toBe(true)
 
@@ -123,13 +124,17 @@ test.describe("Perplexity Extension Tests", () => {
 
     // The sort order is `Recent usage & execution count score`.
     // If historyItems appear above the menu, the order will be reversed, and the oldest ID 2 will be selected.
+    const expectedValue =
+      historyListSide === "bottom"
+        ? "Mock prompt 1 for testing "
+        : "Mock prompt 2 for testing "
 
     // 9. Check the value of prompt input field
     await waitHelpers.waitForCondition(async () => {
       const val = await promptInput.textContent()
-      return val === "Mock prompt 2 for testing "
+      return val === expectedValue
     })
     inputValue = await promptInput.textContent()
-    expect(inputValue).toBe("Mock prompt 2 for testing ") // Most recent history should be input
+    expect(inputValue).toBe(expectedValue) // Most recent history should be input
   })
 })

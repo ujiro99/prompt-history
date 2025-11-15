@@ -12,12 +12,14 @@ common:
   edit: 編集
   copy: コピー
   ok: OK
+  clear: クリア
   name: 名前
   nameDescription: 入力補完で検索される名前です
   update: 更新
   prompt: プロンプト
   promptDescription: チャットに入力される内容です
   execute: 実行
+  input: 入力
   variableType: 変数の型
   defaultValue: デフォルト値
   options: 選択肢
@@ -74,6 +76,16 @@ dialogs:
   variables:
     title: 変数の入力
     preview: プレビュー
+  promptImprove:
+    title: プロンプト改善
+    message: AIによりプロンプトを改善します
+    promptTitle: 現在のプロンプト
+    improveButton: AIで改善
+    improving: 改善中...
+    previewTitle: 改善されたプロンプト
+    error: プロンプトの改善に失敗しました
+    apiKeyNotConfigured: Gemini APIキーが設定されていません。設定からAPIキーを設定してください。
+    openSettings: 設定を開く
 
 # Tabs
 tabs:
@@ -111,6 +123,11 @@ preview:
 autocomplete:
   toFocus: フォーカス
   toMove: 移動
+
+# Tooltips
+tooltips:
+  improveMenu: プロンプト改善メニューを起動
+  urlModeDescription: プレーンテキストとして取得可能なURLを指定してください。
 
 # sort order
 sortOrder:
@@ -166,6 +183,7 @@ settings:
     feature: 機能のON・OFF
     autocompleteTarget: 入力補完の対象
     importExport: インポート・エクスポート
+    promptImprover: プロンプト改善
   autoSave: プロンプト自動保存
   autoComplete: 入力補完
   notifications: ステータス通知
@@ -175,6 +193,27 @@ settings:
     pinned: スター付きのみ
   export: プロンプトをエクスポート
   import: プロンプトをインポート
+  promptImproverSettings: プロンプト改善の設定
+  promptImprover:
+    apiKeySettings: APIキー設定
+    geminiApiKey: Gemini APIキー
+    enterApiKey: Gemini APIキーを入力してください
+    getApiKeyInfo: APIキーの取得方法：
+    freeApiWarning: 重要：無料のAPIキーはモデルのトレーニングに使用される可能性があります。
+    learnMore: 詳細を見る
+    systemPromptSettings: システムプロンプト設定
+    modeUrl: URL (GitHub Gist など)
+    modeText: 直接入力
+    systemPromptText: システムプロンプト
+    promptUrl: プロンプトURL
+    enterPromptUrl: "https://gist.github.com/..."
+    fetchPrompt: プレビューを更新
+    fetching: 取得中...
+    setDefault: デフォルトに戻す
+    preview: プレビュー
+    previewPlaceholder: システムプロンプトのプレビューがここに表示されます...
+    enterSystemPrompt: システムプロンプトを入力してください...
+    description: Gemini APIキーとプロンプト改善用のシステムプロンプトを設定します
 
 # Import Dialog
 importDialog:
@@ -223,3 +262,13 @@ variableTypes:
   textarea: 複数行文字列
   select: 選択肢
   exclude: 対象外
+
+# Error messages
+errors:
+  apiKeyRequired: APIキーは必須です
+  urlRequired: URLは必須です
+  invalidUrl: 無効なURL形式です
+  fetchFailed: "取得に失敗しました: $1 $2"
+  notTextContent: "テキストではないコンテンツです: $1"
+  unknownError: 不明なエラーが発生しました
+  fetchPromptFailed: "URLからプロンプトの取得に失敗しました: $1"

@@ -10,6 +10,7 @@ import { sessionsService } from "./sessions"
 import { pinsService } from "./pins"
 import { settingsService } from "./settings"
 import { aiConfigCacheService } from "./aiConfigCache"
+import { improvePromptCacheService } from "./improvePromptCache"
 import type { AIServiceConfigData } from "@/services/aiService/base/types"
 
 /**
@@ -318,6 +319,49 @@ export class StorageService {
    */
   async removeAiConfigCache(): Promise<void> {
     return await aiConfigCacheService.removeCache()
+  }
+
+  // ===================
+  // Improve Prompt Cache operations
+  // ===================
+
+  /**
+   * Get today's cached improve prompt instruction
+   */
+  async getTodaysImprovePromptCache(): Promise<string | null> {
+    return await improvePromptCacheService.getTodaysCache()
+  }
+
+  /**
+   * Save improve prompt instruction to cache
+   */
+  async saveImprovePromptCache(instruction: string): Promise<void> {
+    return await improvePromptCacheService.saveCache(instruction)
+  }
+
+  /**
+   * Get latest improve prompt instruction from cache (for fallback)
+   */
+  async getLatestImprovePromptCache(): Promise<string | null> {
+    return await improvePromptCacheService.getLatestCache()
+  }
+
+  /**
+   * Clear improve prompt cache
+   * (for manual refresh)
+   */
+  async clearImprovePromptCache(): Promise<void> {
+    return await improvePromptCacheService.clearCache()
+  }
+
+  /**
+   * Get improve prompt cache metadata
+   */
+  async getImprovePromptCacheMetadata(): Promise<{
+    date: string
+    cachedAt: number
+  } | null> {
+    return await improvePromptCacheService.getCacheMetadata()
   }
 
   /**

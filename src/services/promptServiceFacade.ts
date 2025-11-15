@@ -298,6 +298,18 @@ export class PromptServiceFacade {
   }
 
   /**
+   * Extract prompt content from AI service.
+   * Returns null if AI service is not available.
+   */
+  extractPromptContent() {
+    if (!this.aiService) {
+      this.handleError("EXECUTE_FAILED", "AI service not available", null)
+      return null
+    }
+    return this.aiService.extractPromptContent()
+  }
+
+  /**
    * Get popup placement details from AI service.
    * Returns default placement if AI service is not available.
    */
@@ -317,9 +329,9 @@ export class PromptServiceFacade {
   }
 
   /**
-   * Execute prompt
+   * Insert prompt into text input
    */
-  async executePrompt(
+  async insertPrompt(
     promptId: string,
     nodeAtCaret: Node | null,
     options?: {
@@ -330,11 +342,11 @@ export class PromptServiceFacade {
     this.ensureInitialized()
 
     if (!this.aiService) {
-      this.handleError("EXECUTE_FAILED", "AI service not available", null)
+      this.handleError("INSERT_FAILED", "AI service not available", null)
       return
     }
 
-    await this.executeManager.executePrompt(
+    await this.executeManager.insertPrompt(
       promptId,
       this.aiService,
       nodeAtCaret,
@@ -343,12 +355,46 @@ export class PromptServiceFacade {
         this.notify({
           id: uuid(),
           type: "success",
-          message: `Prompt "${prompt.name}" executed`,
+          message: `Prompt "${prompt.name}" inserted`,
           duration: 2000,
         })
       },
       (error) => {
-        this.handleError("EXECUTE_FAILED", "Failed to execute prompt", error)
+        this.handleError("INSERT_FAILED", "Failed to insert prompt", error)
+      },
+    )
+  }
+
+  /**
+   * Set prompt text directly into text input
+   */
+  async setPrompt(
+    content: string,
+    options?: {
+      variableValues?: VariableValues
+    },
+  ): Promise<void> {
+    this.ensureInitialized()
+
+    if (!this.aiService) {
+      this.handleError("SET_FAILED", "AI service not available", null)
+      return
+    }
+
+    await this.executeManager.setPrompt(
+      content,
+      this.aiService,
+      options,
+      () => {
+        this.notify({
+          id: uuid(),
+          type: "success",
+          message: "Prompt set successfully",
+          duration: 2000,
+        })
+      },
+      (error) => {
+        this.handleError("SET_FAILED", "Failed to set prompt", error)
       },
     )
   }

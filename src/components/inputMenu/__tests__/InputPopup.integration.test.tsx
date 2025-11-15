@@ -13,7 +13,7 @@ const { mockServiceFacade } = vi.hoisted(() => ({
     getPopupPlacement: vi
       .fn()
       .mockReturnValue({ sideOffset: 10, alignOffset: 0 }),
-    executePrompt: vi.fn(),
+    insertPrompt: vi.fn(),
     deletePrompt: vi.fn(),
     pinPrompt: vi.fn(),
     unpinPrompt: vi.fn(),
@@ -259,7 +259,7 @@ describe("InputPopup Integration Tests", () => {
 
       // Verify menu button order
       const triggers = screen.getAllByRole("menuitem")
-      expect(triggers).toHaveLength(4) // History, Pinned, Save, Settings
+      expect(triggers).toHaveLength(4) // History, Pinned, Improve, Settings
 
       expect(triggers[0]).toHaveAttribute(
         "data-testid",
@@ -271,7 +271,7 @@ describe("InputPopup Integration Tests", () => {
       )
       expect(triggers[2]).toHaveAttribute(
         "data-testid",
-        TestIds.inputPopup.editTrigger,
+        TestIds.inputPopup.improveTrigger,
       )
       expect(triggers[3]).toHaveAttribute(
         "data-testid",
@@ -320,8 +320,8 @@ describe("InputPopup Integration Tests", () => {
         </TestWrapper>,
       )
 
-      const saveButton = screen.getByTestId(TestIds.inputPopup.editTrigger)
-      expect(saveButton).toBeDisabled()
+      const improveButton = screen.getByTestId(TestIds.inputPopup.improveTrigger)
+      expect(improveButton).toBeDisabled()
 
       // Verify that Settings button is enabled
       const settingsButton = screen.getByTestId(
@@ -536,8 +536,8 @@ describe("InputPopup Integration Tests", () => {
         ).not.toBeInTheDocument()
       })
 
-      // Verify executePrompt was called
-      expect(mockServiceFacade.executePrompt).toHaveBeenCalled()
+      // Verify insertPrompt was called
+      expect(mockServiceFacade.insertPrompt).toHaveBeenCalled()
     })
 
     it("should execute prompt directly when all variables are excluded", async () => {
@@ -601,8 +601,8 @@ describe("InputPopup Integration Tests", () => {
         ).not.toBeInTheDocument()
       })
 
-      // Verify executePrompt was called
-      expect(mockServiceFacade.executePrompt).toHaveBeenCalled()
+      // Verify insertPrompt was called
+      expect(mockServiceFacade.insertPrompt).toHaveBeenCalled()
     })
 
     it("should submit variable values and execute prompt", async () => {
@@ -666,9 +666,9 @@ describe("InputPopup Integration Tests", () => {
       const executeButton = screen.getByText("common.execute")
       fireEvent.click(executeButton)
 
-      // Verify executePrompt was called with variable values
+      // Verify insertPrompt was called with variable values
       await waitFor(() => {
-        expect(mockServiceFacade.executePrompt).toHaveBeenCalledWith(
+        expect(mockServiceFacade.insertPrompt).toHaveBeenCalledWith(
           "var-prompt-2",
           null,
           expect.objectContaining({
@@ -748,8 +748,8 @@ describe("InputPopup Integration Tests", () => {
         ).not.toBeInTheDocument()
       })
 
-      // executePrompt should NOT have been called
-      expect(mockServiceFacade.executePrompt).not.toHaveBeenCalled()
+      // insertPrompt should NOT have been called
+      expect(mockServiceFacade.insertPrompt).not.toHaveBeenCalled()
     })
   })
 })

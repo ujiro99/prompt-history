@@ -158,6 +158,8 @@ export const replaceTextAtCaret = async (
     // For contenteditable elements, clear content first then input new content.
     const htmlElement = element as HTMLElement
 
+    console.log("replaceTextAtCaret:", { match, nodeAtCaret })
+
     // Delete the matched text.
     await deleteTextAtCaret(element, match, nodeAtCaret)
 
@@ -169,6 +171,43 @@ export const replaceTextAtCaret = async (
       nodeAtCaret,
       legacyMode,
     )
+  }
+
+  // Trigger input event to notify other listeners.
+  const inputEvent = new Event("input", { bubbles: true })
+  element.dispatchEvent(inputEvent)
+}
+
+/**
+ * Set text in an element, replacing all existing content
+ */
+export async function setElementText(
+  element: Element,
+  text: string,
+  legacyMode = false,
+): Promise<void> {
+  if (!element) return
+
+  // Set text based on element type
+  if (isTextarea(element)) {
+    element.value = text
+    const newCaretPos = text.length
+    element.selectionStart = newCaretPos
+    element.selectionEnd = newCaretPos
+  } else if (isInput(element)) {
+    element.value = text
+    const newCaretPos = text.length
+    element.selectionStart = newCaretPos
+    element.selectionEnd = newCaretPos
+  } else if (isEditable(element)) {
+    // For contenteditable elements, clear content first then input new content.
+    const htmlElement = element as HTMLElement
+
+    // Clear existing content
+    htmlElement.textContent = ""
+
+    // Use inputContentEditable to properly handle the content insertion.
+    await inputContentEditable(htmlElement, text, 20, null, legacyMode)
   }
 
   // Trigger input event to notify other listeners.

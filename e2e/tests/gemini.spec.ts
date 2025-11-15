@@ -94,6 +94,7 @@ test.describe("Gemini Extension Tests", () => {
 
     // 7. Confirm that history list is displayed
     const historyList = await inputPopup.getHistoryList()
+    const historyListSide = await inputPopup.getHistoryListSide()
     const isVisibleList = await historyList.isVisible()
     expect(isVisibleList).toBe(true)
 
@@ -106,11 +107,15 @@ test.describe("Gemini Extension Tests", () => {
 
     // 9. Check the value of prompt input field
     // - Intended to be displayed under the menu
+    const expectedValue =
+      historyListSide === "bottom"
+        ? "Mock prompt 1 for testing "
+        : "Mock prompt 2 for testing "
     await waitHelpers.waitForCondition(async () => {
       const val = await promptInput.textContent()
-      return val === "Mock prompt 2 for testing "
+      return val === expectedValue
     })
     inputValue = await promptInput.textContent()
-    expect(inputValue).toBe("Mock prompt 2 for testing ") // Most recent history should be input
+    expect(inputValue).toBe(expectedValue) // Most recent history should be input
   })
 })

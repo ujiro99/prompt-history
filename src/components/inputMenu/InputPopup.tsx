@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useMemo } from "react"
-import { History, Star, Save } from "lucide-react"
+import { History, Star, Sparkles } from "lucide-react"
 import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/popover"
 import {
   Menubar,
@@ -7,12 +7,18 @@ import {
   MenubarMenu,
   MenubarTrigger,
 } from "@/components/ui/menubar"
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip"
 import { useCaretNode } from "@/hooks/useCaretNode"
 import { useContainer } from "@/hooks/useContainer"
 import { usePromptExecution } from "@/hooks/usePromptExecution"
 import { PromptPreview } from "./PromptPreview"
 import { RemoveDialog } from "@/components/inputMenu/controller/RemoveDialog"
 import { EditDialog } from "@/components/inputMenu/controller/EditDialog"
+import { PromptImproveDialog } from "@/components/inputMenu/controller/PromptImproveDialog"
 import { VariableInputDialog } from "@/components/inputMenu/controller/VariableInputDialog"
 import { BridgeArea } from "@/components/BridgeArea"
 import { PromptServiceFacade } from "@/services/promptServiceFacade"
@@ -21,7 +27,7 @@ import { MENU, TestIds } from "@/components/const"
 import { PromptList } from "@/components/inputMenu/PromptList"
 import { SettingsMenu } from "./SettingsMenu"
 import { cn, isEmpty } from "@/lib/utils"
-import type { Prompt, SaveDialogData } from "@/types/prompt"
+import type { Prompt, SaveDialogData, ImprovePromptData } from "@/types/prompt"
 import { i18n } from "#imports"
 
 const serviceFacade = PromptServiceFacade.getInstance()
@@ -74,6 +80,8 @@ export function InputMenu(props: Props): React.ReactElement {
   const [saveDialogData, setSaveDialogData] = useState<SaveDialogData | null>(
     null,
   )
+  const [improvePromptData, setImprovePromptData] =
+    useState<ImprovePromptData | null>(null)
   const [historySideFlipped, setHistorySideFlipped] = useState(false)
   const [pinnedSideFlipped, setPinnedSideFlipped] = useState(false)
 
@@ -91,7 +99,8 @@ export function InputMenu(props: Props): React.ReactElement {
   const { container } = useContainer()
   const {
     variableInputData,
-    executePrompt,
+    insertPrompt,
+    setPrompt,
     handleVariableSubmit,
     clearVariableInputData,
   } = usePromptExecution({ nodeAtCaret })
@@ -149,10 +158,10 @@ export function InputMenu(props: Props): React.ReactElement {
       }
       setHoveredItem(null)
 
-      // Execute prompt (with variable check)
-      await executePrompt(promptId)
+      // Insert prompt (with variable check)
+      await insertPrompt(promptId)
     },
-    [executePrompt],
+    [insertPrompt],
   )
 
   /**
@@ -163,6 +172,17 @@ export function InputMenu(props: Props): React.ReactElement {
       await serviceFacade.deletePrompt(promptId)
     } catch (error) {
       console.error("Delete failed:", error)
+    }
+  }
+
+  /**
+   * Input improved prompt process
+   */
+  const handleInputPrompt = async (data: ImprovePromptData) => {
+    try {
+      await setPrompt(data.content)
+    } catch (error) {
+      console.error("Input improved prompt failed:", error)
     }
   }
 
@@ -182,18 +202,14 @@ export function InputMenu(props: Props): React.ReactElement {
   }
 
   /**
-   * Open dialog to save new prompt being entered
+   * Open prompt-improve dialog
    */
-  const openEditDialogNew = async () => {
-    const data = await serviceFacade.prepareSaveDialogData()
-    setSaveDialogData({
-      name: data.name ?? "",
-      content: data.content ?? "",
-      saveMode: data.isOverwriteAvailable ? SaveMode.Overwrite : SaveMode.New,
-      isPinned: true,
-      variables: data.variables ?? [],
+  const openImproveDialog = async () => {
+    if (!props.saveEnabled) return
+    const content = serviceFacade.extractPromptContent()
+    setImprovePromptData({
+      content: content ?? "",
     })
-    setEditId("")
   }
 
   /**
@@ -344,15 +360,31 @@ export function InputMenu(props: Props): React.ReactElement {
           </MenubarContent>
         </MenubarMenu>
 
-        {/* Save Menu */}
-        <MenubarMenu value={MENU.Save}>
-          <MenuTrigger
-            disabled={!props.saveEnabled}
-            onClick={openEditDialogNew}
-            data-testid={TestIds.inputPopup.editTrigger}
-          >
-            <Save size={16} className="stroke-neutral-600" />
-          </MenuTrigger>
+        {/* Improve Menu */}
+        <MenubarMenu value={MENU.Improve}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <MenuTrigger
+                disabled={!props.saveEnabled}
+                onClick={openImproveDialog}
+                data-testid={TestIds.inputPopup.improveTrigger}
+              >
+                <Sparkles
+                  size={16}
+                  strokeWidth={1.75}
+                  className="stroke-neutral-600"
+                />
+              </MenuTrigger>
+            </TooltipTrigger>
+            <TooltipContent
+              className="bg-white dark:bg-neutral-800 text-xs text-foreground shadow-md py-2 border border-neutral-200 dark:border-neutral-700"
+              sideOffset={10}
+              align="start"
+              noArrow={true}
+            >
+              {i18n.t("tooltips.improveMenu")}
+            </TooltipContent>
+          </Tooltip>
         </MenubarMenu>
 
         {/* Settings Menu */}
@@ -393,6 +425,16 @@ export function InputMenu(props: Props): React.ReactElement {
         <span className="text-base break-all">{removePrompt?.name}</span>
       </RemoveDialog>
 
+      {/* Prompt Improve Dialog */}
+      {improvePromptData && (
+        <PromptImproveDialog
+          open={improvePromptData !== null}
+          onOpenChange={() => setImprovePromptData(null)}
+          initialData={improvePromptData}
+          onInput={handleInputPrompt}
+        />
+      )}
+
       {/* Variable Input Dialog */}
       {variableInputData && (
         <VariableInputDialog
@@ -416,7 +458,7 @@ function MenuTrigger(
     <MenubarTrigger
       className={cn(
         "p-1.5 text-xs gap-0.5 font-normal font-sans text-foreground cursor-pointer",
-        props.disabled && "opacity-50 pointer-events-none",
+        props.disabled && "opacity-50",
       )}
       {...props}
     >

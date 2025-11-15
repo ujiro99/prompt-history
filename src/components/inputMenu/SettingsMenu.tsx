@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react"
-import { EllipsisVertical, Download, Upload } from "lucide-react"
+import { EllipsisVertical, Download, Upload, Settings } from "lucide-react"
 import {
   MenubarMenu,
   MenubarTrigger,
@@ -16,6 +16,7 @@ import { useSettings } from "@/hooks/useSettings"
 import { useContainer } from "@/hooks/useContainer"
 import { promptExportService } from "@/services/importExport"
 import { ImportDialog } from "./ImportDialog"
+import { PromptImproverSettingsDialog } from "@/components/settings/PromptImproverSettingsDialog"
 import { MENU, TestIds } from "@/components/const"
 import type { AppSettings } from "@/types/prompt"
 import type { ImportResult } from "@/services/importExport/types"
@@ -45,6 +46,8 @@ export function SettingsMenu({ onMouseEnter }: Props): React.ReactElement {
   const { settings, update } = useSettings()
   const { container } = useContainer()
   const [importDialogOpen, setImportDialogOpen] = useState(false)
+  const [promptImproverSettingsOpen, setPromptImproverSettingsOpen] =
+    useState(false)
 
   /**
    * Handle settings change
@@ -95,6 +98,13 @@ export function SettingsMenu({ onMouseEnter }: Props): React.ReactElement {
     console.log(
       `Import completed: ${result.imported} imported, ${result.duplicates} duplicates`,
     )
+  }, [])
+
+  /**
+   * Handle open prompt improver settings
+   */
+  const handleOpenPromptImproverSettings = useCallback(() => {
+    setPromptImproverSettingsOpen(true)
   }, [])
 
   return (
@@ -198,6 +208,17 @@ export function SettingsMenu({ onMouseEnter }: Props): React.ReactElement {
               <Upload size={16} />
               {i18n.t("settings.import")}
             </MenubarItem>
+
+            <MenubarSeparator />
+
+            {/* Prompt Improver Group */}
+            <MenubarLabel className="text-xs font-medium text-muted-foreground">
+              {i18n.t("settings.groups.promptImprover")}
+            </MenubarLabel>
+            <MenubarItem onClick={handleOpenPromptImproverSettings}>
+              <Settings size={16} />
+              {i18n.t("settings.promptImproverSettings")}
+            </MenubarItem>
           </>
         )}
       </MenubarContent>
@@ -207,6 +228,12 @@ export function SettingsMenu({ onMouseEnter }: Props): React.ReactElement {
         open={importDialogOpen}
         onOpenChange={setImportDialogOpen}
         onImportComplete={handleImportComplete}
+      />
+
+      {/* Prompt Improver Settings Dialog */}
+      <PromptImproverSettingsDialog
+        open={promptImproverSettingsOpen}
+        onOpenChange={setPromptImproverSettingsOpen}
       />
     </MenubarMenu>
   )

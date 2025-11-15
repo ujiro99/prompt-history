@@ -14,6 +14,7 @@ export const TestIds = {
     pinnedList: "pinned-list",
     pinnedItem: "pinned-item",
     editTrigger: "edit-trigger",
+    improveTrigger: "improve-trigger",
     settingsTrigger: "settings-trigger",
     settingsContent: "settings-content",
   },
@@ -51,4 +52,5 @@ export enum MENU {
   Pinned = "Pinned",
   Save = "Save",
   Settings = "Settings",
+  Improve = "Improve",
 }

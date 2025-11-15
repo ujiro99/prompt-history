@@ -43,6 +43,15 @@ export class InputPopup {
     }
   }
 
+  async getHistoryListSide(): Promise<"top" | "bottom" | null> {
+    const list = this.page.locator(this.historyListSelector)
+    const side = await list.getAttribute("data-side")
+    if (side === "top" || side === "bottom") {
+      return side
+    }
+    return null
+  }
+
   async close(): Promise<void> {
     await this.page.keyboard.press("Escape")
   }
