@@ -84,6 +84,8 @@ dialogs:
     improving: 改善中...
     previewTitle: 改善されたプロンプト
     error: プロンプトの改善に失敗しました
+    apiKeyNotConfigured: Gemini APIキーが設定されていません。設定からAPIキーを設定してください。
+    openSettings: 設定を開く
 
 # Tabs
 tabs:
@@ -176,7 +178,7 @@ settings:
     feature: 機能のON・OFF
     autocompleteTarget: 入力補完の対象
     importExport: インポート・エクスポート
-    cacheManagement: キャッシュ管理
+    promptImprover: プロンプト改善
   autoSave: プロンプト自動保存
   autoComplete: 入力補完
   notifications: ステータス通知
@@ -186,9 +188,27 @@ settings:
     pinned: スター付きのみ
   export: プロンプトをエクスポート
   import: プロンプトをインポート
-  refreshImprovePromptCache: プロンプト改善キャッシュを更新
-  cacheRefreshed: キャッシュを更新しました
-  cacheRefreshFailed: キャッシュの更新に失敗しました
+  promptImproverSettings: プロンプト改善の設定
+  promptImprover:
+    apiKeySettings: APIキー設定
+    geminiApiKey: Gemini APIキー
+    enterApiKey: Gemini APIキーを入力してください
+    getApiKeyInfo: APIキーの取得方法：
+    freeApiWarning: 重要：無料のAPIキーはモデルトレーニングに使用される可能性があります。
+    learnMore: 詳細を見る
+    systemPromptSettings: システムプロンプト設定
+    modeUrl: URL (GitHub Gist など)
+    modeText: テキスト直接入力
+    systemPromptText: システムプロンプトテキスト
+    promptUrl: プロンプトURL
+    enterPromptUrl: "https://gist.github.com/..."
+    fetchPrompt: プロンプトを取得
+    fetching: 取得中...
+    setDefault: デフォルトに戻す
+    preview: プレビュー
+    previewPlaceholder: システムプロンプトのプレビューがここに表示されます...
+    enterSystemPrompt: システムプロンプトを入力してください...
+    description: Gemini APIキーとプロンプト改善用のシステムプロンプトを設定します
 
 # Import Dialog
 importDialog:
@@ -237,3 +257,9 @@ variableTypes:
   textarea: 複数行文字列
   select: 選択肢
   exclude: 対象外
+
+# Error messages
+errors:
+  apiKeyRequired: APIキーは必須です
+  urlRequired: URLは必須です
+  invalidUrl: 無効なURL形式です

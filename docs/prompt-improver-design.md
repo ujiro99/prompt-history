@@ -10,8 +10,9 @@ AIが入力プロンプトを分析し、より効果的で明確なプロンプ
 
 1. **プロンプト改善**: Gemini API (gemini-2.5-flash) による自動改善
 2. **ストリーミング表示**: リアルタイムでの改善結果表示
-3. **システムプロンプト管理**: GitHub Gist からの動的取得とキャッシング
-4. **手動キャッシュ更新**: 設定画面からのキャッシュリフレッシュ
+3. **ユーザー設定管理**: APIキーとシステムプロンプトのユーザー設定
+4. **柔軟なプロンプト管理**: テキスト入力またはURL指定による設定
+5. **手動キャッシュ更新**: 設定画面からのキャッシュリフレッシュ
 
 ## 機能要件
 
@@ -35,9 +36,9 @@ AIが入力プロンプトを分析し、より効果的で明確なプロンプ
 - スクロール可能
 - 改善中は逐次更新、完了後は全文表示
 
-### 4. 入力ボタン
+### 4. 入力ボタン統合
 
-- "Input" ボタンでプロンプトをAIサービスの入力欄へ入力する
+- "Input" ボタンでAIサービスの入力欄へ下記の通り反映
   - **改善前**: 通常のプロンプト内容を入力
   - **改善後**: 改善されたプロンプトを自動的に使用
 
@@ -46,142 +47,96 @@ AIが入力プロンプトを分析し、より効果的で明確なプロンプ
 - 改善中 (isImproving === true) のみキャンセルボタンを表示
 - クリックでストリーミング処理を中断
 
-### 6. エラーハンドリング
+### 6. ユーザー設定機能 ★新規
+
+#### 6-1. Gemini APIキーの設定
+
+- **入力方法**: 設定ダイアログのテキスト入力欄
+- **保存場所**: ブラウザローカルストレージ（プレーンテキスト）
+- **初期状態**: 未設定（環境変数からも取得しない）
+- **開発モード**: 環境変数をフォールバックとして使用可能
+- **本番モード**: ユーザー設定のみ
+
+**APIキー取得ガイド**:
+
+- Google AI Studio へのリンク: https://ai.google.dev/gemini-api/docs/api-key
+- キー作成手順の簡易説明
+
+**利用規約の注意喚起**:
+
+- 無料APIキーは学習に使用される可能性がある
+- プライバシーに配慮した利用を促す
+- 参考リンク: https://ai.google.dev/gemini-api/terms?hl=ja
+
+#### 6-2. システムプロンプトの設定
+
+**入力方法の選択** (ラジオボタン):
+
+- **方法A: テキスト直接入力**
+  - 多行テキストエリアで直接システムプロンプトを入力
+  - リアルタイムで保存
+  - プレビュー機能あり
+
+- **方法B: URL指定**
+  - GitHub Gist 等のURLを指定
+  - 取得ボタンでプロンプトを取得
+  - キャッシュ機構（1日TTL）を使用
+  - 取得失敗時のエラー表示
+
+**視覚的な有効/無効の表示**:
+
+- 選択中の方法: アクティブ表示（通常の色）
+- 非選択の方法: グレーアウト + 無効メッセージ
+- 最終更新日時の表示
+
+**優先順位** (全ユーザー共通):
+
+1. ユーザーテキスト設定（方法A）
+2. ユーザーURL設定（方法B、キャッシュ経由）
+3. 環境変数URL (WXT_IMPROVE_PROMPT_URL)
+4. デフォルトシステムプロンプト
+
+#### 6-3. 設定ダイアログ
+
+**起動方法**:
+
+- 設定メニュー > "Prompt Improver Settings"
+- PromptImproveDialog の警告バナーからも起動可能
+
+**構成**:
+
+設定ダイアログの詳細な画面構成については、後述の「UI/UXフロー > 設定ダイアログ画面」セクションを参照。
+
+**主要要素**:
+
+- **API Key Settings**:
+  - APIキー入力フィールド（Show/Hide切り替え）
+  - APIキー取得ガイドリンク
+  - プライバシーに関する注意喚起
+
+- **System Prompt Settings**:
+  - 入力方法選択（ラジオボタン: Direct Text Input / URL）
+  - 条件表示エリア（選択に応じて切り替え）
+  - プレビューエリア（読み取り専用）
+  - 最終更新日時表示
+
+### 7. APIキー未設定時の警告
+
+**PromptImproveDialog での表示**:
+
+- ダイアログ上部に警告バナー表示
+- "Gemini API key is not configured"
+- "Open Settings" ボタンで設定画面へ誘導
+- 改善ボタンは無効化
+
+### 8. エラーハンドリング
 
 - API エラー時: エラーメッセージ表示
 - ネットワークエラー: 再試行の提案
 - タイムアウト: 30秒で自動キャンセル
 - 空プロンプトのバリデーション
-
-## UI/UX フロー
-
-### プロンプト改善画面
-
-```
-+--------------------------------------------------+
-| プロンプトの改善                                 |
-+--------------------------------------------------+
-| プロンプト:                                      |
-| +----------------------------------------------+ |
-| | ユーザーが入力したプロンプト...              | |
-| |                                              | |
-| +----------------------------------------------+ |
-|                                                  |
-| --- 改善されたプロンプト ---                     |
-| +----------------------------------------------+ |
-| | [✨ Improve with AI]                         | |
-| | (実行前のみ、ボタンを表示)                   | |
-| |                                              | |
-| |                                              | |
-| | より効果的なプロンプトに改善された内容が     | |
-| | ストリーミングで逐次表示される...            | |
-| | (読み取り専用、スクロール可能)               | |
-| |                                              | |
-| +----------------------------------------------+ |
-| [Apply Improved Prompt]                          |
-|                                                  |
-| [キャンセル]                           [入力]    |
-+--------------------------------------------------+
-```
-
-### 状態遷移
-
-```
-初期状態
-↓
-[Improve with AI] ボタンクリック
-↓
-ローディング状態 (isImproving = true)
-↓
-ストリーミング開始
-↓ (逐次更新)
-プレビューエリアにテキスト追加
-↓
-ストリーミング完了
-↓
-[Apply Improved Prompt] ボタン有効化
-↓ (ユーザークリック)
-元の Textarea に反映
-↓
-プレビューエリア閉じる
-```
-
-## データフロー
-
-### プロンプト改善フロー
-
-```
-ユーザーがプロンプトを入力
-↓
-[Improve with AI] ボタンクリック
-↓
-PromptImproveDialog.handleImprove()
-↓
-PromptImprover.improvePrompt({
-  prompt: content,
-  onStream: (chunk) => setImprovedContent(prev => prev + chunk),
-  onComplete: () => setIsImproving(false),
-  onError: (error) => setImprovementError(error.message)
-})
-↓
-GeminiClient.generateContentStream(prompt)
-↓
-Gemini API (gemini-2.5-flash)
-↓ (ストリーミング)
-for await (const chunk of responseStream)
-↓
-onStream コールバック実行
-↓
-UI にテキスト追加表示
-↓
-完了 or エラー
-```
-
-### 適用フロー（改善後）
-
-```
-[Input] ボタンクリック
-↓
-const contentToUse = improvedContent.trim() || content.trim()
-↓
-executeManager.setPrompt(contentToUse) で AI サービスに入力
-```
-
-### システムプロンプトロードフロー
-
-```
-PromptImprover 初期化
-↓
-loadSystemInstruction() 実行
-↓
-1. getTodaysCache() を確認
-   ├─ ヒット → 使用
-   └─ ミス → 2へ
-↓
-2. GitHub Gist から fetch
-   ├─ 成功 → saveCache() → 使用
-   └─ 失敗 → 3へ
-↓
-3. getLatestCache() を確認
-   ├─ ヒット → 使用（古くても可）
-   └─ ミス → 4へ
-↓
-4. DEFAULT_INSTRUCTION を使用
-```
-
-### キャッシュリフレッシュフロー
-
-```
-ユーザーが設定メニューを開く
-↓
-"Refresh Improve Prompt Cache" をクリック
-↓
-handleRefreshImprovePromptCache() 実行
-↓
-clearImprovePromptCache() でキャッシュ削除
-↓
-次回の PromptImprover 使用時に自動的に Gist から再取得
-```
+- URL取得失敗時のフォールバック
+- APIキー未設定時の警告
 
 ## 技術仕様
 
@@ -189,22 +144,28 @@ clearImprovePromptCache() でキャッシュ削除
 
 ```
 PromptImproveDialog (UI)
+↓ (APIキー未設定時警告)
 ↓
-PromptImprover (Service) ← loadSystemInstruction()
+PromptImprover (Service) ← loadSettings()
 ↓                        ↓
-GeminiClient             ImprovePromptCacheService
+GeminiClient             PromptImproverSettingsService
 ↓                        ↓
 @google/genai            WXT Storage API
-                         ↓
-                         GitHub Gist (Instruction Source)
+                         ├─ genaiApiKeyStorage
+                         ├─ improvePromptSettingsStorage
+                         └─ improvePromptCacheStorage
+
+SettingsMenu → PromptImproverSettingsDialog
+                ↓
+                PromptImproverSettingsService
 ```
 
 **レイヤー構成**:
 
-- **UI Layer**: PromptImproveDialog - ユーザーインタラクション
+- **UI Layer**: PromptImproveDialog, PromptImproverSettingsDialog - ユーザーインタラクション
 - **Service Layer**: PromptImprover, GeminiClient - ビジネスロジック
-- **Storage Layer**: ImprovePromptCacheService - キャッシュ管理
-- **External Layer**: GitHub Gist - システムプロンプトソース
+- **Storage Layer**: PromptImproverSettingsService - 設定管理
+- **Cache Layer**: ImprovePromptCacheService - URL取得時のキャッシュ管理
 
 ### データモデル
 
@@ -250,6 +211,20 @@ export interface GeminiConfig {
 }
 
 /**
+ * 改善プロンプト設定 ★新規
+ */
+export interface ImprovePromptSettings {
+  /** 入力方法: 'text' または 'url' */
+  mode: "text" | "url"
+  /** テキスト直接入力の内容 */
+  textContent: string
+  /** URL指定の場合のURL */
+  urlContent: string
+  /** 最終更新タイムスタンプ */
+  lastModified: number
+}
+
+/**
  * 改善プロンプトキャッシュデータ
  */
 export interface ImprovePromptCacheData {
@@ -264,7 +239,7 @@ export interface ImprovePromptCacheData {
 
 ### コンポーネント構成
 
-#### 1. GeminiClient (新規)
+#### 1. GeminiClient
 
 **ファイル**: `src/services/genai/GeminiClient.ts`
 
@@ -273,7 +248,7 @@ export interface ImprovePromptCacheData {
 **機能**:
 
 - GoogleGenAI クライアントの初期化
-- API キーの管理（環境変数から取得）
+- API キーの管理（ストレージから取得）
 - generateContentStream の実装
 - エラーハンドリング
 
@@ -284,15 +259,16 @@ class GeminiClient {
   private static instance: GeminiClient | null = null
 
   static getInstance(): GeminiClient
+  initialize(apiKey: string): void
 
-  async generateContentStream(
+  async *generateContentStream(
     prompt: string,
     config?: Partial<GeminiConfig>,
   ): AsyncGenerator<StreamChunk, void, unknown>
 }
 ```
 
-#### 2. PromptImprover (新規)
+#### 2. PromptImprover
 
 **ファイル**: `src/services/genai/PromptImprover.ts`
 
@@ -300,20 +276,32 @@ class GeminiClient {
 
 **機能**:
 
-- システムプロンプトの動的ロード（GitHub Gist経由）
+- ユーザー設定からAPIキー読み込み ★変更
+- システムプロンプトの優先順位管理 ★変更
 - ストリーミングコールバックの制御
 - エラーハンドリング
 - タイムアウト処理（30秒）
 - キャンセル機能
 
-**システムプロンプトの管理**:
+**システムプロンプトの優先順位** ★変更 (全ユーザー共通):
 
-システムプロンプトは GitHub Gist から動的に取得され、4層のフォールバック機構で管理される:
+1. **ユーザーテキスト設定**: `improvePromptSettings.mode === 'text'`
+2. **ユーザーURL設定**: `improvePromptSettings.mode === 'url'` → キャッシュ → fetch
+3. **環境変数URL**: `WXT_IMPROVE_PROMPT_URL` → キャッシュ → fetch
+4. **デフォルト値**: ハードコードされたデフォルト
 
-1. **今日のキャッシュ**: 日付が一致するキャッシュを使用
-2. **Gist取得**: キャッシュがない場合、GitHub Gist から最新版を取得
-3. **最新キャッシュ**: Gist取得に失敗した場合、古いキャッシュでも使用
-4. **デフォルト値**: すべて失敗した場合、ハードコードされたデフォルトを使用
+**APIキーの取得** ★変更:
+
+**本番モード**:
+
+- `genaiApiKeyStorage` から取得
+- 未設定の場合: エラー
+
+**開発モード**:
+
+1. `genaiApiKeyStorage` から取得
+2. 未設定の場合: `WXT_GENAI_API_KEY` から取得
+3. それでも未設定: エラー
 
 **デフォルトシステムプロンプト**:
 
@@ -337,19 +325,21 @@ Output only the improved prompt. No explanations or preambles are necessary.
 ```typescript
 class PromptImprover {
   private systemInstruction: string
+  private apiKey: string
 
+  async loadSettings(): Promise<void> // ★新規
   async improvePrompt(options: ImproveOptions): Promise<void>
   cancel(): void
   getSystemInstruction(): string
-  private async loadSystemInstruction(): Promise<void>
+  isApiKeyConfigured(): boolean // ★新規
 }
 ```
 
-#### 3. ImprovePromptCacheService (新規)
+#### 3. ImprovePromptCacheService
 
 **ファイル**: `src/services/storage/improvePromptCache.ts`
 
-**役割**: システムプロンプトのキャッシュ管理
+**役割**: URL指定時のシステムプロンプトキャッシュ管理
 
 **機能**:
 
@@ -376,38 +366,75 @@ class ImprovePromptCacheService {
 - キャッシュキー: `local:improvePromptCache`
 - TTL: 1日（日付文字列YYYY-MM-DDで判定）
 - 保存場所: WXT Storage API (local storage)
+- 対象: URL指定の場合のみ（テキスト直接入力はキャッシュ不要）
 
-#### 4. PromptImproveDialog (拡張)
+#### 4. PromptImproverSettingsDialog ★新規
+
+**ファイル**: `src/components/settings/PromptImproverSettingsDialog.tsx`
+
+**役割**: Prompt Improver の設定ダイアログ
+
+**機能**:
+
+- APIキーの入力・保存
+- システムプロンプトの入力方法選択（ラジオボタン）
+- テキスト直接入力 UI
+- URL指定 UI
+- プレビュー表示
+- バリデーション
+- 利用規約の注意喚起
+- APIキー取得ガイドリンク
+
+**状態管理**:
+
+```typescript
+const [apiKey, setApiKey] = useState<string>("")
+const [showApiKey, setShowApiKey] = useState(false)
+const [settings, setSettings] = useState<ImprovePromptSettings>({
+  mode: "url",
+  textContent: "",
+  urlContent: "",
+  lastModified: 0,
+})
+const [previewPrompt, setPreviewPrompt] = useState<string>("")
+const [isFetching, setIsFetching] = useState(false)
+const [fetchError, setFetchError] = useState<string | null>(null)
+```
+
+**UI構成**:
+
+- APIキー設定セクション
+  - テキスト入力（type="password"、Show/Hideボタン）
+  - 取得ガイドリンク
+  - 注意喚起メッセージ
+- システムプロンプト設定セクション
+  - ラジオボタン（Text / URL）
+  - 条件表示エリア
+    - Text選択時: Textarea
+    - URL選択時: URL入力 + Fetchボタン
+  - プレビューエリア（読み取り専用）
+  - 最終更新日時表示
+
+#### 5. PromptImproveDialog ★拡張
 
 **ファイル**: `src/components/inputMenu/controller/PromptImproveDialog.tsx`
 
-**追加状態**:
-
-```typescript
-const [isImproving, setIsImproving] = useState(false)
-const [improvedContent, setImprovedContent] = useState("")
-const [improvementError, setImprovementError] = useState<string | null>(null)
-const promptImproverRef = useRef<PromptImprover | null>(null)
-```
-
 **追加機能**:
 
-- 改善ボタンのクリックハンドラー (`handleImprove`)
-- ストリーミング中の状態管理
-- プレビューエリアの表示制御
-- キャンセルハンドラー (`handleCancelImprovement`)
-- 改善版プロンプトの自動適用（"Input"ボタン統合）
-- エラー表示
+- APIキー未設定時の警告バナー表示
+  - 警告メッセージと設定画面への誘導ボタンを含む
+  - 警告スタイルで目立つように表示
+- 設定画面への誘導ボタン
+- 改善ボタンの無効化（APIキー未設定時）
 
-#### 5. SettingsMenu (拡張)
+#### 6. SettingsMenu ★拡張
 
 **ファイル**: `src/components/inputMenu/SettingsMenu.tsx`
 
 **追加機能**:
 
-- キャッシュ管理セクション
-- "Refresh Improve Prompt Cache" ボタン
-- キャッシュクリア処理 (`handleRefreshImprovePromptCache`)
+- "Prompt Improver Settings" メニュー項目追加
+- PromptImproverSettingsDialog の呼び出し
 
 **UI配置**:
 
@@ -416,93 +443,410 @@ Settings Menu
 ├── Features ON/OFF
 ├── Autocomplete target
 ├── Import/Export
-└── Cache Management  ← 新規追加
-    └── Refresh Improve Prompt Cache
+├── Cache Management
+└── Prompt Improver Settings  ← ★新規追加
 ```
 
 ### 実装ファイル
 
 #### 新規作成
 
-1. **`src/services/genai/types.ts`**
-   - 型定義: ImproveOptions, StreamChunk, GeminiConfig, GeminiError
+1. **`src/components/settings/PromptImproverSettingsDialog.tsx`**
+   - 設定ダイアログコンポーネント
+   - APIキー入力UI
+   - システムプロンプト設定UI
 
-2. **`src/services/genai/GeminiClient.ts`**
-   - Gemini API クライアントの実装
-   - シングルトンパターン
-   - ストリーミングサポート
-   - エラーハンドリング
-
-3. **`src/services/genai/PromptImprover.ts`**
-   - プロンプト改善ロジック
-   - システムプロンプトの動的ロード
-   - キャッシュ統合
-   - コールバック制御
-
-4. **`src/services/storage/improvePromptCache.ts`**
-   - キャッシュサービス実装
-   - 日付ベースTTL管理
-   - ストレージ操作
-
-5. **`src/services/genai/__tests__/GeminiClient.test.ts`**
-   - GeminiClient のユニットテスト
-
-6. **`src/services/genai/__tests__/PromptImprover.test.ts`**
-   - PromptImprover のユニットテスト
-
-7. **`src/services/storage/__tests__/improvePromptCache.test.ts`**
-   - ImprovePromptCacheService のユニットテスト
+2. **`src/components/settings/__tests__/PromptImproverSettingsDialog.test.tsx`**
+   - 設定ダイアログのユニットテスト
 
 #### 修正対象
 
-1. **`src/components/inputMenu/controller/PromptImproveDialog.tsx`**
-   - 改善ボタンの追加
-   - プレビューエリアの追加
-   - キャンセルボタンの条件表示
-   - 状態管理の拡張
-   - "Input"ボタンとの統合
+1. **`src/services/storage/definitions.ts`**
+   - `genaiApiKeyStorage` の定義追加
+   - `improvePromptSettingsStorage` の定義追加
 
-2. **`src/components/inputMenu/SettingsMenu.tsx`**
-   - キャッシュ管理セクション追加
-   - リフレッシュボタン追加
+2. **`src/services/genai/PromptImprover.ts`**
+   - `loadSettings()` メソッド追加
+   - `isApiKeyConfigured()` メソッド追加
+   - APIキー取得ロジック変更（環境変数 → ストレージ優先）
+   - システムプロンプト優先順位ロジック変更
 
-3. **`src/services/storage/index.ts`**
-   - StorageService へのキャッシュメソッド追加
-   - improvePromptCacheService の統合
+3. **`src/components/inputMenu/controller/PromptImproveDialog.tsx`**
+   - APIキー未設定警告バナー追加
+   - 設定画面への誘導ボタン追加
+   - 改善ボタンの無効化ロジック追加
 
-4. **`src/services/storage/definitions.ts`**
-   - improvePromptCacheStorage の定義追加
+4. **`src/components/inputMenu/SettingsMenu.tsx`**
+   - "Prompt Improver Settings" メニュー項目追加
+   - PromptImproverSettingsDialog の統合
 
 5. **`src/locales/en.yml`**
-   - 英語翻訳の追加（UI、エラーメッセージ、設定項目）
+   - 設定ダイアログの英語翻訳追加
+   - 警告メッセージの英語翻訳追加
 
 6. **`src/locales/ja.yml`**
-   - 日本語翻訳の追加（UI、エラーメッセージ、設定項目）
+   - 設定ダイアログの日本語翻訳追加
+   - 警告メッセージの日本語翻訳追加
 
-7. **`.env`**, **`.env.development`**
-   - `WXT_IMPROVE_PROMPT_URL` 環境変数追加
+7. **`docs/prompt-improver-design.md`**
+   - 設計ドキュメント全面更新（本ファイル）
+
+## UI/UXフロー
+
+### プロンプト改善画面
+
+```
++--------------------------------------------------+
+| プロンプトの改善                                 |
++--------------------------------------------------+
+| [APIキー未設定の警告バナー]            [設定]    | ← ★追加
++--------------------------------------------------+
+| プロンプト:                                      |
+| +----------------------------------------------+ |
+| | ユーザーが入力したプロンプト...              | |
+| |                                              | |
+| +----------------------------------------------+ |
+|                                                  |
+| --- 改善されたプロンプト ---                     |
+| +----------------------------------------------+ |
+| | [✨ Improve with AI]  (APIキー設定時のみ)    | |
+| |                                              | |
+| | より効果的なプロンプトに改善された内容が     | |
+| | ストリーミングで逐次表示される...            | |
+| | (読み取り専用、スクロール可能)               | |
+| |                                              | |
+| +----------------------------------------------+ |
+|                                                  |
+| [キャンセル]                           [入力]    |
++--------------------------------------------------+
+```
+
+### 設定ダイアログ画面 ★新規
+
+```
++---------------------------------------------------------+
+| Prompt Improver Settings                          [×]   |
++---------------------------------------------------------+
+|                                                         |
+| API Key Settings                                        |
+| ┌──────────────────────────────────────────────────────┐|
+| │ Gemini API Key:                                      ││
+| │ [●●●●●●●●●●●●●●●●●●●●]  [👁️ Show]                    ││
+| │                                                      ││
+| │ ℹ️  Get your free API key:                           ││
+| │    https://ai.google.dev/gemini-api/docs/api-key     ││
+| │                                                      ││
+| │ ⚠️  Important: Free API keys may be used for model   ││
+| │    training. Please review the terms of service:     ││
+| │    https://ai.google.dev/gemini-api/terms?hl=ja      ││
+| └──────────────────────────────────────────────────────┘|
+|                                                         |
+| System Prompt Settings                                  |
+| ┌──────────────────────────────────────────────────────┐|
+| │ Prompt Source:                                       ││
+| │ ◯ Direct Text Input                                  ││
+| │ ● URL (GitHub Gist, etc.)                            ││
+| │                                                      ││
+| │ ┌──────────────────────────────────────────────────┐ ││
+| │ │ URL:                                             │ ││
+| │ │ [https://gist.github.com/...                 ]   │ ││
+| │ │                                 [Fetch Prompt]   │ ││
+| │ │ Last fetched: 2024-01-15 12:34                   │ ││
+| │ └──────────────────────────────────────────────────┘ ││
+| │                                                      ││
+| │ Preview:                                             ││
+| │ ┌──────────────────────────────────────────────────┐ ││
+| │ │ You are an excellent Prompt Engineer...          │ ││
+| │ │ Analyze the user's input prompt...               │ ││
+| │ │ (Read-only preview, 6 lines)                     │ ││
+| │ └──────────────────────────────────────────────────┘ ││
+| └──────────────────────────────────────────────────────┘|
+|                                                         |
+| [Cancel]                                     [Save]     |
++---------------------------------------------------------+
+```
+
+### 状態遷移
+
+#### プロンプト改善フロー
+
+```
+初期状態
+↓
+APIキーチェック
+├─ 設定済み → 改善ボタン有効
+└─ 未設定 → 警告バナー表示 + 改善ボタン無効
+           ↓
+           [設定]ボタンクリック
+           ↓
+           設定ダイアログ表示
+           ↓
+           APIキー入力 + 保存
+           ↓
+           ダイアログ閉じる
+           ↓
+           改善ボタン有効化
+↓
+[Improve with AI] ボタンクリック
+↓
+ローディング状態 (isImproving = true)
+↓
+ストリーミング開始
+↓ (逐次更新)
+プレビューエリアにテキスト追加
+↓
+ストリーミング完了
+↓
+[Input] ボタンで改善版を適用
+↓
+AIサービスに入力
+```
+
+#### 設定保存フロー ★新規
+
+```
+設定メニュー > "Prompt Improver Settings" クリック
+↓
+PromptImproverSettingsDialog 表示
+↓
+[APIキー設定]
+├─ APIキー入力
+└─ 表示/非表示切り替え
+↓
+[システムプロンプト設定]
+├─ ラジオボタンで選択
+│  ├─ "Direct Text Input" 選択
+│  │  ↓
+│  │  Textarea表示 → テキスト入力
+│  │
+│  └─ "URL" 選択
+│     ↓
+│     URL入力欄表示 → URL入力 → [Fetch Prompt]
+│     ↓
+│     取得成功 → プレビュー更新
+│     取得失敗 → エラー表示
+│
+└─ プレビュー確認
+↓
+[Save] ボタンクリック
+↓
+バリデーション
+├─ APIキー: 空でないこと
+├─ URL: 有効なURL形式（URL選択時）
+└─ テキスト: 空でないこと（テキスト選択時）
+↓
+ストレージに保存
+├─ genaiApiKeyStorage.setValue(apiKey)
+└─ improvePromptSettingsStorage.setValue(settings)
+↓
+ダイアログ閉じる
+```
+
+## データフロー
+
+### プロンプト改善フロー
+
+```
+ユーザーがプロンプトを入力
+↓
+[Improve with AI] ボタンクリック
+↓
+PromptImproveDialog.handleImprove()
+↓
+PromptImprover.improvePrompt({
+  prompt: content,
+  onStream: (chunk) => setImprovedContent(prev => prev + chunk),
+  onComplete: () => setIsImproving(false),
+  onError: (error) => setImprovementError(error.message)
+})
+↓
+PromptImprover.loadSettings()  // ★APIキーと システムプロンプト読み込み
+↓
+GeminiClient.generateContentStream(prompt, {
+  systemInstruction: this.systemInstruction
+})
+↓
+Gemini API (gemini-2.5-flash)
+↓ (ストリーミング)
+for await (const chunk of responseStream)
+↓
+onStream コールバック実行
+↓
+UI にテキスト追加表示
+↓
+完了 or エラー
+```
+
+### システムプロンプトロードフロー ★変更 (全ユーザー共通)
+
+```
+PromptImprover.loadSettings()
+↓
+1. improvePromptSettingsStorage から設定読み込み
+   ├─ mode === 'text' && textContent が空でない
+   │  ↓
+   │  settings.textContent を使用 → 終了
+   │
+   ├─ mode === 'url' && urlContent が空でない
+   │  ↓
+   │  2. getTodaysCache() を確認
+   │     ├─ ヒット → キャッシュ使用 → 終了
+   │     └─ ミス → 3へ
+   │  ↓
+   │  3. settings.urlContent から fetch
+   │     ├─ 成功 → saveCache() → 使用 → 終了
+   │     └─ 失敗 → 4へ
+   │
+   └─ ユーザー設定なし → 環境変数へフォールバック
+      ↓
+      4. WXT_IMPROVE_PROMPT_URL が設定されているか確認
+         ├─ あり → 5へ
+         └─ なし → 8へ
+      ↓
+      5. getTodaysCache() を確認
+         ├─ ヒット → キャッシュ使用 → 終了
+         └─ ミス → 6へ
+      ↓
+      6. 環境変数URLから fetch
+         ├─ 成功 → saveCache() → 使用 → 終了
+         └─ 失敗 → 7へ
+      ↓
+      7. getLatestCache() を確認
+         ├─ ヒット → 古いキャッシュ使用 → 終了
+         └─ ミス → 8へ
+      ↓
+      8. DEFAULT_INSTRUCTION を使用
+```
+
+### APIキー取得フロー ★新規
+
+**本番モード**:
+
+```
+PromptImprover.loadSettings()
+↓
+genaiApiKeyStorage.getValue()
+├─ 値あり → 使用
+└─ 値なし → エラー (APIキー未設定)
+```
+
+**開発モード**:
+
+```
+PromptImprover.loadSettings()
+↓
+genaiApiKeyStorage.getValue()
+├─ 値あり → 使用
+└─ 値なし → 環境変数へフォールバック
+   ↓
+   import.meta.env.WXT_GENAI_API_KEY
+   ├─ 値あり → 使用
+   └─ 値なし → エラー (APIキー未設定)
+```
+
+### 設定保存フロー ★新規
+
+```
+PromptImproverSettingsDialog で [Save] クリック
+↓
+バリデーション
+↓
+genaiApiKeyStorage.setValue(apiKey)
+↓
+improvePromptSettingsStorage.setValue({
+  mode: selectedMode,
+  textContent: textContent,
+  urlContent: urlContent,
+  lastModified: Date.now()
+})
+↓
+成功メッセージ表示
+↓
+ダイアログ閉じる
+```
+
+### URL取得フロー ★新規
+
+```
+PromptImproverSettingsDialog で [Fetch Prompt] クリック
+↓
+setIsFetching(true)
+↓
+fetch(urlContent)
+├─ 成功
+│  ↓
+│  レスポンステキスト取得
+│  ↓
+│  setPreviewPrompt(text)
+│  ↓
+│  setIsFetching(false)
+│
+└─ 失敗
+   ↓
+   setFetchError(error.message)
+   ↓
+   setIsFetching(false)
+```
 
 ## 環境変数とストレージ
 
-### 環境変数
+### 環境変数 ★変更
 
-**.env**:
-
-```bash
-WXT_GENAI_API_KEY=<Gemini API Key>
-WXT_IMPROVE_PROMPT_URL=https://gist.githubusercontent.com/ujiro99/.../improve-prompt-default.md
-```
-
-**.env.development**:
+**開発環境** (.env.development):
 
 ```bash
+# APIキー: 開発時のフォールバック（ユーザー設定優先）
 WXT_GENAI_API_KEY=<開発用 API Key>
+
+# システムプロンプトURL: 全ユーザーのデフォルトフォールバック
 WXT_IMPROVE_PROMPT_URL=https://gist.githubusercontent.com/ujiro99/.../improve-prompt-default.md
+
+WXT_E2E=false
 ```
 
-### ストレージ定義
+**本番環境** (.env):
 
-**improvePromptCacheStorage**:
+```bash
+# APIキー: 本番では環境変数を使用しない（ユーザー設定のみ）
+
+# システムプロンプトURL: 全ユーザーのデフォルトフォールバック
+WXT_IMPROVE_PROMPT_URL=https://gist.githubusercontent.com/ujiro99/.../improve-prompt-default.md
+
+WXT_E2E=true
+```
+
+### ストレージ定義 ★拡張
+
+**genaiApiKeyStorage** ★新規:
+
+```typescript
+export const genaiApiKeyStorage = storage.defineItem<string>(
+  "local:genaiApiKey",
+  {
+    fallback: "",
+    version: 1,
+    migrations: {},
+  },
+)
+```
+
+**improvePromptSettingsStorage** ★新規:
+
+```typescript
+export const improvePromptSettingsStorage =
+  storage.defineItem<ImprovePromptSettings>("local:improvePromptSettings", {
+    fallback: {
+      mode: "url",
+      textContent: "",
+      urlContent: "",
+      lastModified: 0,
+    },
+    version: 1,
+    migrations: {},
+  })
+```
+
+**improvePromptCacheStorage** (既存):
 
 ```typescript
 export const improvePromptCacheStorage =
@@ -516,62 +860,94 @@ export const improvePromptCacheStorage =
   )
 ```
 
-**データ構造**:
+### データ構造
+
+**genaiApiKeyStorage**:
+
+```typescript
+string // APIキー文字列（プレーンテキスト）
+```
+
+**improvePromptSettingsStorage**:
 
 ```typescript
 {
-  date: "2024-01-15",           // YYYY-MM-DD
-  instruction: "System prompt text...",
-  cachedAt: 1705320000000       // Unix timestamp
+  mode: "text",                       // または "url"
+  textContent: "You are...",          // テキスト直接入力の場合
+  urlContent: "https://gist...",      // URL指定の場合
+  lastModified: 1705320000000         // Unix timestamp
 }
 ```
 
-### 将来の実装（準備のみ）
+**improvePromptCacheStorage**:
 
 ```typescript
-// ユーザーが設定画面で API キーを入力可能に
-export const genaiApiKeyStorage = storage.defineItem<string>(
-  "local:genaiApiKey",
-  {
-    defaultValue: "",
-    version: 1,
-  },
-)
+{
+  date: "2024-01-15",                 // YYYY-MM-DD
+  instruction: "System prompt...",
+  cachedAt: 1705320000000             // Unix timestamp
+}
 ```
 
 ## エラーハンドリング
 
 ### エラーケース
 
-1. **API キー未設定**
-   - エラーメッセージ: "API key is not configured"
-   - 対応: 設定画面へのリンクを表示（将来）
+1. **API キー未設定** ★拡張
+   - **検出**: PromptImprover.loadSettings() または PromptImproveDialog 初期化時
+   - **表示**: PromptImproveDialog 上部に警告バナー
+   - **メッセージ**: "Gemini API key is not configured. Please set your API key in settings."
+   - **対応**: "Open Settings" ボタンで設定画面へ誘導
+   - **制約**: 改善ボタンを無効化
 
-2. **ネットワークエラー**
-   - エラーメッセージ: "Network error. Please check your connection."
-   - 対応: リトライボタン表示
+2. **API キー無効**
+   - **検出**: Gemini API 呼び出し時
+   - **エラーメッセージ**: "Invalid API key. Please check your API key in settings."
+   - **対応**: 設定画面への誘導
 
-3. **API エラー**
-   - エラーメッセージ: API からのエラーメッセージを表示
-   - 対応: エラーログを記録
+3. **ネットワークエラー**
+   - **エラーメッセージ**: "Network error. Please check your connection."
+   - **対応**: リトライボタン表示
 
-4. **タイムアウト**
+4. **API エラー**
+   - **エラーメッセージ**: API からのエラーメッセージを表示
+   - **対応**: エラーログを記録
+
+5. **タイムアウト**
    - 30秒でタイムアウト
-   - エラーメッセージ: "Request timed out. Please try again."
+   - **エラーメッセージ**: "Request timed out. Please try again."
 
-5. **空プロンプト**
-   - バリデーション: 改善ボタンを無効化
-   - エラーメッセージなし
+6. **空プロンプト**
+   - **バリデーション**: 改善ボタンを無効化
+   - **エラーメッセージ**: なし
 
-### エラー表示
+7. **URL取得失敗** ★新規
+   - **検出**: 設定ダイアログでのURL取得時
+   - **エラーメッセージ**: "Failed to fetch prompt from URL: {error}"
+   - **対応**:
+     - エラー表示
+     - 古いキャッシュへのフォールバック（使用時）
+     - URL再入力を促す
 
-```typescript
-{improvementError && (
-  <div className="text-sm text-destructive p-2 bg-destructive/10 rounded">
-    {improvementError}
-  </div>
-)}
-```
+8. **バリデーションエラー** ★新規
+   - **APIキー**: 空でないこと
+   - **URL**: 有効なURL形式（URL選択時）
+   - **テキスト**: 空でないこと（テキスト選択時）
+   - **表示**: 該当フィールド下に赤字でエラーメッセージ
+
+### エラー表示例
+
+**PromptImproveDialog 警告バナー**:
+
+- 警告スタイルのバナー（黄色系の背景と枠線）
+- AlertCircle アイコン表示
+- エラーメッセージ: "Gemini API key is not configured"
+- "Open Settings" ボタンで設定画面へ誘導
+
+**設定ダイアログ URL取得エラー**:
+
+- エラースタイルの表示（赤系の背景と枠線）
+- エラーメッセージを表示
 
 ## パフォーマンス
 
@@ -580,24 +956,62 @@ export const genaiApiKeyStorage = storage.defineItem<string>(
 1. **デバウンス**: ストリーミング中のUI更新を最小限に抑える
 2. **メモ化**: コールバック関数のメモ化
 3. **クリーンアップ**: コンポーネントアンマウント時の処理中断
+4. **キャッシュ活用**: URL取得時の1日TTLキャッシュ
+5. **条件付きロード**: 設定ダイアログは開いた時のみロード
 
 ### リソース管理
 
 - API コールのキャンセル機能
 - メモリリーク防止
 - イベントリスナーのクリーンアップ
+- ストレージ読み込みの最適化（必要時のみ）
 
 ## セキュリティ
 
-### API キー保護
+### API キー保護 ★拡張
 
-- 環境変数で管理（サーバーサイドでは使用しない）
-- 将来的にはユーザーローカルストレージで暗号化保存
+**現行の実装**:
+
+- ブラウザローカルストレージにプレーンテキストで保存
+- ブラウザのデベロッパーツールで閲覧可能
+- 拡張機能のコンテキスト内でのみアクセス可能
+
+**セキュリティ対策**:
+
+1. **スコープ制限**: ローカルストレージは拡張機能のみアクセス可能
+2. **HTTPS通信**: Gemini API へはHTTPSで通信
+3. **ユーザー教育**:
+   - APIキーの取り扱い注意を表示
+   - 無料キーの学習利用について注意喚起
+   - 利用規約へのリンク提供
+
+**将来の改善検討**:
+
+- Web Crypto API を使用した暗号化保存
+- セッションベースのキー管理
+- キーローテーション機能
 
 ### XSS 対策
 
 - プレビュー表示時のサニタイゼーション
 - React の自動エスケープを利用
+- URL入力時のバリデーション
+
+### プライバシー保護 ★新規
+
+1. **データの保存場所**:
+   - APIキー: ローカルストレージのみ
+   - システムプロンプト: ローカルストレージのみ
+   - ユーザープロンプト: Gemini API のみに送信（ログ保存なし）
+
+2. **利用規約の明示**:
+   - 無料APIキーは学習に使用される可能性
+   - プライバシーに配慮した利用を推奨
+   - Google AI の利用規約へのリンク
+
+3. **データの削除**:
+   - ブラウザストレージクリアで完全削除
+   - 拡張機能アンインストール時に自動削除
 
 ## テスト設計
 
@@ -614,8 +1028,13 @@ export const genaiApiKeyStorage = storage.defineItem<string>(
   - 一般的なエラー
 - ストリームの正常終了確認
 
-#### 2. PromptImprover.test.ts (7 tests)
+#### 2. PromptImprover.test.ts ★拡張
 
+- `loadSettings()`: 設定読み込み
+  - ユーザー設定優先
+  - 開発モード時の環境変数フォールバック
+  - 本番モード時のユーザー設定のみ
+- `isApiKeyConfigured()`: APIキー設定チェック
 - `improvePrompt()`: 正常系フロー
 - ストリーミングコールバック: onStream, onComplete, onError
 - `cancel()`: 処理の中断
@@ -643,9 +1062,12 @@ export const genaiApiKeyStorage = storage.defineItem<string>(
 - `isToday()`: 日付判定
 - `getCurrentDateString()`: 日付文字列生成
 
-#### 4. PromptImproveDialog.test.tsx
+#### 4. PromptImproveDialog.test.tsx ★拡張
 
 - 改善ボタンのレンダリング
+- APIキー未設定時の警告バナー表示
+- 設定画面への誘導ボタン
+- 改善ボタンの無効化（APIキー未設定時）
 - ボタンクリック時の動作
 - プレビューエリアの表示/非表示
 - ストリーミング中のローディング状態
@@ -653,9 +1075,36 @@ export const genaiApiKeyStorage = storage.defineItem<string>(
 - "Input"ボタンとの統合動作
 - エラー表示
 
+#### 5. PromptImproverSettingsDialog.test.tsx ★新規
+
+- ダイアログの表示/非表示
+- APIキー入力と表示/非表示切り替え
+- システムプロンプト入力方法の切り替え
+  - ラジオボタンの動作
+  - 条件表示エリアの切り替え
+- テキスト入力モード
+  - Textareaの表示
+  - 入力内容の保存
+- URL指定モード
+  - URL入力欄の表示
+  - Fetchボタンの動作
+  - 取得成功時のプレビュー更新
+  - 取得失敗時のエラー表示
+- バリデーション
+  - APIキーの必須チェック
+  - URLフォーマットチェック
+  - テキスト内容の必須チェック
+- 保存処理
+  - ストレージへの保存確認
+  - 成功メッセージ表示
+
 ### E2Eテスト（将来的に）
 
 - プロンプト入力 → 改善 → プレビュー → AI サービスへ送信
+- APIキー未設定時の警告表示
+- 設定画面でのAPIキー設定
+- システムプロンプトのテキスト入力
+- システムプロンプトのURL指定
 - キャッシュロードの確認
 - 設定画面からのキャッシュリフレッシュ
 - エラーケースの確認
@@ -664,7 +1113,6 @@ export const genaiApiKeyStorage = storage.defineItem<string>(
 
 ### 技術的負債
 
-- API キーのストレージ管理（将来実装）
 - レート制限への対応
 - コスト監視機能（使用量トラッキング）
 - `app.config.ts` の型エラー（既存、本機能とは無関係）
@@ -679,13 +1127,22 @@ export const genaiApiKeyStorage = storage.defineItem<string>(
 ### 国際化
 
 - システムプロンプトの多言語対応（現状は英語のみ）
-- UI ラベルの翻訳（英語・日本語対応済み）
+- UI ラベルの翻訳（英語・日本語対応）
+- 設定ダイアログの多言語対応
 
-### セキュリティとプライバシー
+### セキュリティとプライバシー ★拡張
 
-- GitHub Gist の公開URL使用（セキュアな配信）
-- システムプロンプトの改ざん防止（将来的に署名検証を検討）
-- ユーザープロンプトは Gemini API のみに送信（ログ保存なし）
+**現行のアプローチ**:
+
+- APIキー: プレーンテキストでローカルストレージに保存
+- 拡張機能のコンテキストでのみアクセス可能
+- HTTPS通信のみ
+
+**注意喚起**:
+
+- 無料APIキーは学習に使用される可能性がある旨を明示
+- Google AI の利用規約へのリンク提供
+- プライバシーに配慮した利用を促す
 
 ## キャッシュ戦略の詳細
 
@@ -695,6 +1152,7 @@ export const genaiApiKeyStorage = storage.defineItem<string>(
 - **判定ロジック**: `getCurrentDateString()` との完全一致で判定
 - **TTL**: 実質24時間（日付が変わるまで）
 - **タイムゾーン**: ローカルタイムゾーン依存
+- **適用対象**: URL指定の場合のみ（テキスト直接入力は対象外）
 
 ### フォールバック戦略の利点
 
@@ -706,23 +1164,55 @@ export const genaiApiKeyStorage = storage.defineItem<string>(
 ### キャッシュ更新トリガー
 
 1. **自動更新**: 日付変更時（0:00以降の初回使用）
-2. **手動更新**: 設定画面の "Refresh" ボタン
-3. **強制更新**: キャッシュクリア後の初回使用
+2. **手動更新**: 設定ダイアログの "Fetch Prompt" ボタン
+3. **設定変更時**: URL変更後の初回使用
 
 ## 実装完了チェックリスト
 
+### Phase 1: ストレージとデータモデル
+
 - [x] GeminiClient 実装
-- [x] PromptImprover 実装
+- [x] PromptImprover 実装（既存）
 - [x] ImprovePromptCacheService 実装
-- [x] PromptImproveDialog UI 拡張
-- [x] SettingsMenu キャッシュ管理追加
-- [x] StorageService 統合
-- [x] 環境変数設定
-- [x] i18n 翻訳（英語・日本語）
-- [x] ユニットテスト
+- [ ] ストレージ定義追加
+  - [ ] genaiApiKeyStorage
+  - [ ] improvePromptSettingsStorage
+
+### Phase 2: 設定ダイアログ
+
+- [ ] PromptImproverSettingsDialog 実装
+  - [ ] APIキー入力UI
+  - [ ] システムプロンプト設定UI
+  - [ ] バリデーション
+  - [ ] プレビュー表示
+
+### Phase 3: 既存コンポーネント修正
+
+- [ ] PromptImprover 修正
+  - [ ] loadSettings() 実装
+  - [ ] isApiKeyConfigured() 実装
+  - [ ] 優先順位ロジック変更
+- [ ] PromptImproveDialog 修正
+  - [ ] 警告バナー追加
+  - [ ] 設定画面への誘導
+- [ ] SettingsMenu 修正
+  - [ ] メニュー項目追加
+
+### Phase 4: 国際化
+
+- [ ] i18n 翻訳（英語・日本語）
+  - [ ] 設定ダイアログ
+  - [ ] 警告メッセージ
+  - [ ] エラーメッセージ
+
+### Phase 5: テストとドキュメント
+
+- [ ] ユニットテスト
   - [x] GeminiClient.test.ts (15 tests)
   - [x] PromptImprover.test.ts (7 tests, 4 failing - 既知の問題)
   - [x] improvePromptCache.test.ts (14 tests, all passing)
+  - [ ] PromptImproverSettingsDialog.test.tsx (新規)
+  - [ ] PromptImproveDialog.test.tsx (警告バナーテスト追加)
 - [ ] E2Eテスト（将来実装）
 - [x] 設計ドキュメント更新
 
@@ -730,31 +1220,65 @@ export const genaiApiKeyStorage = storage.defineItem<string>(
 
 ### 必須要件
 
-- Gemini API の使用には API キーが必要 (`WXT_GENAI_API_KEY`)
-- GitHub Gist の URL が必要 (`WXT_IMPROVE_PROMPT_URL`)
+- Gemini API の使用には API キーが必要（ユーザーが設定）
+- 初回起動時は必ず設定が必要
 - ストリーミングレスポンスのため、ネットワーク接続が必須
 
 ### 制約事項
 
 - API のレート制限やクォータに注意
-- Gist は公開URLであること（プライベートGistは不可）
+- URL指定時は公開URLであること（プライベートGistは不可）
 - キャッシュは日付ベースのため、頻繁な更新には未対応
+- APIキーはプレーンテキスト保存
+
+### 開発環境と本番環境の違い ★新規
+
+**全環境共通**:
+
+- `WXT_IMPROVE_PROMPT_URL`: 全ユーザーのデフォルトフォールバックとして使用
+
+**開発環境** (WXT_E2E === 'false'):
+
+- `WXT_GENAI_API_KEY`: 開発時のフォールバックとして使用可能（ユーザー設定優先）
+- デバッグ用途でAPIキーの設定なしでも動作可能
+
+**本番環境** (WXT_E2E === 'true'):
+
+- `WXT_GENAI_API_KEY`: 環境変数は無視、ユーザー設定のみ有効
+- 初回起動時は必ずAPIキーの設定が必要
 
 ### トラブルシューティング
 
+**APIキーが認識されない**:
+
+1. 設定画面でAPIキーが正しく入力されているか確認
+2. ブラウザのデベロッパーツールでストレージを確認
+3. `genaiApiKey` キーに値が保存されているか確認
+4. APIキーの形式が正しいか確認（Google AI Studio で発行）
+
 **システムプロンプトが更新されない**:
 
-1. 設定メニューから "Refresh Improve Prompt Cache" を実行
-2. ブラウザのデベロッパーツールでストレージを確認
-3. `improvePromptCache` キーの date が今日の日付か確認
+1. 設定ダイアログで入力方法を確認
+2. URL指定の場合: "Fetch Prompt" ボタンで手動取得
+3. テキスト入力の場合: 内容が保存されているか確認
+4. ブラウザストレージの `improvePromptSettings` を確認
 
 **改善が動作しない**:
 
-1. `.env` の `WXT_GENAI_API_KEY` が設定されているか確認
+1. APIキーが設定されているか確認
 2. ネットワーク接続を確認
 3. ブラウザコンソールでエラーメッセージを確認
+4. Gemini API のステータスページを確認
+
+**URL取得が失敗する**:
+
+1. URLが正しいか確認（公開URLであること）
+2. ネットワーク接続を確認
+3. CORS エラーの場合: GitHub Gist 等の対応サービスを使用
+4. 古いキャッシュが残っていれば自動的にフォールバック
 
 **キャッシュが古い**:
 
-1. 日付が変わっても自動更新されない場合、手動でリフレッシュ
-2. ストレージをクリアして再度試行
+1. 設定ダイアログで "Fetch Prompt" を実行
+2. ブラウザストレージをクリアして再度設定
+3. URL を再入力して保存

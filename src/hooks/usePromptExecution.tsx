@@ -133,7 +133,7 @@ export const usePromptExecution = (
         }
 
         // Set directly if no variables or variable expansion is disabled
-        await serviceFacade.setPrompt(content, nodeAtCaret ?? null)
+        await serviceFacade.setPrompt(content)
         onExecuteComplete?.()
       } catch (error) {
         console.error("Set prompt failed:", error)
@@ -170,13 +170,9 @@ export const usePromptExecution = (
           )
         } else {
           // Use setPrompt for raw text content
-          await serviceFacade.setPrompt(
-            content,
-            savedNodeAtCaret ?? nodeAtCaret ?? null,
-            {
-              variableValues: values,
-            },
-          )
+          await serviceFacade.setPrompt(content, {
+            variableValues: values,
+          })
         }
 
         // Close the variable input dialog

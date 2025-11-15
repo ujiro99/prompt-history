@@ -84,6 +84,8 @@ dialogs:
     improving: Improving...
     previewTitle: Improved Prompt
     error: Failed to improve prompt
+    apiKeyNotConfigured: Gemini API key is not configured. Please set your API key in settings.
+    openSettings: Open Settings
 
 # Tabs
 tabs:
@@ -176,7 +178,7 @@ settings:
     feature: Features ON/OFF
     autocompleteTarget: Autocomplete target
     importExport: Import/Export
-    cacheManagement: Cache Management
+    promptImprover: Prompt Improver
   autoSave: Auto-save prompts
   autoComplete: Auto-complete
   notifications: Status notifications
@@ -186,9 +188,27 @@ settings:
     pinned: Starred only
   export: Export prompts
   import: Import prompts
-  refreshImprovePromptCache: Refresh Improve Prompt Cache
-  cacheRefreshed: Cache refreshed successfully
-  cacheRefreshFailed: Failed to refresh cache
+  promptImproverSettings: Prompt Improver Settings
+  promptImprover:
+    apiKeySettings: API Key Settings
+    geminiApiKey: Gemini API Key
+    enterApiKey: Enter your Gemini API key
+    getApiKeyInfo: "Get your API key:"
+    freeApiWarning: "Important: Free API keys may be used for model training."
+    learnMore: Learn more
+    systemPromptSettings: System Prompt Settings
+    modeUrl: URL (GitHub Gist, etc.)
+    modeText: Direct Text Input
+    systemPromptText: System Prompt Text
+    promptUrl: Prompt URL
+    enterPromptUrl: "https://gist.github.com/..."
+    fetchPrompt: Fetch Prompt
+    fetching: Fetching...
+    setDefault: Set Default
+    preview: Preview
+    previewPlaceholder: Preview of system prompt will appear here...
+    enterSystemPrompt: Enter system prompt text...
+    description: Configure Gemini API key and system prompt for prompt improvement
 
 # Import Dialog
 importDialog:
@@ -237,3 +257,9 @@ variableTypes:
   textarea: Multi-line Text
   select: Select
   exclude: Exclude
+
+# Error messages
+errors:
+  apiKeyRequired: API key is required
+  urlRequired: URL is required
+  invalidUrl: Invalid URL format

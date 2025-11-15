@@ -7,6 +7,10 @@ import { GeminiClient } from "./GeminiClient"
 import type { ImproveOptions } from "./types"
 import { GeminiError, GeminiErrorType } from "./types"
 import { improvePromptCacheService } from "../storage/improvePromptCache"
+import {
+  genaiApiKeyStorage,
+  improvePromptSettingsStorage,
+} from "../storage/definitions"
 
 /**
  * Default system prompt for prompt improvement (fallback)
@@ -40,14 +44,60 @@ export class PromptImprover {
 
   constructor() {
     this.client = GeminiClient.getInstance()
-    // Load system instruction asynchronously
-    this.loadSystemInstruction().catch((error) => {
-      console.warn("Failed to load system instruction:", error)
+    // Load settings asynchronously
+    this.loadSettings().catch((error) => {
+      console.warn("Failed to load settings:", error)
     })
   }
 
   /**
-   * Initialize with API key from environment
+   * Load settings from storage (API key and system instruction)
+   * Supports both user settings and environment variable fallbacks
+   */
+  public async loadSettings(): Promise<void> {
+    // Load API key
+    await this.loadApiKey()
+
+    // Load system instruction with priority logic
+    await this.loadSystemInstructionWithPriority()
+  }
+
+  /**
+   * Load API key from storage or environment variable (dev mode only)
+   */
+  private async loadApiKey(): Promise<void> {
+    // Try loading from storage first
+    const storedApiKey = await genaiApiKeyStorage.getValue()
+
+    if (storedApiKey && storedApiKey.trim() !== "") {
+      this.client.initialize(storedApiKey)
+      return
+    }
+
+    // In development mode, fallback to environment variable
+    const isDevelopmentMode = import.meta.env.WXT_E2E === "false"
+    if (isDevelopmentMode) {
+      const envApiKey = import.meta.env.WXT_GENAI_API_KEY
+      if (envApiKey) {
+        this.client.initialize(envApiKey)
+        return
+      }
+    }
+
+    // API key not configured - will show warning in UI
+    console.warn("API key not configured")
+  }
+
+  /**
+   * Check if API key is configured
+   */
+  public isApiKeyConfigured(): boolean {
+    return this.client.isInitialized()
+  }
+
+  /**
+   * Initialize with API key from environment (deprecated, kept for compatibility)
+   * @deprecated Use loadSettings() instead
    */
   public initializeFromEnv(): void {
     const apiKey = import.meta.env.WXT_GENAI_API_KEY
@@ -84,14 +134,14 @@ export class PromptImprover {
       return
     }
 
-    // Initialize if not ready
-    if (!this.isReady()) {
-      try {
-        this.initializeFromEnv()
-      } catch (error) {
-        onError?.(error as Error)
-        return
-      }
+    // Check if API key is configured
+    if (!this.isApiKeyConfigured()) {
+      const error = new GeminiError(
+        "API key not configured. Please set your API key in settings.",
+        GeminiErrorType.API_KEY_MISSING,
+      )
+      onError?.(error)
+      return
     }
 
     // Create abort controller for cancellation
@@ -110,12 +160,15 @@ export class PromptImprover {
     let improvedPrompt = ""
 
     try {
-      const stream = this.client.generateContentStream(prompt, {
-        systemInstruction: this.systemInstruction,
-        generateContentConfig: {
-          abortSignal: this.abortController.signal,
+      const stream = this.client.generateContentStream(
+        `<user_prompt>\n${prompt}\n</user_prompt>`,
+        {
+          systemInstruction: this.systemInstruction,
+          generateContentConfig: {
+            abortSignal: this.abortController.signal,
+          },
         },
-      })
+      )
 
       for await (const chunk of stream) {
         // Check if cancelled
@@ -171,44 +224,78 @@ export class PromptImprover {
   }
 
   /**
-   * Load system instruction from cache or GitHub Gist
-   * 4-tier fallback: Today's cache → Gist fetch → Latest cache → Hardcoded default
+   * Load system instruction with priority logic
+   * Priority (all users):
+   * 1. User text setting (mode === 'text')
+   * 2. User URL setting (mode === 'url') → cache → fetch
+   * 3. Environment variable URL → cache → fetch
+   * 4. Default instruction
    */
-  private async loadSystemInstruction(): Promise<void> {
-    // 1. Try today's cache
-    const cached = await improvePromptCacheService.getTodaysCache()
-    if (cached) {
-      this.systemInstruction = cached
+  private async loadSystemInstructionWithPriority(): Promise<void> {
+    // Load user settings
+    const settings = await improvePromptSettingsStorage.getValue()
+
+    // 1. User text setting
+    if (settings.mode === "text" && settings.textContent.trim() !== "") {
+      this.systemInstruction = settings.textContent
       return
     }
 
-    // 2. Try fetch from Gist
-    try {
-      const url = import.meta.env.WXT_IMPROVE_PROMPT_URL
-      if (url) {
-        const response = await fetch(url)
-        if (!response.ok) {
-          throw new Error(`Failed to fetch: ${response.status}`)
-        }
-        const instruction = await response.text()
-        // Save to cache
-        await improvePromptCacheService.saveCache(instruction)
+    // 2. User URL setting
+    if (settings.mode === "url" && settings.urlContent.trim() !== "") {
+      const instruction = await this.fetchFromUrl(settings.urlContent)
+      if (instruction) {
         this.systemInstruction = instruction
         return
       }
+    }
+
+    // 3. Environment variable URL (all users)
+    const envUrl = import.meta.env.WXT_IMPROVE_PROMPT_URL
+    if (envUrl) {
+      const instruction = await this.fetchFromUrl(envUrl)
+      if (instruction) {
+        this.systemInstruction = instruction
+        return
+      }
+    }
+
+    // 4. Fallback to default
+    this.systemInstruction = DEFAULT_INSTRUCTION
+  }
+
+  /**
+   * Fetch system instruction from URL with cache support
+   * Fallback chain: Today's cache → Fetch from URL → Latest cache
+   */
+  private async fetchFromUrl(url: string): Promise<string | null> {
+    // 1. Try today's cache
+    const cached = await improvePromptCacheService.getTodaysCache()
+    if (cached) {
+      return cached
+    }
+
+    // 2. Try fetch from URL
+    try {
+      const response = await fetch(url)
+      if (!response.ok) {
+        throw new Error(`Failed to fetch: ${response.status}`)
+      }
+      const instruction = await response.text()
+      // Save to cache
+      await improvePromptCacheService.saveCache(instruction)
+      return instruction
     } catch (error) {
-      console.warn("Failed to fetch instruction from Gist:", error)
+      console.warn("Failed to fetch instruction from URL:", error)
     }
 
     // 3. Fallback to latest cache
     const latestCache = await improvePromptCacheService.getLatestCache()
     if (latestCache) {
-      this.systemInstruction = latestCache
-      return
+      return latestCache
     }
 
-    // 4. Fallback to hardcoded default
-    this.systemInstruction = DEFAULT_INSTRUCTION
+    return null
   }
 
   /**

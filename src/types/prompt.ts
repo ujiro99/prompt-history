@@ -135,6 +135,20 @@ export interface ImprovePromptData {
 }
 
 /**
+ * Settings for prompt improver feature
+ */
+export interface ImprovePromptSettings {
+  /** Input method: 'text' or 'url' */
+  mode: "text" | "url"
+  /** Direct text input content */
+  textContent: string
+  /** URL content (GitHub Gist, etc.) */
+  urlContent: string
+  /** Last modified timestamp */
+  lastModified: number
+}
+
+/**
  * Type of data to be stored in storage
  */
 export interface StorageData {

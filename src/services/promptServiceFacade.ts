@@ -370,7 +370,6 @@ export class PromptServiceFacade {
    */
   async setPrompt(
     content: string,
-    nodeAtCaret: Node | null,
     options?: {
       variableValues?: VariableValues
     },
@@ -385,7 +384,6 @@ export class PromptServiceFacade {
     await this.executeManager.setPrompt(
       content,
       this.aiService,
-      nodeAtCaret,
       options,
       () => {
         this.notify({

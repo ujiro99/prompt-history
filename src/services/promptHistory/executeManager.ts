@@ -2,7 +2,7 @@ import type { AIServiceInterface } from "../../types/aiService"
 import type { Prompt, VariableValues } from "../../types/prompt"
 import type { StorageService } from "../storage"
 import { SessionManager } from "./sessionManager"
-import { replaceTextAtCaret } from "@/services/dom/inputUtils"
+import { replaceTextAtCaret, setElementText } from "@/services/dom/inputUtils"
 import type { AutoCompleteMatch } from "@/services/autoComplete/types"
 import { expandPrompt } from "@/utils/variables/variableFormatter"
 import { analytics } from "#imports"
@@ -122,7 +122,6 @@ export class ExecuteManager {
   async setPrompt(
     content: string,
     aiService: AIServiceInterface,
-    nodeAtCaret: Node | null,
     options?: {
       variableValues?: VariableValues
     },
@@ -145,28 +144,8 @@ export class ExecuteManager {
       // Inject text into AI service
       const textInput = aiService.getTextInput()
       if (textInput) {
-        // Get current content to calculate match range
-        const currentContent = aiService.extractPromptContent() || ""
-
-        // Create match object to replace entire content
-        const match: AutoCompleteMatch = {
-          id: "",
-          name: "",
-          content: finalContent,
-          isPinned: false,
-          matchStart: 0,
-          matchEnd: currentContent.length, // Replace entire content
-          newlineCount: 0,
-          searchTerm: currentContent,
-        }
-
         // Execute text replacement
-        await replaceTextAtCaret(
-          textInput,
-          match,
-          nodeAtCaret,
-          aiService.legacyMode,
-        )
+        await setElementText(textInput, finalContent, aiService.legacyMode)
       }
 
       onSuccess?.()

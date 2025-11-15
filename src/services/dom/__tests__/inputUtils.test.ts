@@ -3,7 +3,11 @@
  * @vitest-environment happy-dom
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
-import { inputContentEditable, replaceTextAtCaret } from "../inputUtils"
+import {
+  inputContentEditable,
+  replaceTextAtCaret,
+  setElementText,
+} from "../inputUtils"
 import {
   createMockInput,
   createMockTextarea,
@@ -286,6 +290,122 @@ describe("inputUtils", () => {
       // happy-dom may calculate selection position differently
       expect(input.selectionStart).toBeGreaterThanOrEqual(13)
       expect(input.selectionEnd).toBeGreaterThanOrEqual(13)
+    })
+  })
+
+  describe("setElementText", () => {
+    it("should handle null/undefined elements gracefully", async () => {
+      await expect(setElementText(null as any, "test")).resolves.toBeUndefined()
+      await expect(
+        setElementText(undefined as any, "test"),
+      ).resolves.toBeUndefined()
+    })
+
+    it("should set text in input elements", async () => {
+      const input = createMockInput("existing text")
+
+      await setElementText(input, "new text")
+
+      expect(input.value).toBe("new text")
+      expect(input.selectionStart).toBe(8) // length of "new text"
+      expect(input.selectionEnd).toBe(8)
+    })
+
+    it("should set empty text in input elements", async () => {
+      const input = createMockInput("existing text")
+
+      await setElementText(input, "")
+
+      expect(input.value).toBe("")
+      expect(input.selectionStart).toBe(0)
+      expect(input.selectionEnd).toBe(0)
+    })
+
+    it("should set text in textarea elements", async () => {
+      const textarea = createMockTextarea("existing\nmulti-line\ntext")
+
+      await setElementText(textarea, "new text")
+
+      expect(textarea.value).toBe("new text")
+      expect(textarea.selectionStart).toBe(8)
+      expect(textarea.selectionEnd).toBe(8)
+    })
+
+    it("should set multi-line text in textarea elements", async () => {
+      const textarea = createMockTextarea("existing text")
+
+      await setElementText(textarea, "line 1\nline 2\nline 3")
+
+      expect(textarea.value).toBe("line 1\nline 2\nline 3")
+      expect(textarea.selectionStart).toBe(20) // length of "line 1\nline 2\nline 3"
+      expect(textarea.selectionEnd).toBe(20)
+    })
+
+    it("should set text in contenteditable elements", async () => {
+      const editable = createMockContentEditable("existing content")
+      mockSelectionAPI()
+
+      await setElementText(editable, "new content")
+
+      // Verify that the element was cleared
+      expect(editable.textContent).toBe("")
+      // Verify that getSelection was called for inserting new content
+      expect(window.getSelection).toHaveBeenCalled()
+    })
+
+    it("should set multi-line text in contenteditable elements", async () => {
+      const editable = createMockContentEditable("existing content")
+      mockSelectionAPI()
+      const dispatchEventSpy = vi.spyOn(editable, "dispatchEvent")
+
+      await setElementText(editable, "line 1\nline 2\nline 3")
+
+      // Verify that the element was cleared
+      expect(editable.textContent).toBe("")
+
+      // Should dispatch Shift+Enter events for line breaks
+      const keyboardEvents = dispatchEventSpy.mock.calls
+        .map((call) => call[0])
+        .filter(
+          (event) => event instanceof KeyboardEvent && event.key === "Enter",
+        )
+
+      expect(keyboardEvents.length).toBeGreaterThanOrEqual(2)
+    })
+
+    it("should dispatch input event after setting text", async () => {
+      const input = createMockInput("existing text")
+      const dispatchEventSpy = vi.spyOn(input, "dispatchEvent")
+
+      await setElementText(input, "new text")
+
+      expect(dispatchEventSpy).toHaveBeenCalled()
+      const event = dispatchEventSpy.mock.calls[0][0] as Event
+      expect(event.type).toBeDefined()
+      expect(event.bubbles).toBe(true)
+    })
+
+    it("should clear existing content in contenteditable before setting new text", async () => {
+      const editable = createMockContentEditable()
+      editable.textContent = "existing content"
+      mockSelectionAPI()
+
+      await setElementText(editable, "new content")
+
+      // Verify that textContent was cleared
+      expect(editable.textContent).toBe("")
+    })
+
+    it("should handle empty string in contenteditable elements", async () => {
+      const editable = createMockContentEditable("existing content")
+      mockSelectionAPI()
+
+      await setElementText(editable, "")
+
+      // Verify that the element was cleared
+      expect(editable.textContent).toBe("")
+      // Even for empty string, getSelection should be called
+      expect(window.getSelection).toHaveBeenCalled()
     })
   })
 })
