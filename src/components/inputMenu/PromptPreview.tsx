@@ -79,7 +79,7 @@ export const PromptPreview = ({
             <div className="space-y-2 text-foreground">
               <ScrollAreaWithGradient
                 className="max-h-100"
-                gradientHeight={"4.5rem"}
+                gradientHeight={"3.5rem"}
               >
                 <p className="font-mono break-all text-sm whitespace-pre-line text-foreground/80 pr-3">
                   {prompt.content}

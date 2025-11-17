@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react"
+import { ChevronDown } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import "./ScrollAreaWithGradient.css"
 import { cn } from "@/lib/utils"
@@ -64,13 +65,20 @@ export function ScrollAreaWithGradient({
       data-scrollable={isScrollable}
     >
       {/* Top gradient cover */}
-      <div className="scroll-gradient-top" style={{ height: gradientHeight }} />
+      <div
+        className="scroll-gradient-top flex items-start justify-center"
+        style={{ height: gradientHeight }}
+      >
+        <ChevronDown className="size-4 stroke-neutral-400 rotate-180 mt-1" />
+      </div>
       {children}
       {/* Bottom gradient cover */}
       <div
-        className="scroll-gradient-bottom"
+        className="scroll-gradient-bottom flex items-end justify-center"
         style={{ height: gradientHeight }}
-      />
+      >
+        <ChevronDown className="size-4 stroke-neutral-400 mb-1" />
+      </div>
     </ScrollArea>
   )
 }
