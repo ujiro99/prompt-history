@@ -1,4 +1,10 @@
-import { useMemo, useState, useEffect, useDeferredValue } from "react"
+import {
+  useMemo,
+  useState,
+  useEffect,
+  useDeferredValue,
+  useCallback,
+} from "react"
 import { Search, Settings2 } from "lucide-react"
 import type { Prompt, SortOrder } from "@/types/prompt"
 import { cn, isEmpty } from "@/lib/utils"
@@ -26,16 +32,15 @@ import { i18n } from "#imports"
 const orders: SortOrder[] = ["recent", "execution", "name", "composite"]
 
 interface PromptListProps {
-  menuType?: "history" | "pinned"
+  menuType: "history" | "pinned"
   prompts: Prompt[]
   sideFlipped: boolean
   onClick: (promptId: string) => void
   onHover: (
-    promptId: string,
-    element: HTMLElement,
+    promptId: string | null,
+    element: HTMLElement | null,
     menuType: "history" | "pinned",
   ) => void
-  onLeave: () => void
   onEdit: (promptId: string) => void
   onRemove: (promptId: string) => void
   onCopy: (promptId: string) => void
@@ -52,14 +57,14 @@ export const PromptList = ({
   sideFlipped,
   onClick,
   onHover,
-  onLeave,
   onEdit,
   onRemove,
   onCopy,
   onTogglePin,
   onLockChange,
 }: PromptListProps) => {
-  const [hoveredPromptId, setHoveredPromptId] = useState<string | null>(null)
+  const [containerElm, setContainerElm] = useState<HTMLElement | null>(null)
+  const [hoveredElm, setHoveredElm] = useState<HTMLElement | null>(null)
   const [searchQuery, setSearchQuery] = useState<string>("")
   const deferredSearchQuery = useDeferredValue(searchQuery)
   const {
@@ -107,34 +112,58 @@ export const PromptList = ({
       ? i18n.t("messages.pinnedEmpty")
       : i18n.t("messages.historyEmpty")
 
-  const handleHover = (
-    promptId: string,
-    element: HTMLElement,
-    menuType: "history" | "pinned",
-  ) => {
-    setHoveredPromptId(promptId)
-    onHover(promptId, element, menuType)
-  }
+  const handleEnter = useCallback(
+    (
+      promptId: string,
+      element: HTMLElement,
+      _menuType: string,
+      name: string,
+    ) => {
+      console.log("hover name", name)
+      setHoveredElm(element)
+      onHover(promptId, element, menuType)
+    },
+    [onHover, menuType],
+  )
 
-  const handleLeave = () => {
-    setHoveredPromptId(null)
-    onLeave()
-  }
+  const handleLeave = useCallback(
+    (e: React.MouseEvent | null) => {
+      if (e && e.relatedTarget instanceof Node) {
+        // If moving to a child element, do not trigger leave
+        if (containerElm?.contains(e.relatedTarget)) {
+          return
+        }
+      }
+      setHoveredElm(null)
+      onHover(null, null, menuType)
+    },
+    [containerElm, onHover, menuType],
+  )
 
   useEffect(() => {
-    if (hoveredPromptId) {
-      // Check if the hovered prompt exists in any of the filtered groups
-      const promptExists = filteredGroups.some((group) =>
-        group.prompts.find((p) => p.id === hoveredPromptId),
-      )
+    if (!hoveredElm) return
 
-      if (!promptExists) {
-        // If the currently hovered prompt is filtered out, clear the hover state
-        setHoveredPromptId(null)
-        onLeave()
-      }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          // When the element goes out of List, trigger leave
+          if (entry.intersectionRatio < 1) {
+            handleLeave(null)
+          }
+        })
+      },
+      {
+        root: containerElm,
+        // Set root margin to detect only when completely off-screen
+        rootMargin: "0px",
+        threshold: [0, 1],
+      },
+    )
+    observer.observe(hoveredElm)
+    return () => {
+      observer.disconnect()
     }
-  }, [filteredGroups, hoveredPromptId, onLeave])
+  }, [containerElm, hoveredElm, handleLeave])
 
   useEffect(() => {
     if (viewportElm && !sideFlipped && sortOrder !== "name") {
@@ -159,7 +188,7 @@ export const PromptList = ({
   }, [onLockChange])
 
   return (
-    <>
+    <div onMouseLeave={handleLeave} ref={setContainerElm}>
       {isListEmpty && isEmpty(searchQuery) ? null : (
         <div className="flex items-center py-0.5 pl-3 pr-1 border-b">
           <Search size={20} className="stroke-neutral-400" />
@@ -197,14 +226,14 @@ export const PromptList = ({
                   value={prompt.id}
                   key={prompt.id}
                   isPinned={prompt.isPinned}
-                  onHover={handleHover}
-                  onLeave={handleLeave}
+                  onEnter={handleEnter}
                   onClick={onClick}
                   onEdit={onEdit}
                   onRemove={onRemove}
                   onCopy={onCopy}
                   onTogglePin={onTogglePin}
                   testId={testId}
+                  name={prompt.name}
                 >
                   {prompt.name}
                 </MenuItem>
@@ -213,7 +242,7 @@ export const PromptList = ({
           ))
         )}
       </ScrollAreaWithGradient>
-    </>
+    </div>
   )
 }
 

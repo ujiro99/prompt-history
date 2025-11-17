@@ -4,7 +4,9 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
+  PopoverPortal,
 } from "@/components/ui/popover"
+import { useContainer } from "@/hooks/useContainer"
 import { RemoveButton } from "./controller/RemoveButton"
 import { EditButton } from "./controller/EditButton"
 import { CopyButton } from "./controller/CopyButton"
@@ -29,6 +31,7 @@ export const MenuItemPopup = ({
   onCopy,
 }: MenuItemPopupProps) => {
   const [open, setOpen] = useState(false)
+  const { container } = useContainer()
 
   const handleClick = (e: React.SyntheticEvent) => {
     e.stopPropagation()
@@ -54,31 +57,33 @@ export const MenuItemPopup = ({
           />
         </button>
       </PopoverTrigger>
-      <PopoverContent
-        className="relative p-1 text-foreground"
-        side={"top"}
-        align={"center"}
-        sideOffset={-1}
-        onOpenAutoFocus={noFocus}
-      >
-        <div className="space-y-1">
-          <EditButton
-            className="w-full"
-            onClick={() => onEdit(promptId)}
-            size={butttonSize}
-          />
-          <CopyButton
-            className="w-full"
-            onClick={() => onCopy(promptId)}
-            size={butttonSize}
-          />
-          <RemoveButton
-            className="w-full"
-            onClick={() => onRemove(promptId)}
-            size={butttonSize}
-          />
-        </div>
-      </PopoverContent>
+      <PopoverPortal container={container}>
+        <PopoverContent
+          className="relative p-1 text-foreground"
+          side={"top"}
+          align={"center"}
+          sideOffset={-1}
+          onOpenAutoFocus={noFocus}
+        >
+          <div className="space-y-1">
+            <EditButton
+              className="w-full text-sm"
+              onClick={() => onEdit(promptId)}
+              size={butttonSize}
+            />
+            <CopyButton
+              className="w-full text-sm"
+              onClick={() => onCopy(promptId)}
+              size={butttonSize}
+            />
+            <RemoveButton
+              className="w-full text-sm"
+              onClick={() => onRemove(promptId)}
+              size={butttonSize}
+            />
+          </div>
+        </PopoverContent>
+      </PopoverPortal>
     </Popover>
   )
 }

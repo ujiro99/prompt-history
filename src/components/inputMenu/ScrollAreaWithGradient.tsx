@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils"
 type ScrollAreaWithGradientProps = {
   className?: string
   children: React.ReactNode
-  gradientHeight?: number
+  gradientHeight?: number | string
   ref?: React.Ref<HTMLDivElement>
 }
 

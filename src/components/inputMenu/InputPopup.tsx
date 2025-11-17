@@ -121,12 +121,16 @@ export function InputMenu(props: Props): React.ReactElement {
 
   const handleItemHover = useCallback(
     (
-      promptId: string,
-      element: HTMLElement,
+      promptId: string | null,
+      element: HTMLElement | null,
       menuType: "history" | "pinned",
     ) => {
       if (hoverTimeoutRef.current) {
         clearTimeout(hoverTimeoutRef.current)
+      }
+      if (promptId == null || element == null) {
+        setHoveredItem(null)
+        return
       }
       hoverTimeoutRef.current = window.setTimeout(() => {
         setHoveredItem({ promptId, element, menuType })
@@ -134,13 +138,6 @@ export function InputMenu(props: Props): React.ReactElement {
     },
     [],
   )
-
-  const handleItemLeave = useCallback(() => {
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current)
-    }
-    setHoveredItem(null)
-  }, [])
 
   const handleOverlayEnter = useCallback(() => {
     // Cancel timeout when mouse enters overlay
@@ -315,7 +312,6 @@ export function InputMenu(props: Props): React.ReactElement {
               sideFlipped={historySideFlipped}
               onClick={handleItemClick}
               onHover={handleItemHover}
-              onLeave={handleItemLeave}
               onEdit={openEditDialog}
               onRemove={setRemoveId}
               onCopy={openCopyDialog}
@@ -357,7 +353,6 @@ export function InputMenu(props: Props): React.ReactElement {
               sideFlipped={pinnedSideFlipped}
               onClick={handleItemClick}
               onHover={handleItemHover}
-              onLeave={handleItemLeave}
               onEdit={openEditDialog}
               onRemove={setRemoveId}
               onCopy={openCopyDialog}
