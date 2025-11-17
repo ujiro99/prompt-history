@@ -15,7 +15,6 @@ type MenuItemProps = {
     promptId: string,
     element: HTMLElement,
     menuType: "history" | "pinned",
-    name: string,
   ) => void
   onEdit: (promptId: string) => void
   onRemove: (promptId: string) => void
@@ -41,9 +40,9 @@ export const MenuItem = (props: MenuItemProps) => {
   const handleMouseEnter = () => {
     setIsHovered(true)
     if (props.onEnter && props.menuType) {
-      const element = (elementRef as React.RefObject<HTMLDivElement>).current
+      const element = elementRef.current
       if (element) {
-        props.onEnter(props.value, element, props.menuType, props.name || "")
+        props.onEnter(props.value, element, props.menuType)
       }
     }
   }

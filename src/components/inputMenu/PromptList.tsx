@@ -113,13 +113,7 @@ export const PromptList = ({
       : i18n.t("messages.historyEmpty")
 
   const handleEnter = useCallback(
-    (
-      promptId: string,
-      element: HTMLElement,
-      _menuType: string,
-      name: string,
-    ) => {
-      console.log("hover name", name)
+    (promptId: string, element: HTMLElement) => {
       setHoveredElm(element)
       onHover(promptId, element, menuType)
     },
