@@ -12,7 +12,8 @@
       "mcp__serena__search_for_pattern",
       "mcp__serena__initial_instructions",
       "Bash(npx tsc:*)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:ai.google.dev)"
     ],
     "deny": [],
     "ask": []
