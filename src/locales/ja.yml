@@ -28,14 +28,14 @@ common:
 # Buttons
 buttons:
   edit: 編集
-  copy: コピー
+  copy: 複製
   delete: 削除
   save: 保存
   cancel: キャンセル
   pin: スター
   unpin: スター解除
   saveAsNew: 新規として保存
-  saveAsCopy: コピーとして保存
+  saveAsCopy: 複製する
 
 # Status messages
 status:
@@ -72,7 +72,7 @@ dialogs:
   save:
     title: プロンプトを保存
   copy:
-    title: プロンプトをコピー
+    title: プロンプトを複製
   variables:
     title: 変数の入力
     preview: プレビュー

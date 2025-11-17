@@ -28,14 +28,14 @@ common:
 # Buttons
 buttons:
   edit: Edit
-  copy: Copy
+  copy: Duplicate
   delete: Delete
   save: Save
   cancel: Cancel
   pin: Star
   unpin: Unstar
   saveAsNew: Save as new
-  saveAsCopy: Save as Copy
+  saveAsCopy: Duplicate
 
 # Status messages
 status:
@@ -72,7 +72,7 @@ dialogs:
   save:
     title: Save Prompt
   copy:
-    title: Copy Prompt
+    title: Duplicate Prompt
   variables:
     title: Variable Input
     preview: Preview
