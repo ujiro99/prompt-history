@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useMemo } from "react"
+import React, { useState, useCallback, useMemo, useEffect } from "react"
 import { History, Star, Sparkles } from "lucide-react"
 import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/popover"
 import {
@@ -76,7 +76,6 @@ export function InputMenu(props: Props): React.ReactElement {
   const [hoveredItem, setHoveredItem] = useState<HoveredItem>(null)
   const [editId, setEditId] = useState<string | null>(null)
   const [removeId, setRemoveId] = useState<string | null>(null)
-  const hoverTimeoutRef = useRef<number | null>(null)
   const [saveDialogData, setSaveDialogData] = useState<SaveDialogData | null>(
     null,
   )
@@ -84,6 +83,9 @@ export function InputMenu(props: Props): React.ReactElement {
     useState<ImprovePromptData | null>(null)
   const [historySideFlipped, setHistorySideFlipped] = useState(false)
   const [pinnedSideFlipped, setPinnedSideFlipped] = useState(false)
+
+  // PromptList lock status
+  const [listLocked, setListLocked] = useState<boolean>(false)
 
   // For positioning BridgeArea
   const [historyAnchorElm, setHistoryAnchorElm] =
@@ -106,56 +108,34 @@ export function InputMenu(props: Props): React.ReactElement {
   } = usePromptExecution({ nodeAtCaret })
 
   const handleMenuEnter = (val: MENU) => {
+    if (listLocked) return
     setSelectedMenu(val)
   }
 
   const handleMenuChange = (val: string) => {
+    if (listLocked) return
     setHoveredItem(null) // Reset preview when menu changes.
     setSelectedMenu(val as MENU)
   }
 
   const handleItemHover = useCallback(
     (
-      promptId: string,
-      element: HTMLElement,
+      promptId: string | null,
+      element: HTMLElement | null,
       menuType: "history" | "pinned",
     ) => {
-      if (hoverTimeoutRef.current) {
-        clearTimeout(hoverTimeoutRef.current)
+      if (promptId == null || element == null) {
+        setHoveredItem(null)
+        return
       }
-      hoverTimeoutRef.current = window.setTimeout(() => {
-        setHoveredItem({ promptId, element, menuType })
-      }, 50)
+      setHoveredItem({ promptId, element, menuType })
     },
     [],
   )
 
-  const handleItemLeave = useCallback(() => {
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current)
-    }
-    setHoveredItem(null)
-  }, [])
-
-  const handleOverlayEnter = useCallback(() => {
-    // Cancel timeout when mouse enters overlay
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current)
-      hoverTimeoutRef.current = null
-    }
-  }, [])
-
-  const handleOverlayLeave = useCallback(() => {
-    // Close overlay when mouse leaves
-    setHoveredItem(null)
-  }, [])
-
   const handleItemClick = useCallback(
     async (promptId: string) => {
-      // Clear hoveredItem immediately when item is clicked
-      if (hoverTimeoutRef.current) {
-        clearTimeout(hoverTimeoutRef.current)
-      }
+      // Clear hoveredItem when item is clicked
       setHoveredItem(null)
 
       // Insert prompt (with variable check)
@@ -163,6 +143,11 @@ export function InputMenu(props: Props): React.ReactElement {
     },
     [insertPrompt],
   )
+
+  const handlePreviewLeave = useCallback(() => {
+    // Close preview when mouse leaves
+    setHoveredItem(null)
+  }, [])
 
   /**
    * Delete prompt process
@@ -200,6 +185,11 @@ export function InputMenu(props: Props): React.ReactElement {
       console.error("Pin toggle failed:", error)
     }
   }
+
+  const handleInteractOutside = useCallback(() => {
+    setSelectedMenu(MENU.None)
+    setListLocked(false)
+  }, [])
 
   /**
    * Open prompt-improve dialog
@@ -290,9 +280,10 @@ export function InputMenu(props: Props): React.ReactElement {
             <History size={16} className="stroke-neutral-600" />
           </MenuTrigger>
           <MenubarContent
-            side="top"
             className="p-0"
+            side={historySideFlipped && listLocked ? "bottom" : "top"}
             onSideFlip={(side) => setHistorySideFlipped(side !== "top")}
+            onInteractOutside={handleInteractOutside}
             ref={setHistoryContentElm}
             data-testid={TestIds.inputPopup.historyList}
             container={container}
@@ -304,11 +295,11 @@ export function InputMenu(props: Props): React.ReactElement {
               sideFlipped={historySideFlipped}
               onClick={handleItemClick}
               onHover={handleItemHover}
-              onLeave={handleItemLeave}
               onEdit={openEditDialog}
               onRemove={setRemoveId}
               onCopy={openCopyDialog}
               onTogglePin={handleTogglePin}
+              onLockChange={setListLocked}
             />
             {historyAnchorElm && historyContentElm && (
               <BridgeArea
@@ -330,9 +321,10 @@ export function InputMenu(props: Props): React.ReactElement {
             <Star size={16} className="stroke-neutral-600" />
           </MenuTrigger>
           <MenubarContent
-            side="top"
             className="p-0"
+            side={pinnedSideFlipped && listLocked ? "bottom" : "top"}
             onSideFlip={(side) => setPinnedSideFlipped(side !== "top")}
+            onInteractOutside={handleInteractOutside}
             ref={setPinnedContentElm}
             data-testid={TestIds.inputPopup.pinnedList}
             container={container}
@@ -344,11 +336,11 @@ export function InputMenu(props: Props): React.ReactElement {
               sideFlipped={pinnedSideFlipped}
               onClick={handleItemClick}
               onHover={handleItemHover}
-              onLeave={handleItemLeave}
               onEdit={openEditDialog}
               onRemove={setRemoveId}
               onCopy={openCopyDialog}
               onTogglePin={handleTogglePin}
+              onLockChange={setListLocked}
             />
             {pinnedAnchorElm && pinnedContentElm && (
               <BridgeArea
@@ -391,14 +383,13 @@ export function InputMenu(props: Props): React.ReactElement {
         <SettingsMenu onMouseEnter={() => handleMenuEnter(MENU.Settings)} />
       </Menubar>
 
-      {/* PromptPreview Overlay */}
+      {/* PromptPreview */}
       {hoveredPrompt && hoveredItem?.element && (
         <PromptPreviewWrapper
           open={!isEmpty(selectedMenu) && hoveredItem.element != null}
           prompt={hoveredPrompt}
           anchorElement={hoveredItem.element}
-          onMouseEnter={handleOverlayEnter}
-          onMouseLeave={handleOverlayLeave}
+          onMouseLeave={handlePreviewLeave}
         />
       )}
 
@@ -471,16 +462,27 @@ type PromptDetailWrapperProps = {
   open: boolean
   prompt: Prompt
   anchorElement: HTMLElement
-  onMouseEnter: () => void
   onMouseLeave: () => void
 }
 
 const PromptPreviewWrapper = (props: PromptDetailWrapperProps) => {
-  const { open, prompt, anchorElement, onMouseEnter, onMouseLeave } = props
+  const { open, prompt, anchorElement, onMouseLeave } = props
+  const [promptChanged, setPromptChanged] = useState(false)
+
+  useEffect(() => {
+    if (prompt.id) {
+      setPromptChanged(true)
+      setTimeout(() => setPromptChanged(false))
+    }
+  }, [prompt.id])
 
   return (
-    <div onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
-      <PromptPreview open={open} anchorElm={anchorElement} prompt={prompt} />
+    <div onMouseLeave={onMouseLeave}>
+      <PromptPreview
+        open={open && !promptChanged}
+        anchorElm={anchorElement}
+        prompt={prompt}
+      />
     </div>
   )
 }

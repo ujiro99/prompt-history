@@ -170,28 +170,29 @@ export const BridgeArea = (props: Props) => {
          z`
       break
     case "left":
-      d = `M ${from.x} ${from.y}
+      d = `M ${from.right - from.width / 5} ${from.y}
          Q ${to.x} ${from.y},
            ${to.x} ${to.y}
          v ${to.height}
          Q ${to.x} ${from.bottom},
-           ${from.right - (from.width * 3) / 4} ${from.bottom}
-         h ${-(from.width / 4)}
+           ${from.right - from.width / 5} ${from.bottom}
+         h ${from.width / 5 - 4}
          v ${-from.height}
+         h ${-from.width / 5}
          z`
-      left = -from.width + 2
+      left = -from.width - 6
       break
     case "right":
-      d = `M ${from.right} ${from.top}
+      d = `M ${from.x + from.width / 5} ${from.top}
          Q ${to.right} ${from.top},
            ${to.right} ${to.top}
          v ${to.height}
          Q ${to.right} ${from.bottom},
-           ${from.right - from.width / 4} ${from.bottom}
-         h ${from.width / 4}
+           ${from.x + from.width / 5} ${from.bottom}
+         h ${-from.width / 5 + 4}
          v ${-from.height}
          z`
-      left = -2
+      left = left - 2
       break
   }
 

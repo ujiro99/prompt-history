@@ -5,54 +5,29 @@ import { cn } from "@/lib/utils"
 
 type MenuItemProps = {
   menuType?: "history" | "pinned"
+  name?: string
   value: string
   isPinned: boolean
   testId: string
   children: React.ReactNode
   onClick: (promptId: string) => void
-  onHover: (
+  onEnter: (
     promptId: string,
     element: HTMLElement,
     menuType: "history" | "pinned",
   ) => void
-  onLeave: (promptId: string) => void
   onEdit: (promptId: string) => void
   onRemove: (promptId: string) => void
   onCopy: (promptId: string) => void
   onTogglePin: (promptId: string, isPinned: boolean) => void
 }
 
-const BUTTON_SIZE = 11
+const BUTTON_SIZE = 16
 
 export const MenuItem = (props: MenuItemProps) => {
-  const { value: promptId, onLeave } = props
+  const { value: promptId } = props
   const [isHovered, setIsHovered] = useState(false)
   const elementRef = useRef<HTMLDivElement>(null)
-
-  React.useEffect(() => {
-    const element = elementRef.current
-    if (!element || !onLeave || !isHovered) return
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          // When the element goes off-screen (becomes invisible)
-          if (!entry.isIntersecting) {
-            onLeave(promptId)
-          }
-        })
-      },
-      {
-        // Set root margin to detect only when completely off-screen
-        rootMargin: "0px",
-        threshold: 0,
-      },
-    )
-    observer.observe(element)
-    return () => {
-      observer.disconnect()
-    }
-  }, [onLeave, promptId, isHovered])
 
   const handleClick = () => {
     if (promptId) {
@@ -64,19 +39,16 @@ export const MenuItem = (props: MenuItemProps) => {
 
   const handleMouseEnter = () => {
     setIsHovered(true)
-    if (props.onHover && props.menuType) {
-      const element = (elementRef as React.RefObject<HTMLDivElement>).current
+    if (props.onEnter && props.menuType) {
+      const element = elementRef.current
       if (element) {
-        props.onHover(props.value, element, props.menuType)
+        props.onEnter(props.value, element, props.menuType)
       }
     }
   }
 
   const handleMouseLeave = () => {
     setIsHovered(false)
-    if (props.onLeave) {
-      props.onLeave(promptId)
-    }
   }
 
   return (
