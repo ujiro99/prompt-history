@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useMemo } from "react"
+import React, { useState, useCallback, useMemo, useEffect } from "react"
 import { History, Star, Sparkles } from "lucide-react"
 import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/popover"
 import {
@@ -76,7 +76,6 @@ export function InputMenu(props: Props): React.ReactElement {
   const [hoveredItem, setHoveredItem] = useState<HoveredItem>(null)
   const [editId, setEditId] = useState<string | null>(null)
   const [removeId, setRemoveId] = useState<string | null>(null)
-  const hoverTimeoutRef = useRef<number | null>(null)
   const [saveDialogData, setSaveDialogData] = useState<SaveDialogData | null>(
     null,
   )
@@ -125,39 +124,18 @@ export function InputMenu(props: Props): React.ReactElement {
       element: HTMLElement | null,
       menuType: "history" | "pinned",
     ) => {
-      if (hoverTimeoutRef.current) {
-        clearTimeout(hoverTimeoutRef.current)
-      }
       if (promptId == null || element == null) {
         setHoveredItem(null)
         return
       }
-      hoverTimeoutRef.current = window.setTimeout(() => {
-        setHoveredItem({ promptId, element, menuType })
-      }, 50)
+      setHoveredItem({ promptId, element, menuType })
     },
     [],
   )
 
-  const handleOverlayEnter = useCallback(() => {
-    // Cancel timeout when mouse enters overlay
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current)
-      hoverTimeoutRef.current = null
-    }
-  }, [])
-
-  const handleOverlayLeave = useCallback(() => {
-    // Close overlay when mouse leaves
-    setHoveredItem(null)
-  }, [])
-
   const handleItemClick = useCallback(
     async (promptId: string) => {
-      // Clear hoveredItem immediately when item is clicked
-      if (hoverTimeoutRef.current) {
-        clearTimeout(hoverTimeoutRef.current)
-      }
+      // Clear hoveredItem when item is clicked
       setHoveredItem(null)
 
       // Insert prompt (with variable check)
@@ -165,6 +143,11 @@ export function InputMenu(props: Props): React.ReactElement {
     },
     [insertPrompt],
   )
+
+  const handlePreviewLeave = useCallback(() => {
+    // Close preview when mouse leaves
+    setHoveredItem(null)
+  }, [])
 
   /**
    * Delete prompt process
@@ -400,14 +383,13 @@ export function InputMenu(props: Props): React.ReactElement {
         <SettingsMenu onMouseEnter={() => handleMenuEnter(MENU.Settings)} />
       </Menubar>
 
-      {/* PromptPreview Overlay */}
+      {/* PromptPreview */}
       {hoveredPrompt && hoveredItem?.element && (
         <PromptPreviewWrapper
           open={!isEmpty(selectedMenu) && hoveredItem.element != null}
           prompt={hoveredPrompt}
           anchorElement={hoveredItem.element}
-          onMouseEnter={handleOverlayEnter}
-          onMouseLeave={handleOverlayLeave}
+          onMouseLeave={handlePreviewLeave}
         />
       )}
 
@@ -480,16 +462,27 @@ type PromptDetailWrapperProps = {
   open: boolean
   prompt: Prompt
   anchorElement: HTMLElement
-  onMouseEnter: () => void
   onMouseLeave: () => void
 }
 
 const PromptPreviewWrapper = (props: PromptDetailWrapperProps) => {
-  const { open, prompt, anchorElement, onMouseEnter, onMouseLeave } = props
+  const { open, prompt, anchorElement, onMouseLeave } = props
+  const [promptChanged, setPromptChanged] = useState(false)
+
+  useEffect(() => {
+    if (prompt.id) {
+      setPromptChanged(true)
+      setTimeout(() => setPromptChanged(false))
+    }
+  }, [prompt.id])
 
   return (
-    <div onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
-      <PromptPreview open={open} anchorElm={anchorElement} prompt={prompt} />
+    <div onMouseLeave={onMouseLeave}>
+      <PromptPreview
+        open={open && !promptChanged}
+        anchorElm={anchorElement}
+        prompt={prompt}
+      />
     </div>
   )
 }

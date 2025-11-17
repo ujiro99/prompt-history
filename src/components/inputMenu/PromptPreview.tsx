@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Popover,
   PopoverContent,
@@ -28,6 +28,20 @@ export const PromptPreview = ({
   prompt,
 }: PromptDetailProps) => {
   const [content, setContent] = useState<HTMLDivElement | null>(null)
+  const [shouldRender, setShouldRender] = useState(false)
+
+  useEffect(() => {
+    let timeout: ReturnType<typeof setTimeout> | null = null
+    if (open) {
+      // Delay rendering to avoid flicker on quick open/close
+      timeout = setTimeout(() => setShouldRender(true), 50)
+    } else {
+      setShouldRender(false)
+    }
+    return () => {
+      if (timeout) clearTimeout(timeout)
+    }
+  }, [open, anchorElm])
 
   /**
    * Display relative time
@@ -51,43 +65,45 @@ export const PromptPreview = ({
     <Popover open={open}>
       <PopoverAnchor virtualRef={{ current: anchorElm }} />
       <PopoverPortal container={anchorElm}>
-        <PopoverContent
-          ref={setContent}
-          className="relative pt-4 pb-3 pl-4 pr-2 max-w-lg"
-          side={"right"}
-          align={"end"}
-          sideOffset={8}
-          onOpenAutoFocus={noFocus}
-          onWheel={(e) => e.stopPropagation()}
-          data-testid={TestIds.inputPopup.promptPreview}
-        >
-          <div className="space-y-2 text-foreground">
-            <ScrollAreaWithGradient
-              className="max-h-100"
-              gradientHeight={"4.5rem"}
-            >
-              <p className="font-mono break-all text-sm whitespace-pre-line text-foreground/80 pr-3">
-                {prompt.content}
-              </p>
-            </ScrollAreaWithGradient>
-            <hr />
-            <div className="flex items-center justify-end gap-1.5 text-xs pr-2">
-              <span>
-                {i18n.t("preview.usedTimes", [`${prompt.executionCount}`])}
-              </span>
-              <span>•</span>
-              <span>{formatRelativeTime(prompt.lastExecutedAt)}</span>
+        {shouldRender && (
+          <PopoverContent
+            ref={setContent}
+            className="relative pt-4 pb-3 pl-4 pr-2 max-w-lg"
+            side={"right"}
+            align={"end"}
+            sideOffset={8}
+            onOpenAutoFocus={noFocus}
+            onWheel={(e) => e.stopPropagation()}
+            data-testid={TestIds.inputPopup.promptPreview}
+          >
+            <div className="space-y-2 text-foreground">
+              <ScrollAreaWithGradient
+                className="max-h-100"
+                gradientHeight={"4.5rem"}
+              >
+                <p className="font-mono break-all text-sm whitespace-pre-line text-foreground/80 pr-3">
+                  {prompt.content}
+                </p>
+              </ScrollAreaWithGradient>
+              <hr />
+              <div className="flex items-center justify-end gap-1.5 text-xs pr-2">
+                <span>
+                  {i18n.t("preview.usedTimes", [`${prompt.executionCount}`])}
+                </span>
+                <span>•</span>
+                <span>{formatRelativeTime(prompt.lastExecutedAt)}</span>
+              </div>
             </div>
-          </div>
-          {content && (
-            <BridgeArea
-              fromElm={anchorElm}
-              toElm={content}
-              isHorizontal={true}
-              className="size-auto" // workaround for MenuItem's css
-            />
-          )}
-        </PopoverContent>
+            {content && (
+              <BridgeArea
+                fromElm={anchorElm}
+                toElm={content}
+                isHorizontal={true}
+                className="size-auto" // workaround for MenuItem's css
+              />
+            )}
+          </PopoverContent>
+        )}
       </PopoverPortal>
     </Popover>
   )
