@@ -389,7 +389,7 @@ export const PromptImproverSettingsDialog: React.FC<
                   <span>
                     {i18n.t("settings.promptImprover.freeApiWarning")}{" "}
                     <a
-                      href="https://ai.google.dev/gemini-api/terms?hl=ja"
+                      href="https://ai.google.dev/gemini-api/terms"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-primary underline hover:no-underline"
