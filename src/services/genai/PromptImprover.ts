@@ -15,18 +15,9 @@ import {
 /**
  * Default system prompt for prompt improvement (fallback)
  */
-const DEFAULT_INSTRUCTION = `You are an excellent Prompt Engineer. Analyze the user's input prompt and improve it to be more effective.
-
-Improvement Guidelines:
-- Maintain the intent and purpose of the prompt
-- Apply the following improvements as needed:
-  * Clarify ambiguous expressions for better clarity
-  * Structure with bullet points or sections
-  * Add necessary background information or constraints
-- Avoid being overly verbose
-- Determine the optimal improvement approach based on the prompt's characteristics (simple/complex, technical/general, etc.)
-
-Output only the improved prompt. No explanations or preambles are necessary.`
+const DEFAULT_INSTRUCTION = `You are an excellent Prompt Engineer.
+The <user_prompt> section contains the prompt entered by the user.
+Please make this into an effective prompt:`
 
 /**
  * Default timeout in milliseconds (30 seconds)
