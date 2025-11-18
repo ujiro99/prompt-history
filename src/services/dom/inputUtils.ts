@@ -204,7 +204,23 @@ export async function setElementText(
     const htmlElement = element as HTMLElement
 
     // Clear existing content
-    htmlElement.textContent = ""
+    if (legacyMode) {
+      // It’s actually processing for Perplexity.
+      const selection = window.getSelection()
+      if (!selection) return
+
+      // 1. Select all contents
+      const range = document.createRange()
+      range.selectNodeContents(htmlElement)
+      selection.removeAllRanges()
+      selection.addRange(range)
+
+      // 2. Dispatch Delete key event to delete contents
+      const ev = new KeyboardEvent("keydown", { key: "Delete" })
+      element.dispatchEvent(ev)
+    } else {
+      htmlElement.textContent = ""
+    }
 
     // Use inputContentEditable to properly handle the content insertion.
     await inputContentEditable(htmlElement, text, 20, null, legacyMode)

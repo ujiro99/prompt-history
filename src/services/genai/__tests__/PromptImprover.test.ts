@@ -130,7 +130,7 @@ describe("PromptImprover", () => {
     it("should return system instruction", () => {
       const instruction = improver.getSystemInstruction()
       expect(instruction).toContain("Prompt Engineer")
-      expect(instruction).toContain("improve")
+      expect(instruction).toContain("effective prompt")
     })
   })
 })
