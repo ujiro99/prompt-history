@@ -17,7 +17,8 @@ import {
  */
 const DEFAULT_INSTRUCTION = `You are an excellent Prompt Engineer.
 The <user_prompt> section contains the prompt entered by the user.
-Please make this into an effective prompt:`
+Please make this into an effective prompt.
+Output only the improved prompt. No explanations or preambles are necessary.`
 
 /**
  * Default timeout in milliseconds (30 seconds)
