@@ -13,7 +13,10 @@
       "mcp__serena__initial_instructions",
       "Bash(npx tsc:*)",
       "WebFetch(domain:github.com)",
-      "WebFetch(domain:ai.google.dev)"
+      "WebFetch(domain:ai.google.dev)",
+      "Bash(cat:*)",
+      "WebFetch(domain:gist.githubusercontent.com)",
+      "Bash(pnpm lint:*)"
     ],
     "deny": [],
     "ask": []

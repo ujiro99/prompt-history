@@ -11,14 +11,10 @@ import {
   genaiApiKeyStorage,
   improvePromptSettingsStorage,
 } from "../storage/definitions"
-
-/**
- * Default system prompt for prompt improvement (fallback)
- */
-const DEFAULT_INSTRUCTION = `You are an excellent Prompt Engineer.
-The <user_prompt> section contains the prompt entered by the user.
-Please make this into an effective prompt.
-Output only the improved prompt. No explanations or preambles are necessary.`
+import {
+  SYSTEM_INSTRUCTION,
+  DEFAULT_IMPROVEMENT_PROMPT,
+} from "./defaultPrompts"
 
 /**
  * Default timeout in milliseconds (30 seconds)
@@ -32,7 +28,8 @@ export class PromptImprover {
   private client: GeminiClient
   private abortController: AbortController | null = null
   private timeoutId: ReturnType<typeof setTimeout> | null = null
-  private systemInstruction: string = DEFAULT_INSTRUCTION
+  private systemInstruction: string = SYSTEM_INSTRUCTION // Fixed role definition
+  private improvementPrompt: string = DEFAULT_IMPROVEMENT_PROMPT // User-configurable
 
   constructor() {
     this.client = GeminiClient.getInstance()
@@ -43,15 +40,15 @@ export class PromptImprover {
   }
 
   /**
-   * Load settings from storage (API key and system instruction)
+   * Load settings from storage (API key and improvement prompt)
    * Supports both user settings and environment variable fallbacks
    */
   public async loadSettings(): Promise<void> {
     // Load API key
     await this.loadApiKey()
 
-    // Load system instruction with priority logic
-    await this.loadSystemInstructionWithPriority()
+    // Load improvement prompt with priority logic
+    await this.loadImprovementPromptWithPriority()
   }
 
   /**
@@ -152,15 +149,19 @@ export class PromptImprover {
     let improvedPrompt = ""
 
     try {
-      const stream = this.client.generateContentStream(
-        `<user_prompt>\n${prompt}\n</user_prompt>`,
-        {
-          systemInstruction: this.systemInstruction,
-          generateContentConfig: {
-            abortSignal: this.abortController.signal,
-          },
+      // Combine improvement prompt with user prompt
+      const userContent = `${this.improvementPrompt}
+
+<user_prompt>
+${prompt}
+</user_prompt>`
+
+      const stream = this.client.generateContentStream(userContent, {
+        systemInstruction: this.systemInstruction, // Fixed role definition
+        generateContentConfig: {
+          abortSignal: this.abortController.signal,
         },
-      )
+      })
 
       for await (const chunk of stream) {
         // Check if cancelled
@@ -216,28 +217,30 @@ export class PromptImprover {
   }
 
   /**
-   * Load system instruction with priority logic
+   * Load improvement prompt with priority logic
    * Priority (all users):
    * 1. User text setting (mode === 'text')
    * 2. User URL setting (mode === 'url') → cache → fetch
    * 3. Environment variable URL → cache → fetch
-   * 4. Default instruction
+   * 4. Default prompt
+   *
+   * Note: systemInstruction remains fixed as SYSTEM_ROLE
    */
-  private async loadSystemInstructionWithPriority(): Promise<void> {
+  private async loadImprovementPromptWithPriority(): Promise<void> {
     // Load user settings
     const settings = await improvePromptSettingsStorage.getValue()
 
     // 1. User text setting
     if (settings.mode === "text" && settings.textContent.trim() !== "") {
-      this.systemInstruction = settings.textContent
+      this.improvementPrompt = settings.textContent
       return
     }
 
     // 2. User URL setting
     if (settings.mode === "url" && settings.urlContent.trim() !== "") {
-      const instruction = await this.fetchFromUrl(settings.urlContent)
-      if (instruction) {
-        this.systemInstruction = instruction
+      const prompt = await this.fetchFromUrl(settings.urlContent)
+      if (prompt) {
+        this.improvementPrompt = prompt
         return
       }
     }
@@ -245,19 +248,19 @@ export class PromptImprover {
     // 3. Environment variable URL (all users)
     const envUrl = import.meta.env.WXT_IMPROVE_PROMPT_URL
     if (envUrl) {
-      const instruction = await this.fetchFromUrl(envUrl)
-      if (instruction) {
-        this.systemInstruction = instruction
+      const prompt = await this.fetchFromUrl(envUrl)
+      if (prompt) {
+        this.improvementPrompt = prompt
         return
       }
     }
 
     // 4. Fallback to default
-    this.systemInstruction = DEFAULT_INSTRUCTION
+    this.improvementPrompt = DEFAULT_IMPROVEMENT_PROMPT
   }
 
   /**
-   * Fetch system instruction from URL with cache support
+   * Fetch improvement prompt from URL with cache support
    * Fallback chain: Today's cache → Fetch from URL → Latest cache
    */
   private async fetchFromUrl(url: string): Promise<string | null> {
@@ -273,12 +276,12 @@ export class PromptImprover {
       if (!response.ok) {
         throw new Error(`Failed to fetch: ${response.status}`)
       }
-      const instruction = await response.text()
+      const prompt = await response.text()
       // Save to cache
-      await improvePromptCacheService.saveCache(instruction)
-      return instruction
+      await improvePromptCacheService.saveCache(prompt)
+      return prompt
     } catch (error) {
-      console.warn("Failed to fetch instruction from URL:", error)
+      console.warn("Failed to fetch prompt from URL:", error)
     }
 
     // 3. Fallback to latest cache
@@ -288,12 +291,5 @@ export class PromptImprover {
     }
 
     return null
-  }
-
-  /**
-   * Get the system instruction being used
-   */
-  public getSystemInstruction(): string {
-    return this.systemInstruction
   }
 }
