@@ -10,7 +10,7 @@ AIが入力プロンプトを分析し、より効果的で明確なプロンプ
 
 1. **プロンプト改善**: Gemini API (gemini-2.5-flash) による自動改善
 2. **ストリーミング表示**: リアルタイムでの改善結果表示
-3. **ユーザー設定管理**: APIキーとシステムプロンプトのユーザー設定
+3. **ユーザー設定管理**: APIキーと改善用プロンプトのユーザー設定
 4. **柔軟なプロンプト管理**: テキスト入力またはURL指定による設定
 5. **手動キャッシュ更新**: 設定画面からのキャッシュリフレッシュ
 
@@ -68,18 +68,18 @@ AIが入力プロンプトを分析し、より効果的で明確なプロンプ
 - プライバシーに配慮した利用を促す
 - 参考リンク: https://ai.google.dev/gemini-api/terms?hl=ja
 
-#### 6-2. システムプロンプトの設定
+#### 6-2. 改善用プロンプトの設定
 
 **入力方法の選択** (ラジオボタン):
 
 - **方法A: テキスト直接入力**
-  - 多行テキストエリアで直接システムプロンプトを入力
+  - 多行テキストエリアで直接改善ガイドラインを入力
   - リアルタイムで保存
   - プレビュー機能あり
 
 - **方法B: URL指定**
   - GitHub Gist 等のURLを指定
-  - 取得ボタンでプロンプトを取得
+  - 取得ボタンで改善ガイドラインを取得
   - キャッシュ機構（1日TTL）を使用
   - 取得失敗時のエラー表示
 
@@ -114,11 +114,12 @@ AIが入力プロンプトを分析し、より効果的で明確なプロンプ
   - APIキー取得ガイドリンク
   - プライバシーに関する注意喚起
 
-- **System Prompt Settings**:
+- **Improvement Prompt Settings** (改善用プロンプト設定):
   - 入力方法選択（ラジオボタン: Direct Text Input / URL）
   - 条件表示エリア（選択に応じて切り替え）
   - プレビューエリア（読み取り専用）
   - 最終更新日時表示
+  - **注記**: システムの役割定義（systemInstruction）は固定であり、ユーザーが設定できるのは改善ガイドライン部分のみ
 
 ### 7. APIキー未設定時の警告
 
@@ -164,7 +165,8 @@ SettingsMenu → PromptImproverSettingsDialog
 
 - **UI Layer**: PromptImproveDialog, PromptImproverSettingsDialog - ユーザーインタラクション
 - **Service Layer**: PromptImprover, GeminiClient - ビジネスロジック
-- **Storage Layer**: PromptImproverSettingsService - 設定管理
+  - PromptImprover: systemInstruction（固定）と improvementPrompt（可変）を分離管理
+- **Storage Layer**: PromptImproverSettingsService - 設定管理（改善ガイドラインのみ）
 - **Cache Layer**: ImprovePromptCacheService - URL取得時のキャッシュ管理
 
 ### データモデル
@@ -212,13 +214,15 @@ export interface GeminiConfig {
 
 /**
  * 改善プロンプト設定 ★新規
+ * 注: この設定は改善ガイドライン（improvement prompt）のみを対象とし、
+ * systemInstructionは固定値として扱われる
  */
 export interface ImprovePromptSettings {
   /** 入力方法: 'text' または 'url' */
   mode: "text" | "url"
-  /** テキスト直接入力の内容 */
+  /** テキスト直接入力の内容（改善ガイドライン） */
   textContent: string
-  /** URL指定の場合のURL */
+  /** URL指定の場合のURL（改善ガイドライン取得先） */
   urlContent: string
   /** 最終更新タイムスタンプ */
   lastModified: number
@@ -268,7 +272,29 @@ class GeminiClient {
 }
 ```
 
-#### 2. PromptImprover
+#### 2. defaultPrompts
+
+**ファイル**: `src/services/genai/defaultPrompts.ts`
+
+**役割**: デフォルトプロンプトの定義（透明性のため分離）
+
+**エクスポート**:
+
+- `SYSTEM_INSTRUCTION`: 固定のシステムプロンプト（変更不可）
+  - AIの役割定義と最優先ルール
+  - 直接回答を防ぎ、改善に専念させる
+
+- `DEFAULT_IMPROVEMENT_PROMPT`: デフォルト改善用プロンプト（ユーザー設定可能）
+  - 改善方法の具体的な指針
+  - ユーザーが設定画面でカスタマイズ可能
+
+**プロンプトの内容**:
+
+実際のプロンプト内容は `src/services/genai/defaultPrompts.ts` を参照してください。
+
+**注記**: プロンプトの透明性を向上させるため、定数を独立したファイルに分離。ユーザーが参照しやすく、変更履歴も追跡しやすい。
+
+#### 3. PromptImprover
 
 **ファイル**: `src/services/genai/PromptImprover.ts`
 
@@ -277,18 +303,19 @@ class GeminiClient {
 **機能**:
 
 - ユーザー設定からAPIキー読み込み ★変更
-- システムプロンプトの優先順位管理 ★変更
+- 改善ガイドラインの優先順位管理 ★変更
+- systemInstruction（固定）と improvementPrompt（可変）の分離管理 ★新規
 - ストリーミングコールバックの制御
 - エラーハンドリング
 - タイムアウト処理（30秒）
 - キャンセル機能
 
-**システムプロンプトの優先順位** ★変更 (全ユーザー共通):
+**改善ガイドラインの優先順位** ★変更 (全ユーザー共通):
 
 1. **ユーザーテキスト設定**: `improvePromptSettings.mode === 'text'`
 2. **ユーザーURL設定**: `improvePromptSettings.mode === 'url'` → キャッシュ → fetch
 3. **環境変数URL**: `WXT_IMPROVE_PROMPT_URL` → キャッシュ → fetch
-4. **デフォルト値**: ハードコードされたデフォルト
+4. **デフォルト値**: ハードコードされたデフォルト改善ガイドライン
 
 **APIキーの取得** ★変更:
 
@@ -303,39 +330,34 @@ class GeminiClient {
 2. 未設定の場合: `WXT_GENAI_API_KEY` から取得
 3. それでも未設定: エラー
 
-**デフォルトシステムプロンプト**:
+**プロンプトの内容**:
 
-```
-You are an excellent Prompt Engineer. Analyze the user's input prompt and improve it to be more effective.
+実際のプロンプト内容（SYSTEM_INSTRUCTION および DEFAULT_IMPROVEMENT_PROMPT）は `src/services/genai/defaultPrompts.ts` を参照してください。
 
-Improvement Guidelines:
-- Maintain the intent and purpose of the prompt
-- Apply the following improvements as needed:
-  * Clarify ambiguous expressions for better clarity
-  * Structure with bullet points or sections
-  * Add necessary background information or constraints
-- Avoid being overly verbose
-- Determine the optimal improvement approach based on the prompt's characteristics (simple/complex, technical/general, etc.)
+**プロンプト構造** ★変更:
 
-Output only the improved prompt. No explanations or preambles are necessary.
-```
+実際のAPI呼び出し時は以下のように構成される:
+
+- **systemInstruction**: SYSTEM_ROLE（固定）
+- **ユーザーコンテンツ**: `${improvementPrompt}\n\n<user_prompt>\n${prompt}\n</user_prompt>`
 
 **インターフェース**:
 
 ```typescript
 class PromptImprover {
-  private systemInstruction: string
+  private systemInstruction: string // 固定（SYSTEM_ROLE）
+  private improvementPrompt: string // 可変（ユーザー設定可能）
   private apiKey: string
 
   async loadSettings(): Promise<void> // ★新規
   async improvePrompt(options: ImproveOptions): Promise<void>
   cancel(): void
-  getSystemInstruction(): string
+  getSystemInstruction(): string // 固定の役割定義を返す
   isApiKeyConfigured(): boolean // ★新規
 }
 ```
 
-#### 3. ImprovePromptCacheService
+#### 4. ImprovePromptCacheService
 
 **ファイル**: `src/services/storage/improvePromptCache.ts`
 
@@ -368,7 +390,7 @@ class ImprovePromptCacheService {
 - 保存場所: WXT Storage API (local storage)
 - 対象: URL指定の場合のみ（テキスト直接入力はキャッシュ不要）
 
-#### 4. PromptImproverSettingsDialog ★新規
+#### 5. PromptImproverSettingsDialog ★新規
 
 **ファイル**: `src/components/settings/PromptImproverSettingsDialog.tsx`
 
@@ -377,13 +399,14 @@ class ImprovePromptCacheService {
 **機能**:
 
 - APIキーの入力・保存
-- システムプロンプトの入力方法選択（ラジオボタン）
+- 改善用プロンプト（改善ガイドライン）の入力方法選択（ラジオボタン）
 - テキスト直接入力 UI
 - URL指定 UI
 - プレビュー表示
 - バリデーション
 - 利用規約の注意喚起
 - APIキー取得ガイドリンク
+- **注記**: システムの役割定義（systemInstruction）は固定値として扱われ、ユーザーが設定できるのは改善ガイドライン部分のみ
 
 **状態管理**:
 
@@ -407,15 +430,16 @@ const [fetchError, setFetchError] = useState<string | null>(null)
   - テキスト入力（type="password"、Show/Hideボタン）
   - 取得ガイドリンク
   - 注意喚起メッセージ
-- システムプロンプト設定セクション
+- 改善用プロンプト設定セクション
   - ラジオボタン（Text / URL）
   - 条件表示エリア
-    - Text選択時: Textarea
-    - URL選択時: URL入力 + Fetchボタン
+    - Text選択時: Textarea（改善ガイドライン入力）
+    - URL選択時: URL入力 + Fetchボタン（改善ガイドライン取得）
   - プレビューエリア（読み取り専用）
   - 最終更新日時表示
+  - 説明: 「改善方法を設定します。システムの役割定義は変更できません。」
 
-#### 5. PromptImproveDialog ★拡張
+#### 6. PromptImproveDialog ★拡張
 
 **ファイル**: `src/components/inputMenu/controller/PromptImproveDialog.tsx`
 
@@ -427,7 +451,7 @@ const [fetchError, setFetchError] = useState<string | null>(null)
 - 設定画面への誘導ボタン
 - 改善ボタンの無効化（APIキー未設定時）
 
-#### 6. SettingsMenu ★拡張
+#### 7. SettingsMenu ★拡張
 
 **ファイル**: `src/components/inputMenu/SettingsMenu.tsx`
 
@@ -451,12 +475,17 @@ Settings Menu
 
 #### 新規作成
 
-1. **`src/components/settings/PromptImproverSettingsDialog.tsx`**
+1. **`src/services/genai/defaultPrompts.ts`**
+   - デフォルトプロンプトの定義
+   - SYSTEM_ROLE: 固定の役割定義
+   - DEFAULT_IMPROVEMENT_GUIDELINES: デフォルト改善ガイドライン
+
+2. **`src/components/settings/PromptImproverSettingsDialog.tsx`**
    - 設定ダイアログコンポーネント
    - APIキー入力UI
-   - システムプロンプト設定UI
+   - 改善用プロンプト設定UI
 
-2. **`src/components/settings/__tests__/PromptImproverSettingsDialog.test.tsx`**
+3. **`src/components/settings/__tests__/PromptImproverSettingsDialog.test.tsx`**
    - 設定ダイアログのユニットテスト
 
 #### 修正対象
@@ -466,10 +495,14 @@ Settings Menu
    - `improvePromptSettingsStorage` の定義追加
 
 2. **`src/services/genai/PromptImprover.ts`**
+   - 定数を `defaultPrompts.ts` からインポート
+   - プロパティ追加: `improvementPrompt`
    - `loadSettings()` メソッド追加
+   - `loadImprovementPromptWithPriority()` メソッド追加（旧 `loadSystemInstructionWithPriority` から名称変更）
    - `isApiKeyConfigured()` メソッド追加
    - APIキー取得ロジック変更（環境変数 → ストレージ優先）
-   - システムプロンプト優先順位ロジック変更
+   - 改善ガイドライン優先順位ロジック変更
+   - `improvePrompt()` 内のプロンプト構造変更（ガイドラインをユーザーコンテンツに含める）
 
 3. **`src/components/inputMenu/controller/PromptImproveDialog.tsx`**
    - APIキー未設定警告バナー追加
@@ -481,12 +514,16 @@ Settings Menu
    - PromptImproverSettingsDialog の統合
 
 5. **`src/locales/en.yml`**
-   - 設定ダイアログの英語翻訳追加
-   - 警告メッセージの英語翻訳追加
+   - 翻訳キーの変更: `systemPromptSettings` → `improvementPromptSettings`
+   - 翻訳キーの変更: `systemPromptText` → `improvementPromptText`
+   - 翻訳キーの変更: `enterSystemPrompt` → `enterImprovementPrompt`
+   - 文言の更新: "System Prompt" → "Improvement Prompt"
 
 6. **`src/locales/ja.yml`**
-   - 設定ダイアログの日本語翻訳追加
-   - 警告メッセージの日本語翻訳追加
+   - 翻訳キーの変更: `systemPromptSettings` → `improvementPromptSettings`
+   - 翻訳キーの変更: `systemPromptText` → `improvementPromptText`
+   - 翻訳キーの変更: `enterSystemPrompt` → `enterImprovementPrompt`
+   - 文言の更新: "システムプロンプト" → "改善用プロンプト"
 
 7. **`docs/prompt-improver-design.md`**
    - 設計ドキュメント全面更新（本ファイル）
@@ -541,7 +578,8 @@ Settings Menu
 | │    https://ai.google.dev/gemini-api/terms?hl=ja      ││
 | └──────────────────────────────────────────────────────┘|
 |                                                         |
-| System Prompt Settings                                  |
+| Improvement Prompt Settings                              |
+| (改善方法を設定します。システムの役割定義は固定されています。) |
 | ┌──────────────────────────────────────────────────────┐|
 | │ Prompt Source:                                       ││
 | │ ◯ Direct Text Input                                  ││
@@ -613,17 +651,17 @@ PromptImproverSettingsDialog 表示
 ├─ APIキー入力
 └─ 表示/非表示切り替え
 ↓
-[システムプロンプト設定]
+[改善用プロンプト設定]
 ├─ ラジオボタンで選択
 │  ├─ "Direct Text Input" 選択
 │  │  ↓
-│  │  Textarea表示 → テキスト入力
+│  │  Textarea表示 → 改善ガイドライン入力
 │  │
 │  └─ "URL" 選択
 │     ↓
-│     URL入力欄表示 → URL入力 → [Fetch Prompt]
+│     URL入力欄表示 → URL入力 → [Update Preview]
 │     ↓
-│     取得成功 → プレビュー更新
+│     取得成功 → プレビュー更新（改善ガイドライン）
 │     取得失敗 → エラー表示
 │
 └─ プレビュー確認
@@ -660,10 +698,13 @@ PromptImprover.improvePrompt({
   onError: (error) => setImprovementError(error.message)
 })
 ↓
-PromptImprover.loadSettings()  // ★APIキーと システムプロンプト読み込み
+PromptImprover.loadSettings()  // ★APIキーと改善ガイドライン読み込み
 ↓
-GeminiClient.generateContentStream(prompt, {
-  systemInstruction: this.systemInstruction
+// ユーザーコンテンツの構築
+const userContent = `${this.improvementPrompt}\n\n<user_prompt>\n${prompt}\n</user_prompt>`
+↓
+GeminiClient.generateContentStream(userContent, {
+  systemInstruction: this.systemInstruction  // ★固定の役割定義
 })
 ↓
 Gemini API (gemini-2.5-flash)
@@ -677,24 +718,26 @@ UI にテキスト追加表示
 完了 or エラー
 ```
 
-### システムプロンプトロードフロー ★変更 (全ユーザー共通)
+### 改善ガイドラインロードフロー ★変更 (全ユーザー共通)
 
 ```
 PromptImprover.loadSettings()
 ↓
+PromptImprover.loadImprovementPromptWithPriority()
+↓
 1. improvePromptSettingsStorage から設定読み込み
    ├─ mode === 'text' && textContent が空でない
    │  ↓
-   │  settings.textContent を使用 → 終了
+   │  settings.textContent を this.improvementPrompt に設定 → 終了
    │
    ├─ mode === 'url' && urlContent が空でない
    │  ↓
    │  2. getTodaysCache() を確認
-   │     ├─ ヒット → キャッシュ使用 → 終了
+   │     ├─ ヒット → キャッシュを this.improvementPrompt に設定 → 終了
    │     └─ ミス → 3へ
    │  ↓
    │  3. settings.urlContent から fetch
-   │     ├─ 成功 → saveCache() → 使用 → 終了
+   │     ├─ 成功 → saveCache() → this.improvementPrompt に設定 → 終了
    │     └─ 失敗 → 4へ
    │
    └─ ユーザー設定なし → 環境変数へフォールバック
@@ -704,18 +747,20 @@ PromptImprover.loadSettings()
          └─ なし → 8へ
       ↓
       5. getTodaysCache() を確認
-         ├─ ヒット → キャッシュ使用 → 終了
+         ├─ ヒット → キャッシュを this.improvementPrompt に設定 → 終了
          └─ ミス → 6へ
       ↓
       6. 環境変数URLから fetch
-         ├─ 成功 → saveCache() → 使用 → 終了
+         ├─ 成功 → saveCache() → this.improvementPrompt に設定 → 終了
          └─ 失敗 → 7へ
       ↓
       7. getLatestCache() を確認
-         ├─ ヒット → 古いキャッシュ使用 → 終了
+         ├─ ヒット → 古いキャッシュを this.improvementPrompt に設定 → 終了
          └─ ミス → 8へ
       ↓
-      8. DEFAULT_INSTRUCTION を使用
+      8. DEFAULT_IMPROVEMENT_GUIDELINES を this.improvementPrompt に設定
+
+注: this.systemInstruction は常に SYSTEM_ROLE（固定値）のまま
 ```
 
 ### APIキー取得フロー ★新規
@@ -768,14 +813,14 @@ improvePromptSettingsStorage.setValue({
 ### URL取得フロー ★新規
 
 ```
-PromptImproverSettingsDialog で [Fetch Prompt] クリック
+PromptImproverSettingsDialog で [Update Preview] クリック
 ↓
 setIsFetching(true)
 ↓
-fetch(urlContent)
+fetch(urlContent)  // 改善ガイドラインを取得
 ├─ 成功
 │  ↓
-│  レスポンステキスト取得
+│  レスポンステキスト取得（改善ガイドライン）
 │  ↓
 │  setPreviewPrompt(text)
 │  ↓
@@ -798,7 +843,7 @@ fetch(urlContent)
 # APIキー: 開発時のフォールバック（ユーザー設定優先）
 WXT_GENAI_API_KEY=<開発用 API Key>
 
-# システムプロンプトURL: 全ユーザーのデフォルトフォールバック
+# 改善ガイドラインURL: 全ユーザーのデフォルトフォールバック（役割定義は含まない）
 WXT_IMPROVE_PROMPT_URL=https://gist.githubusercontent.com/ujiro99/.../improve-prompt-default.md
 
 WXT_E2E=false
@@ -809,7 +854,7 @@ WXT_E2E=false
 ```bash
 # APIキー: 本番では環境変数を使用しない（ユーザー設定のみ）
 
-# システムプロンプトURL: 全ユーザーのデフォルトフォールバック
+# 改善ガイドラインURL: 全ユーザーのデフォルトフォールバック（役割定義は含まない）
 WXT_IMPROVE_PROMPT_URL=https://gist.githubusercontent.com/ujiro99/.../improve-prompt-default.md
 
 WXT_E2E=true
@@ -873,10 +918,12 @@ string // APIキー文字列（プレーンテキスト）
 ```typescript
 {
   mode: "text",                       // または "url"
-  textContent: "You are...",          // テキスト直接入力の場合
-  urlContent: "https://gist...",      // URL指定の場合
+  textContent: "Analyze and improve...",  // テキスト直接入力の場合（改善ガイドライン）
+  urlContent: "https://gist...",      // URL指定の場合（改善ガイドライン取得先）
   lastModified: 1705320000000         // Unix timestamp
 }
+
+注: この設定は改善ガイドラインのみを対象とし、systemInstructionは固定値
 ```
 
 **improvePromptCacheStorage**:
@@ -884,9 +931,11 @@ string // APIキー文字列（プレーンテキスト）
 ```typescript
 {
   date: "2024-01-15",                 // YYYY-MM-DD
-  instruction: "System prompt...",
+  instruction: "Analyze and improve...",  // 改善ガイドライン
   cachedAt: 1705320000000             // Unix timestamp
 }
+
+注: キャッシュされるのは改善ガイドラインのみ（systemInstructionは含まない）
 ```
 
 ## エラーハンドリング
@@ -1126,7 +1175,8 @@ string // APIキー文字列（プレーンテキスト）
 
 ### 国際化
 
-- システムプロンプトの多言語対応（現状は英語のみ）
+- 改善ガイドラインの多言語対応（現状は英語のみ）
+  - 注: systemInstruction（役割定義）は固定で英語のみ
 - UI ラベルの翻訳（英語・日本語対応）
 - 設定ダイアログの多言語対応
 
@@ -1182,16 +1232,19 @@ string // APIキー文字列（プレーンテキスト）
 
 - [ ] PromptImproverSettingsDialog 実装
   - [ ] APIキー入力UI
-  - [ ] システムプロンプト設定UI
+  - [ ] 改善用プロンプト設定UI（旧: システムプロンプト）
   - [ ] バリデーション
   - [ ] プレビュー表示
 
 ### Phase 3: 既存コンポーネント修正
 
 - [ ] PromptImprover 修正
+  - [ ] 定数分離（SYSTEM_ROLE と DEFAULT_IMPROVEMENT_GUIDELINES）
+  - [ ] プロパティ追加（improvementPrompt）
   - [ ] loadSettings() 実装
+  - [ ] loadImprovementPromptWithPriority() 実装（旧: loadSystemInstructionWithPriority）
   - [ ] isApiKeyConfigured() 実装
-  - [ ] 優先順位ロジック変更
+  - [ ] improvePrompt() のプロンプト構造変更
 - [ ] PromptImproveDialog 修正
   - [ ] 警告バナー追加
   - [ ] 設定画面への誘導
@@ -1201,6 +1254,7 @@ string // APIキー文字列（プレーンテキスト）
 ### Phase 4: 国際化
 
 - [ ] i18n 翻訳（英語・日本語）
+  - [ ] 用語変更: "システムプロンプト" → "改善用プロンプト"
   - [ ] 設定ダイアログ
   - [ ] 警告メッセージ
   - [ ] エラーメッセージ
@@ -1235,7 +1289,7 @@ string // APIキー文字列（プレーンテキスト）
 
 **全環境共通**:
 
-- `WXT_IMPROVE_PROMPT_URL`: 全ユーザーのデフォルトフォールバックとして使用
+- `WXT_IMPROVE_PROMPT_URL`: 全ユーザーのデフォルトフォールバックとして使用（改善ガイドラインのみ、役割定義は含まない）
 
 **開発環境** (WXT_E2E === 'false'):
 
@@ -1256,12 +1310,13 @@ string // APIキー文字列（プレーンテキスト）
 3. `genaiApiKey` キーに値が保存されているか確認
 4. APIキーの形式が正しいか確認（Google AI Studio で発行）
 
-**システムプロンプトが更新されない**:
+**改善ガイドラインが更新されない**:
 
 1. 設定ダイアログで入力方法を確認
-2. URL指定の場合: "Fetch Prompt" ボタンで手動取得
+2. URL指定の場合: "Update Preview" ボタンで手動取得
 3. テキスト入力の場合: 内容が保存されているか確認
 4. ブラウザストレージの `improvePromptSettings` を確認
+5. 注: systemInstruction（役割定義）は固定値で変更不可
 
 **改善が動作しない**:
 

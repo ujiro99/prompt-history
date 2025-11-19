@@ -201,19 +201,19 @@ settings:
     getApiKeyInfo: "Get your API key:"
     freeApiWarning: "Important: Free API keys may be used for model training."
     learnMore: Learn more
-    systemPromptSettings: System Prompt Settings
+    improvementPromptSettings: Improvement Prompt Settings
     modeUrl: URL (GitHub Gist, etc.)
     modeText: Direct Input
-    systemPromptText: System Prompt
+    improvementPromptText: Improvement Prompt
     promptUrl: Prompt URL
     enterPromptUrl: "https://gist.github.com/..."
-    fetchPrompt: Fetch Preview
+    fetchPrompt: Update Preview
     fetching: Fetching...
     setDefault: Set Default
     preview: Preview
-    previewPlaceholder: Preview of system prompt will appear here...
-    enterSystemPrompt: Enter system prompt text...
-    description: Configure Gemini API key and system prompt for prompt improvement
+    previewPlaceholder: Improvement prompt will appear here...
+    enterImprovementPrompt: Enter improvement prompt...
+    description: Configure how to improve prompts.
 
 # Import Dialog
 importDialog:

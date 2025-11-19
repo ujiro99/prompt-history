@@ -110,12 +110,20 @@ describe("PromptImprover", () => {
         prompt: "test prompt",
       })
 
+      // Verify that user content includes improvement guidelines and user prompt
       expect(mockGenerateContentStream).toHaveBeenCalledWith(
-        expect.stringContaining("test prompt"),
+        expect.stringContaining("Analyze and improve"),
         expect.objectContaining({
-          systemInstruction: expect.stringContaining("Prompt Engineer"),
+          systemInstruction: expect.stringContaining(
+            "expert prompt engineering assistant",
+          ),
         }),
       )
+      // Verify user prompt is wrapped in tags
+      const userContent = mockGenerateContentStream.mock.calls[0][0]
+      expect(userContent).toContain("<user_prompt>")
+      expect(userContent).toContain("test prompt")
+      expect(userContent).toContain("</user_prompt>")
     })
   })
 
@@ -123,14 +131,6 @@ describe("PromptImprover", () => {
     it("should cancel ongoing operation", () => {
       // Just ensure it doesn't throw
       expect(() => improver.cancel()).not.toThrow()
-    })
-  })
-
-  describe("getSystemInstruction", () => {
-    it("should return system instruction", () => {
-      const instruction = improver.getSystemInstruction()
-      expect(instruction).toContain("Prompt Engineer")
-      expect(instruction).toContain("effective prompt")
     })
   })
 })

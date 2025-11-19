@@ -380,8 +380,11 @@ describe("inputUtils", () => {
       await setElementText(input, "new text")
 
       expect(dispatchEventSpy).toHaveBeenCalled()
-      const event = dispatchEventSpy.mock.calls[0][0] as Event
-      expect(event.type).toBeDefined()
+      const events = dispatchEventSpy.mock.calls
+        .map((call) => call[0])
+        .filter((event) => event.type === "input")
+      expect(events.length).toBeGreaterThan(0)
+      const event = events[0] as InputEvent
       expect(event.bubbles).toBe(true)
     })
 
@@ -406,6 +409,23 @@ describe("inputUtils", () => {
       expect(editable.textContent).toBe("")
       // Even for empty string, getSelection should be called
       expect(window.getSelection).toHaveBeenCalled()
+    })
+
+    it("should use Delete key event in legacy mode", async () => {
+      const editable = createMockContentEditable("existing content")
+      const dispatchEventSpy = vi.spyOn(editable, "dispatchEvent")
+      mockSelectionAPI()
+      mockExecCommand()
+
+      await setElementText(editable, "new text", true) // legacyMode = true
+
+      // Verify Delete key event was dispatched
+      const deleteEvents = dispatchEventSpy.mock.calls
+        .map((call) => call[0])
+        .filter(
+          (event) => event instanceof KeyboardEvent && event.key === "Delete",
+        )
+      expect(deleteEvents.length).toBeGreaterThan(0)
     })
   })
 })

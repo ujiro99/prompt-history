@@ -51,7 +51,7 @@ export const PromptImproverSettingsDialog: React.FC<
   const [apiKey, setApiKey] = useState("")
   const [showApiKey, setShowApiKey] = useState(false)
 
-  // System prompt settings
+  // Improvement prompt settings (improvement guidelines only, system role is fixed)
   const [settings, setSettings] = useState<ImprovePromptSettings>({
     mode: ImprovePromptInputMethod.URL,
     textContent: "",
@@ -402,10 +402,10 @@ export const PromptImproverSettingsDialog: React.FC<
             </div>
           </div>
 
-          {/* System Prompt Settings */}
+          {/* Improvement Prompt Settings */}
           <div className="space-y-3">
             <label className="text-base font-semibold inline-block">
-              {i18n.t("settings.promptImprover.systemPromptSettings")}
+              {i18n.t("settings.promptImprover.improvementPromptSettings")}
             </label>
 
             <RadioGroup
@@ -446,14 +446,14 @@ export const PromptImproverSettingsDialog: React.FC<
               {settings.mode === "text" ? (
                 <div className="space-y-2">
                   <label htmlFor="text-content" className="text-sm font-medium">
-                    {i18n.t("settings.promptImprover.systemPromptText")}
+                    {i18n.t("settings.promptImprover.improvementPromptText")}
                   </label>
                   <Textarea
                     id="text-content"
                     value={settings.textContent}
                     onChange={(e) => handleTextContentChange(e.target.value)}
                     placeholder={i18n.t(
-                      "settings.promptImprover.enterSystemPrompt",
+                      "settings.promptImprover.enterImprovementPrompt",
                     )}
                     rows={6}
                     className="max-h-60"

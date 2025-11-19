@@ -201,19 +201,19 @@ settings:
     getApiKeyInfo: APIキーの取得方法：
     freeApiWarning: 重要：無料のAPIキーはモデルのトレーニングに使用される可能性があります。
     learnMore: 詳細を見る
-    systemPromptSettings: システムプロンプト設定
+    improvementPromptSettings: 改善用プロンプト設定
     modeUrl: URL (GitHub Gist など)
     modeText: 直接入力
-    systemPromptText: システムプロンプト
-    promptUrl: プロンプトURL
+    improvementPromptText: 改善用プロンプト
+    promptUrl: プロンプトのURL
     enterPromptUrl: "https://gist.github.com/..."
     fetchPrompt: プレビューを更新
     fetching: 取得中...
     setDefault: デフォルトに戻す
     preview: プレビュー
-    previewPlaceholder: システムプロンプトのプレビューがここに表示されます...
-    enterSystemPrompt: システムプロンプトを入力してください...
-    description: Gemini APIキーとプロンプト改善用のシステムプロンプトを設定します
+    previewPlaceholder: 改善用プロンプトがここに表示されます...
+    enterImprovementPrompt: 改善用プロンプトを入力してください...
+    description: プロンプトの改善方法を設定します。
 
 # Import Dialog
 importDialog:
