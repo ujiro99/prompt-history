@@ -205,7 +205,11 @@ export async function setElementText(
 
     // Clear existing content
     if (legacyMode) {
-      // It’s actually processing for Perplexity.
+      // Legacy mode specifically for Perplexity.ai's contenteditable field.
+      // We need to simulate Line break and Delete key events because direct textContent clearing
+      // doesn't trigger the necessary internal state updates in Perplexity's editor.
+      await inputContentEditable(htmlElement, "\n", 0, null, legacyMode)
+
       const selection = window.getSelection()
       if (!selection) return
 
@@ -216,8 +220,14 @@ export async function setElementText(
       selection.addRange(range)
 
       // 2. Dispatch Delete key event to delete contents
-      const ev = new KeyboardEvent("keydown", { key: "Delete" })
+      const ev = new KeyboardEvent("keydown", {
+        key: "Delete",
+        bubbles: true,
+        cancelable: false,
+      })
       element.dispatchEvent(ev)
+
+      await sleep(10) // Wait a bit for to complete
     } else {
       htmlElement.textContent = ""
     }
