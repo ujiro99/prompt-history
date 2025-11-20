@@ -82,6 +82,21 @@ export interface Prompt {
   /** カテゴリID */
   categoryId?: string
 }
+
+/**
+ * ストレージ保存用のPrompt型
+ * createdAt/updatedAtは文字列（ISO 8601形式）で保存
+ */
+export interface StoredPrompt extends Omit<Prompt, 'createdAt' | 'updatedAt'> {
+  createdAt: string  // ISO 8601形式の日時文字列
+  updatedAt: string  // ISO 8601形式の日時文字列
+
+  // 新規追加フィールド（すべてOptional、既存プロンプトとの互換性を保つ）
+  isAIGenerated?: boolean      // デフォルト: undefined（通常プロンプト）
+  aiMetadata?: AIGeneratedMetadata
+  useCase?: string
+  categoryId?: string
+}
 ```
 
 ### 1.3 AIGeneratedMetadata
@@ -161,6 +176,9 @@ export interface PromptOrganizerSettings {
  * AI の役割と基本ルールを定義。
  * Prompt Improver の SYSTEM_INSTRUCTION と同様に、
  * AI の基本的な振る舞いを制御する固定プロンプト。
+ *
+ * 注意: このシステムインストラクションは、GeminiClientのconfig.systemInstructionパラメータで
+ * 渡されます。プロンプトテキストには含めないでください。
  */
 export const SYSTEM_INSTRUCTION = `You are an expert prompt organizer assistant.
 Your role is to analyze user's prompt history and create reusable templates.
@@ -392,11 +410,14 @@ export interface OrganizerExecutionEstimate {
 ```typescript
 /**
  * カテゴリ一覧のストレージ
+ *
+ * デフォルトカテゴリは別ファイルで定義された定数を使用:
+ * src/services/promptOrganizer/defaultCategories.ts
  */
 export const categoriesStorage = storage.defineItem<Record<string, Category>>(
-  "local:categories",
+  'local:categories',
   {
-    fallback: {}, // デフォルトカテゴリは初期化時に作成
+    fallback: DEFAULT_CATEGORIES, // デフォルトカテゴリをfallbackで初期化
     version: 1,
     migrations: {},
   },
@@ -413,7 +434,66 @@ export const promptOrganizerSettingsStorage =
   })
 ```
 
-### 4.2 既存 Prompt ストレージの拡張
+### 4.2 デフォルトカテゴリ定義
+
+デフォルトカテゴリは `src/services/promptOrganizer/defaultCategories.ts` で定義します：
+
+```typescript
+// src/services/promptOrganizer/defaultCategories.ts
+
+import type { Category } from '@/types/prompt'
+
+/**
+ * デフォルトカテゴリ定数
+ * ストレージのfallback値として使用
+ */
+export const DEFAULT_CATEGORIES: Record<string, Category> = {
+  'external-communication': {
+    id: 'external-communication',
+    name: 'organizer.category.externalCommunication',
+    isDefault: true,
+    createdAt: new Date('2025-01-01'),
+    updatedAt: new Date('2025-01-01'),
+  },
+  'internal-communication': {
+    id: 'internal-communication',
+    name: 'organizer.category.internalCommunication',
+    isDefault: true,
+    createdAt: new Date('2025-01-01'),
+    updatedAt: new Date('2025-01-01'),
+  },
+  'document-creation': {
+    id: 'document-creation',
+    name: 'organizer.category.documentCreation',
+    isDefault: true,
+    createdAt: new Date('2025-01-01'),
+    updatedAt: new Date('2025-01-01'),
+  },
+  'development': {
+    id: 'development',
+    name: 'organizer.category.development',
+    isDefault: true,
+    createdAt: new Date('2025-01-01'),
+    updatedAt: new Date('2025-01-01'),
+  },
+  'other': {
+    id: 'other',
+    name: 'organizer.category.other',
+    isDefault: true,
+    createdAt: new Date('2025-01-01'),
+    updatedAt: new Date('2025-01-01'),
+  },
+}
+```
+
+**カテゴリID一覧**:
+- `external-communication`: 対外コミュニケーション
+- `internal-communication`: 社内コミュニケーション
+- `document-creation`: ドキュメント作成
+- `development`: 開発・技術
+- `other`: その他
+
+### 4.3 既存 Prompt ストレージの拡張
 
 既存の `promptsStorage` は変更不要（Prompt 型の拡張で自動的に対応）。
 
@@ -492,17 +572,47 @@ export const promptOrganizerSettingsStorage =
 
 ### 6.2 マイグレーション戦略
 
-既存データとの互換性を保つため：
+既存データとの互換性を保つため、新規フィールドはすべてOptionalとします：
 
 ```typescript
 // Prompt 型の拡張フィールドはすべて Optional
-isAIGenerated?: boolean  // undefined = 通常プロンプト
+isAIGenerated?: boolean  // undefined = 通常プロンプト（既存プロンプト）
 aiMetadata?: AIGeneratedMetadata
 useCase?: string
 categoryId?: string
-
-// 既存プロンプトは変更なしで動作
 ```
+
+**promptsStorageのマイグレーション例**:
+
+```typescript
+// src/services/storage/definitions.ts にマイグレーションバージョン2を追加
+
+export const promptsStorage = storage.defineItem<StoredPrompt[]>('local:prompts', {
+  fallback: [],
+  version: 2, // バージョンを2に更新
+  migrations: {
+    // バージョン1→2: 新規フィールドの追加
+    // 注意: 新規フィールドはすべてOptionalのため、
+    // 既存プロンプトは undefined のままで問題なく動作します
+    2: (oldPrompts: StoredPrompt[]) => {
+      return oldPrompts.map(prompt => ({
+        ...prompt,
+        // 新規フィールドは明示的に undefined を設定
+        // （既存プロンプトは通常プロンプトとして扱う）
+        isAIGenerated: prompt.isAIGenerated ?? undefined,
+        aiMetadata: prompt.aiMetadata ?? undefined,
+        useCase: prompt.useCase ?? undefined,
+        categoryId: prompt.categoryId ?? undefined,
+      }))
+    },
+  },
+})
+```
+
+**マイグレーションの動作**:
+- 既存プロンプトには新規フィールドが追加されないため、データサイズは変わりません
+- 新規フィールドが `undefined` の場合、通常プロンプトとして扱われます
+- AI生成プロンプトのみ `isAIGenerated: true` が設定されます
 
 ---
 

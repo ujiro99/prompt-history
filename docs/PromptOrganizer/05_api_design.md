@@ -173,31 +173,15 @@ const apiKey = await genaiApiKeyStorage.getValue()
 ### 3.2 リクエスト構築例
 
 ```typescript
-function buildGeminiRequest(request: OrganizePromptsRequest): any {
-  return {
-    contents: [
-      {
-        parts: [
-          {
-            text: buildPromptText(request),
-          },
-        ],
-      },
-    ],
-    systemInstruction: {
-      parts: [
-        {
-          text: SYSTEM_INSTRUCTION,
-        },
-      ],
-    },
-    generationConfig: {
-      responseMimeType: "application/json",
-      responseSchema: ORGANIZER_RESPONSE_SCHEMA,
-    },
-  }
-}
-
+/**
+ * Gemini API用のプロンプトテキストを構築
+ *
+ * 注意: システムインストラクション（SYSTEM_INSTRUCTION）はここには含めず、
+ * GeminiClient.generateStructuredContent()のconfigパラメータで別途渡します。
+ *
+ * @param request 組織化リクエスト
+ * @returns プロンプトテキスト（organizationPrompt + カテゴリ + プロンプト）
+ */
 function buildPromptText(request: OrganizePromptsRequest): string {
   return `${request.organizationPrompt}
 
@@ -543,14 +527,17 @@ export interface TokenUsage {
 ```typescript
 import { SYSTEM_INSTRUCTION } from "@/services/promptOrganizer/defaultPrompts"
 
-const { data, usage } = await geminiClient.generateStructuredContent(
-  buildPromptText(request),
+// 使用例
+const response = await geminiClient.generateStructuredContent<OrganizePromptsResponse>(
+  buildPromptText(request), // organizationPrompt + カテゴリ + プロンプトのみ
   ORGANIZER_RESPONSE_SCHEMA,
   {
     model: "gemini-2.5-flash",
-    systemInstruction: SYSTEM_INSTRUCTION,
+    systemInstruction: SYSTEM_INSTRUCTION, // システムインストラクションは別途configで渡す
   },
 )
+
+const { data, usage } = response
 ```
 
 ---
@@ -686,120 +673,7 @@ export interface GeminiError {
 }
 ```
 
-### 9.2 エラーハンドリングロジック
-
-```typescript
-async function callGeminiAPI(
-  request: OrganizePromptsRequest,
-): Promise<OrganizePromptsResponse> {
-  const apiKey = await genaiApiKeyStorage.getValue()
-
-  if (!apiKey) {
-    throw {
-      code: "INVALID_API_KEY",
-      message: "Gemini API key is not configured",
-    } as GeminiError
-  }
-
-  try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(buildGeminiRequest(request)),
-      },
-    )
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-
-      // クォータ超過エラー
-      if (response.status === 429) {
-        throw {
-          code: "QUOTA_EXCEEDED",
-          message: "API quota exceeded. Please try again later.",
-          details: errorData,
-        } as GeminiError
-      }
-
-      // API キー無効
-      if (response.status === 401 || response.status === 403) {
-        throw {
-          code: "INVALID_API_KEY",
-          message: "Invalid API key. Please check your settings.",
-          details: errorData,
-        } as GeminiError
-      }
-
-      // その他の API エラー
-      throw {
-        code: "API_ERROR",
-        message: `Gemini API error: ${response.statusText}`,
-        details: errorData,
-      } as GeminiError
-    }
-
-    const data = await response.json()
-
-    // レスポンス形式の検証
-    if (
-      !data.candidates ||
-      !data.candidates[0] ||
-      !data.candidates[0].content ||
-      !data.candidates[0].content.parts ||
-      !data.candidates[0].content.parts[0]
-    ) {
-      throw {
-        code: "INVALID_RESPONSE",
-        message: "Invalid response format from Gemini API",
-        details: data,
-      } as GeminiError
-    }
-
-    const textContent = data.candidates[0].content.parts[0].text
-    const templates = JSON.parse(textContent)
-
-    // 構造化出力の検証
-    if (!templates.templates || !Array.isArray(templates.templates)) {
-      throw {
-        code: "INVALID_RESPONSE",
-        message: "Invalid structured output from Gemini API",
-        details: templates,
-      } as GeminiError
-    }
-
-    return {
-      templates: templates.templates,
-      usage: {
-        inputTokens: data.usageMetadata.promptTokenCount,
-        outputTokens: data.usageMetadata.candidatesTokenCount,
-      },
-    }
-  } catch (error) {
-    // ネットワークエラー
-    if (error instanceof TypeError && error.message.includes("fetch")) {
-      throw {
-        code: "NETWORK_ERROR",
-        message: "Network error. Please check your internet connection.",
-        details: error,
-      } as GeminiError
-    }
-
-    // すでに GeminiError の場合はそのまま投げる
-    if ((error as any).code) {
-      throw error
-    }
-
-    // その他の予期しないエラー
-    throw {
-      code: "API_ERROR",
-      message: "Unexpected error occurred",
-      details: error,
-    } as GeminiError
-  }
-}
-```
+**注意**: エラーハンドリングの詳細な実装は、セクション6.1の`generateStructuredContent()`メソッド内で行われます。既存の`GeminiClient`のエラー処理パターンを踏襲します。
 
 ---
 

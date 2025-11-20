@@ -14,6 +14,18 @@
 
 ## 1. システム全体構成
 
+### 1.1 主要ファイル構成
+
+```
+src/services/promptOrganizer/
+  ├── PromptOrganizerService.ts    # メインサービス
+  ├── CategoryService.ts            # カテゴリ管理
+  ├── defaultPrompts.ts             # システムインストラクション、デフォルト設定
+  └── defaultCategories.ts          # デフォルトカテゴリ定数（新規）
+```
+
+### 1.2 システム全体構成図
+
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                    UI Layer (React)                     │
@@ -46,7 +58,7 @@
 │  CategoryService (New)                                  │
 │   ├─ getAllCategories()                                 │
 │   ├─ createCategory()                                   │
-│   └─ initializeDefaults()                               │
+│   └─ (デフォルトカテゴリはストレージfallbackで初期化)   │
 │                                                         │
 │  PromptsService (既存 - 拡張なし)                       │
 │  PinsService (既存 - 拡張なし)                          │
@@ -54,7 +66,7 @@
 │                  Storage Layer (WXT)                    │
 ├─────────────────────────────────────────────────────────┤
 │  promptsStorage (既存)                                  │
-│  categoriesStorage (New)                                │
+│  categoriesStorage (New - fallbackでデフォルトカテゴリ初期化) │
 │  promptOrganizerSettingsStorage (New)                   │
 └─────────────────────────────────────────────────────────┘
            ↓                                    ↑
@@ -86,10 +98,12 @@ src/
 │   │   └── defaultPrompts.ts (既存 - Prompt Improver用)
 │   │
 │   ├── promptOrganizer/ (New)
-│   │   ├── promptOrganizerService.ts
+│   │   ├── PromptOrganizerService.ts
+│   │   ├── CategoryService.ts
+│   │   ├── defaultPrompts.ts (New - システムインストラクション、デフォルト設定)
+│   │   ├── defaultCategories.ts (New - デフォルトカテゴリ定数)
 │   │   ├── tokenEstimator.ts
-│   │   ├── templateConverter.ts
-│   │   └── defaultPrompts.ts (New - Prompt Organizer用)
+│   │   └── templateConverter.ts
 │   │
 │   └── storage/
 │       ├── prompts.ts (既存 - 変更なし)
@@ -434,90 +448,97 @@ const { data, usage } =
 
 **責務**: カテゴリの管理
 
+**注意**: デフォルトカテゴリはストレージの`fallback`で自動初期化されます（`src/services/promptOrganizer/defaultCategories.ts`で定義）。
+
 ```typescript
+/**
+ * カテゴリ管理サービス
+ *
+ * デフォルトカテゴリは categoriesStorage の fallback で自動初期化されます。
+ * (src/services/promptOrganizer/defaultCategories.ts で定義)
+ */
 class CategoryService {
+  private static instance: CategoryService
+
+  private constructor() {}
+
+  public static getInstance(): CategoryService {
+    if (!CategoryService.instance) {
+      CategoryService.instance = new CategoryService()
+    }
+    return CategoryService.instance
+  }
+
   /**
    * すべてのカテゴリを取得
    */
-  async getAllCategories(): Promise<Category[]> {
-    const categories = await categoriesStorage.getValue()
-    return Object.values(categories)
+  async getAll(): Promise<Record<string, Category>> {
+    return await categoriesStorage.getValue()
   }
 
   /**
    * カテゴリを作成
    */
-  async createCategory(name: string, description?: string): Promise<Category> {
-    const category: Category = {
+  async create(category: Omit<Category, 'id' | 'createdAt' | 'updatedAt'>): Promise<Category> {
+    const categories = await this.getAll()
+    const newCategory: Category = {
+      ...category,
       id: crypto.randomUUID(),
-      name,
-      description,
-      isDefault: false,
       createdAt: new Date(),
       updatedAt: new Date(),
     }
 
-    const categories = await categoriesStorage.getValue()
-    categories[category.id] = category
+    categories[newCategory.id] = newCategory
     await categoriesStorage.setValue(categories)
 
-    return category
+    return newCategory
   }
 
   /**
-   * デフォルトカテゴリを初期化（i18n 対応）
+   * カテゴリを更新
    */
-  async initializeDefaults(): Promise<void> {
-    const existing = await categoriesStorage.getValue()
-    if (Object.keys(existing).length > 0) {
-      return // すでに初期化済み
+  async update(id: string, updates: Partial<Omit<Category, 'id' | 'createdAt'>>): Promise<Category> {
+    const categories = await this.getAll()
+    const category = categories[id]
+
+    if (!category) {
+      throw new Error(`Category not found: ${id}`)
     }
 
-    // 翻訳キーからカテゴリ名を取得
-    const defaults: Omit<Category, "id" | "createdAt" | "updatedAt">[] = [
-      {
-        name: i18n.t("organizer.category.externalCommunication"),
-        description: i18n.t("organizer.category.externalCommunicationDesc"),
-        isDefault: true,
-      },
-      {
-        name: i18n.t("organizer.category.internalCommunication"),
-        description: i18n.t("organizer.category.internalCommunicationDesc"),
-        isDefault: true,
-      },
-      {
-        name: i18n.t("organizer.category.documentCreation"),
-        description: i18n.t("organizer.category.documentCreationDesc"),
-        isDefault: true,
-      },
-      {
-        name: i18n.t("organizer.category.development"),
-        description: i18n.t("organizer.category.developmentDesc"),
-        isDefault: true,
-      },
-      {
-        name: i18n.t("organizer.category.other"),
-        description: i18n.t("organizer.category.otherDesc"),
-        isDefault: true,
-      },
-    ]
-
-    const categories: Record<string, Category> = {}
-    for (const def of defaults) {
-      const id = crypto.randomUUID()
-      categories[id] = {
-        ...def,
-        id,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }
+    const updated: Category = {
+      ...category,
+      ...updates,
+      id,
+      updatedAt: new Date(),
     }
 
+    categories[id] = updated
+    await categoriesStorage.setValue(categories)
+
+    return updated
+  }
+
+  /**
+   * カテゴリを削除
+   */
+  async delete(id: string): Promise<void> {
+    const categories = await this.getAll()
+    const category = categories[id]
+
+    if (!category) {
+      throw new Error(`Category not found: ${id}`)
+    }
+
+    if (category.isDefault) {
+      throw new Error('Cannot delete default category')
+    }
+
+    delete categories[id]
     await categoriesStorage.setValue(categories)
   }
 }
 
-export const categoryService = new CategoryService()
+export const categoryService = CategoryService.getInstance()
 ```
 
 ---
