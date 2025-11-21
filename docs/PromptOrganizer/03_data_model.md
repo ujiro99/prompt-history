@@ -124,7 +124,19 @@ export interface AIGeneratedMetadata {
   /** ユーザー確認済みフラグ（未確認=false, 確認済み=true） */
   confirmed: boolean
 
-  /** Pinned表示対象フラグ（セクションBに表示するか） */
+  /**
+   * Pinned表示対象フラグ（セクションBに表示するか）
+   *
+   * 自動決定基準:
+   * - sourceCount >= 3 AND variables.length >= 2
+   *
+   * この基準を満たすテンプレートは「汎用性が高い」と判断され、
+   * PinnedメニューのAIレコメンデーションセクションに自動表示されます。
+   *
+   * ユーザーは手動でピン留め/ピン解除を行うこともできます。
+   *
+   * @default false - デフォルトは非表示
+   */
   showInPinned: boolean
 }
 
@@ -140,7 +152,213 @@ export interface ExtractedVariable {
 }
 ```
 
-### 1.4 PromptOrganizerSettings（自動整理設定）
+### 1.4 変数の変換と統合
+
+#### ExtractedVariable から VariableConfig への変換
+
+Gemini APIが返す`ExtractedVariable`を既存の`VariableConfig`形式に変換します：
+
+```typescript
+/**
+ * ExtractedVariableをVariableConfigに変換
+ *
+ * @param extracted Gemini APIから抽出された変数
+ * @returns 既存の変数展開機能で使用できるVariableConfig
+ */
+function convertToVariableConfig(
+  extracted: ExtractedVariable
+): VariableConfig {
+  return {
+    name: extracted.name,
+    label: extracted.description || extracted.name, // 説明をラベルとして使用
+    type: inferVariableType(extracted),              // 型を推論
+    defaultValue: '',                                // デフォルト値は空
+    required: true,                                  // AI抽出変数は必須とする
+    options: undefined,                              // セレクト型の場合は後で設定
+  }
+}
+
+/**
+ * 変数の型を推論
+ *
+ * 推論ルール:
+ * - 名前に "date" を含む → 'text' (日付入力)
+ * - 説明に改行を含む可能性を示唆 → 'textarea'
+ * - それ以外 → 'text' (デフォルト)
+ *
+ * @param extracted 抽出された変数
+ * @returns 推論された変数型
+ */
+function inferVariableType(extracted: ExtractedVariable): VariableType {
+  const nameLower = extracted.name.toLowerCase()
+  const descLower = (extracted.description || '').toLowerCase()
+
+  // 日付系
+  if (nameLower.includes('date') || nameLower.includes('day')) {
+    return 'text' // HTMLのdate inputは使わず、textで自由入力
+  }
+
+  // 複数行が必要そうな変数
+  if (
+    descLower.includes('詳細') ||
+    descLower.includes('内容') ||
+    descLower.includes('説明') ||
+    nameLower.includes('detail') ||
+    nameLower.includes('content') ||
+    nameLower.includes('description')
+  ) {
+    return 'textarea'
+  }
+
+  // デフォルトは単一行テキスト
+  return 'text'
+}
+```
+
+#### 既存の変数展開機能との統合
+
+AI生成プロンプトの変数は、既存の変数展開ダイアログで入力されます：
+
+**1. 保存時の処理**:
+
+```typescript
+/**
+ * TemplateCandidateをPromptに変換
+ */
+function convertCandidateToPrompt(
+  candidate: TemplateCandidate
+): Prompt {
+  return {
+    id: crypto.randomUUID(),
+    name: candidate.title,
+    content: candidate.content,
+    variables: candidate.variables, // VariableConfig[] をそのまま使用
+    isAIGenerated: true,
+    aiMetadata: candidate.aiMetadata,
+    useCase: candidate.useCase,
+    categoryId: candidate.categoryId,
+    executionCount: 0,
+    lastExecutedAt: new Date(),
+    isPinned: candidate.userAction === 'save_and_pin',
+    lastExecutionUrl: '',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }
+}
+```
+
+**2. 実行時の処理**:
+
+- AI生成プロンプトも通常のプロンプトと同様に変数展開ダイアログが表示される
+- `variables`配列に基づいてダイアログのフォームが生成される
+- ユーザーが入力した値で`{{variable_name}}`が置換される
+
+**3. 変数の編集**:
+
+- ユーザーはプロンプト編集画面で変数設定を変更可能
+- 変更しても`aiMetadata.extractedVariables`は保持される（AI抽出時の履歴として）
+- 変数の追加・削除・型変更が可能
+
+#### 変数デフォルト値の設定
+
+AI抽出時はデフォルト値が空ですが、ユーザーが後から設定可能：
+
+```typescript
+/**
+ * 変数設定の編集（既存機能を活用）
+ */
+interface VariableConfigEditor {
+  // 既存の変数編集UIを使用
+  editVariable(promptId: string, variableName: string): void
+
+  // 編集内容
+  updateVariableConfig(config: {
+    name: string
+    label: string
+    type: VariableType
+    defaultValue: string    // ユーザーが頻繁に使う値を設定
+    required: boolean
+    options?: string[]      // type='select'の場合の選択肢
+  }): void
+}
+```
+
+#### 変数入力ダイアログの動作仕様
+
+既存の変数展開機能と完全に統合：
+
+**1. ダイアログ表示条件**:
+
+- プロンプト実行時に`variables`配列が存在し、かつ空でない場合
+- AI生成プロンプトも通常プロンプトも同じロジック
+
+**2. フォーム生成**:
+
+- `variables`配列を順番に処理
+- 各変数の`type`に応じたフォームコントロールを表示
+  - `text`: `<input type="text">`
+  - `textarea`: `<textarea>`
+  - `select`: `<select>` with `options`
+
+**3. デフォルト値の適用**:
+
+- `defaultValue`が設定されている場合、初期値として表示
+- ユーザーは変更可能
+
+**4. バリデーション**:
+
+- `required: true`の変数は入力必須
+- 未入力の場合はエラー表示
+
+**5. 実行**:
+
+- すべての必須変数が入力されたら実行可能
+- 入力値で`{{variable_name}}`を置換してAIサービスに送信
+
+#### データフロー例
+
+```
+[AIがテンプレート生成]
+  GeneratedTemplate {
+    variables: [
+      { name: 'client_name', description: '取引先名' },
+      { name: 'issue', description: '発生した問題の詳細' }
+    ]
+  }
+  ↓
+[変数変換]
+  convertToVariableConfig() を各変数に適用
+  ↓
+  TemplateCandidate {
+    variables: [
+      { name: 'client_name', label: '取引先名', type: 'text', required: true },
+      { name: 'issue', label: '発生した問題の詳細', type: 'textarea', required: true }
+    ]
+  }
+  ↓
+[ユーザーが保存]
+  convertCandidateToPrompt()
+  ↓
+  Prompt {
+    content: '{{client_name}}様\n{{issue}}について...',
+    variables: [...] // VariableConfig[]
+    isAIGenerated: true
+  }
+  ↓
+[ユーザーが実行]
+  既存の変数展開ダイアログ表示
+  ↓
+  ユーザー入力:
+    client_name: 'ABC株式会社'
+    issue: '納品遅延'
+  ↓
+  置換実行:
+    'ABC株式会社様\n納品遅延について...'
+  ↓
+  AIサービスに送信
+```
+
+### 1.5 PromptOrganizerSettings（自動整理設定）
 
 ```typescript
 /**
@@ -676,9 +894,346 @@ export interface OrganizerError {
 }
 ```
 
-### 9.2 データ検証
+### 9.2 入力検証仕様
 
-- Gemini レスポンスの構造化出力が期待する形式か検証
-- 変数名の妥当性チェック（既存の `isValidVariableName()` を使用）
-- テンプレート名の長さチェック（20文字以内）
-- ユースケースの長さチェック（40文字以内）
+#### 9.2.1 Gemini APIレスポンスの検証
+
+**構造化出力の検証**:
+
+```typescript
+/**
+ * Gemini APIレスポンスの検証ルール
+ */
+interface ResponseValidationRules {
+  // 必須フィールドの存在チェック
+  requiredFields: ['templates']
+
+  // テンプレート配列の検証
+  templates: {
+    minLength: 0              // 最小0件（エラー時のため）
+    maxLength: 20             // 最大20件
+  }
+}
+
+/**
+ * レスポンス検証関数
+ */
+function validateGeminiResponse(
+  response: OrganizePromptsResponse
+): ValidationResult {
+  const errors: string[] = []
+
+  // templates配列の存在チェック
+  if (!Array.isArray(response.templates)) {
+    errors.push('templates field must be an array')
+  }
+
+  // 各テンプレートの検証
+  response.templates.forEach((template, index) => {
+    const templateErrors = validateTemplate(template, index)
+    errors.push(...templateErrors)
+  })
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+  }
+}
+```
+
+#### 9.2.2 テンプレートフィールドの検証
+
+```typescript
+/**
+ * テンプレートフィールドの検証ルール
+ */
+const TEMPLATE_VALIDATION_RULES = {
+  title: {
+    maxLength: 20,
+    trimWhitespace: true,
+    errorKey: 'organizer.validation.titleTooLong',
+  },
+  useCase: {
+    maxLength: 40,
+    trimWhitespace: true,
+    errorKey: 'organizer.validation.useCaseTooLong',
+  },
+  content: {
+    required: true,
+    minLength: 1,
+    errorKey: 'organizer.validation.contentRequired',
+  },
+  categoryId: {
+    // 既存カテゴリIDまたは新規カテゴリ名
+    validateExistence: true,
+    errorKey: 'organizer.validation.invalidCategory',
+  },
+  sourcePromptIds: {
+    required: true,
+    minLength: 1,
+    errorKey: 'organizer.validation.noSourcePrompts',
+  },
+} as const
+
+/**
+ * テンプレート検証関数
+ */
+function validateTemplate(
+  template: GeneratedTemplate,
+  index: number
+): string[] {
+  const errors: string[] = []
+
+  // タイトルの検証
+  if (!template.title) {
+    errors.push(`Template ${index + 1}: title is required`)
+  } else if (template.title.length > TEMPLATE_VALIDATION_RULES.title.maxLength) {
+    // 超過時は自動で切り詰め（エラーではなく警告）
+    console.warn(
+      `Template ${index + 1}: title truncated from ${template.title.length} to ${TEMPLATE_VALIDATION_RULES.title.maxLength} chars`
+    )
+    template.title = template.title.slice(0, TEMPLATE_VALIDATION_RULES.title.maxLength)
+  }
+
+  // ユースケースの検証
+  if (template.useCase && template.useCase.length > TEMPLATE_VALIDATION_RULES.useCase.maxLength) {
+    console.warn(
+      `Template ${index + 1}: useCase truncated from ${template.useCase.length} to ${TEMPLATE_VALIDATION_RULES.useCase.maxLength} chars`
+    )
+    template.useCase = template.useCase.slice(0, TEMPLATE_VALIDATION_RULES.useCase.maxLength)
+  }
+
+  // コンテンツの検証
+  if (!template.content || template.content.trim().length === 0) {
+    errors.push(`Template ${index + 1}: content is required`)
+  }
+
+  // ソースプロンプトIDの検証
+  if (!template.sourcePromptIds || template.sourcePromptIds.length === 0) {
+    errors.push(`Template ${index + 1}: at least one source prompt ID is required`)
+  }
+
+  return errors
+}
+```
+
+#### 9.2.3 変数名の検証
+
+```typescript
+/**
+ * 変数名の検証ルール
+ */
+const VARIABLE_NAME_PATTERN = /^[a-zA-Z_][a-zA-Z0-9_]*$/
+
+/**
+ * 変数名の妥当性チェック
+ *
+ * @param name 変数名
+ * @returns 有効な変数名の場合 true
+ */
+function isValidVariableName(name: string): boolean {
+  // 既存の実装を使用
+  return VARIABLE_NAME_PATTERN.test(name)
+}
+
+/**
+ * 変数の検証
+ */
+function validateVariable(
+  variable: ExtractedVariable,
+  templateIndex: number,
+  variableIndex: number
+): string[] {
+  const errors: string[] = []
+
+  // 変数名の存在チェック
+  if (!variable.name) {
+    errors.push(
+      `Template ${templateIndex + 1}, Variable ${variableIndex + 1}: name is required`
+    )
+    return errors
+  }
+
+  // 変数名のパターンチェック
+  if (!isValidVariableName(variable.name)) {
+    errors.push(
+      `Template ${templateIndex + 1}, Variable ${variableIndex + 1}: ` +
+      `invalid variable name "${variable.name}". ` +
+      `Must match pattern: ${VARIABLE_NAME_PATTERN}`
+    )
+  }
+
+  return errors
+}
+```
+
+#### 9.2.4 カテゴリ名の検証
+
+```typescript
+/**
+ * カテゴリ名の検証ルール
+ */
+const CATEGORY_VALIDATION_RULES = {
+  name: {
+    maxLength: 30,
+    trimWhitespace: true,
+    errorKey: 'organizer.validation.categoryNameTooLong',
+  },
+  // 予約語チェック（デフォルトカテゴリIDとの衝突を防ぐ）
+  reservedNames: [
+    'external-communication',
+    'internal-communication',
+    'document-creation',
+    'development',
+  ],
+} as const
+
+/**
+ * カテゴリ名の検証
+ */
+function validateCategoryName(name: string): ValidationResult {
+  const errors: string[] = []
+
+  // 長さチェック
+  if (name.length > CATEGORY_VALIDATION_RULES.name.maxLength) {
+    errors.push(
+      `Category name too long (max ${CATEGORY_VALIDATION_RULES.name.maxLength} chars)`
+    )
+  }
+
+  // 予約語チェック
+  if (CATEGORY_VALIDATION_RULES.reservedNames.includes(name.toLowerCase())) {
+    errors.push(`Category name "${name}" is reserved`)
+  }
+
+  // 空文字チェック
+  if (name.trim().length === 0) {
+    errors.push('Category name cannot be empty')
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+  }
+}
+```
+
+#### 9.2.5 サニタイゼーション
+
+```typescript
+/**
+ * テンプレートデータのサニタイゼーション
+ *
+ * XSS攻撃を防ぐため、HTMLタグをエスケープします。
+ * ただし、変数構文 {{variableName}} は保持します。
+ */
+function sanitizeTemplateContent(content: string): string {
+  // 変数構文を一時的に保護
+  const variablePlaceholders: string[] = []
+  let sanitized = content.replace(/\{\{([^}]+)\}\}/g, (match, varName) => {
+    const placeholder = `__VAR_${variablePlaceholders.length}__`
+    variablePlaceholders.push(match)
+    return placeholder
+  })
+
+  // HTMLエスケープ（基本的なもののみ）
+  sanitized = sanitized
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+
+  // 変数構文を復元
+  variablePlaceholders.forEach((variable, index) => {
+    sanitized = sanitized.replace(`__VAR_${index}__`, variable)
+  })
+
+  return sanitized
+}
+
+/**
+ * 文字列のトリミングと正規化
+ */
+function normalizeString(str: string): string {
+  return str
+    .trim()                           // 前後の空白を削除
+    .replace(/\s+/g, ' ')            // 連続する空白を1つに
+    .replace(/[\r\n]+/g, '\n')       // 連続する改行を1つに
+}
+```
+
+#### 9.2.6 検証エラーメッセージ
+
+**i18nキー定義**:
+
+```typescript
+// src/locales/en.yml
+organizer:
+  validation:
+    titleTooLong: "Template title must be 20 characters or less"
+    useCaseTooLong: "Use case must be 40 characters or less"
+    contentRequired: "Template content is required"
+    invalidCategory: "Invalid category"
+    noSourcePrompts: "At least one source prompt is required"
+    categoryNameTooLong: "Category name must be 30 characters or less"
+    invalidVariableName: "Variable name contains invalid characters"
+    variableNameRequired: "Variable name is required"
+
+// src/locales/ja.yml
+organizer:
+  validation:
+    titleTooLong: "テンプレート名は20文字以内にしてください"
+    useCaseTooLong: "ユースケースは40文字以内にしてください"
+    contentRequired: "テンプレートの内容は必須です"
+    invalidCategory: "無効なカテゴリです"
+    noSourcePrompts: "少なくとも1つのソースプロンプトが必要です"
+    categoryNameTooLong: "カテゴリ名は30文字以内にしてください"
+    invalidVariableName: "変数名に無効な文字が含まれています"
+    variableNameRequired: "変数名は必須です"
+```
+
+#### 9.2.7 統合された検証フロー
+
+```typescript
+/**
+ * テンプレート候補の完全検証
+ */
+async function validateTemplateCandidate(
+  candidate: TemplateCandidate
+): Promise<ValidationResult> {
+  const errors: string[] = []
+
+  // 1. 基本フィールドの検証
+  const basicValidation = validateTemplate(candidate, 0)
+  errors.push(...basicValidation)
+
+  // 2. 変数の検証
+  candidate.variables?.forEach((variable, index) => {
+    const varErrors = validateVariable(
+      { name: variable.name, description: variable.label },
+      0,
+      index
+    )
+    errors.push(...varErrors)
+  })
+
+  // 3. カテゴリの検証（新規カテゴリの場合）
+  if (candidate.categoryId && !isExistingCategoryId(candidate.categoryId)) {
+    const categoryValidation = validateCategoryName(candidate.categoryId)
+    errors.push(...categoryValidation.errors)
+  }
+
+  // 4. コンテンツのサニタイゼーション（副作用あり）
+  candidate.content = sanitizeTemplateContent(candidate.content)
+  candidate.title = normalizeString(candidate.title)
+  if (candidate.useCase) {
+    candidate.useCase = normalizeString(candidate.useCase)
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+  }
+}
+```

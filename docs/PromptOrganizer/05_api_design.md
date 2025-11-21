@@ -673,7 +673,405 @@ export interface GeminiError {
 }
 ```
 
+### 9.2 リトライロジック
+
+```typescript
+/**
+ * リトライ設定
+ */
+const RETRY_CONFIG = {
+  maxRetries: 3,              // 最大リトライ回数
+  baseDelay: 1000,            // 初回待機時間（ミリ秒）
+  maxDelay: 8000,             // 最大待機時間（ミリ秒）
+  retryableErrors: [
+    'RATE_LIMIT',
+    'NETWORK_ERROR',
+  ] as GeminiErrorCode[],
+}
+
+/**
+ * 指数バックオフでリトライを実行
+ *
+ * @param fn 実行する関数
+ * @param errorCode エラーコード（リトライ判定用）
+ * @returns 関数の実行結果
+ */
+async function executeWithRetry<T>(
+  fn: () => Promise<T>,
+  errorCode?: GeminiErrorCode,
+): Promise<T> {
+  let lastError: any
+
+  for (let attempt = 0; attempt <= RETRY_CONFIG.maxRetries; attempt++) {
+    try {
+      return await fn()
+    } catch (error) {
+      lastError = error
+
+      // リトライ対象外のエラーはすぐに投げる
+      if (errorCode && !RETRY_CONFIG.retryableErrors.includes(errorCode)) {
+        throw error
+      }
+
+      // 最後の試行ならリトライせず投げる
+      if (attempt === RETRY_CONFIG.maxRetries) {
+        throw error
+      }
+
+      // 指数バックオフで待機
+      const delay = Math.min(
+        RETRY_CONFIG.baseDelay * Math.pow(2, attempt),
+        RETRY_CONFIG.maxDelay
+      )
+
+      console.log(`Retrying after ${delay}ms (attempt ${attempt + 1}/${RETRY_CONFIG.maxRetries})`)
+      await new Promise(resolve => setTimeout(resolve, delay))
+    }
+  }
+
+  throw lastError
+}
+```
+
+### 9.3 タイムアウト仕様
+
+```typescript
+/**
+ * APIタイムアウト設定（30秒）
+ */
+const API_TIMEOUT_MS = 30000
+
+/**
+ * タイムアウト付きでPromiseを実行
+ *
+ * @param promise 実行するPromise
+ * @param timeoutMs タイムアウト時間（ミリ秒）
+ * @returns Promiseの実行結果
+ * @throws タイムアウト時はエラー
+ */
+async function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number = API_TIMEOUT_MS,
+): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(
+        () => reject(new Error('Request timeout')),
+        timeoutMs
+      )
+    ),
+  ])
+}
+```
+
+### 9.4 部分的失敗の処理
+
+```typescript
+/**
+ * 最小成功基準: 最低1つのテンプレートが必要
+ */
+const MIN_TEMPLATES_REQUIRED = 1
+
+/**
+ * レスポンス検証
+ *
+ * @param response Gemini APIからのレスポンス
+ * @returns 検証結果と警告メッセージ
+ */
+function validateResponse(response: OrganizePromptsResponse): {
+  isValid: boolean
+  warnings: string[]
+} {
+  const warnings: string[] = []
+
+  // テンプレート数チェック
+  if (response.templates.length === 0) {
+    return { isValid: false, warnings: ['No templates generated'] }
+  }
+
+  if (response.templates.length < MIN_TEMPLATES_REQUIRED) {
+    warnings.push(`Only ${response.templates.length} template(s) generated`)
+  }
+
+  // 各テンプレートの検証
+  response.templates.forEach((template, index) => {
+    if (!template.title || template.title.length > 20) {
+      warnings.push(`Template ${index + 1}: Invalid title length`)
+    }
+    if (!template.content) {
+      warnings.push(`Template ${index + 1}: Empty content`)
+    }
+    if (!template.useCase || template.useCase.length > 40) {
+      warnings.push(`Template ${index + 1}: Invalid use case length`)
+    }
+    if (!template.sourcePromptIds || template.sourcePromptIds.length === 0) {
+      warnings.push(`Template ${index + 1}: No source prompts`)
+    }
+  })
+
+  return {
+    isValid: response.templates.length >= MIN_TEMPLATES_REQUIRED,
+    warnings,
+  }
+}
+```
+
+### 9.5 ユーザー向けエラーガイダンス
+
+```typescript
+/**
+ * エラーコード別のユーザーガイダンス（i18nキー）
+ */
+const ERROR_USER_GUIDANCE: Record<GeminiErrorCode, string> = {
+  API_ERROR: 'organizer.error.apiError',
+  NETWORK_ERROR: 'organizer.error.networkError',
+  QUOTA_EXCEEDED: 'organizer.error.quotaExceeded',
+  INVALID_RESPONSE: 'organizer.error.invalidResponse',
+  INVALID_API_KEY: 'organizer.error.invalidApiKey',
+}
+
+/**
+ * クォータ超過時の詳細ガイダンス
+ */
+interface QuotaExceededGuidance {
+  title: string
+  message: string
+  actions: Array<{
+    label: string
+    description: string
+    link?: string
+  }>
+}
+
+const QUOTA_EXCEEDED_GUIDANCE: QuotaExceededGuidance = {
+  title: 'organizer.error.quotaExceeded.title',
+  message: 'organizer.error.quotaExceeded.message',
+  actions: [
+    {
+      label: 'organizer.error.quotaExceeded.action.waitAndRetry',
+      description: 'organizer.error.quotaExceeded.action.waitAndRetryDesc',
+    },
+    {
+      label: 'organizer.error.quotaExceeded.action.checkQuota',
+      description: 'organizer.error.quotaExceeded.action.checkQuotaDesc',
+      link: 'https://aistudio.google.com/app/apikey',
+    },
+    {
+      label: 'organizer.error.quotaExceeded.action.reducePrompts',
+      description: 'organizer.error.quotaExceeded.action.reducePromptsDesc',
+    },
+  ],
+}
+
+/**
+ * エラーにユーザーガイダンスを付加
+ */
+function enrichErrorWithGuidance(error: GeminiError): GeminiError & { userGuidance?: QuotaExceededGuidance } {
+  if (error.code === 'QUOTA_EXCEEDED') {
+    return {
+      ...error,
+      userGuidance: QUOTA_EXCEEDED_GUIDANCE,
+    }
+  }
+
+  return error
+}
+```
+
+### 9.6 統合エラーハンドリング例
+
+```typescript
+/**
+ * PromptOrganizerService内での統合例
+ */
+async function executeOrganization(
+  settings: PromptOrganizerSettings
+): Promise<PromptOrganizerResult> {
+  try {
+    // タイムアウト付きでリトライ実行
+    const response = await executeWithRetry(
+      () => withTimeout(
+        callGeminiAPI(request),
+        30000 // 30秒タイムアウト
+      )
+    )
+
+    // レスポンス検証
+    const { isValid, warnings } = validateResponse(response)
+
+    if (!isValid) {
+      throw {
+        code: 'INVALID_RESPONSE',
+        message: 'Invalid response: no templates generated',
+      } as GeminiError
+    }
+
+    // 警告がある場合はログ出力
+    if (warnings.length > 0) {
+      console.warn('Template generation warnings:', warnings)
+    }
+
+    return convertToResult(response)
+
+  } catch (error) {
+    // エラーにガイダンスを付加
+    const enrichedError = enrichErrorWithGuidance(error as GeminiError)
+    throw enrichedError
+  }
+}
+```
+
 **注意**: エラーハンドリングの詳細な実装は、セクション6.1の`generateStructuredContent()`メソッド内で行われます。既存の`GeminiClient`のエラー処理パターンを踏襲します。
+
+### 9.7 入力検証の統合
+
+**検証フローの全体像**:
+
+```typescript
+/**
+ * テンプレート生成時の検証フロー
+ */
+async function generateTemplatesWithValidation(
+  request: OrganizePromptsRequest
+): Promise<{ templates: TemplateCandidate[]; usage: TokenUsage }> {
+  // 1. リクエストパラメータの事前検証
+  validateOrganizationRequest(request)
+
+  // 2. Gemini API 呼び出し
+  const { data, usage } = await geminiClient.generateStructuredContent<OrganizePromptsResponse>(
+    buildPromptText(request),
+    ORGANIZER_RESPONSE_SCHEMA,
+    {
+      model: "gemini-2.5-flash",
+      systemInstruction: SYSTEM_INSTRUCTION,
+    }
+  )
+
+  // 3. APIレスポンスの検証
+  const responseValidation = validateGeminiResponse(data)
+  if (!responseValidation.isValid) {
+    throw {
+      code: 'INVALID_RESPONSE',
+      message: 'Invalid API response structure',
+      details: responseValidation.errors,
+    } as GeminiError
+  }
+
+  // 4. 各テンプレートの検証とサニタイゼーション
+  const validatedTemplates: TemplateCandidate[] = []
+  const validationErrors: string[] = []
+
+  for (const [index, generated] of data.templates.entries()) {
+    try {
+      // 変数の検証
+      for (const [varIndex, variable] of generated.variables.entries()) {
+        const varErrors = validateVariable(variable, index, varIndex)
+        if (varErrors.length > 0) {
+          validationErrors.push(...varErrors)
+          continue // このテンプレートはスキップ
+        }
+      }
+
+      // テンプレート候補に変換
+      const candidate = templateConverter.convertToCandidate(
+        generated,
+        request.periodDays
+      )
+
+      // テンプレート候補の検証とサニタイゼーション
+      const validation = await validateTemplateCandidate(candidate)
+      if (validation.isValid) {
+        validatedTemplates.push(candidate)
+      } else {
+        validationErrors.push(...validation.errors)
+      }
+    } catch (error) {
+      console.error(`Template ${index + 1} validation failed:`, error)
+      validationErrors.push(`Template ${index + 1}: ${error.message}`)
+    }
+  }
+
+  // 5. 最小成功基準のチェック
+  if (validatedTemplates.length < MIN_TEMPLATES_REQUIRED) {
+    throw {
+      code: 'INVALID_RESPONSE',
+      message: `Insufficient valid templates (got ${validatedTemplates.length}, required ${MIN_TEMPLATES_REQUIRED})`,
+      details: {
+        validTemplates: validatedTemplates.length,
+        totalTemplates: data.templates.length,
+        validationErrors,
+      },
+    } as GeminiError
+  }
+
+  // 6. 警告がある場合はログ出力
+  if (validationErrors.length > 0) {
+    console.warn('Template validation warnings:', validationErrors)
+  }
+
+  return {
+    templates: validatedTemplates,
+    usage,
+  }
+}
+```
+
+**リクエストパラメータの検証**:
+
+```typescript
+/**
+ * 組織化リクエストの事前検証
+ */
+function validateOrganizationRequest(request: OrganizePromptsRequest): void {
+  // プロンプト配列のチェック
+  if (!Array.isArray(request.prompts) || request.prompts.length === 0) {
+    throw new Error('At least one prompt is required')
+  }
+
+  // 組織化プロンプトの長さチェック
+  if (!request.organizationPrompt || request.organizationPrompt.trim().length === 0) {
+    throw new Error('Organization prompt is required')
+  }
+
+  // プロンプト数の上限チェック
+  const MAX_PROMPTS_PER_REQUEST = 100
+  if (request.prompts.length > MAX_PROMPTS_PER_REQUEST) {
+    throw new Error(
+      `Too many prompts (max ${MAX_PROMPTS_PER_REQUEST}, got ${request.prompts.length})`
+    )
+  }
+}
+```
+
+**検証結果の型定義**:
+
+```typescript
+/**
+ * 検証結果
+ */
+interface ValidationResult {
+  /** 検証が成功したか */
+  isValid: boolean
+
+  /** エラーメッセージ配列 */
+  errors: string[]
+
+  /** 警告メッセージ配列（オプション） */
+  warnings?: string[]
+}
+```
+
+**検証関数の配置**:
+
+- `validateGeminiResponse()`: `03_data_model.md` セクション9.2.1で定義
+- `validateTemplate()`: `03_data_model.md` セクション9.2.2で定義
+- `validateVariable()`: `03_data_model.md` セクション9.2.3で定義
+- `validateTemplateCandidate()`: `03_data_model.md` セクション9.2.7で定義
+- `sanitizeTemplateContent()`: `03_data_model.md` セクション9.2.5で定義
+- `normalizeString()`: `03_data_model.md` セクション9.2.5で定義
+
+すべての検証ロジックの詳細は **`03_data_model.md` セクション9.2** を参照してください。
 
 ---
 
