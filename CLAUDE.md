@@ -160,9 +160,15 @@ The extension uses a simplified, configuration-driven architecture for supportin
   - External specifications
   - Key type definitions
   - Test design
-- A design document should not include:
-  - Implementation details
-  - Code snippets
+
+**DESIGN DOCUMENTS – IMPORTANT**
+
+Design documents must be readable and allow reviewers to understand the system and detect mistakes.  
+Because source code errors generally cannot be identified without executing the code, source code is not suitable for design documents.  
+Therefore, please strictly follow the rules below.
+
+- Do not include any implementation details or code snippets in design documents.
+- Absolutely do not include source code, pseudocode, function definitions.
 
 ## Landing Page (pages/)
 
