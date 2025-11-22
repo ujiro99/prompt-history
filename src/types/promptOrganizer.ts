@@ -157,3 +157,31 @@ export interface TokenUsage {
   /** Output token count */
   outputTokens: number
 }
+
+/**
+ * Organizer execution estimate
+ */
+export interface OrganizerExecutionEstimate {
+  /** Target prompt count */
+  targetPromptCount: number
+  /** Estimated input tokens */
+  estimatedInputTokens: number
+  /** Context usage rate (0.0 - 1.0) */
+  contextUsageRate: number
+  /** Estimated cost (JPY) */
+  estimatedCost: number
+  /** Model name */
+  model: string
+  /** Context limit (tokens) */
+  contextLimit: number
+}
+
+/**
+ * Organizer error
+ */
+export interface OrganizerError {
+  /** Error code */
+  code: string
+  /** Error message */
+  message: string
+}

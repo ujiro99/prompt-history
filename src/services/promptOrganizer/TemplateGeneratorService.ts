@@ -11,6 +11,7 @@ import type {
   GeneratedTemplate,
   PromptOrganizerSettings,
   TokenUsage,
+  Category,
 } from "@/types/promptOrganizer"
 import { SYSTEM_ORGANIZATION_INSTRUCTION } from "@/services/genai/defaultPrompts"
 
@@ -60,6 +61,7 @@ export class TemplateGeneratorService {
   public async generateTemplates(
     prompts: PromptForOrganization[],
     settings: PromptOrganizerSettings,
+    categories: Array<Category>,
   ): Promise<{ templates: GeneratedTemplate[]; usage: TokenUsage }> {
     // Initialize client if not already initialized
     if (!this.geminiClient.isInitialized()) {
@@ -74,7 +76,11 @@ export class TemplateGeneratorService {
     }
 
     // Build prompt for Gemini
-    const prompt = this.buildPrompt(prompts, settings.organizationPrompt)
+    const prompt = this.buildPrompt(
+      prompts,
+      settings.organizationPrompt,
+      categories,
+    )
 
     // Define JSON schema for structured output
     const schema = {
@@ -151,10 +157,16 @@ export class TemplateGeneratorService {
    * @param organizationPrompt - Custom organization prompt
    * @returns Formatted prompt
    */
-  private buildPrompt(
+  public buildPrompt(
     prompts: PromptForOrganization[],
     organizationPrompt: string,
+    categories: Array<{ id: string; name: string }>,
   ): string {
+    // Build category list
+    const categoryList = categories
+      .map((c) => `- ${c.id}: ${c.name}`)
+      .join("\n")
+
     const promptList = prompts
       .map(
         (p, idx) =>
@@ -164,8 +176,10 @@ export class TemplateGeneratorService {
 
     return `${organizationPrompt}
 
-Prompts to analyze:
+Available Categories:
+${categoryList}
 
+Prompts to analyze:
 ${promptList}
 
 Please generate templates in JSON format according to the schema.`

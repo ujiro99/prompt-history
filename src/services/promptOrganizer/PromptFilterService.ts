@@ -69,3 +69,5 @@ export class PromptFilterService {
     return this.filterPrompts(prompts, settings).length
   }
 }
+
+export const promptFilterService = new PromptFilterService()

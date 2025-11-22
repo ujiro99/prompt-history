@@ -3,16 +3,19 @@
  * Main orchestration service for prompt organization
  */
 
-import type { Prompt } from "@/types/prompt"
 import type {
   PromptOrganizerSettings,
   PromptOrganizerResult,
   TemplateCandidate,
+  OrganizerExecutionEstimate,
 } from "@/types/promptOrganizer"
 import { PromptFilterService } from "./PromptFilterService"
 import { TemplateGeneratorService } from "./TemplateGeneratorService"
 import { categoryService } from "./CategoryService"
 import { DEFAULT_CATEGORIES } from "./defaultCategories"
+import { costEstimatorService } from "./CostEstimatorService"
+import { templateSaveService } from "./TemplateSaveService"
+import { promptsService } from "@/services/storage/prompts"
 
 /**
  * Main service for prompt organization
@@ -28,15 +31,16 @@ export class PromptOrganizerService {
 
   /**
    * Execute prompt organization
-   * @param prompts - All prompts
    * @param settings - Organizer settings
    * @returns Organization result with templates
    */
   public async executeOrganization(
-    prompts: Prompt[],
     settings: PromptOrganizerSettings,
   ): Promise<PromptOrganizerResult> {
-    // 1. Filter prompts
+    // 1. Get all prompts
+    const prompts = await promptsService.getAllPrompts()
+
+    // 2. Filter prompts
     const targetPrompts = this.filterService.filterPrompts(prompts, settings)
     console.log(
       `${targetPrompts.length} prompts selected for organization`,
@@ -48,13 +52,16 @@ export class PromptOrganizerService {
       throw new Error("No prompts match the filter criteria")
     }
 
-    // 2. Generate templates using Gemini
+    const categories = await categoryService.getAll()
+
+    // 3. Generate templates using Gemini
     const { templates, usage } = await this.generatorService.generateTemplates(
       targetPrompts,
       settings,
+      categories,
     )
 
-    // 3. Convert to template candidates
+    // 4. Convert to template candidates
     const now = new Date()
     const templateCandidates: TemplateCandidate[] = await Promise.all(
       templates.map(async (template) => {
@@ -90,11 +97,11 @@ export class PromptOrganizerService {
       }),
     )
 
-    // 4. Calculate estimated cost (simple calculation for MVP)
-    const estimatedCost = this.calculateCost(
-      usage.inputTokens,
-      usage.outputTokens,
-    )
+    // 5. Calculate estimated cost
+    const estimatedCost = costEstimatorService.calculateCost({
+      inputTokens: usage.inputTokens,
+      outputTokens: usage.outputTokens,
+    })
 
     return {
       templates: templateCandidates,
@@ -108,19 +115,22 @@ export class PromptOrganizerService {
   }
 
   /**
-   * Calculate cost based on token usage
-   * Gemini 2.5 Flash pricing (as of Nov 2024)
+   * Estimate execution cost before execution
+   * @param settings - Organizer settings
+   * @returns Execution estimate
    */
-  private calculateCost(inputTokens: number, outputTokens: number): number {
-    const INPUT_COST_PER_1M = 0.075 // $0.075 per 1M input tokens
-    const OUTPUT_COST_PER_1M = 0.3 // $0.30 per 1M output tokens
-    const USD_TO_JPY = 150 // Conversion rate
+  public async estimateExecution(
+    settings: PromptOrganizerSettings,
+  ): Promise<OrganizerExecutionEstimate> {
+    return costEstimatorService.estimateExecution(settings)
+  }
 
-    const inputCost = (inputTokens / 1_000_000) * INPUT_COST_PER_1M
-    const outputCost = (outputTokens / 1_000_000) * OUTPUT_COST_PER_1M
-    const totalUsd = inputCost + outputCost
-
-    return totalUsd * USD_TO_JPY
+  /**
+   * Save templates
+   * @param candidates - Template candidates to save
+   */
+  public async saveTemplates(candidates: TemplateCandidate[]): Promise<void> {
+    return templateSaveService.saveTemplates(candidates)
   }
 }
 

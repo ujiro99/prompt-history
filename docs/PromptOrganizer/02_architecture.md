@@ -234,33 +234,29 @@ AI生成テンプレートで未確認状態 (`aiMetadata.confirmed === false`) 
 
 ### 4.1 PromptOrganizerService（ファサード）
 
+**実装ファイル**: `src/services/promptOrganizer/PromptOrganizerService.ts`
+
 **責務**: プロンプト整理の実行オーケストレーション
 
 **主要メソッド**:
 
-```typescript
-export const promptOrganizerService = new PromptOrganizerService(
-  promptFilterService,
-  templateGeneratorService,
-  costEstimatorService,
-  templateSaveService,
-)
-```
+- `executeOrganization(settings)`: 各サービスを呼び出して整理を実行
+- `estimateExecution(settings)`: 実行前のコスト見積もり（CostEstimatorService に委譲）
+- `saveTemplates(candidates)`: テンプレート保存（TemplateSaveService に委譲）
 
-- `executeOrganization()`: 各サービスを呼び出して整理を実行
-  1. PromptFilterService でプロンプト抽出
-  2. TemplateGeneratorService でテンプレート生成
-  3. CostEstimatorService でコスト計算
-  4. 結果オブジェクトを返す
+**実行フロー** (`executeOrganization`):
 
-- `estimateExecution()`: 実行前のコスト見積もり (CostEstimatorService に委譲)
-- テンプレート保存（TemplateSaveService に委譲）
+1. PromptFilterService でプロンプト抽出
+2. TemplateGeneratorService でテンプレート生成
+3. CostEstimatorService でコスト計算
+4. 結果オブジェクトを返す
 
-```typescript
-async saveTemplates(candidates: TemplateCandidate[]): Promise<void> {
-  return this.saveService.saveTemplates(candidates)
-}
-```
+**依存サービス**:
+
+- PromptFilterService
+- TemplateGeneratorService
+- CostEstimatorService
+- TemplateSaveService
 
 ### 4.1.1 PromptFilterService
 
@@ -306,101 +302,56 @@ async saveTemplates(candidates: TemplateCandidate[]): Promise<void> {
 
 ### 4.1.3 CostEstimatorService
 
+**実装ファイル**: `src/services/promptOrganizer/CostEstimatorService.ts`
+
 **責務**: トークン数とコスト計算
 
-```typescript
-class CostEstimatorService {
-  private static readonly PRICING = {
-    // Gemini 2.5 Flash の料金（2025年11月時点）
-    inputTokenPer1M: 0.075, // $0.075 per 1M input tokens
-    outputTokenPer1M: 0.3, // $0.30 per 1M output tokens
-    usdToJpy: 150, // USD->JPY 換算レート（設定可能）
-  }
+**主要メソッド**:
 
-  /**
-   * トークン使用量からコストを計算
-   */
-  calculateCost(usage: TokenUsage): number {
-    const inputCost =
-      (usage.inputTokens / 1_000_000) *
-      CostEstimatorService.PRICING.inputTokenPer1M
-    const outputCost =
-      (usage.outputTokens / 1_000_000) *
-      CostEstimatorService.PRICING.outputTokenPer1M
-    const totalUsd = inputCost + outputCost
-    return totalUsd * CostEstimatorService.PRICING.usdToJpy
-  }
+- `calculateCost(usage)`: トークン使用量からコストを計算（JPY）
+- `estimateExecution(settings)`: 実行前のコスト見積もり
 
-  /**
-   * 実行前のコスト見積もり
-   */
-  async estimateExecution(
-    settings: PromptOrganizerSettings,
-  ): Promise<OrganizerExecutionEstimate> {
-    // 1. 対象プロンプトをフィルタリング
-    const targetPrompts = await promptFilterService.filterPrompts(settings)
+**料金設定** (Gemini 2.5 Flash, Standard per-request):
 
-    // 2. プロンプトテキストを構築
-    const promptText = templateGeneratorService.buildPromptText({
-      organizationPrompt: settings.organizationPrompt,
-      prompts: targetPrompts,
-      existingCategories: await categoryService.getAll(),
-    })
+- 料金定義ファイル: `src/services/promptOrganizer/pricing.ts`
+- Input: $0.30 per 1M tokens
+- Output: $2.50 per 1M tokens (includes thinking tokens)
+- USD->JPY: 150円（固定レート）
+- 参照: https://ai.google.dev/gemini-api/docs/pricing?hl=ja#gemini-2.5-flash
 
-    // 3. トークン数を見積もり
-    const geminiClient = GeminiClient.getInstance()
-    const inputTokens = await geminiClient.estimateTokens(promptText)
+**見積もり処理フロー**:
 
-    // 4. コストを計算（出力トークンは0で見積もり）
-    const estimatedCost = this.calculateCost({ inputTokens, outputTokens: 0 })
+1. 全プロンプトを取得
+2. 対象プロンプトをフィルタリング
+3. プロンプトテキストを構築（organizationPrompt + カテゴリ + 対象プロンプト）
+4. トークン数を見積もり（GeminiClient.estimateTokens）
+5. コストを計算（出力トークンは0で見積もり）
 
-    return {
-      targetPromptCount: targetPrompts.length,
-      estimatedInputTokens: inputTokens,
-      contextUsageRate: inputTokens / GEMINI_CONTEXT_LIMIT,
-      estimatedCost,
-      model: "gemini-2.5-flash",
-      contextLimit: GEMINI_CONTEXT_LIMIT,
-    }
-  }
-}
-
-export const costEstimatorService = new CostEstimatorService()
-```
+**コンテキスト制限**: 1,000,000 tokens (gemini-2.5-flash)
 
 ### 4.1.4 TemplateSaveService
 
+**実装ファイル**: `src/services/promptOrganizer/TemplateSaveService.ts`
+
 **責務**: テンプレート候補の永続化
 
-```typescript
-class TemplateSaveService {
-  constructor(private templateConverter: TemplateConverter) {}
+**主要メソッド**:
 
-  /**
-   * 選択されたテンプレートを保存
-   */
-  async saveTemplates(candidates: TemplateCandidate[]): Promise<void> {
-    const toSave = candidates.filter(
-      (c) => c.userAction === "save" || c.userAction === "save_and_pin",
-    )
+- `saveTemplates(candidates)`: 選択されたテンプレートを保存
 
-    for (const candidate of toSave) {
-      // TemplateCandidate を Prompt に変換
-      const prompt = this.templateConverter.convertToPrompt(candidate)
+**保存処理フロー**:
 
-      // Prompt として保存
-      const savedPrompt = await promptsService.savePrompt(prompt)
+1. `userAction` が `"save"` または `"save_and_pin"` のテンプレートをフィルタ
+2. 各テンプレートについて：
+   - TemplateConverter で TemplateCandidate を Prompt に変換
+   - PromptsService で Prompt として保存
+   - `"save_and_pin"` の場合は PinsService でピン留め
 
-      // ピン留めが必要な場合
-      if (candidate.userAction === "save_and_pin") {
-        await pinsService.pinPrompt(savedPrompt.id)
-      }
-    }
-  }
-}
+**依存サービス**:
 
-export const templateSaveService = new TemplateSaveService(templateConverter)
-```
+- TemplateConverter: テンプレート変換
+- PromptsService: プロンプト保存
+- PinsService: ピン留め管理
 
 ### 4.2 GeminiClient の拡張
 
@@ -583,146 +534,35 @@ organizer:
 
 ### 4.4 TemplateConverter
 
+**実装ファイル**: `src/services/promptOrganizer/TemplateConverter.ts`
+
 **責務**: テンプレート変換（Gemini APIレスポンス → 内部データ構造）
 
-```typescript
-/**
- * テンプレート変換サービス
- * Gemini APIのレスポンスを内部データ構造に変換
- */
-class TemplateConverter {
-  /**
-   * GeneratedTemplateをTemplateCandidateに変換
-   *
-   * @param generated Gemini APIから生成されたテンプレート
-   * @param periodDays フィルタ期間（日数）
-   * @returns プレビュー用のテンプレート候補
-   */
-  convertToCandidate(
-    generated: GeneratedTemplate,
-    periodDays: number,
-  ): TemplateCandidate {
-    // ExtractedVariable[] → VariableConfig[] に変換
-    const variables = generated.variables.map((v) =>
-      this.convertToVariableConfig(v),
-    )
+**主要メソッド**:
 
-    return {
-      id: crypto.randomUUID(),
-      title: generated.title,
-      content: generated.content,
-      useCase: generated.useCase,
-      categoryId: generated.categoryId,
-      variables,
-      aiMetadata: {
-        generatedAt: new Date(),
-        sourcePromptIds: generated.sourcePromptIds,
-        sourceCount: generated.sourcePromptIds.length,
-        sourcePeriodDays: periodDays,
-        extractedVariables: generated.variables, // 元のデータを保持
-        confirmed: false,
-        showInPinned: this.shouldShowInPinned(generated),
-      },
-      userAction: "pending",
-    }
-  }
+- `convertToCandidate(generated, periodDays)`: GeneratedTemplate → TemplateCandidate
+- `convertToPrompt(candidate)`: TemplateCandidate → Prompt（保存時）
 
-  /**
-   * ExtractedVariableをVariableConfigに変換
-   *
-   * @param extracted Gemini APIから抽出された変数
-   * @returns 既存の変数展開機能で使用できるVariableConfig
-   */
-  private convertToVariableConfig(
-    extracted: ExtractedVariable,
-  ): VariableConfig {
-    return {
-      name: extracted.name,
-      label: extracted.description || extracted.name,
-      type: this.inferVariableType(extracted),
-      defaultValue: "",
-      required: true,
-      options: undefined,
-    }
-  }
+**変数変換ロジック**:
 
-  /**
-   * 変数の型を推論
-   *
-   * @param extracted 抽出された変数
-   * @returns 推論された変数型
-   */
-  private inferVariableType(extracted: ExtractedVariable): VariableType {
-    const nameLower = extracted.name.toLowerCase()
-    const descLower = (extracted.description || "").toLowerCase()
+- `convertToVariableConfig()`: ExtractedVariable → VariableConfig
+- `inferVariableType()`: 変数名・説明から型を推論（text / textarea）
 
-    // 日付系
-    if (nameLower.includes("date") || nameLower.includes("day")) {
-      return "text"
-    }
+**変数型推論ルール**:
 
-    // 複数行が必要そうな変数
-    if (
-      descLower.includes("詳細") ||
-      descLower.includes("内容") ||
-      descLower.includes("説明") ||
-      nameLower.includes("detail") ||
-      nameLower.includes("content") ||
-      nameLower.includes("description")
-    ) {
-      return "textarea"
-    }
+- 日付系（date, day含む）→ `text`
+- 複数行（detail, content, description, 詳細, 内容, 説明）→ `textarea`
+- その他 → `text`
 
-    return "text"
-  }
+**showInPinned 判定基準**:
 
-  /**
-   * showInPinnedフラグの判定
-   *
-   * 基準:
-   * - sourceCount >= 3（頻繁に使用）
-   * - variables.length >= 2（汎用性が高い）
-   *
-   * @param generated 生成されたテンプレート
-   * @returns Pinnedセクションに表示するかどうか
-   */
-  private shouldShowInPinned(generated: GeneratedTemplate): boolean {
-    return (
-      generated.sourcePromptIds.length >= 3 && generated.variables.length >= 2
-    )
-  }
+- sourceCount >= 3（頻繁に使用）
+- variables.length >= 2（汎用性が高い）
 
-  /**
-   * TemplateCandidateをPromptに変換（保存時）
-   *
-   * @param candidate テンプレート候補
-   * @returns 保存用のPrompt
-   */
-  convertToPrompt(candidate: TemplateCandidate): Prompt {
-    return {
-      id: crypto.randomUUID(),
-      name: candidate.title,
-      content: candidate.content,
-      variables: candidate.variables, // VariableConfig[]をそのまま使用
-      executionCount: 0,
-      lastExecutedAt: new Date(),
-      isPinned: candidate.userAction === "save_and_pin",
-      lastExecutionUrl: "",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      isAIGenerated: true,
-      aiMetadata: {
-        ...candidate.aiMetadata,
-        confirmed: true, // 保存時に確認済みとする
-      },
-      useCase: candidate.useCase,
-      categoryId: candidate.categoryId,
-    }
-  }
-}
+**変換時の処理**:
 
-export const templateConverter = new TemplateConverter()
-```
+- `convertToCandidate`: 元の ExtractedVariable データを aiMetadata に保持
+- `convertToPrompt`: confirmed を true に設定、VariableConfig[] をそのまま使用
 
 **変数変換の詳細は `03_data_model.md` セクション1.4を参照。**
 
@@ -732,81 +572,32 @@ export const templateConverter = new TemplateConverter()
 
 ### 5.1 Custom Hook: usePromptOrganizer
 
-```typescript
-/**
- * プロンプト整理機能の状態管理フック
- */
-export function usePromptOrganizer() {
-  const [settings, setSettings] = useState<PromptOrganizerSettings | null>(null)
-  const [estimate, setEstimate] = useState<OrganizerExecutionEstimate | null>(
-    null,
-  )
-  const [result, setResult] = useState<PromptOrganizerResult | null>(null)
-  const [isExecuting, setIsExecuting] = useState(false)
-  const [error, setError] = useState<OrganizerError | null>(null)
+**実装ファイル**: `src/hooks/usePromptOrganizer.ts`
 
-  // 設定の読み込み
-  useEffect(() => {
-    promptOrganizerSettingsStorage.getValue().then(setSettings)
-  }, [])
+**責務**: プロンプト整理機能の状態管理とUIロジック
 
-  // 設定変更時に見積もりを再計算
-  useEffect(() => {
-    if (!settings) return
+**状態管理**:
 
-    promptOrganizerService
-      .estimateExecution(settings)
-      .then(setEstimate)
-      .catch(console.error)
-  }, [settings])
+- `settings`: 整理設定（PromptOrganizerSettings）
+- `estimate`: 実行前の見積もり（OrganizerExecutionEstimate）
+- `result`: 整理実行結果（PromptOrganizerResult）
+- `isExecuting`: 実行中フラグ
+- `error`: エラー情報（OrganizerError）
 
-  /**
-   * 整理を実行
-   */
-  const executeOrganization = async () => {
-    if (!settings) return
+**主要メソッド**:
 
-    setIsExecuting(true)
-    setError(null)
+- `executeOrganization()`: 整理を実行してresultをセット
+- `saveTemplates(candidates)`: 選択されたテンプレートを保存
 
-    try {
-      const result = await promptOrganizerService.executeOrganization(settings)
-      setResult(result)
-    } catch (err) {
-      setError({
-        code: "API_ERROR",
-        message: err.message,
-      })
-    } finally {
-      setIsExecuting(false)
-    }
-  }
+**エフェクト**:
 
-  /**
-   * テンプレートを保存
-   */
-  const saveTemplates = async (candidates: TemplateCandidate[]) => {
-    try {
-      await promptOrganizerService.saveTemplates(candidates)
-    } catch (err) {
-      setError({
-        code: "API_ERROR",
-        message: err.message,
-      })
-    }
-  }
+- マウント時に設定を読み込み（promptOrganizerSettingsStorage）
+- 設定変更時に見積もりを自動再計算（estimateExecution）
 
-  return {
-    settings,
-    estimate,
-    result,
-    isExecuting,
-    error,
-    executeOrganization,
-    saveTemplates,
-  }
-}
-```
+**依存サービス**:
+
+- promptOrganizerService
+- promptOrganizerSettingsStorage
 
 ---
 
