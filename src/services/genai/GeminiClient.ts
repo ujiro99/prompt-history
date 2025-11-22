@@ -119,40 +119,7 @@ export class GeminiClient {
 
       return JSON.parse(text) as T
     } catch (error) {
-      // Handle different error types
-      if (error instanceof SyntaxError) {
-        throw new GeminiError(
-          "Invalid JSON response from API",
-          GeminiErrorType.API_ERROR,
-          error,
-        )
-      }
-      if (error instanceof Error) {
-        if (error.message.includes("network")) {
-          throw new GeminiError(
-            "Network error. Please check your connection.",
-            GeminiErrorType.NETWORK_ERROR,
-            error,
-          )
-        } else if (error.message.includes("API key")) {
-          throw new GeminiError(
-            "Invalid API key.",
-            GeminiErrorType.API_KEY_MISSING,
-            error,
-          )
-        } else {
-          throw new GeminiError(
-            `API error: ${error.message}`,
-            GeminiErrorType.API_ERROR,
-            error,
-          )
-        }
-      }
-      throw new GeminiError(
-        "Unknown error occurred",
-        GeminiErrorType.API_ERROR,
-        error,
-      )
+      this.errorHandler(error)
     }
   }
 
@@ -194,33 +161,64 @@ export class GeminiClient {
         }
       }
     } catch (error) {
-      // Handle different error types
-      if (error instanceof Error) {
-        if (error.message.includes("network")) {
-          throw new GeminiError(
-            "Network error. Please check your connection.",
-            GeminiErrorType.NETWORK_ERROR,
-            error,
-          )
-        } else if (error.message.includes("API key")) {
-          throw new GeminiError(
-            "Invalid API key.",
-            GeminiErrorType.API_KEY_MISSING,
-            error,
-          )
-        } else {
-          throw new GeminiError(
-            `API error: ${error.message}`,
-            GeminiErrorType.API_ERROR,
-            error,
-          )
-        }
-      }
+      this.errorHandler(error)
+    }
+  }
+
+  /**
+   * Estimate token usage for a given prompt
+   * @param prompt - Input prompt
+   * @param schema - JSON schema for structured output
+   * @param config - Optional configuration overrides
+   * @returns Estimated token count
+   */
+  public async estimateTokens(
+    prompt: string,
+    schema?: Record<string, unknown>,
+    config?: Partial<GeminiConfig>,
+  ): Promise<number> {
+    if (!this.ai || !this.config) {
       throw new GeminiError(
-        "Unknown error occurred",
-        GeminiErrorType.API_ERROR,
-        error,
+        "Client not initialized. Call initialize() first.",
+        GeminiErrorType.API_KEY_MISSING,
       )
+    }
+
+    const mergedConfig = {
+      ...this.config,
+      ...config,
+    }
+
+    try {
+      let res
+      if (!schema) {
+        // Simple token count without schema
+        res = await this.ai.models.countTokens({
+          model: mergedConfig.model,
+          contents: [prompt],
+          config: {
+            systemInstruction: mergedConfig.systemInstruction,
+          },
+        })
+        return res.totalTokens || 0
+      } else {
+        // Token count with schema
+        res = await this.ai.models.countTokens({
+          model: mergedConfig.model,
+          contents: [prompt],
+          config: {
+            systemInstruction: mergedConfig.systemInstruction,
+            generationConfig: {
+              responseMimeType: "application/json",
+              responseSchema: schema,
+            },
+          },
+        })
+      }
+
+      return res?.totalTokens || 0
+    } catch (error) {
+      this.errorHandler(error)
     }
   }
 
@@ -230,5 +228,43 @@ export class GeminiClient {
   public reset(): void {
     this.ai = null
     this.config = null
+  }
+
+  /**
+   * Handle errors from Gemini API
+   *  * @param error - Original error
+   *  * @throws GeminiError with appropriate type and message
+   */
+  private errorHandler(error: unknown): never {
+    if (error instanceof GeminiError) {
+      throw error
+    }
+    // Handle different error types
+    if (error instanceof Error) {
+      if (error.message.includes("network")) {
+        throw new GeminiError(
+          "Network error. Please check your connection.",
+          GeminiErrorType.NETWORK_ERROR,
+          error,
+        )
+      } else if (error.message.includes("API key")) {
+        throw new GeminiError(
+          "Invalid API key.",
+          GeminiErrorType.API_KEY_MISSING,
+          error,
+        )
+      } else {
+        throw new GeminiError(
+          `API error: ${error.message}`,
+          GeminiErrorType.API_ERROR,
+          error,
+        )
+      }
+    }
+    throw new GeminiError(
+      "Unknown error occurred",
+      GeminiErrorType.API_ERROR,
+      error,
+    )
   }
 }
