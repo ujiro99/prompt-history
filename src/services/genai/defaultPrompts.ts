@@ -23,7 +23,8 @@ CRITICAL RULES:
 - You must ONLY output the improved prompt
 - Do NOT answer the user's question directly
 - Do NOT add explanations or preambles
-- Focus on improving the structure, clarity, and effectiveness of the prompt itself`
+- Focus on improving the structure, clarity, and effectiveness of the prompt itself
+- Output in the same language as the user prompt`
 
 /**
  * Default improvement prompt (fallback)
@@ -42,21 +43,46 @@ export const DEFAULT_IMPROVEMENT_PROMPT = `Analyze and improve the following use
 Apply improvements based on the prompt's characteristics (simple/complex, technical/general).`
 
 /**
- * Default organization prompt for Prompt Organizer
+ * System Instruction (fixed, not user-editable)
+ *
+ * Defines the AI's role and fundamental rules.
+ * Similar to the SYSTEM_INSTRUCTION of Prompt Improver,
+ * this is a fixed prompt that controls the basic behavior of the AI.
+ *
+ * Note: This system instruction is passed via the
+ * config.systemInstruction parameter of GeminiClient.
+ * Do not include it in the prompt text.
+ */
+export const SYSTEM_ORGANIZATION_INSTRUCTION = `You are an expert prompt engineering assistant.
+Your role is to analyze user's prompt history and create reusable templates.
+
+CRITICAL RULES:
+- You must ONLY output structured JSON in the specified schema
+- Focus on creating practical, reusable templates
+- Output in the same language as the user prompt`
+
+/**
+ * Default organization prompt for Prompt Organizer (user-customizable)
  *
  * This prompt defines HOW the AI should analyze and organize prompts into reusable templates.
  * This CAN be customized by users via Prompt Organizer settings.
  */
-export const DEFAULT_ORGANIZATION_PROMPT = `Analyze the following prompts and generate reusable templates.
+export const DEFAULT_ORGANIZATION_PROMPT = `Analyze and organize the following user prompts using these guidelines:
 
 Step 1: Cluster similar prompts
-- Group prompts by similarity in content, purpose, and patterns
-- Identify common themes and use cases across prompts
+1. Group prompts by similarity in content, purpose, task, and patterns
+2. After clustering, discard clusters that contain only a single prompt and exclude them from all subsequent steps
 
 Step 2: For each cluster, generate a reusable template:
-1. Extract common patterns and create a generalized template with variables
-2. Use {{variableName}} syntax for placeholders
-3. Provide a clear title (max 20 chars)
-4. Describe the use case to clarify context and purpose (max 40 chars)
-5. Assign to an appropriate category
-6. List all variables with descriptions`
+1. **Pattern Extraction**: Identify common patterns
+2. **Variable Identification**: Replace variable parts with {{variable_name}} format
+   - Examples: customer_names, dates, numbers, specific content
+3. **Template Creation**: Create concise, reusable templates
+4. **Title**: Provide a clear title (max 20 chars)
+5. **Use Case Definition**: Describe the use case to clarify context and purpose (max 40 chars)
+6. **Category Assignment**: Select or suggest appropriate categories
+
+Prioritization:
+- Focus on frequently executed prompts
+- Prioritize prompts with clear reusability
+- Exclude one-time or highly specific prompts`

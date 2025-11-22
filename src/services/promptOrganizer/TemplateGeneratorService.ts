@@ -12,6 +12,7 @@ import type {
   PromptOrganizerSettings,
   TokenUsage,
 } from "@/types/promptOrganizer"
+import { SYSTEM_ORGANIZATION_INSTRUCTION } from "@/services/genai/defaultPrompts"
 
 /**
  * Service for generating templates from prompts
@@ -118,11 +119,16 @@ export class TemplateGeneratorService {
       required: ["templates"],
     }
 
+    const config = {
+      systemInstruction: SYSTEM_ORGANIZATION_INSTRUCTION, // Fixed role definition
+    }
+
     // Call Gemini API
     const response =
       await this.geminiClient.generateStructuredContent<OrganizePromptsResponse>(
         prompt,
         schema,
+        config,
       )
     console.log("Gemini response:", response)
 

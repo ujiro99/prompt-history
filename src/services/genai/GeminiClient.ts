@@ -31,7 +31,7 @@ export class GeminiClient {
   /**
    * Private constructor for singleton pattern
    */
-  private constructor() {}
+  private constructor() { }
 
   /**
    * Get singleton instance

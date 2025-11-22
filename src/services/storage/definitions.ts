@@ -132,7 +132,7 @@ export const improvePromptSettingsStorage =
 export const DEFAULT_ORGANIZER_SETTINGS: PromptOrganizerSettings = {
   filterPeriodDays: 30,
   filterMinExecutionCount: 2,
-  filterMaxPrompts: 20,
+  filterMaxPrompts: 100,
   organizationPrompt: DEFAULT_ORGANIZATION_PROMPT,
 }
 
