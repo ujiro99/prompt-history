@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Eye, EyeOff, AlertCircle, Info } from "lucide-react"
+import { AlertCircle, Info } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -18,10 +18,7 @@ import {
   TooltipContent,
 } from "@/components/ui/tooltip"
 import { useContainer } from "@/hooks/useContainer"
-import {
-  genaiApiKeyStorage,
-  improvePromptSettingsStorage,
-} from "@/services/storage/definitions"
+import { improvePromptSettingsStorage } from "@/services/storage/definitions"
 import { improvePromptCacheService } from "@/services/storage/improvePromptCache"
 import type { ImprovePromptSettings } from "@/types/prompt"
 import { ImprovePromptInputMethod } from "@/types/prompt"
@@ -47,10 +44,6 @@ export const PromptImproverSettingsDialog: React.FC<
 > = ({ open, onOpenChange }) => {
   const { container } = useContainer()
 
-  // API Key settings
-  const [apiKey, setApiKey] = useState("")
-  const [showApiKey, setShowApiKey] = useState(false)
-
   // Improvement prompt settings (improvement guidelines only, system role is fixed)
   const [settings, setSettings] = useState<ImprovePromptSettings>({
     mode: ImprovePromptInputMethod.URL,
@@ -65,7 +58,6 @@ export const PromptImproverSettingsDialog: React.FC<
   const [fetchError, setFetchError] = useState<string | null>(null)
 
   // Validation states
-  const [apiKeyError, setApiKeyError] = useState<string | null>(null)
   const [urlError, setUrlError] = useState<string | null>(null)
 
   /**
@@ -78,9 +70,6 @@ export const PromptImproverSettingsDialog: React.FC<
        */
       const loadSettings = async () => {
         try {
-          const storedApiKey = await genaiApiKeyStorage.getValue()
-          setApiKey(storedApiKey || "")
-
           const storedSettings = await improvePromptSettingsStorage.getValue()
 
           // Use default URL if urlContent is empty
@@ -235,15 +224,6 @@ export const PromptImproverSettingsDialog: React.FC<
    */
   const validate = (): boolean => {
     let isValid = true
-
-    // Validate API key
-    if (!apiKey.trim()) {
-      setApiKeyError(i18n.t("errors.apiKeyRequired"))
-      isValid = false
-    } else {
-      setApiKeyError(null)
-    }
-
     // Validate based on mode
     if (settings.mode === "url") {
       if (!settings.urlContent.trim()) {
@@ -275,9 +255,6 @@ export const PromptImproverSettingsDialog: React.FC<
     }
 
     try {
-      // Save API key
-      await genaiApiKeyStorage.setValue(apiKey)
-
       // Save system prompt settings
       await improvePromptSettingsStorage.setValue(settings)
 
@@ -330,78 +307,6 @@ export const PromptImproverSettingsDialog: React.FC<
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* API Key Settings */}
-          <div className="space-y-3">
-            <label className="text-base font-semibold">
-              {i18n.t("settings.promptImprover.apiKeySettings")}
-            </label>
-
-            <div className="space-y-2">
-              <label htmlFor="api-key" className="text-sm font-medium">
-                {i18n.t("settings.promptImprover.geminiApiKey")}
-              </label>
-              <div className="flex gap-2">
-                <Input
-                  id="api-key"
-                  type={showApiKey ? "text" : "password"}
-                  value={apiKey}
-                  onChange={(e) => {
-                    setApiKey(e.target.value)
-                    setApiKeyError(null)
-                  }}
-                  placeholder={i18n.t("settings.promptImprover.enterApiKey")}
-                  className={apiKeyError ? "border-destructive" : ""}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setShowApiKey(!showApiKey)}
-                >
-                  {showApiKey ? (
-                    <EyeOff className="size-4" />
-                  ) : (
-                    <Eye className="size-4" />
-                  )}
-                </Button>
-              </div>
-              {apiKeyError && (
-                <p className="text-sm text-destructive">{apiKeyError}</p>
-              )}
-
-              <div className="space-y-1 text-sm">
-                <p className="flex items-start gap-1.5 text-muted-foreground">
-                  <span>ℹ️</span>
-                  <span>
-                    {i18n.t("settings.promptImprover.getApiKeyInfo")}{" "}
-                    <a
-                      href="https://ai.google.dev/gemini-api/docs/api-key"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary underline hover:no-underline"
-                    >
-                      https://ai.google.dev/gemini-api/docs/api-key
-                    </a>
-                  </span>
-                </p>
-                <p className="flex items-start gap-1.5 text-muted-foreground">
-                  <span>⚠️</span>
-                  <span>
-                    {i18n.t("settings.promptImprover.freeApiWarning")}{" "}
-                    <a
-                      href="https://ai.google.dev/gemini-api/terms"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary underline hover:no-underline"
-                    >
-                      {i18n.t("settings.promptImprover.learnMore")}
-                    </a>
-                  </span>
-                </p>
-              </div>
-            </div>
-          </div>
-
           {/* Improvement Prompt Settings */}
           <div className="space-y-3">
             <label className="text-base font-semibold inline-block">

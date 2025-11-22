@@ -183,7 +183,7 @@ settings:
     feature: Features ON/OFF
     autocompleteTarget: Autocomplete target
     importExport: Import/Export
-    promptImprover: Prompt Improver
+    promptGeneration: Prompt Generation
   autoSave: Auto-save prompts
   autoComplete: Auto-complete
   notifications: Status notifications
@@ -193,6 +193,7 @@ settings:
     pinned: Starred only
   export: Export prompts
   import: Import prompts
+  modelSettings: Model Settings
   promptImproverSettings: Prompt Improver Settings
   promptImprover:
     apiKeySettings: API Key Settings
@@ -214,6 +215,7 @@ settings:
     previewPlaceholder: Improvement prompt will appear here...
     enterImprovementPrompt: Enter improvement prompt...
     description: Configure how to improve prompts.
+  promptOrganizerSettings: Prompt Organizer Settings
 
 # Import Dialog
 importDialog:

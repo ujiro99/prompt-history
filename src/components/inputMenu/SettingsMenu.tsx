@@ -1,5 +1,12 @@
 import React, { useCallback, useState } from "react"
-import { EllipsisVertical, Download, Upload, Settings } from "lucide-react"
+import {
+  EllipsisVertical,
+  Download,
+  Upload,
+  Brain,
+  Sparkles,
+  NotebookPen,
+} from "lucide-react"
 import {
   MenubarMenu,
   MenubarTrigger,
@@ -16,6 +23,7 @@ import { useSettings } from "@/hooks/useSettings"
 import { useContainer } from "@/hooks/useContainer"
 import { promptExportService } from "@/services/importExport"
 import { ImportDialog } from "./ImportDialog"
+import { ModelSettingsDialog } from "@/components/settings/ModelSettingsDialog"
 import { PromptImproverSettingsDialog } from "@/components/settings/PromptImproverSettingsDialog"
 import { PromptOrganizerDialog } from "@/components/settings/PromptOrganizerDialog"
 import { MENU, TestIds } from "@/components/const"
@@ -51,6 +59,7 @@ export function SettingsMenu({
   const { settings, update } = useSettings()
   const { container } = useContainer()
   const [importDialogOpen, setImportDialogOpen] = useState(false)
+  const [modelSettingsOpen, setModelSettingsOpen] = useState(false)
   const [promptImproverSettingsOpen, setPromptImproverSettingsOpen] =
     useState(false)
   const [promptOrganizerOpen, setPromptOrganizerOpen] = useState(false)
@@ -224,24 +233,21 @@ export function SettingsMenu({
 
             <MenubarSeparator />
 
-            {/* Prompt Improver Group */}
+            {/* Prompt Generation Group */}
             <MenubarLabel className="text-xs font-medium text-muted-foreground">
-              {i18n.t("settings.groups.promptImprover")}
+              {i18n.t("settings.groups.promptGeneration")}
             </MenubarLabel>
+            <MenubarItem onClick={() => setModelSettingsOpen(true)}>
+              <Brain size={16} />
+              {i18n.t("settings.modelSettings")}
+            </MenubarItem>
             <MenubarItem onClick={handleOpenPromptImproverSettings}>
-              <Settings size={16} />
+              <Sparkles size={16} />
               {i18n.t("settings.promptImproverSettings")}
             </MenubarItem>
-
-            <MenubarSeparator />
-
-            {/* Prompt Organizer Group */}
-            <MenubarLabel className="text-xs font-medium text-muted-foreground">
-              Prompt Organizer
-            </MenubarLabel>
             <MenubarItem onClick={handleOpenPromptOrganizer}>
-              <Settings size={16} />
-              Organize Prompts
+              <NotebookPen size={16} />
+              {i18n.t("settings.promptOrganizerSettings")}
             </MenubarItem>
           </>
         )}
@@ -252,6 +258,12 @@ export function SettingsMenu({
         open={importDialogOpen}
         onOpenChange={setImportDialogOpen}
         onImportComplete={handleImportComplete}
+      />
+
+      {/* Model Settings Dialog */}
+      <ModelSettingsDialog
+        open={modelSettingsOpen}
+        onOpenChange={setModelSettingsOpen}
       />
 
       {/* Prompt Improver Settings Dialog */}
