@@ -247,7 +247,7 @@ export function SettingsMenu({
             </MenubarItem>
             <MenubarItem onClick={handleOpenPromptOrganizer}>
               <NotebookPen size={16} />
-              {i18n.t("settings.promptOrganizerSettings")}
+              {i18n.t("settings.promptOrganizer")}
             </MenubarItem>
           </>
         )}

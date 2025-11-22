@@ -215,7 +215,7 @@ settings:
     previewPlaceholder: Improvement prompt will appear here...
     enterImprovementPrompt: Enter improvement prompt...
     description: Configure how to improve prompts.
-  promptOrganizerSettings: Prompt Organizer Settings
+  promptOrganizer: Prompt Organizer
 
 # Import Dialog
 importDialog:

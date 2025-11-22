@@ -215,7 +215,7 @@ settings:
     previewPlaceholder: 改善用プロンプトがここに表示されます...
     enterImprovementPrompt: 改善用プロンプトを入力してください...
     description: プロンプトの改善方法を設定します。
-  promptOrganizerSettings: プロンプト整理の設定
+  promptOrganizer: プロンプト整理
 
 # Import Dialog
 importDialog:
