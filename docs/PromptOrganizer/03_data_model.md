@@ -15,30 +15,18 @@
 
 ### 1.1 Category（カテゴリ）
 
-```typescript
-/**
- * プロンプトのカテゴリ
- */
-export interface Category {
-  /** カテゴリID（UUID） */
-  id: string
+**実装ファイル**: `src/types/promptOrganizer.ts`
 
-  /** カテゴリ名 */
-  name: string
+プロンプトを分類するためのカテゴリ情報を表す型。
 
-  /** カテゴリの説明（任意） */
-  description?: string
+**主要フィールド**:
 
-  /** デフォルトカテゴリフラグ（プリセット） */
-  isDefault: boolean
-
-  /** 作成日時 */
-  createdAt: Date
-
-  /** 更新日時 */
-  updatedAt: Date
-}
-```
+- `id`: カテゴリID（UUID）
+- `name`: カテゴリ名（i18n キー）
+- `description`: カテゴリの説明（任意）
+- `isDefault`: デフォルトカテゴリフラグ
+- `createdAt`: 作成日時
+- `updatedAt`: 更新日時
 
 **デフォルトカテゴリ（i18n 対応）**:
 
@@ -52,105 +40,48 @@ export interface Category {
 
 ### 1.2 Prompt 型の拡張
 
+**実装ファイル**: `src/types/prompt.ts`
+
 既存の Prompt 型に以下のフィールドを追加：
 
-```typescript
-export interface Prompt {
-  // ... 既存フィールド
-  id: string
-  name: string
-  content: string
-  executionCount: number
-  lastExecutedAt: Date
-  isPinned: boolean
-  lastExecutionUrl: string
-  createdAt: Date
-  updatedAt: Date
-  variables?: VariableConfig[]
+**新規追加フィールド**:
 
-  // ===== 新規追加フィールド =====
+- `isAIGenerated`: AI自動作成フラグ（Optional）
+- `aiMetadata`: AI生成メタデータ（Optional）
+- `useCase`: ユースケース（状況＋目的の説明、最大40文字、Optional）
+- `categoryId`: カテゴリID（Optional）
 
-  /** AI自動作成フラグ */
-  isAIGenerated?: boolean
-
-  /** AI生成メタデータ */
-  aiMetadata?: AIGeneratedMetadata
-
-  /** ユースケース（状況＋目的の説明、最大40文字） */
-  useCase?: string
-
-  /** カテゴリID */
-  categoryId?: string
-}
-
-/**
- * ストレージ保存用のPrompt型
- * createdAt/updatedAtは文字列（ISO 8601形式）で保存
- */
-export interface StoredPrompt extends Omit<Prompt, 'createdAt' | 'updatedAt'> {
-  createdAt: string  // ISO 8601形式の日時文字列
-  updatedAt: string  // ISO 8601形式の日時文字列
-
-  // 新規追加フィールド（すべてOptional、既存プロンプトとの互換性を保つ）
-  isAIGenerated?: boolean      // デフォルト: undefined（通常プロンプト）
-  aiMetadata?: AIGeneratedMetadata
-  useCase?: string
-  categoryId?: string
-}
-```
+**StoredPrompt型**:
+ストレージ保存用の型。`createdAt`/`updatedAt`は文字列（ISO 8601形式）で保存。
+新規追加フィールドはすべてOptionalであり、既存プロンプトとの互換性を保つ。
 
 ### 1.3 AIGeneratedMetadata
 
-```typescript
-/**
- * AI自動作成プロンプトのメタデータ
- */
-export interface AIGeneratedMetadata {
-  /** 生成日時 */
-  generatedAt: Date
+**実装ファイル**: `src/types/promptOrganizer.ts`
 
-  /** 参照元プロンプトID一覧 */
-  sourcePromptIds: string[]
+AI自動作成プロンプトのメタデータを格納する型。
 
-  /** 参照元プロンプト件数 */
-  sourceCount: number
+**主要フィールド**:
 
-  /** 参照元プロンプトの期間（日数） */
-  sourcePeriodDays: number
+- `generatedAt`: 生成日時
+- `sourcePromptIds`: 参照元プロンプトID一覧
+- `sourceCount`: 参照元プロンプト件数
+- `sourcePeriodDays`: 参照元プロンプトの期間（日数）
+- `extractedVariables`: 抽出された変数情報
+- `confirmed`: ユーザー確認済みフラグ（未確認=false, 確認済み=true）
+- `showInPinned`: Pinned表示対象フラグ（セクションBに表示するか）
 
-  /** 抽出された変数情報 */
-  extractedVariables: ExtractedVariable[]
+**showInPinned 自動決定基準**:
 
-  /** ユーザー確認済みフラグ（未確認=false, 確認済み=true） */
-  confirmed: boolean
+- `sourceCount >= 3 AND variables.length >= 2`
 
-  /**
-   * Pinned表示対象フラグ（セクションBに表示するか）
-   *
-   * 自動決定基準:
-   * - sourceCount >= 3 AND variables.length >= 2
-   *
-   * この基準を満たすテンプレートは「汎用性が高い」と判断され、
-   * PinnedメニューのAIレコメンデーションセクションに自動表示されます。
-   *
-   * ユーザーは手動でピン留め/ピン解除を行うこともできます。
-   *
-   * @default false - デフォルトは非表示
-   */
-  showInPinned: boolean
-}
+この基準を満たすテンプレートは「汎用性が高い」と判断され、PinnedメニューのAIレコメンデーションセクションに自動表示されます。ユーザーは手動でピン留め/ピン解除を行うこともできます。
 
-/**
- * 抽出された変数の情報
- */
-export interface ExtractedVariable {
-  /** 変数名 */
-  name: string
+**ExtractedVariable型**:
+Gemini APIから返される抽出された変数の情報。
 
-  /** 変数の説明（Geminiが生成） */
-  description?: string
-}
-```
+- `name`: 変数名
+- `description`: 変数の説明（Geminiが生成、Optional）
 
 ### 1.4 変数の変換と統合
 
@@ -158,62 +89,10 @@ export interface ExtractedVariable {
 
 Gemini APIが返す`ExtractedVariable`を既存の`VariableConfig`形式に変換します：
 
-```typescript
-/**
- * ExtractedVariableをVariableConfigに変換
- *
- * @param extracted Gemini APIから抽出された変数
- * @returns 既存の変数展開機能で使用できるVariableConfig
- */
-function convertToVariableConfig(
-  extracted: ExtractedVariable
-): VariableConfig {
-  return {
-    name: extracted.name,
-    label: extracted.description || extracted.name, // 説明をラベルとして使用
-    type: inferVariableType(extracted),              // 型を推論
-    defaultValue: '',                                // デフォルト値は空
-    required: true,                                  // AI抽出変数は必須とする
-    options: undefined,                              // セレクト型の場合は後で設定
-  }
-}
+02_architecture.md の 4.4 TemplateConverter 定義を参照。
 
-/**
- * 変数の型を推論
- *
- * 推論ルール:
- * - 名前に "date" を含む → 'text' (日付入力)
- * - 説明に改行を含む可能性を示唆 → 'textarea'
- * - それ以外 → 'text' (デフォルト)
- *
- * @param extracted 抽出された変数
- * @returns 推論された変数型
- */
-function inferVariableType(extracted: ExtractedVariable): VariableType {
-  const nameLower = extracted.name.toLowerCase()
-  const descLower = (extracted.description || '').toLowerCase()
-
-  // 日付系
-  if (nameLower.includes('date') || nameLower.includes('day')) {
-    return 'text' // HTMLのdate inputは使わず、textで自由入力
-  }
-
-  // 複数行が必要そうな変数
-  if (
-    descLower.includes('詳細') ||
-    descLower.includes('内容') ||
-    descLower.includes('説明') ||
-    nameLower.includes('detail') ||
-    nameLower.includes('content') ||
-    nameLower.includes('description')
-  ) {
-    return 'textarea'
-  }
-
-  // デフォルトは単一行テキスト
-  return 'text'
-}
-```
+- convertToVariableConfig
+- inferVariableType
 
 #### 既存の変数展開機能との統合
 
@@ -225,9 +104,7 @@ AI生成プロンプトの変数は、既存の変数展開ダイアログで入
 /**
  * TemplateCandidateをPromptに変換
  */
-function convertCandidateToPrompt(
-  candidate: TemplateCandidate
-): Prompt {
+function convertCandidateToPrompt(candidate: TemplateCandidate): Prompt {
   return {
     id: crypto.randomUUID(),
     name: candidate.title,
@@ -239,8 +116,8 @@ function convertCandidateToPrompt(
     categoryId: candidate.categoryId,
     executionCount: 0,
     lastExecutedAt: new Date(),
-    isPinned: candidate.userAction === 'save_and_pin',
-    lastExecutionUrl: '',
+    isPinned: candidate.userAction === "save_and_pin",
+    lastExecutionUrl: "",
     createdAt: new Date(),
     updatedAt: new Date(),
   }
@@ -276,9 +153,9 @@ interface VariableConfigEditor {
     name: string
     label: string
     type: VariableType
-    defaultValue: string    // ユーザーが頻繁に使う値を設定
+    defaultValue: string // ユーザーが頻繁に使う値を設定
     required: boolean
-    options?: string[]      // type='select'の場合の選択肢
+    options?: string[] // type='select'の場合の選択肢
   }): void
 }
 ```
@@ -385,58 +262,11 @@ export interface PromptOrganizerSettings {
 }
 ```
 
-**デフォルト値** (`src/services/promptOrganizer/defaultPrompts.ts` で定義):
+**デフォルト値**
+以下のファイルで定義:
 
-```typescript
-/**
- * システムインストラクション（固定、ユーザー編集不可）
- *
- * AI の役割と基本ルールを定義。
- * Prompt Improver の SYSTEM_INSTRUCTION と同様に、
- * AI の基本的な振る舞いを制御する固定プロンプト。
- *
- * 注意: このシステムインストラクションは、GeminiClientのconfig.systemInstructionパラメータで
- * 渡されます。プロンプトテキストには含めないでください。
- */
-export const SYSTEM_INSTRUCTION = `You are an expert prompt organizer assistant.
-Your role is to analyze user's prompt history and create reusable templates.
-
-CRITICAL RULES:
-- You must ONLY output structured JSON in the specified schema
-- Extract common patterns and identify variable parts (names, dates, values)
-- Create templates with {{variable_name}} format for dynamic content
-- Assign appropriate use cases and categories to each template
-- Focus on creating practical, reusable templates`
-
-/**
- * デフォルト整理プロンプト（ユーザーがカスタマイズ可能）
- *
- * 整理方法の詳細指示を定義。
- * ユーザーが設定画面で編集可能。
- */
-export const DEFAULT_ORGANIZATION_PROMPT = `Analyze and organize the following user prompts using these guidelines:
-
-1. **Grouping**: Group similar prompts by purpose and structure
-2. **Pattern Extraction**: Identify common patterns within each group
-3. **Variable Identification**: Replace variable parts with {{variable_name}} format
-   - Examples: customer names, dates, numbers, specific content
-4. **Template Creation**: Create concise, reusable templates
-5. **Use Case Definition**: Describe when to use each template (max 40 chars)
-6. **Category Assignment**: Select or suggest appropriate categories
-
-Prioritization:
-- Focus on frequently executed prompts
-- Prioritize prompts with clear reusability
-- Exclude one-time or highly specific prompts`
-
-export const DEFAULT_ORGANIZER_SETTINGS: PromptOrganizerSettings = {
-  enabled: false,
-  organizationPrompt: DEFAULT_ORGANIZATION_PROMPT,
-  filterPeriodDays: 30,
-  filterMinExecutionCount: 0,
-  filterMaxPrompts: 100,
-}
-```
+- `src/services/storage/definitions.ts`
+- `src/services/genai/defaultPrompts.ts`
 
 ---
 
@@ -625,86 +455,22 @@ export interface OrganizerExecutionEstimate {
 
 ### 4.1 新規ストレージ
 
-```typescript
-/**
- * カテゴリ一覧のストレージ
- *
- * デフォルトカテゴリは別ファイルで定義された定数を使用:
- * src/services/promptOrganizer/defaultCategories.ts
- */
-export const categoriesStorage = storage.defineItem<Record<string, Category>>(
-  'local:categories',
-  {
-    fallback: DEFAULT_CATEGORIES, // デフォルトカテゴリをfallbackで初期化
-    version: 1,
-    migrations: {},
-  },
-)
+**実装ファイル**: `src/services/storage/definitions.ts`
 
-/**
- * プロンプト自動整理設定のストレージ
- */
-export const promptOrganizerSettingsStorage =
-  storage.defineItem<PromptOrganizerSettings>("local:promptOrganizerSettings", {
-    fallback: DEFAULT_ORGANIZER_SETTINGS,
-    version: 1,
-    migrations: {},
-  })
-```
+**categoriesStorage**:
+カテゴリ一覧を保存するストレージ。デフォルトカテゴリは `DEFAULT_CATEGORIES` をfallbackとして使用。
+
+**promptOrganizerSettingsStorage**:
+プロンプト自動整理の設定を保存するストレージ。デフォルト設定は `DEFAULT_ORGANIZER_SETTINGS` を使用。
 
 ### 4.2 デフォルトカテゴリ定義
 
-デフォルトカテゴリは `src/services/promptOrganizer/defaultCategories.ts` で定義します：
+**実装ファイル**: `src/services/promptOrganizer/defaultCategories.ts`
 
-```typescript
-// src/services/promptOrganizer/defaultCategories.ts
-
-import type { Category } from '@/types/prompt'
-
-/**
- * デフォルトカテゴリ定数
- * ストレージのfallback値として使用
- */
-export const DEFAULT_CATEGORIES: Record<string, Category> = {
-  'external-communication': {
-    id: 'external-communication',
-    name: 'organizer.category.externalCommunication',
-    isDefault: true,
-    createdAt: new Date('2025-01-01'),
-    updatedAt: new Date('2025-01-01'),
-  },
-  'internal-communication': {
-    id: 'internal-communication',
-    name: 'organizer.category.internalCommunication',
-    isDefault: true,
-    createdAt: new Date('2025-01-01'),
-    updatedAt: new Date('2025-01-01'),
-  },
-  'document-creation': {
-    id: 'document-creation',
-    name: 'organizer.category.documentCreation',
-    isDefault: true,
-    createdAt: new Date('2025-01-01'),
-    updatedAt: new Date('2025-01-01'),
-  },
-  'development': {
-    id: 'development',
-    name: 'organizer.category.development',
-    isDefault: true,
-    createdAt: new Date('2025-01-01'),
-    updatedAt: new Date('2025-01-01'),
-  },
-  'other': {
-    id: 'other',
-    name: 'organizer.category.other',
-    isDefault: true,
-    createdAt: new Date('2025-01-01'),
-    updatedAt: new Date('2025-01-01'),
-  },
-}
-```
+デフォルトカテゴリは `DEFAULT_CATEGORIES` 定数として定義され、ストレージのfallback値として使用されます。
 
 **カテゴリID一覧**:
+
 - `external-communication`: 対外コミュニケーション
 - `internal-communication`: 社内コミュニケーション
 - `document-creation`: ドキュメント作成
@@ -805,29 +571,33 @@ categoryId?: string
 ```typescript
 // src/services/storage/definitions.ts にマイグレーションバージョン2を追加
 
-export const promptsStorage = storage.defineItem<StoredPrompt[]>('local:prompts', {
-  fallback: [],
-  version: 2, // バージョンを2に更新
-  migrations: {
-    // バージョン1→2: 新規フィールドの追加
-    // 注意: 新規フィールドはすべてOptionalのため、
-    // 既存プロンプトは undefined のままで問題なく動作します
-    2: (oldPrompts: StoredPrompt[]) => {
-      return oldPrompts.map(prompt => ({
-        ...prompt,
-        // 新規フィールドは明示的に undefined を設定
-        // （既存プロンプトは通常プロンプトとして扱う）
-        isAIGenerated: prompt.isAIGenerated ?? undefined,
-        aiMetadata: prompt.aiMetadata ?? undefined,
-        useCase: prompt.useCase ?? undefined,
-        categoryId: prompt.categoryId ?? undefined,
-      }))
+export const promptsStorage = storage.defineItem<StoredPrompt[]>(
+  "local:prompts",
+  {
+    fallback: [],
+    version: 2, // バージョンを2に更新
+    migrations: {
+      // バージョン1→2: 新規フィールドの追加
+      // 注意: 新規フィールドはすべてOptionalのため、
+      // 既存プロンプトは undefined のままで問題なく動作します
+      2: (oldPrompts: StoredPrompt[]) => {
+        return oldPrompts.map((prompt) => ({
+          ...prompt,
+          // 新規フィールドは明示的に undefined を設定
+          // （既存プロンプトは通常プロンプトとして扱う）
+          isAIGenerated: prompt.isAIGenerated ?? undefined,
+          aiMetadata: prompt.aiMetadata ?? undefined,
+          useCase: prompt.useCase ?? undefined,
+          categoryId: prompt.categoryId ?? undefined,
+        }))
+      },
     },
   },
-})
+)
 ```
 
 **マイグレーションの動作**:
+
 - 既存プロンプトには新規フィールドが追加されないため、データサイズは変わりません
 - 新規フィールドが `undefined` の場合、通常プロンプトとして扱われます
 - AI生成プロンプトのみ `isAIGenerated: true` が設定されます
@@ -906,12 +676,12 @@ export interface OrganizerError {
  */
 interface ResponseValidationRules {
   // 必須フィールドの存在チェック
-  requiredFields: ['templates']
+  requiredFields: ["templates"]
 
   // テンプレート配列の検証
   templates: {
-    minLength: 0              // 最小0件（エラー時のため）
-    maxLength: 20             // 最大20件
+    minLength: 0 // 最小0件（エラー時のため）
+    maxLength: 20 // 最大20件
   }
 }
 
@@ -919,13 +689,13 @@ interface ResponseValidationRules {
  * レスポンス検証関数
  */
 function validateGeminiResponse(
-  response: OrganizePromptsResponse
+  response: OrganizePromptsResponse,
 ): ValidationResult {
   const errors: string[] = []
 
   // templates配列の存在チェック
   if (!Array.isArray(response.templates)) {
-    errors.push('templates field must be an array')
+    errors.push("templates field must be an array")
   }
 
   // 各テンプレートの検証
@@ -951,27 +721,27 @@ const TEMPLATE_VALIDATION_RULES = {
   title: {
     maxLength: 20,
     trimWhitespace: true,
-    errorKey: 'organizer.validation.titleTooLong',
+    errorKey: "organizer.validation.titleTooLong",
   },
   useCase: {
     maxLength: 40,
     trimWhitespace: true,
-    errorKey: 'organizer.validation.useCaseTooLong',
+    errorKey: "organizer.validation.useCaseTooLong",
   },
   content: {
     required: true,
     minLength: 1,
-    errorKey: 'organizer.validation.contentRequired',
+    errorKey: "organizer.validation.contentRequired",
   },
   categoryId: {
     // 既存カテゴリIDまたは新規カテゴリ名
     validateExistence: true,
-    errorKey: 'organizer.validation.invalidCategory',
+    errorKey: "organizer.validation.invalidCategory",
   },
   sourcePromptIds: {
     required: true,
     minLength: 1,
-    errorKey: 'organizer.validation.noSourcePrompts',
+    errorKey: "organizer.validation.noSourcePrompts",
   },
 } as const
 
@@ -980,27 +750,38 @@ const TEMPLATE_VALIDATION_RULES = {
  */
 function validateTemplate(
   template: GeneratedTemplate,
-  index: number
+  index: number,
 ): string[] {
   const errors: string[] = []
 
   // タイトルの検証
   if (!template.title) {
     errors.push(`Template ${index + 1}: title is required`)
-  } else if (template.title.length > TEMPLATE_VALIDATION_RULES.title.maxLength) {
+  } else if (
+    template.title.length > TEMPLATE_VALIDATION_RULES.title.maxLength
+  ) {
     // 超過時は自動で切り詰め（エラーではなく警告）
     console.warn(
-      `Template ${index + 1}: title truncated from ${template.title.length} to ${TEMPLATE_VALIDATION_RULES.title.maxLength} chars`
+      `Template ${index + 1}: title truncated from ${template.title.length} to ${TEMPLATE_VALIDATION_RULES.title.maxLength} chars`,
     )
-    template.title = template.title.slice(0, TEMPLATE_VALIDATION_RULES.title.maxLength)
+    template.title = template.title.slice(
+      0,
+      TEMPLATE_VALIDATION_RULES.title.maxLength,
+    )
   }
 
   // ユースケースの検証
-  if (template.useCase && template.useCase.length > TEMPLATE_VALIDATION_RULES.useCase.maxLength) {
+  if (
+    template.useCase &&
+    template.useCase.length > TEMPLATE_VALIDATION_RULES.useCase.maxLength
+  ) {
     console.warn(
-      `Template ${index + 1}: useCase truncated from ${template.useCase.length} to ${TEMPLATE_VALIDATION_RULES.useCase.maxLength} chars`
+      `Template ${index + 1}: useCase truncated from ${template.useCase.length} to ${TEMPLATE_VALIDATION_RULES.useCase.maxLength} chars`,
     )
-    template.useCase = template.useCase.slice(0, TEMPLATE_VALIDATION_RULES.useCase.maxLength)
+    template.useCase = template.useCase.slice(
+      0,
+      TEMPLATE_VALIDATION_RULES.useCase.maxLength,
+    )
   }
 
   // コンテンツの検証
@@ -1010,7 +791,9 @@ function validateTemplate(
 
   // ソースプロンプトIDの検証
   if (!template.sourcePromptIds || template.sourcePromptIds.length === 0) {
-    errors.push(`Template ${index + 1}: at least one source prompt ID is required`)
+    errors.push(
+      `Template ${index + 1}: at least one source prompt ID is required`,
+    )
   }
 
   return errors
@@ -1042,14 +825,14 @@ function isValidVariableName(name: string): boolean {
 function validateVariable(
   variable: ExtractedVariable,
   templateIndex: number,
-  variableIndex: number
+  variableIndex: number,
 ): string[] {
   const errors: string[] = []
 
   // 変数名の存在チェック
   if (!variable.name) {
     errors.push(
-      `Template ${templateIndex + 1}, Variable ${variableIndex + 1}: name is required`
+      `Template ${templateIndex + 1}, Variable ${variableIndex + 1}: name is required`,
     )
     return errors
   }
@@ -1058,8 +841,8 @@ function validateVariable(
   if (!isValidVariableName(variable.name)) {
     errors.push(
       `Template ${templateIndex + 1}, Variable ${variableIndex + 1}: ` +
-      `invalid variable name "${variable.name}". ` +
-      `Must match pattern: ${VARIABLE_NAME_PATTERN}`
+        `invalid variable name "${variable.name}". ` +
+        `Must match pattern: ${VARIABLE_NAME_PATTERN}`,
     )
   }
 
@@ -1077,14 +860,14 @@ const CATEGORY_VALIDATION_RULES = {
   name: {
     maxLength: 30,
     trimWhitespace: true,
-    errorKey: 'organizer.validation.categoryNameTooLong',
+    errorKey: "organizer.validation.categoryNameTooLong",
   },
   // 予約語チェック（デフォルトカテゴリIDとの衝突を防ぐ）
   reservedNames: [
-    'external-communication',
-    'internal-communication',
-    'document-creation',
-    'development',
+    "external-communication",
+    "internal-communication",
+    "document-creation",
+    "development",
   ],
 } as const
 
@@ -1097,7 +880,7 @@ function validateCategoryName(name: string): ValidationResult {
   // 長さチェック
   if (name.length > CATEGORY_VALIDATION_RULES.name.maxLength) {
     errors.push(
-      `Category name too long (max ${CATEGORY_VALIDATION_RULES.name.maxLength} chars)`
+      `Category name too long (max ${CATEGORY_VALIDATION_RULES.name.maxLength} chars)`,
     )
   }
 
@@ -1108,7 +891,7 @@ function validateCategoryName(name: string): ValidationResult {
 
   // 空文字チェック
   if (name.trim().length === 0) {
-    errors.push('Category name cannot be empty')
+    errors.push("Category name cannot be empty")
   }
 
   return {
@@ -1138,11 +921,11 @@ function sanitizeTemplateContent(content: string): string {
 
   // HTMLエスケープ（基本的なもののみ）
   sanitized = sanitized
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;')
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;")
 
   // 変数構文を復元
   variablePlaceholders.forEach((variable, index) => {
@@ -1157,9 +940,9 @@ function sanitizeTemplateContent(content: string): string {
  */
 function normalizeString(str: string): string {
   return str
-    .trim()                           // 前後の空白を削除
-    .replace(/\s+/g, ' ')            // 連続する空白を1つに
-    .replace(/[\r\n]+/g, '\n')       // 連続する改行を1つに
+    .trim() // 前後の空白を削除
+    .replace(/\s+/g, " ") // 連続する空白を1つに
+    .replace(/[\r\n]+/g, "\n") // 連続する改行を1つに
 }
 ```
 
@@ -1169,28 +952,24 @@ function normalizeString(str: string): string {
 
 ```typescript
 // src/locales/en.yml
-organizer:
-  validation:
-    titleTooLong: "Template title must be 20 characters or less"
-    useCaseTooLong: "Use case must be 40 characters or less"
-    contentRequired: "Template content is required"
-    invalidCategory: "Invalid category"
-    noSourcePrompts: "At least one source prompt is required"
-    categoryNameTooLong: "Category name must be 30 characters or less"
-    invalidVariableName: "Variable name contains invalid characters"
-    variableNameRequired: "Variable name is required"
+organizer: validation: titleTooLong: "Template title must be 20 characters or less"
+useCaseTooLong: "Use case must be 40 characters or less"
+contentRequired: "Template content is required"
+invalidCategory: "Invalid category"
+noSourcePrompts: "At least one source prompt is required"
+categoryNameTooLong: "Category name must be 30 characters or less"
+invalidVariableName: "Variable name contains invalid characters"
+variableNameRequired: "Variable name is required"
 
 // src/locales/ja.yml
-organizer:
-  validation:
-    titleTooLong: "テンプレート名は20文字以内にしてください"
-    useCaseTooLong: "ユースケースは40文字以内にしてください"
-    contentRequired: "テンプレートの内容は必須です"
-    invalidCategory: "無効なカテゴリです"
-    noSourcePrompts: "少なくとも1つのソースプロンプトが必要です"
-    categoryNameTooLong: "カテゴリ名は30文字以内にしてください"
-    invalidVariableName: "変数名に無効な文字が含まれています"
-    variableNameRequired: "変数名は必須です"
+organizer: validation: titleTooLong: "テンプレート名は20文字以内にしてください"
+useCaseTooLong: "ユースケースは40文字以内にしてください"
+contentRequired: "テンプレートの内容は必須です"
+invalidCategory: "無効なカテゴリです"
+noSourcePrompts: "少なくとも1つのソースプロンプトが必要です"
+categoryNameTooLong: "カテゴリ名は30文字以内にしてください"
+invalidVariableName: "変数名に無効な文字が含まれています"
+variableNameRequired: "変数名は必須です"
 ```
 
 #### 9.2.7 統合された検証フロー
@@ -1200,7 +979,7 @@ organizer:
  * テンプレート候補の完全検証
  */
 async function validateTemplateCandidate(
-  candidate: TemplateCandidate
+  candidate: TemplateCandidate,
 ): Promise<ValidationResult> {
   const errors: string[] = []
 
@@ -1213,7 +992,7 @@ async function validateTemplateCandidate(
     const varErrors = validateVariable(
       { name: variable.name, description: variable.label },
       0,
-      index
+      index,
     )
     errors.push(...varErrors)
   })

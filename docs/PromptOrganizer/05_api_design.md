@@ -78,11 +78,10 @@ Gemini API を使用してプロンプトの自動整理を行うための API �
 
 ## 2. API エンドポイント
 
-### 2.1 エンドポイント URL
+### 2.1 エンドポイント
 
-```
-POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent
-```
+`GeminiClient` クラスへ `generateStructuredContent()` メソッドを追加。
+これにより構造化出力に対応する。
 
 ### 2.2 認証
 
@@ -102,75 +101,7 @@ const apiKey = await genaiApiKeyStorage.getValue()
 
 ## 3. リクエスト形式
 
-### 3.1 リクエストボディ
-
-```json
-{
-  "contents": [
-    {
-      "parts": [
-        {
-          "text": "{整理用プロンプト}\n\n# 既存カテゴリ\n{カテゴリJSON}\n\n# 対象プロンプト\n{プロンプトJSON}"
-        }
-      ]
-    }
-  ],
-  "systemInstruction": {
-    "parts": [
-      {
-        "text": "{固定のシステムインストラクション}"
-      }
-    ]
-  },
-  "generationConfig": {
-    "responseMimeType": "application/json",
-    "responseSchema": {
-      "type": "object",
-      "properties": {
-        "templates": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "title": { "type": "string" },
-              "content": { "type": "string" },
-              "useCase": { "type": "string" },
-              "categoryId": { "type": "string", "nullable": true },
-              "newCategoryName": { "type": "string" },
-              "newCategoryDescription": { "type": "string" },
-              "variables": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "name": { "type": "string" },
-                    "description": { "type": "string" }
-                  },
-                  "required": ["name"]
-                }
-              },
-              "sourcePromptIds": {
-                "type": "array",
-                "items": { "type": "string" }
-              }
-            },
-            "required": [
-              "title",
-              "content",
-              "useCase",
-              "variables",
-              "sourcePromptIds"
-            ]
-          }
-        }
-      },
-      "required": ["templates"]
-    }
-  }
-}
-```
-
-### 3.2 リクエスト構築例
+### 3.1 整理用プロンプトの構築例
 
 ```typescript
 /**
@@ -401,90 +332,6 @@ export const ORGANIZER_RESPONSE_SCHEMA = {
 
 ## 6. GeminiClient 実装詳細
 
-### 6.1 構造化出力メソッド
-
-既存の `GeminiClient` (`src/services/genai/GeminiClient.ts`) に以下のメソッドを追加：
-
-```typescript
-/**
- * Generate structured content from Gemini API with JSON schema
- * @param prompt - Input prompt
- * @param schema - JSON schema for structured output
- * @param config - Optional configuration overrides
- * @returns Structured response with usage metadata
- */
-public async generateStructuredContent<T>(
-  prompt: string,
-  schema: object,
-  config?: Partial<GeminiConfig>,
-): Promise<{ data: T; usage: TokenUsage }> {
-  if (!this.ai || !this.config) {
-    throw new GeminiError(
-      "Client not initialized. Call initialize() first.",
-      GeminiErrorType.API_KEY_MISSING,
-    )
-  }
-
-  const mergedConfig = {
-    ...this.config,
-    ...config,
-  }
-
-  try {
-    const response = await this.ai.models.generateContent({
-      model: mergedConfig.model,
-      contents: [prompt],
-      config: {
-        systemInstruction: mergedConfig.systemInstruction,
-        responseMimeType: "application/json",
-        responseSchema: schema,
-        ...mergedConfig.generateContentConfig,
-      },
-    })
-
-    // Parse structured JSON response
-    const text = response.text
-    const data = JSON.parse(text) as T
-
-    // Extract token usage
-    const usage: TokenUsage = {
-      inputTokens: response.usageMetadata?.promptTokenCount || 0,
-      outputTokens: response.usageMetadata?.candidatesTokenCount || 0,
-    }
-
-    return { data, usage }
-  } catch (error) {
-    // Reuse existing error handling logic
-    if (error instanceof Error) {
-      if (error.message.includes("network")) {
-        throw new GeminiError(
-          "Network error. Please check your connection.",
-          GeminiErrorType.NETWORK_ERROR,
-          error,
-        )
-      } else if (error.message.includes("API key")) {
-        throw new GeminiError(
-          "Invalid API key.",
-          GeminiErrorType.API_KEY_MISSING,
-          error,
-        )
-      } else {
-        throw new GeminiError(
-          `API error: ${error.message}`,
-          GeminiErrorType.API_ERROR,
-          error,
-        )
-      }
-    }
-    throw new GeminiError(
-      "Unknown error occurred",
-      GeminiErrorType.API_ERROR,
-      error,
-    )
-  }
-}
-```
-
 ### 6.2 トークン見積もりメソッド
 
 ```typescript
@@ -494,13 +341,6 @@ public async generateStructuredContent<T>(
  * @returns Estimated token count
  */
 public async estimateTokens(prompt: string): Promise<number> {
-  // Simple estimation: ~4 chars per token for Japanese, ~0.75 words for English
-  // For more accurate estimation, consider using tiktoken or similar
-  const chars = prompt.length
-  const words = prompt.split(/\s+/).length
-
-  // Conservative estimate (higher value)
-  return Math.ceil(chars / 3.5)
 }
 ```
 
@@ -518,86 +358,37 @@ export interface TokenUsage {
 }
 ```
 
-### 6.4 システムインストラクションとプロンプト
-
-**SYSTEM_INSTRUCTION** と **DEFAULT_ORGANIZATION_PROMPT** の定義は `03_data_model.md` を参照。
-
-これらは `src/services/promptOrganizer/defaultPrompts.ts` で定義され、以下のように使用：
-
-```typescript
-import { SYSTEM_INSTRUCTION } from "@/services/promptOrganizer/defaultPrompts"
-
-// 使用例
-const response = await geminiClient.generateStructuredContent<OrganizePromptsResponse>(
-  buildPromptText(request), // organizationPrompt + カテゴリ + プロンプトのみ
-  ORGANIZER_RESPONSE_SCHEMA,
-  {
-    model: "gemini-2.5-flash",
-    systemInstruction: SYSTEM_INSTRUCTION, // システムインストラクションは別途configで渡す
-  },
-)
-
-const { data, usage } = response
-```
-
 ---
 
 ## 7. トークン数の見積もり
 
 ### 7.1 見積もりロジック
 
-```typescript
-class TokenEstimator {
-  /**
-   * トークン数を見積もる
-   * 1トークン ≈ 4文字（日本語の場合）
-   * 1トークン ≈ 0.75単語（英語の場合）
-   */
-  estimate(request: OrganizePromptsRequest): number {
-    const systemInstructionTokens = this.countTokens(SYSTEM_INSTRUCTION)
-    const organizationPromptTokens = this.countTokens(
-      request.organizationPrompt,
-    )
-    const categoriesTokens = this.countTokens(
-      JSON.stringify(request.existingCategories),
-    )
+以下を使用する
 
-    let promptsTokens = 0
-    for (const prompt of request.prompts) {
-      promptsTokens += this.countTokens(JSON.stringify(prompt))
-    }
+https://ai.google.dev/gemini-api/docs/tokens?hl=ja&lang=python
 
-    return (
-      systemInstructionTokens +
-      organizationPromptTokens +
-      categoriesTokens +
-      promptsTokens
-    )
-  }
+例):
 
-  /**
-   * 簡易的なトークン数カウント
-   * より正確な見積もりが必要な場合は tiktoken などを使用
-   */
-  private countTokens(text: string): number {
-    // 日本語と英語の混在を考慮した簡易計算
-    const chars = text.length
-    const words = text.split(/\s+/).length
-
-    // 日本語が多い場合: 4文字 = 1トークン
-    // 英語が多い場合: 0.75単語 = 1トークン
-    // ここでは保守的に多めに見積もる
-    return Math.ceil(chars / 3.5)
-  }
-}
-
-export const tokenEstimator = new TokenEstimator()
+```javascript
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
+const prompt = "The quick brown fox jumps over the lazy dog."
+const countTokensResponse = await ai.models.countTokens({
+  model: "gemini-2.0-flash",
+  contents: prompt,
+})
+console.log(countTokensResponse.totalTokens)
 ```
 
 ### 7.2 コンテキスト使用率の計算
 
+Gemini 2.5 Flash の入力トークン上限: 1,048,576 tokens
+
+参照:
+https://console.cloud.google.com/vertex-ai/publishers/google/model-garden/gemini-2.5-flash
+
 ```typescript
-const GEMINI_CONTEXT_LIMIT = 2_000_000 // 2M tokens
+const GEMINI_CONTEXT_LIMIT = 1048576 // 1M tokens
 
 function calculateContextUsage(inputTokens: number): number {
   return inputTokens / GEMINI_CONTEXT_LIMIT
@@ -680,13 +471,10 @@ export interface GeminiError {
  * リトライ設定
  */
 const RETRY_CONFIG = {
-  maxRetries: 3,              // 最大リトライ回数
-  baseDelay: 1000,            // 初回待機時間（ミリ秒）
-  maxDelay: 8000,             // 最大待機時間（ミリ秒）
-  retryableErrors: [
-    'RATE_LIMIT',
-    'NETWORK_ERROR',
-  ] as GeminiErrorCode[],
+  maxRetries: 3, // 最大リトライ回数
+  baseDelay: 1000, // 初回待機時間（ミリ秒）
+  maxDelay: 8000, // 最大待機時間（ミリ秒）
+  retryableErrors: ["RATE_LIMIT", "NETWORK_ERROR"] as GeminiErrorCode[],
 }
 
 /**
@@ -721,11 +509,13 @@ async function executeWithRetry<T>(
       // 指数バックオフで待機
       const delay = Math.min(
         RETRY_CONFIG.baseDelay * Math.pow(2, attempt),
-        RETRY_CONFIG.maxDelay
+        RETRY_CONFIG.maxDelay,
       )
 
-      console.log(`Retrying after ${delay}ms (attempt ${attempt + 1}/${RETRY_CONFIG.maxRetries})`)
-      await new Promise(resolve => setTimeout(resolve, delay))
+      console.log(
+        `Retrying after ${delay}ms (attempt ${attempt + 1}/${RETRY_CONFIG.maxRetries})`,
+      )
+      await new Promise((resolve) => setTimeout(resolve, delay))
     }
   }
 
@@ -756,10 +546,7 @@ async function withTimeout<T>(
   return Promise.race([
     promise,
     new Promise<T>((_, reject) =>
-      setTimeout(
-        () => reject(new Error('Request timeout')),
-        timeoutMs
-      )
+      setTimeout(() => reject(new Error("Request timeout")), timeoutMs),
     ),
   ])
 }
@@ -787,7 +574,7 @@ function validateResponse(response: OrganizePromptsResponse): {
 
   // テンプレート数チェック
   if (response.templates.length === 0) {
-    return { isValid: false, warnings: ['No templates generated'] }
+    return { isValid: false, warnings: ["No templates generated"] }
   }
 
   if (response.templates.length < MIN_TEMPLATES_REQUIRED) {
@@ -824,11 +611,11 @@ function validateResponse(response: OrganizePromptsResponse): {
  * エラーコード別のユーザーガイダンス（i18nキー）
  */
 const ERROR_USER_GUIDANCE: Record<GeminiErrorCode, string> = {
-  API_ERROR: 'organizer.error.apiError',
-  NETWORK_ERROR: 'organizer.error.networkError',
-  QUOTA_EXCEEDED: 'organizer.error.quotaExceeded',
-  INVALID_RESPONSE: 'organizer.error.invalidResponse',
-  INVALID_API_KEY: 'organizer.error.invalidApiKey',
+  API_ERROR: "organizer.error.apiError",
+  NETWORK_ERROR: "organizer.error.networkError",
+  QUOTA_EXCEEDED: "organizer.error.quotaExceeded",
+  INVALID_RESPONSE: "organizer.error.invalidResponse",
+  INVALID_API_KEY: "organizer.error.invalidApiKey",
 }
 
 /**
@@ -845,21 +632,21 @@ interface QuotaExceededGuidance {
 }
 
 const QUOTA_EXCEEDED_GUIDANCE: QuotaExceededGuidance = {
-  title: 'organizer.error.quotaExceeded.title',
-  message: 'organizer.error.quotaExceeded.message',
+  title: "organizer.error.quotaExceeded.title",
+  message: "organizer.error.quotaExceeded.message",
   actions: [
     {
-      label: 'organizer.error.quotaExceeded.action.waitAndRetry',
-      description: 'organizer.error.quotaExceeded.action.waitAndRetryDesc',
+      label: "organizer.error.quotaExceeded.action.waitAndRetry",
+      description: "organizer.error.quotaExceeded.action.waitAndRetryDesc",
     },
     {
-      label: 'organizer.error.quotaExceeded.action.checkQuota',
-      description: 'organizer.error.quotaExceeded.action.checkQuotaDesc',
-      link: 'https://aistudio.google.com/app/apikey',
+      label: "organizer.error.quotaExceeded.action.checkQuota",
+      description: "organizer.error.quotaExceeded.action.checkQuotaDesc",
+      link: "https://aistudio.google.com/app/apikey",
     },
     {
-      label: 'organizer.error.quotaExceeded.action.reducePrompts',
-      description: 'organizer.error.quotaExceeded.action.reducePromptsDesc',
+      label: "organizer.error.quotaExceeded.action.reducePrompts",
+      description: "organizer.error.quotaExceeded.action.reducePromptsDesc",
     },
   ],
 }
@@ -867,8 +654,10 @@ const QUOTA_EXCEEDED_GUIDANCE: QuotaExceededGuidance = {
 /**
  * エラーにユーザーガイダンスを付加
  */
-function enrichErrorWithGuidance(error: GeminiError): GeminiError & { userGuidance?: QuotaExceededGuidance } {
-  if (error.code === 'QUOTA_EXCEEDED') {
+function enrichErrorWithGuidance(
+  error: GeminiError,
+): GeminiError & { userGuidance?: QuotaExceededGuidance } {
+  if (error.code === "QUOTA_EXCEEDED") {
     return {
       ...error,
       userGuidance: QUOTA_EXCEEDED_GUIDANCE,
@@ -886,15 +675,15 @@ function enrichErrorWithGuidance(error: GeminiError): GeminiError & { userGuidan
  * PromptOrganizerService内での統合例
  */
 async function executeOrganization(
-  settings: PromptOrganizerSettings
+  settings: PromptOrganizerSettings,
 ): Promise<PromptOrganizerResult> {
   try {
     // タイムアウト付きでリトライ実行
-    const response = await executeWithRetry(
-      () => withTimeout(
+    const response = await executeWithRetry(() =>
+      withTimeout(
         callGeminiAPI(request),
-        30000 // 30秒タイムアウト
-      )
+        30000, // 30秒タイムアウト
+      ),
     )
 
     // レスポンス検証
@@ -902,18 +691,17 @@ async function executeOrganization(
 
     if (!isValid) {
       throw {
-        code: 'INVALID_RESPONSE',
-        message: 'Invalid response: no templates generated',
+        code: "INVALID_RESPONSE",
+        message: "Invalid response: no templates generated",
       } as GeminiError
     }
 
     // 警告がある場合はログ出力
     if (warnings.length > 0) {
-      console.warn('Template generation warnings:', warnings)
+      console.warn("Template generation warnings:", warnings)
     }
 
     return convertToResult(response)
-
   } catch (error) {
     // エラーにガイダンスを付加
     const enrichedError = enrichErrorWithGuidance(error as GeminiError)
@@ -933,27 +721,28 @@ async function executeOrganization(
  * テンプレート生成時の検証フロー
  */
 async function generateTemplatesWithValidation(
-  request: OrganizePromptsRequest
+  request: OrganizePromptsRequest,
 ): Promise<{ templates: TemplateCandidate[]; usage: TokenUsage }> {
   // 1. リクエストパラメータの事前検証
   validateOrganizationRequest(request)
 
   // 2. Gemini API 呼び出し
-  const { data, usage } = await geminiClient.generateStructuredContent<OrganizePromptsResponse>(
-    buildPromptText(request),
-    ORGANIZER_RESPONSE_SCHEMA,
-    {
-      model: "gemini-2.5-flash",
-      systemInstruction: SYSTEM_INSTRUCTION,
-    }
-  )
+  const { data, usage } =
+    await geminiClient.generateStructuredContent<OrganizePromptsResponse>(
+      buildPromptText(request),
+      ORGANIZER_RESPONSE_SCHEMA,
+      {
+        model: "gemini-2.5-flash",
+        systemInstruction: SYSTEM_INSTRUCTION,
+      },
+    )
 
   // 3. APIレスポンスの検証
   const responseValidation = validateGeminiResponse(data)
   if (!responseValidation.isValid) {
     throw {
-      code: 'INVALID_RESPONSE',
-      message: 'Invalid API response structure',
+      code: "INVALID_RESPONSE",
+      message: "Invalid API response structure",
       details: responseValidation.errors,
     } as GeminiError
   }
@@ -976,7 +765,7 @@ async function generateTemplatesWithValidation(
       // テンプレート候補に変換
       const candidate = templateConverter.convertToCandidate(
         generated,
-        request.periodDays
+        request.periodDays,
       )
 
       // テンプレート候補の検証とサニタイゼーション
@@ -995,7 +784,7 @@ async function generateTemplatesWithValidation(
   // 5. 最小成功基準のチェック
   if (validatedTemplates.length < MIN_TEMPLATES_REQUIRED) {
     throw {
-      code: 'INVALID_RESPONSE',
+      code: "INVALID_RESPONSE",
       message: `Insufficient valid templates (got ${validatedTemplates.length}, required ${MIN_TEMPLATES_REQUIRED})`,
       details: {
         validTemplates: validatedTemplates.length,
@@ -1007,7 +796,7 @@ async function generateTemplatesWithValidation(
 
   // 6. 警告がある場合はログ出力
   if (validationErrors.length > 0) {
-    console.warn('Template validation warnings:', validationErrors)
+    console.warn("Template validation warnings:", validationErrors)
   }
 
   return {
@@ -1026,19 +815,22 @@ async function generateTemplatesWithValidation(
 function validateOrganizationRequest(request: OrganizePromptsRequest): void {
   // プロンプト配列のチェック
   if (!Array.isArray(request.prompts) || request.prompts.length === 0) {
-    throw new Error('At least one prompt is required')
+    throw new Error("At least one prompt is required")
   }
 
   // 組織化プロンプトの長さチェック
-  if (!request.organizationPrompt || request.organizationPrompt.trim().length === 0) {
-    throw new Error('Organization prompt is required')
+  if (
+    !request.organizationPrompt ||
+    request.organizationPrompt.trim().length === 0
+  ) {
+    throw new Error("Organization prompt is required")
   }
 
   // プロンプト数の上限チェック
   const MAX_PROMPTS_PER_REQUEST = 100
   if (request.prompts.length > MAX_PROMPTS_PER_REQUEST) {
     throw new Error(
-      `Too many prompts (max ${MAX_PROMPTS_PER_REQUEST}, got ${request.prompts.length})`
+      `Too many prompts (max ${MAX_PROMPTS_PER_REQUEST}, got ${request.prompts.length})`,
     )
   }
 }

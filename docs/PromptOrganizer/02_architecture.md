@@ -17,10 +17,11 @@
 ### 1.1 主要ファイル構成
 
 ```
+src/services/genai/
+  └── defaultPrompts.ts             # システムインストラクション、デフォルト設定
 src/services/promptOrganizer/
   ├── PromptOrganizerService.ts    # メインサービス
   ├── CategoryService.ts            # カテゴリ管理
-  ├── defaultPrompts.ts             # システムインストラクション、デフォルト設定
   └── defaultCategories.ts          # デフォルトカテゴリ定数（新規）
 ```
 
@@ -88,28 +89,25 @@ src/
 │           ├── OrganizerSummaryDialog.tsx
 │           ├── OrganizerPreviewDialog.tsx
 │           ├── TemplateCandidateCard.tsx
-│           ├── ExecutionEstimate.tsx
 │           └── CategorySelector.tsx
 │
 ├── services/
 │   ├── genai/ (既存)
 │   │   ├── GeminiClient.ts (拡張 - 構造化出力メソッド追加)
 │   │   ├── types.ts (拡張)
-│   │   └── defaultPrompts.ts (既存 - Prompt Improver用)
+│   │   └── defaultPrompts.ts (拡張 - Prompt Improverと共用)
 │   │
 │   ├── promptOrganizer/ (New)
 │   │   ├── PromptOrganizerService.ts
 │   │   ├── CategoryService.ts
-│   │   ├── defaultPrompts.ts (New - システムインストラクション、デフォルト設定)
+│   │   ├── PromptFilterService.ts
 │   │   ├── defaultCategories.ts (New - デフォルトカテゴリ定数)
-│   │   ├── tokenEstimator.ts
-│   │   └── templateConverter.ts
+│   │   └── TemplateConverter.ts
 │   │
 │   └── storage/
 │       ├── prompts.ts (既存 - 変更なし)
 │       ├── pins.ts (既存 - 変更なし)
 │       ├── categories.ts (New)
-│       ├── organizerSettings.ts (New)
 │       ├── definitions.ts (拡張)
 │       └── index.ts (拡張)
 │
@@ -119,7 +117,6 @@ src/
 │
 ├── utils/
 │   └── organizer/ (New)
-│       ├── promptFilter.ts
 │       └── categoryMatcher.ts
 │
 └── hooks/
@@ -145,21 +142,21 @@ docs/
 ```
 OrganizerSettingsDialog
   ├─ DialogHeader
-  ├─ PeriodSelector (直接配置 - 1週/1ヶ月/1年)
-  ├─ ExecutionCountInput (直接配置)
-  ├─ MaxPromptsInput (直接配置)
+  ├─ PeriodSelector (1週/1ヶ月/1年)
+  ├─ ExecutionCountInput
+  ├─ MaxPromptsInput
   ├─ OrganizationPromptEditor (Textareaラッパー)
-  ├─ TokenCountDisplay (直接配置)
-  ├─ ContextUsageBar (直接配置)
-  ├─ CostEstimate (直接配置)
+  ├─ TokenCountDisplay
+  ├─ ContextUsageBar
+  ├─ CostEstimate
   └─ DialogFooter
       ├─ CancelButton
       └─ ExecuteButton
 
 OrganizerSummaryDialog
   ├─ DialogHeader
-  ├─ TemplateCountBadge (直接配置)
-  ├─ SourceInfoCard (直接配置)
+  ├─ TemplateCountBadge
+  ├─ SourceInfoCard
   ├─ HighlightCard (直接配置 - 代表的な1件)
   └─ DialogFooter
       ├─ PreviewButton
@@ -182,18 +179,6 @@ OrganizerPreviewDialog
       ├─ SaveButton
       └─ SaveAndPinButton
 ```
-
-**変更内容**:
-
-- `OrganizerSettingsDialog`: `FilterSettings` と `ExecutionEstimate` 中間コンテナを削除し、子コンポーネントを直接配置
-- `OrganizerSummaryDialog`: `ResultSummary` 中間コンテナを削除し、子コンポーネントを直接配置
-- `OrganizerPreviewDialog`: `TwoColumnLayout` は維持（レイアウトの役割が明確）、`RightPane` 内の子コンポーネントは直接配置
-
-**利点**:
-
-- 状態管理の簡素化（プロップドリリングの削減）
-- 既存の`InputPopup.tsx`パターンとの整合性
-- コンポーネントの再利用性向上
 
 ### 3.2 PinnedMenu のセクション分割
 
@@ -279,126 +264,45 @@ async saveTemplates(candidates: TemplateCandidate[]): Promise<void> {
 
 ### 4.1.1 PromptFilterService
 
+**実装ファイル**: `src/services/promptOrganizer/PromptFilterService.ts`
+
 **責務**: プロンプトのフィルタリングロジック
 
-```typescript
-class PromptFilterService {
-  /**
-   * 絞り込み条件に基づいてプロンプトを抽出
-   */
-  async filterPrompts(
-    settings: PromptOrganizerSettings,
-  ): Promise<PromptForOrganization[]> {
-    const allPrompts = await promptsService.getAllPrompts()
+**主要メソッド**:
 
-    return this.applyFilters(allPrompts, {
-      periodDays: settings.filterPeriodDays,
-      minExecutionCount: settings.filterMinExecutionCount,
-      maxPrompts: settings.filterMaxPrompts,
-    })
-  }
+- `filterPrompts(prompts, settings)`: 絞り込み条件に基づいてプロンプトを抽出
 
-  /**
-   * フィルター適用
-   */
-  private applyFilters(
-    prompts: Prompt[],
-    filters: PromptFilters,
-  ): PromptForOrganization[] {
-    const now = new Date()
-    const cutoffDate = new Date(
-      now.getTime() - filters.periodDays * 24 * 60 * 60 * 1000,
-    )
+**フィルタリング条件**:
 
-    return (
-      prompts
-        // 期間フィルター
-        .filter((p) => p.lastExecutedAt >= cutoffDate)
-        // 実行回数フィルター
-        .filter((p) => p.executionCount >= filters.minExecutionCount)
-        // AI生成を除外
-        .filter((p) => !p.isAIGenerated)
-        // 実行回数でソート（降順）
-        .sort((a, b) => b.executionCount - a.executionCount)
-        // 最大件数
-        .slice(0, filters.maxPrompts)
-        // 必要なフィールドのみ抽出
-        .map((p) => ({
-          id: p.id,
-          name: p.name,
-          content: p.content,
-          executionCount: p.executionCount,
-        }))
-    )
-  }
-}
+1. 期間フィルター: 指定日数以内に実行されたプロンプトのみ
+2. 実行回数フィルター: 最小実行回数以上のプロンプトのみ
+3. AI生成プロンプトを除外
+4. 実行回数でソート（降順）
+5. 最大件数制限
 
-export const promptFilterService = new PromptFilterService()
-```
+**出力**: `PromptForOrganization[]` 形式（id, name, content, executionCountのみ）
 
 ### 4.1.2 TemplateGeneratorService
 
+**実装ファイル**: `src/services/promptOrganizer/TemplateGeneratorService.ts`
+
 **責務**: Gemini API 呼び出しとテンプレート候補への変換
 
-```typescript
-class TemplateGeneratorService {
-  constructor(private templateConverter: TemplateConverter) {}
+**主要メソッド**:
 
-  /**
-   * テンプレート生成
-   */
-  async generateTemplates(request: {
-    organizationPrompt: string
-    prompts: PromptForOrganization[]
-    periodDays: number
-  }): Promise<{ templates: TemplateCandidate[]; usage: TokenUsage }> {
-    // 1. GeminiClient を取得・初期化
-    const geminiClient = GeminiClient.getInstance()
-    if (!geminiClient.isInitialized()) {
-      const apiKey = await genaiApiKeyStorage.getValue()
-      geminiClient.initialize(apiKey)
-    }
+- `generateTemplates(prompts, settings)`: テンプレート生成のメインロジック
 
-    // 2. プロンプトテキスト構築
-    const promptText = this.buildPromptText({
-      organizationPrompt: request.organizationPrompt,
-      prompts: request.prompts,
-      existingCategories: await categoryService.getAll(),
-    })
+**処理フロー**:
 
-    // 3. Gemini API 呼び出し（構造化出力）
-    const { data, usage } =
-      await geminiClient.generateStructuredContent<OrganizePromptsResponse>(
-        promptText,
-        ORGANIZER_RESPONSE_SCHEMA,
-        {
-          model: "gemini-2.5-flash",
-          systemInstruction: SYSTEM_INSTRUCTION,
-        },
-      )
+1. GeminiClient の初期化（API キー読み込み）
+2. プロンプトテキスト構築（organizationPrompt + カテゴリ + 対象プロンプト）
+3. Gemini API 呼び出し（構造化出力、JSON schema使用）
+4. レスポンスをTemplateCandidate形式に変換
+5. トークン使用量の返却
 
-    // 4. レスポンスをテンプレート候補に変換
-    const templates = data.templates.map((generated) =>
-      this.templateConverter.convertToCandidate(generated, request.periodDays),
-    )
+**使用モデル**: gemini-2.5-flash
 
-    return { templates, usage }
-  }
-
-  /**
-   * Gemini API 用のプロンプトテキストを構築
-   * 詳細は 05_api_design.md を参照
-   */
-  private buildPromptText(request: OrganizePromptsRequest): string {
-    // organizationPrompt + 既存カテゴリ + 対象プロンプトを組み合わせる
-    // 実装詳細は API 設計ドキュメント参照
-  }
-}
-
-export const templateGeneratorService = new TemplateGeneratorService(
-  templateConverter,
-)
-```
+**参照**: 05_api_design.md（API呼び出しの詳細）
 
 ### 4.1.3 CostEstimatorService
 
@@ -543,179 +447,25 @@ const { data, usage } =
 
 **責務**: カテゴリの管理
 
+**実装ファイル**: `src/services/promptOrganizer/CategoryService.ts`
+
+**主要メソッド**:
+
+- `getAll()`: すべてのカテゴリを取得
+- `getById(id)`: IDからカテゴリを取得
+- `create(name, description?)`: 新しいカテゴリを作成
+- `update(id, updates)`: カテゴリを更新
+- `delete(id)`: カテゴリを削除
+- `rename(id, newName)`: カテゴリ名を変更
+- `canDelete(id)`: 削除可能かチェック
+- `getPromptCount(id)`: カテゴリを参照しているプロンプト数を取得
+
+**カテゴリ削除時の処理**:
+
+- デフォルトカテゴリは削除不可（isDefault=trueの場合はエラー）
+- 削除されたカテゴリを参照しているプロンプトのcategoryIdをnullに設定
+
 **注意**: デフォルトカテゴリはストレージの`fallback`で自動初期化されます（`src/services/promptOrganizer/defaultCategories.ts`で定義）。
-
-```typescript
-/**
- * カテゴリ管理サービス
- *
- * デフォルトカテゴリは categoriesStorage の fallback で自動初期化されます。
- * (src/services/promptOrganizer/defaultCategories.ts で定義)
- */
-class CategoryService {
-  private static instance: CategoryService
-
-  private constructor() {}
-
-  public static getInstance(): CategoryService {
-    if (!CategoryService.instance) {
-      CategoryService.instance = new CategoryService()
-    }
-    return CategoryService.instance
-  }
-
-  /**
-   * すべてのカテゴリを取得
-   */
-  async getAll(): Promise<Record<string, Category>> {
-    return await categoriesStorage.getValue()
-  }
-
-  /**
-   * カテゴリを作成
-   */
-  async create(
-    category: Omit<Category, "id" | "createdAt" | "updatedAt">,
-  ): Promise<Category> {
-    const categories = await this.getAll()
-    const newCategory: Category = {
-      ...category,
-      id: crypto.randomUUID(),
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }
-
-    categories[newCategory.id] = newCategory
-    await categoriesStorage.setValue(categories)
-
-    return newCategory
-  }
-
-  /**
-   * カテゴリを更新
-   */
-  async update(
-    id: string,
-    updates: Partial<Omit<Category, "id" | "createdAt">>,
-  ): Promise<Category> {
-    const categories = await this.getAll()
-    const category = categories[id]
-
-    if (!category) {
-      throw new Error(`Category not found: ${id}`)
-    }
-
-    const updated: Category = {
-      ...category,
-      ...updates,
-      id,
-      updatedAt: new Date(),
-    }
-
-    categories[id] = updated
-    await categoriesStorage.setValue(categories)
-
-    return updated
-  }
-
-  /**
-   * カテゴリを削除
-   *
-   * カテゴリ削除時のプロンプト処理:
-   * - 削除されたカテゴリを参照しているプロンプトのcategoryIdをnullに設定
-   * - デフォルトカテゴリは削除不可（isDefault=trueの場合はエラー）
-   */
-  async delete(id: string): Promise<void> {
-    const categories = await this.getAll()
-    const category = categories[id]
-
-    if (!category) {
-      throw new Error(`Category not found: ${id}`)
-    }
-
-    if (category.isDefault) {
-      throw new Error("Cannot delete default category")
-    }
-
-    // 1. カテゴリを削除
-    delete categories[id]
-    await categoriesStorage.setValue(categories)
-
-    // 2. このカテゴリを参照しているプロンプトのcategoryIdをnullに設定
-    await this.cleanupOrphanedPrompts(id)
-  }
-
-  /**
-   * 削除されたカテゴリを参照しているプロンプトをクリーンアップ
-   *
-   * @param deletedCategoryId 削除されたカテゴリID
-   */
-  private async cleanupOrphanedPrompts(
-    deletedCategoryId: string,
-  ): Promise<void> {
-    const allPrompts = await promptsService.getAllPrompts()
-
-    for (const prompt of allPrompts) {
-      if (prompt.categoryId === deletedCategoryId) {
-        // categoryIdをnullに設定して更新
-        await promptsService.updatePrompt(prompt.id, {
-          categoryId: null,
-        })
-      }
-    }
-  }
-
-  /**
-   * カテゴリをリネーム（名前変更）
-   *
-   * @param id カテゴリID
-   * @param newName 新しいカテゴリ名
-   * @returns 更新されたカテゴリ
-   */
-  async rename(id: string, newName: string): Promise<Category> {
-    // 名前のバリデーション
-    if (!newName || newName.trim().length === 0) {
-      throw new Error("Category name cannot be empty")
-    }
-
-    if (newName.length > 30) {
-      throw new Error("Category name must be 30 characters or less")
-    }
-
-    return this.update(id, { name: newName.trim() })
-  }
-
-  /**
-   * カテゴリが削除可能かチェック
-   *
-   * @param id カテゴリID
-   * @returns 削除可能な場合true、デフォルトカテゴリの場合false
-   */
-  async canDelete(id: string): Promise<boolean> {
-    const categories = await this.getAll()
-    const category = categories[id]
-
-    if (!category) {
-      return false
-    }
-
-    return !category.isDefault
-  }
-
-  /**
-   * カテゴリを参照しているプロンプト数を取得
-   *
-   * @param id カテゴリID
-   * @returns プロンプト数
-   */
-  async getPromptCount(id: string): Promise<number> {
-    const allPrompts = await promptsService.getAllPrompts()
-    return allPrompts.filter((p) => p.categoryId === id).length
-  }
-}
-
-export const categoryService = CategoryService.getInstance()
-```
 
 ### 4.3.1 カテゴリ削除フロー
 
@@ -880,8 +630,8 @@ class TemplateConverter {
   /**
    * ExtractedVariableをVariableConfigに変換
    *
-   * @param extracted 抽出された変数
-   * @returns VariableConfig形式の変数
+   * @param extracted Gemini APIから抽出された変数
+   * @returns 既存の変数展開機能で使用できるVariableConfig
    */
   private convertToVariableConfig(
     extracted: ExtractedVariable,
@@ -1306,24 +1056,7 @@ async executeOrganization(
 
 ## 9. テスト戦略
 
-### 9.1 ユニットテスト
-
-- **Services**: promptOrganizerService, categoryService
-- **Utils**: promptFilter, tokenEstimator, categoryMatcher
-- **Hooks**: usePromptOrganizer
-
-### 9.2 統合テスト
-
-- Gemini API モックを使用した E2E フロー
-- ストレージの読み書き
-
-### 9.3 E2E テスト（Playwright）
-
-- 設定ダイアログの操作
-- プレビュー画面での編集・保存
-- Pinned リストのセクション表示
-
----
+`06_test_design.md` を参照
 
 ## 10. セキュリティ考慮
 
