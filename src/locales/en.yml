@@ -272,3 +272,36 @@ errors:
   notTextContent: "Not a text content: $1"
   unknownError: Unknown error occurred
   fetchPromptFailed: "Failed to fetch prompt from URL: $1"
+
+# Prompt Organizer
+promptOrganizer:
+  title: Organize Prompts
+  description: AI-powered prompt organization and template generation
+  settings:
+    filterPeriod: Filter Period
+    filterPeriodDays: "$1 days"
+    minExecutionCount: Minimum Execution Count
+    maxPrompts: Maximum Prompts
+    organizationPrompt: Organization Prompt
+  buttons:
+    organize: Organize
+    cancel: Cancel
+    save: Save
+    discard: Discard
+    saveAndPin: Save & Pin
+  status:
+    filtering: Filtering prompts...
+    generating: Generating templates...
+    error: Error occurred
+  result:
+    templatesGenerated: "$1 templates generated"
+    sourceCount: "Based on $1 prompts"
+
+# Organizer Categories
+organizer:
+  category:
+    externalCommunication: External Communication
+    internalCommunication: Internal Communication
+    documentCreation: Document Creation
+    development: Development & Tech
+    other: Other

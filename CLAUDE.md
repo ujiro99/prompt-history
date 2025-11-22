@@ -150,7 +150,7 @@ The extension uses a simplified, configuration-driven architecture for supportin
 - WXT handles manifest generation and browser-specific builds
 - Extends base tsconfig from `.wxt/tsconfig.json`
 
-**About Design Documents**
+## About Design Documents
 
 - Store design and technical documents in the `docs/` directory
 - A design document should include:
@@ -169,6 +169,12 @@ Therefore, please strictly follow the rules below.
 
 - Do not include any implementation details or code snippets in design documents.
 - Absolutely do not include source code, pseudocode, function definitions.
+
+## Implementation Guidelines
+
+- All language within the source code, including comments, must be written in English.
+- Code comments should be written to aid understanding of the code's intent.
+  - Avoid comments that are self-evident from the source code itself, limiting them to the absolute minimum necessary.
 
 ## Landing Page (pages/)
 

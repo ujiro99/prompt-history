@@ -380,7 +380,10 @@ export function InputMenu(props: Props): React.ReactElement {
         </MenubarMenu>
 
         {/* Settings Menu */}
-        <SettingsMenu onMouseEnter={() => handleMenuEnter(MENU.Settings)} />
+        <SettingsMenu
+          onMouseEnter={() => handleMenuEnter(MENU.Settings)}
+          prompts={props.prompts}
+        />
       </Menubar>
 
       {/* PromptPreview */}

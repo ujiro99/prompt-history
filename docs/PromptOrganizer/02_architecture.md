@@ -184,78 +184,30 @@ OrganizerPreviewDialog
 ```
 
 **変更内容**:
+
 - `OrganizerSettingsDialog`: `FilterSettings` と `ExecutionEstimate` 中間コンテナを削除し、子コンポーネントを直接配置
 - `OrganizerSummaryDialog`: `ResultSummary` 中間コンテナを削除し、子コンポーネントを直接配置
 - `OrganizerPreviewDialog`: `TwoColumnLayout` は維持（レイアウトの役割が明確）、`RightPane` 内の子コンポーネントは直接配置
 
 **利点**:
+
 - 状態管理の簡素化（プロップドリリングの削減）
 - 既存の`InputPopup.tsx`パターンとの整合性
 - コンポーネントの再利用性向上
 
 ### 3.2 PinnedMenu のセクション分割
 
-```typescript
-// PromptList.tsx の拡張
-interface PromptListProps {
-  menuType: "history" | "pinned"
-  prompts: Prompt[]
-  // ... その他のプロパティ
-}
+`PromptList.tsx` を拡張し、`menuType === "pinned"` の場合に以下の2セクションに分割:
 
-// menuType === "pinned" の場合、内部でセクション分割
-function PromptList({ menuType, prompts, ... }: PromptListProps) {
-  if (menuType === "pinned") {
-    const userPinned = prompts.filter(p => !p.isAIGenerated)
-    const aiRecommended = prompts.filter(
-      p => p.isAIGenerated && p.aiMetadata?.showInPinned
-    )
-
-    return (
-      <>
-        {userPinned.length > 0 && (
-          <Section title="あなたのピン留め">
-            {userPinned.map(p => <MenuItem {...} />)}
-          </Section>
-        )}
-        {aiRecommended.length > 0 && (
-          <Section title="AIのおすすめテンプレ">
-            {aiRecommended.map(p => (
-              <MenuItem {...} withAIBadge />
-            ))}
-          </Section>
-        )}
-      </>
-    )
-  }
-
-  // history の場合は既存の表示ロジック
-  return <>{/* ... */}</>
-}
-```
+- **Section A: あなたのピン留め** - ユーザーが手動でピン留めしたプロンプト (`!isAIGenerated`)
+- **Section B: AIのおすすめテンプレ** - AI生成テンプレートで `showInPinned === true` のもの
 
 ### 3.3 新規未確認の装飾
 
-```typescript
-// MenuItem に未確認状態の視覚的フィードバック追加
-interface MenuItemProps {
-  // ... 既存プロパティ
-  isAIGenerated?: boolean
-  isUnconfirmed?: boolean  // aiMetadata.confirmed === false
-}
+AI生成テンプレートで未確認状態 (`aiMetadata.confirmed === false`) の場合、視覚的フィードバックを提供:
 
-// CSS でキラキラアニメーション
-.ai-generated-unconfirmed {
-  position: relative;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  animation: shimmer 2s infinite;
-}
-
-@keyframes shimmer {
-  0% { background-position: -100% 0; }
-  100% { background-position: 100% 0; }
-}
-```
+- グラデーション背景とシマーアニメーション
+- 初回クリック時に `confirmed: true` に更新してアニメーション削除
 
 ---
 
@@ -288,6 +240,7 @@ interface MenuItemProps {
 ```
 
 **責務の分離**:
+
 - `PromptOrganizerService`: 全体のオーケストレーションを担当
 - `PromptFilterService`: プロンプトフィルタリングのビジネスロジック
 - `TemplateGeneratorService`: AI生成とテンプレート候補への変換
@@ -298,70 +251,32 @@ interface MenuItemProps {
 
 **責務**: プロンプト整理の実行オーケストレーション
 
-```typescript
-class PromptOrganizerService {
-  constructor(
-    private filterService: PromptFilterService,
-    private generatorService: TemplateGeneratorService,
-    private estimatorService: CostEstimatorService,
-    private saveService: TemplateSaveService,
-  ) {}
+**主要メソッド**:
 
-  /**
-   * プロンプト整理を実行（オーケストレーション）
-   */
-  async executeOrganization(
-    settings: PromptOrganizerSettings,
-  ): Promise<PromptOrganizerResult> {
-    // 1. 対象プロンプト抽出（PromptFilterService）
-    const targetPrompts = await this.filterService.filterPrompts(settings)
+- `executeOrganization()`: 各サービスを呼び出して整理を実行
+  1. PromptFilterService でプロンプト抽出
+  2. TemplateGeneratorService でテンプレート生成
+  3. CostEstimatorService でコスト計算
+  4. 結果オブジェクトを返す
 
-    // 2. テンプレート生成（TemplateGeneratorService）
-    const { templates, usage } = await this.generatorService.generateTemplates({
-      organizationPrompt: settings.organizationPrompt,
-      prompts: targetPrompts,
-      periodDays: settings.filterPeriodDays,
-    })
+- `estimateExecution()`: 実行前のコスト見積もり (CostEstimatorService に委譲)
 
-    // 3. コスト計算（CostEstimatorService）
-    const estimatedCost = this.estimatorService.calculateCost(usage)
-
-    // 4. 結果オブジェクトを返す
-    return {
-      templates,
-      sourceCount: targetPrompts.length,
-      periodDays: settings.filterPeriodDays,
-      executedAt: new Date(),
-      inputTokens: usage.inputTokens,
-      outputTokens: usage.outputTokens,
-      estimatedCost,
-    }
-  }
-
-  /**
-   * 実行前のコスト見積もり（CostEstimatorService に委譲）
-   */
-  async estimateExecution(
-    settings: PromptOrganizerSettings,
-  ): Promise<OrganizerExecutionEstimate> {
-    return this.estimatorService.estimateExecution(settings)
-  }
-
-  /**
-   * テンプレート保存（TemplateSaveService に委譲）
-   */
-  async saveTemplates(candidates: TemplateCandidate[]): Promise<void> {
+  /\*\*
+  - テンプレート保存（TemplateSaveService に委譲）
+    \*/
+    async saveTemplates(candidates: TemplateCandidate[]): Promise<void> {
     return this.saveService.saveTemplates(candidates)
-  }
-}
+    }
+    }
 
 export const promptOrganizerService = new PromptOrganizerService(
-  promptFilterService,
-  templateGeneratorService,
-  costEstimatorService,
-  templateSaveService,
+promptFilterService,
+templateGeneratorService,
+costEstimatorService,
+templateSaveService,
 )
-```
+
+````
 
 ### 4.1.1 PromptFilterService
 
@@ -416,7 +331,7 @@ class PromptFilterService {
 }
 
 export const promptFilterService = new PromptFilterService()
-```
+````
 
 ### 4.1.2 TemplateGeneratorService
 
@@ -424,9 +339,7 @@ export const promptFilterService = new PromptFilterService()
 
 ```typescript
 class TemplateGeneratorService {
-  constructor(
-    private templateConverter: TemplateConverter,
-  ) {}
+  constructor(private templateConverter: TemplateConverter) {}
 
   /**
    * テンプレート生成
@@ -462,8 +375,8 @@ class TemplateGeneratorService {
       )
 
     // 4. レスポンスをテンプレート候補に変換
-    const templates = data.templates.map(generated =>
-      this.templateConverter.convertToCandidate(generated, request.periodDays)
+    const templates = data.templates.map((generated) =>
+      this.templateConverter.convertToCandidate(generated, request.periodDays),
     )
 
     return { templates, usage }
@@ -493,7 +406,7 @@ class CostEstimatorService {
   private static readonly PRICING = {
     // Gemini 2.5 Flash の料金（2025年11月時点）
     inputTokenPer1M: 0.075, // $0.075 per 1M input tokens
-    outputTokenPer1M: 0.30, // $0.30 per 1M output tokens
+    outputTokenPer1M: 0.3, // $0.30 per 1M output tokens
     usdToJpy: 150, // USD->JPY 換算レート（設定可能）
   }
 
@@ -501,8 +414,12 @@ class CostEstimatorService {
    * トークン使用量からコストを計算
    */
   calculateCost(usage: TokenUsage): number {
-    const inputCost = (usage.inputTokens / 1_000_000) * CostEstimatorService.PRICING.inputTokenPer1M
-    const outputCost = (usage.outputTokens / 1_000_000) * CostEstimatorService.PRICING.outputTokenPer1M
+    const inputCost =
+      (usage.inputTokens / 1_000_000) *
+      CostEstimatorService.PRICING.inputTokenPer1M
+    const outputCost =
+      (usage.outputTokens / 1_000_000) *
+      CostEstimatorService.PRICING.outputTokenPer1M
     const totalUsd = inputCost + outputCost
     return totalUsd * CostEstimatorService.PRICING.usdToJpy
   }
@@ -550,9 +467,7 @@ export const costEstimatorService = new CostEstimatorService()
 
 ```typescript
 class TemplateSaveService {
-  constructor(
-    private templateConverter: TemplateConverter,
-  ) {}
+  constructor(private templateConverter: TemplateConverter) {}
 
   /**
    * 選択されたテンプレートを保存
@@ -577,9 +492,7 @@ class TemplateSaveService {
   }
 }
 
-export const templateSaveService = new TemplateSaveService(
-  templateConverter,
-)
+export const templateSaveService = new TemplateSaveService(templateConverter)
 ```
 
 ### 4.2 GeminiClient の拡張
@@ -658,7 +571,9 @@ class CategoryService {
   /**
    * カテゴリを作成
    */
-  async create(category: Omit<Category, 'id' | 'createdAt' | 'updatedAt'>): Promise<Category> {
+  async create(
+    category: Omit<Category, "id" | "createdAt" | "updatedAt">,
+  ): Promise<Category> {
     const categories = await this.getAll()
     const newCategory: Category = {
       ...category,
@@ -676,7 +591,10 @@ class CategoryService {
   /**
    * カテゴリを更新
    */
-  async update(id: string, updates: Partial<Omit<Category, 'id' | 'createdAt'>>): Promise<Category> {
+  async update(
+    id: string,
+    updates: Partial<Omit<Category, "id" | "createdAt">>,
+  ): Promise<Category> {
     const categories = await this.getAll()
     const category = categories[id]
 
@@ -713,7 +631,7 @@ class CategoryService {
     }
 
     if (category.isDefault) {
-      throw new Error('Cannot delete default category')
+      throw new Error("Cannot delete default category")
     }
 
     // 1. カテゴリを削除
@@ -729,7 +647,9 @@ class CategoryService {
    *
    * @param deletedCategoryId 削除されたカテゴリID
    */
-  private async cleanupOrphanedPrompts(deletedCategoryId: string): Promise<void> {
+  private async cleanupOrphanedPrompts(
+    deletedCategoryId: string,
+  ): Promise<void> {
     const allPrompts = await promptsService.getAllPrompts()
 
     for (const prompt of allPrompts) {
@@ -752,11 +672,11 @@ class CategoryService {
   async rename(id: string, newName: string): Promise<Category> {
     // 名前のバリデーション
     if (!newName || newName.trim().length === 0) {
-      throw new Error('Category name cannot be empty')
+      throw new Error("Category name cannot be empty")
     }
 
     if (newName.length > 30) {
-      throw new Error('Category name must be 30 characters or less')
+      throw new Error("Category name must be 30 characters or less")
     }
 
     return this.update(id, { name: newName.trim() })
@@ -787,7 +707,7 @@ class CategoryService {
    */
   async getPromptCount(id: string): Promise<number> {
     const allPrompts = await promptsService.getAllPrompts()
-    return allPrompts.filter(p => p.categoryId === id).length
+    return allPrompts.filter((p) => p.categoryId === id).length
   }
 }
 
@@ -927,11 +847,11 @@ class TemplateConverter {
    */
   convertToCandidate(
     generated: GeneratedTemplate,
-    periodDays: number
+    periodDays: number,
   ): TemplateCandidate {
     // ExtractedVariable[] → VariableConfig[] に変換
-    const variables = generated.variables.map(v =>
-      this.convertToVariableConfig(v)
+    const variables = generated.variables.map((v) =>
+      this.convertToVariableConfig(v),
     )
 
     return {
@@ -950,7 +870,7 @@ class TemplateConverter {
         confirmed: false,
         showInPinned: this.shouldShowInPinned(generated),
       },
-      userAction: 'pending',
+      userAction: "pending",
     }
   }
 
@@ -961,13 +881,13 @@ class TemplateConverter {
    * @returns VariableConfig形式の変数
    */
   private convertToVariableConfig(
-    extracted: ExtractedVariable
+    extracted: ExtractedVariable,
   ): VariableConfig {
     return {
       name: extracted.name,
       label: extracted.description || extracted.name,
       type: this.inferVariableType(extracted),
-      defaultValue: '',
+      defaultValue: "",
       required: true,
       options: undefined,
     }
@@ -981,26 +901,26 @@ class TemplateConverter {
    */
   private inferVariableType(extracted: ExtractedVariable): VariableType {
     const nameLower = extracted.name.toLowerCase()
-    const descLower = (extracted.description || '').toLowerCase()
+    const descLower = (extracted.description || "").toLowerCase()
 
     // 日付系
-    if (nameLower.includes('date') || nameLower.includes('day')) {
-      return 'text'
+    if (nameLower.includes("date") || nameLower.includes("day")) {
+      return "text"
     }
 
     // 複数行が必要そうな変数
     if (
-      descLower.includes('詳細') ||
-      descLower.includes('内容') ||
-      descLower.includes('説明') ||
-      nameLower.includes('detail') ||
-      nameLower.includes('content') ||
-      nameLower.includes('description')
+      descLower.includes("詳細") ||
+      descLower.includes("内容") ||
+      descLower.includes("説明") ||
+      nameLower.includes("detail") ||
+      nameLower.includes("content") ||
+      nameLower.includes("description")
     ) {
-      return 'textarea'
+      return "textarea"
     }
 
-    return 'text'
+    return "text"
   }
 
   /**
@@ -1015,8 +935,7 @@ class TemplateConverter {
    */
   private shouldShowInPinned(generated: GeneratedTemplate): boolean {
     return (
-      generated.sourcePromptIds.length >= 3 &&
-      generated.variables.length >= 2
+      generated.sourcePromptIds.length >= 3 && generated.variables.length >= 2
     )
   }
 
@@ -1031,11 +950,11 @@ class TemplateConverter {
       id: crypto.randomUUID(),
       name: candidate.title,
       content: candidate.content,
-      variables: candidate.variables,        // VariableConfig[]をそのまま使用
+      variables: candidate.variables, // VariableConfig[]をそのまま使用
       executionCount: 0,
       lastExecutedAt: new Date(),
-      isPinned: candidate.userAction === 'save_and_pin',
-      lastExecutionUrl: '',
+      isPinned: candidate.userAction === "save_and_pin",
+      lastExecutionUrl: "",
       createdAt: new Date(),
       updatedAt: new Date(),
       isAIGenerated: true,

@@ -13,6 +13,7 @@ allowed-tools: Read, Grep, Glob
 3. Performance considerations
 4. Security concerns
 5. Test coverage
+6. Readability and maintainability
 
 ## Instructions
 

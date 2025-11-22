@@ -6,8 +6,11 @@ import type {
   AppSettings,
   ImprovePromptSettings,
 } from "@/types/prompt"
+import type { Category, PromptOrganizerSettings } from "@/types/promptOrganizer"
 import type { AiConfigCacheData } from "./aiConfigCache"
 import type { ImprovePromptCacheData } from "./improvePromptCache"
+import { DEFAULT_CATEGORIES } from "../promptOrganizer/defaultCategories"
+import { DEFAULT_ORGANIZATION_PROMPT } from "../genai/defaultPrompts"
 
 /**
  * Default settings values
@@ -119,6 +122,38 @@ export const improvePromptSettingsStorage =
       urlContent: "",
       lastModified: 0,
     },
+    version: 1,
+    migrations: {},
+  })
+
+/**
+ * Default Prompt Organizer Settings
+ */
+export const DEFAULT_ORGANIZER_SETTINGS: PromptOrganizerSettings = {
+  filterPeriodDays: 30,
+  filterMinExecutionCount: 2,
+  filterMaxPrompts: 20,
+  organizationPrompt: DEFAULT_ORGANIZATION_PROMPT,
+}
+
+/**
+ * Categories storage definition
+ */
+export const categoriesStorage = storage.defineItem<Record<string, Category>>(
+  "local:categories",
+  {
+    fallback: DEFAULT_CATEGORIES,
+    version: 1,
+    migrations: {},
+  },
+)
+
+/**
+ * Prompt Organizer Settings storage definition
+ */
+export const promptOrganizerSettingsStorage =
+  storage.defineItem<PromptOrganizerSettings>("local:promptOrganizerSettings", {
+    fallback: DEFAULT_ORGANIZER_SETTINGS,
     version: 1,
     migrations: {},
   })

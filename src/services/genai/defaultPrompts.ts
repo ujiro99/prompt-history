@@ -40,3 +40,23 @@ export const DEFAULT_IMPROVEMENT_PROMPT = `Analyze and improve the following use
 5. Keep the improved prompt concise and focused
 
 Apply improvements based on the prompt's characteristics (simple/complex, technical/general).`
+
+/**
+ * Default organization prompt for Prompt Organizer
+ *
+ * This prompt defines HOW the AI should analyze and organize prompts into reusable templates.
+ * This CAN be customized by users via Prompt Organizer settings.
+ */
+export const DEFAULT_ORGANIZATION_PROMPT = `Analyze the following prompts and generate reusable templates.
+
+Step 1: Cluster similar prompts
+- Group prompts by similarity in content, purpose, and patterns
+- Identify common themes and use cases across prompts
+
+Step 2: For each cluster, generate a reusable template:
+1. Extract common patterns and create a generalized template with variables
+2. Use {{variableName}} syntax for placeholders
+3. Provide a clear title (max 20 chars)
+4. Describe the use case to clarify context and purpose (max 40 chars)
+5. Assign to an appropriate category
+6. List all variables with descriptions`

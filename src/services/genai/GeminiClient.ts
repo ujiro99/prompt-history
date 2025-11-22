@@ -77,6 +77,86 @@ export class GeminiClient {
   }
 
   /**
+   * Generate structured JSON content from Gemini API
+   * @param prompt - Input prompt
+   * @param schema - JSON schema for structured output
+   * @param config - Optional configuration overrides
+   * @returns Parsed JSON response
+   */
+  public async generateStructuredContent<T = unknown>(
+    prompt: string,
+    schema: Record<string, unknown>,
+    config?: Partial<GeminiConfig>,
+  ): Promise<T> {
+    if (!this.ai || !this.config) {
+      throw new GeminiError(
+        "Client not initialized. Call initialize() first.",
+        GeminiErrorType.API_KEY_MISSING,
+      )
+    }
+
+    const mergedConfig = {
+      ...this.config,
+      ...config,
+    }
+
+    try {
+      const response = await this.ai.models.generateContent({
+        model: mergedConfig.model,
+        contents: [prompt],
+        config: {
+          systemInstruction: mergedConfig.systemInstruction,
+          responseMimeType: "application/json",
+          responseSchema: schema,
+          ...mergedConfig.generateContentConfig,
+        },
+      })
+
+      const text = response.text
+      if (!text) {
+        throw new GeminiError("No response from API", GeminiErrorType.API_ERROR)
+      }
+
+      return JSON.parse(text) as T
+    } catch (error) {
+      // Handle different error types
+      if (error instanceof SyntaxError) {
+        throw new GeminiError(
+          "Invalid JSON response from API",
+          GeminiErrorType.API_ERROR,
+          error,
+        )
+      }
+      if (error instanceof Error) {
+        if (error.message.includes("network")) {
+          throw new GeminiError(
+            "Network error. Please check your connection.",
+            GeminiErrorType.NETWORK_ERROR,
+            error,
+          )
+        } else if (error.message.includes("API key")) {
+          throw new GeminiError(
+            "Invalid API key.",
+            GeminiErrorType.API_KEY_MISSING,
+            error,
+          )
+        } else {
+          throw new GeminiError(
+            `API error: ${error.message}`,
+            GeminiErrorType.API_ERROR,
+            error,
+          )
+        }
+      }
+      throw new GeminiError(
+        "Unknown error occurred",
+        GeminiErrorType.API_ERROR,
+        error,
+      )
+    }
+  }
+
+  /**
    * Generate content stream from Gemini API
    * @param prompt - Input prompt
    * @param config - Optional configuration overrides

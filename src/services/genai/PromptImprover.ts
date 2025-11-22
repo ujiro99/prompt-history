@@ -64,8 +64,8 @@ export class PromptImprover {
     }
 
     // In development mode, fallback to environment variable
-    const isDevelopmentMode = import.meta.env.WXT_E2E === "false"
-    if (isDevelopmentMode) {
+    const isProductionMode = import.meta.env.MODE === "production"
+    if (!isProductionMode) {
       const envApiKey = import.meta.env.WXT_GENAI_API_KEY
       if (envApiKey) {
         this.client.initialize(envApiKey)
@@ -82,21 +82,6 @@ export class PromptImprover {
    */
   public isApiKeyConfigured(): boolean {
     return this.client.isInitialized()
-  }
-
-  /**
-   * Initialize with API key from environment (deprecated, kept for compatibility)
-   * @deprecated Use loadSettings() instead
-   */
-  public initializeFromEnv(): void {
-    const apiKey = import.meta.env.WXT_GENAI_API_KEY
-    if (!apiKey) {
-      throw new GeminiError(
-        "API key not found in environment variables",
-        GeminiErrorType.API_KEY_MISSING,
-      )
-    }
-    this.client.initialize(apiKey)
   }
 
   /**

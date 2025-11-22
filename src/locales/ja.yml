@@ -272,3 +272,36 @@ errors:
   notTextContent: "テキストではないコンテンツです: $1"
   unknownError: 不明なエラーが発生しました
   fetchPromptFailed: "URLからプロンプトの取得に失敗しました: $1"
+
+# Prompt Organizer
+promptOrganizer:
+  title: プロンプト整理
+  description: AI駆動のプロンプト整理とテンプレート生成
+  settings:
+    filterPeriod: フィルタ期間
+    filterPeriodDays: "$1日"
+    minExecutionCount: 最小実行回数
+    maxPrompts: 最大プロンプト数
+    organizationPrompt: 整理用プロンプト
+  buttons:
+    organize: 整理する
+    cancel: キャンセル
+    save: 保存
+    discard: 破棄
+    saveAndPin: 保存してピン留め
+  status:
+    filtering: プロンプトをフィルタリング中...
+    generating: テンプレートを生成中...
+    error: エラーが発生しました
+  result:
+    templatesGenerated: "$1件のテンプレートが生成されました"
+    sourceCount: "$1件のプロンプトに基づいています"
+
+# Organizer Categories
+organizer:
+  category:
+    externalCommunication: 対外コミュニケーション
+    internalCommunication: 社内コミュニケーション
+    documentCreation: ドキュメント作成
+    development: 開発・技術
+    other: その他

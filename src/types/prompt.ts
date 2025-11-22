@@ -1,5 +1,7 @@
 // Type definitions for prompt management functionality
 
+import type { AIGeneratedMetadata } from "./promptOrganizer"
+
 /**
  * Variable type
  */
@@ -61,6 +63,14 @@ export interface Prompt {
   updatedAt: Date
   /** Variable configurations */
   variables?: VariableConfig[]
+  /** AI-generated flag */
+  isAIGenerated?: boolean
+  /** AI generation metadata (only for AI-generated prompts) */
+  aiMetadata?: AIGeneratedMetadata
+  /** Category ID (null for uncategorized) */
+  categoryId?: string | null
+  /** Use case description (optional) */
+  useCase?: string
 }
 
 /**
@@ -87,6 +97,14 @@ export interface StoredPrompt {
   updatedAt: string
   /** Variable configurations */
   variables?: VariableConfig[]
+  /** AI-generated flag */
+  isAIGenerated?: boolean
+  /** AI generation metadata (only for AI-generated prompts) */
+  aiMetadata?: AIGeneratedMetadata
+  /** Category ID (null for uncategorized) */
+  categoryId?: string | null
+  /** Use case description (optional) */
+  useCase?: string
 }
 
 /**
@@ -168,6 +186,8 @@ export interface StorageData {
   pinnedOrder: string[]
   /** Application settings */
   settings: AppSettings
+  /** Categories */
+  categories?: Record<string, import("./promptOrganizer").Category>
 }
 
 /**
