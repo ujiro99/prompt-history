@@ -253,6 +253,15 @@ AI生成テンプレートで未確認状態 (`aiMetadata.confirmed === false`) 
 
 **主要メソッド**:
 
+```typescript
+export const promptOrganizerService = new PromptOrganizerService(
+  promptFilterService,
+  templateGeneratorService,
+  costEstimatorService,
+  templateSaveService,
+)
+```
+
 - `executeOrganization()`: 各サービスを呼び出して整理を実行
   1. PromptFilterService でプロンプト抽出
   2. TemplateGeneratorService でテンプレート生成
@@ -260,23 +269,13 @@ AI生成テンプレートで未確認状態 (`aiMetadata.confirmed === false`) 
   4. 結果オブジェクトを返す
 
 - `estimateExecution()`: 実行前のコスト見積もり (CostEstimatorService に委譲)
+- テンプレート保存（TemplateSaveService に委譲）
 
-  /\*\*
-  - テンプレート保存（TemplateSaveService に委譲）
-    \*/
-    async saveTemplates(candidates: TemplateCandidate[]): Promise<void> {
-    return this.saveService.saveTemplates(candidates)
-    }
-    }
-
-export const promptOrganizerService = new PromptOrganizerService(
-promptFilterService,
-templateGeneratorService,
-costEstimatorService,
-templateSaveService,
-)
-
-````
+```typescript
+async saveTemplates(candidates: TemplateCandidate[]): Promise<void> {
+  return this.saveService.saveTemplates(candidates)
+}
+```
 
 ### 4.1.1 PromptFilterService
 
@@ -307,31 +306,35 @@ class PromptFilterService {
     filters: PromptFilters,
   ): PromptForOrganization[] {
     const now = new Date()
-    const cutoffDate = new Date(now.getTime() - filters.periodDays * 24 * 60 * 60 * 1000)
+    const cutoffDate = new Date(
+      now.getTime() - filters.periodDays * 24 * 60 * 60 * 1000,
+    )
 
-    return prompts
-      // 期間フィルター
-      .filter(p => p.lastExecutedAt >= cutoffDate)
-      // 実行回数フィルター
-      .filter(p => p.executionCount >= filters.minExecutionCount)
-      // AI生成を除外
-      .filter(p => !p.isAIGenerated)
-      // 実行回数でソート（降順）
-      .sort((a, b) => b.executionCount - a.executionCount)
-      // 最大件数
-      .slice(0, filters.maxPrompts)
-      // 必要なフィールドのみ抽出
-      .map(p => ({
-        id: p.id,
-        name: p.name,
-        content: p.content,
-        executionCount: p.executionCount,
-      }))
+    return (
+      prompts
+        // 期間フィルター
+        .filter((p) => p.lastExecutedAt >= cutoffDate)
+        // 実行回数フィルター
+        .filter((p) => p.executionCount >= filters.minExecutionCount)
+        // AI生成を除外
+        .filter((p) => !p.isAIGenerated)
+        // 実行回数でソート（降順）
+        .sort((a, b) => b.executionCount - a.executionCount)
+        // 最大件数
+        .slice(0, filters.maxPrompts)
+        // 必要なフィールドのみ抽出
+        .map((p) => ({
+          id: p.id,
+          name: p.name,
+          content: p.content,
+          executionCount: p.executionCount,
+        }))
+    )
   }
 }
 
 export const promptFilterService = new PromptFilterService()
-````
+```
 
 ### 4.1.2 TemplateGeneratorService
 
