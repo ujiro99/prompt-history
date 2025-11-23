@@ -36,6 +36,7 @@ buttons:
   unpin: スター解除
   saveAsNew: 新規として保存
   saveAsCopy: 複製する
+  complete: 完了
 
 # Status messages
 status:
@@ -215,7 +216,7 @@ settings:
     previewPlaceholder: 改善用プロンプトがここに表示されます...
     enterImprovementPrompt: 改善用プロンプトを入力してください...
     description: プロンプトの改善方法を設定します。
-  promptOrganizer: プロンプト整理
+  promptOrganizerSettings: プロンプト整理の設定
 
 # Import Dialog
 importDialog:
@@ -280,28 +281,73 @@ promptOrganizer:
   title: プロンプト整理
   description: AI駆動のプロンプト整理とテンプレート生成
   settings:
-    filterPeriod: フィルタ期間
+    filterConditions: 整理対象プロンプトの絞り込み条件
+    filterPeriod: 最終実行日
     filterPeriodDays: "$1日"
+    filterPeriodWeek: "$1 週"
+    filterPeriodMonth: "$1 月"
+    filterPeriodYear: "$1 年"
     minExecutionCount: 最小実行回数
     maxPrompts: 最大プロンプト数
     organizationPrompt: 整理用プロンプト
+  estimate:
+    targetPrompts: 対象プロンプト数
+    title: 推定コスト
+    inputTokens: 入力トークン数
+    outputTokens: 出力トークン数（推定）
+    contextUsage: コンテキスト使用率
+    estimatedCost: 推定コスト
   buttons:
     organize: 整理する
     cancel: キャンセル
     save: 保存
     discard: 破棄
     saveAndPin: 保存してピン留め
+    preview: テンプレートをプレビュー
+    saveAll: すべて保存
   status:
     filtering: プロンプトをフィルタリング中...
     generating: テンプレートを生成中...
     error: エラーが発生しました
+    saved: 保存済み
+    discarded: 破棄済み
   result:
     templatesGenerated: "$1件のテンプレートが生成されました"
     sourceCount: "$1件のプロンプトに基づいています"
+  summary:
+    title: 整理完了
+    description: 生成されたテンプレートを確認
+    templatesGenerated: 件のテンプレートを生成
+    sourceInfo: ソース情報
+    sourcePrompts: ソースプロンプト
+    period: 分析期間
+    days: 日間
+    highlight: 代表的なテンプレート
+    basedOn: "$1件のソースプロンプトに基づいています"
+    usage: トークン使用量
+    actualCost: 実際のコスト
+    executedAt: 実行日時
+  preview:
+    title: テンプレートをプレビュー
+    description: 生成されたテンプレートを確認・編集
+    templateList: テンプレート一覧
+    title_label: タイトル
+    useCase: 用途
+    category: カテゴリ
+    content: 内容
+    variables: 変数
+    sourcePrompts: ソースプロンプト
+  aiTemplates:
+    title: AI推奨テンプレート
+  errors:
+    noApiKey: Gemini APIキーが必要です。設定でAPIキーを設定してください。
+  warnings:
+    noApiKey: この機能を使用するには、設定でGemini APIキーを設定してください。
 
 # Organizer Categories
 organizer:
   category:
+    selectCategory: カテゴリを選択
     externalCommunication: 対外コミュニケーション
     internalCommunication: 社内コミュニケーション
     documentCreation: ドキュメント作成

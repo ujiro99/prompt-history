@@ -25,10 +25,14 @@ import { promptExportService } from "@/services/importExport"
 import { ImportDialog } from "./ImportDialog"
 import { ModelSettingsDialog } from "@/components/settings/ModelSettingsDialog"
 import { PromptImproverSettingsDialog } from "@/components/settings/PromptImproverSettingsDialog"
-import { PromptOrganizerDialog } from "@/components/settings/PromptOrganizerDialog"
+import { OrganizerSettingsDialog } from "@/components/promptOrganizer/OrganizerSettingsDialog"
+import { OrganizerSummaryDialog } from "@/components/promptOrganizer/OrganizerSummaryDialog"
+import { OrganizerPreviewDialog } from "@/components/promptOrganizer/OrganizerPreviewDialog"
 import { MENU, TestIds } from "@/components/const"
 import type { AppSettings, Prompt } from "@/types/prompt"
 import type { ImportResult } from "@/services/importExport/types"
+import type { PromptOrganizerResult } from "@/types/promptOrganizer"
+import { promptOrganizerService } from "@/services/promptOrganizer/PromptOrganizerService"
 import { i18n } from "#imports"
 
 type Props = {
@@ -52,17 +56,18 @@ function MenuTrigger(props: MenuTriggerProps): React.ReactElement {
   )
 }
 
-export function SettingsMenu({
-  onMouseEnter,
-  prompts = [],
-}: Props): React.ReactElement {
+export function SettingsMenu({ onMouseEnter }: Props): React.ReactElement {
   const { settings, update } = useSettings()
   const { container } = useContainer()
   const [importDialogOpen, setImportDialogOpen] = useState(false)
   const [modelSettingsOpen, setModelSettingsOpen] = useState(false)
   const [promptImproverSettingsOpen, setPromptImproverSettingsOpen] =
     useState(false)
-  const [promptOrganizerOpen, setPromptOrganizerOpen] = useState(false)
+  const [organizerSettingsOpen, setOrganizerSettingsOpen] = useState(false)
+  const [organizerSummaryOpen, setOrganizerSummaryOpen] = useState(false)
+  const [organizerPreviewOpen, setOrganizerPreviewOpen] = useState(false)
+  const [organizerResult, setOrganizerResult] =
+    useState<PromptOrganizerResult | null>(null)
 
   /**
    * Handle settings change
@@ -123,10 +128,45 @@ export function SettingsMenu({
   }, [])
 
   /**
-   * Handle open prompt organizer
+   * Handle open prompt organizer settings
    */
   const handleOpenPromptOrganizer = useCallback(() => {
-    setPromptOrganizerOpen(true)
+    setOrganizerSettingsOpen(true)
+  }, [])
+
+  /**
+   * Handle preview templates
+   */
+  const handlePreviewTemplates = useCallback(() => {
+    setOrganizerSummaryOpen(false)
+    setOrganizerPreviewOpen(true)
+  }, [])
+
+  /**
+   * Handle save all templates
+   */
+  const handleSaveAllTemplates = useCallback(async () => {
+    if (!organizerResult) return
+    try {
+      await promptOrganizerService.saveTemplates(organizerResult.templates)
+      setOrganizerSummaryOpen(false)
+      setOrganizerResult(null)
+    } catch (error) {
+      console.error("Save failed:", error)
+    }
+  }, [organizerResult])
+
+  /**
+   * Handle save templates from preview
+   */
+  const handleSaveTemplatesFromPreview = useCallback(async (templates) => {
+    try {
+      await promptOrganizerService.saveTemplates(templates)
+      setOrganizerPreviewOpen(false)
+      setOrganizerResult(null)
+    } catch (error) {
+      console.error("Save failed:", error)
+    }
   }, [])
 
   return (
@@ -247,7 +287,7 @@ export function SettingsMenu({
             </MenubarItem>
             <MenubarItem onClick={handleOpenPromptOrganizer}>
               <NotebookPen size={16} />
-              {i18n.t("settings.promptOrganizer")}
+              {i18n.t("settings.promptOrganizerSettings")}
             </MenubarItem>
           </>
         )}
@@ -272,11 +312,27 @@ export function SettingsMenu({
         onOpenChange={setPromptImproverSettingsOpen}
       />
 
-      {/* Prompt Organizer Dialog */}
-      <PromptOrganizerDialog
-        open={promptOrganizerOpen}
-        onOpenChange={setPromptOrganizerOpen}
-        prompts={prompts}
+      {/* Organizer Settings Dialog */}
+      <OrganizerSettingsDialog
+        open={organizerSettingsOpen}
+        onOpenChange={setOrganizerSettingsOpen}
+      />
+
+      {/* Organizer Summary Dialog */}
+      <OrganizerSummaryDialog
+        open={organizerSummaryOpen}
+        onOpenChange={setOrganizerSummaryOpen}
+        result={organizerResult}
+        onPreview={handlePreviewTemplates}
+        onSaveAll={handleSaveAllTemplates}
+      />
+
+      {/* Organizer Preview Dialog */}
+      <OrganizerPreviewDialog
+        open={organizerPreviewOpen}
+        onOpenChange={setOrganizerPreviewOpen}
+        templates={organizerResult?.templates || []}
+        onSave={handleSaveTemplatesFromPreview}
       />
     </MenubarMenu>
   )

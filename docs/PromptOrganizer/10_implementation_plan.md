@@ -4,7 +4,6 @@
 
 This document tracks the implementation progress of the Prompt Organizer feature based on the design specifications.
 
-**Current Phase**: MVP (Minimum Viable Product)
 **Target Release**: v0.7.0
 **Last Updated**: 2025-11-22
 
@@ -16,10 +15,10 @@ This document tracks the implementation progress of the Prompt Organizer feature
 | -------------------------- | ----------- | -------------- |
 | **Phase 1: Foundation**    | 100% (5/5)  | ✅ Complete    |
 | **Phase 2: Core Services** | 100% (8/8)  | ✅ Complete    |
-| **Phase 3: UI Components** | 43% (3/7)   | 🚧 In Progress |
+| **Phase 3: UI Components** | 100% (7/7)  | ✅ Complete    |
 | **Phase 4: Integration**   | 0% (0/2)    | ⏳ Pending     |
 | **Phase 5: Testing**       | 0% (0/3)    | ⏳ Pending     |
-| **Overall**                | 64% (16/25) | 🚧 In Progress |
+| **Overall**                | 80% (20/25) | 🚧 In Progress |
 
 ---
 
@@ -207,76 +206,76 @@ This document tracks the implementation progress of the Prompt Organizer feature
 
 ---
 
-## Phase 3: UI Components ⏳ Pending
+## Phase 3: UI Components ✅ Complete
 
-### 3.1 OrganizerSettingsDialog ⏳
+### 3.1 OrganizerSettingsDialog ✅
 
 **File**: `src/components/promptOrganizer/OrganizerSettingsDialog.tsx`
 
-- [ ] Dialog component structure
-- [ ] DialogHeader
-- [ ] Settings input form
-  - [ ] PeriodSelector (1週/1ヶ月/1年)
-  - [ ] ExecutionCountInput
-  - [ ] MaxPromptsInput
-  - [ ] OrganizationPromptEditor (Textarea wrapper)
-- [ ] Estimation display
-  - [ ] TokenCountDisplay
-  - [ ] ContextUsageBar
-  - [ ] CostEstimate
-- [ ] DialogFooter
-  - [ ] CancelButton
-  - [ ] ExecuteButton with loading state
-- [ ] Error handling UI
-- [ ] Integration with usePromptOrganizer hook
-- [ ] API key validation check
+- [x] Dialog component structure
+- [x] DialogHeader
+- [x] Settings input form
+  - [x] PeriodSelector (1週/1ヶ月/1年)
+  - [x] ExecutionCountInput
+  - [x] MaxPromptsInput
+  - [x] OrganizationPromptEditor (Textarea wrapper)
+- [x] Estimation display
+  - [x] TokenCountDisplay
+  - [x] ContextUsageBar
+  - [x] CostEstimate
+- [x] DialogFooter
+  - [x] CancelButton
+  - [x] ExecuteButton with loading state
+- [x] Error handling UI
+- [x] Integration with usePromptOrganizer hook
+- [x] API key validation check
 
-**Dependencies**: Phase 2 complete
+**Completion Date**: 2025-11-22
 
 ---
 
-### 3.2 OrganizerSummaryDialog ⏳
+### 3.2 OrganizerSummaryDialog ✅
 
 **File**: `src/components/promptOrganizer/OrganizerSummaryDialog.tsx`
 
-- [ ] Dialog component structure
-- [ ] DialogHeader
-- [ ] Summary statistics display
-  - [ ] TemplateCountBadge
-  - [ ] SourceInfoCard (source count, period info)
-  - [ ] HighlightCard (representative template preview)
-- [ ] Token usage and cost display
-- [ ] Execution timestamp
-- [ ] DialogFooter
-  - [ ] PreviewButton
-  - [ ] SaveAllButton
+- [x] Dialog component structure
+- [x] DialogHeader
+- [x] Summary statistics display
+  - [x] TemplateCountBadge
+  - [x] SourceInfoCard (source count, period info)
+  - [x] HighlightCard (representative template preview)
+- [x] Token usage and cost display
+- [x] Execution timestamp
+- [x] DialogFooter
+  - [x] PreviewButton
+  - [x] SaveAllButton
 
-**Dependencies**: Phase 2 complete
+**Completion Date**: 2025-11-22
 
 ---
 
-### 3.3 OrganizerPreviewDialog ⏳
+### 3.3 OrganizerPreviewDialog ✅
 
 **File**: `src/components/promptOrganizer/OrganizerPreviewDialog.tsx`
 
-- [ ] Dialog component structure
-- [ ] DialogHeader
-- [ ] TwoColumnLayout
-  - [ ] LeftPane: TemplateCandidateList
-    - [ ] TemplateCandidateCard[] (clickable selection)
-  - [ ] RightPane: TemplateCandidateDetail
-    - [ ] TitleInput (editable)
-    - [ ] UseCaseInput (editable)
-    - [ ] CategorySelector (editable)
-    - [ ] ContentPreview (with variable highlighting)
-    - [ ] VariablesList
-    - [ ] SourcePromptsCollapse
-- [ ] DialogFooter
-  - [ ] DiscardButton
-  - [ ] SaveButton
-  - [ ] SaveAndPinButton
+- [x] Dialog component structure
+- [x] DialogHeader
+- [x] TwoColumnLayout
+  - [x] LeftPane: TemplateCandidateList
+    - [x] TemplateCandidateCard[] (clickable selection)
+  - [x] RightPane: TemplateCandidateDetail
+    - [x] TitleInput (editable)
+    - [x] UseCaseInput (editable)
+    - [x] CategorySelector (editable)
+    - [x] ContentPreview (with variable highlighting)
+    - [x] VariablesList
+    - [x] SourcePromptsCollapse
+- [x] DialogFooter
+  - [x] DiscardButton
+  - [x] SaveButton
+  - [x] SaveAndPinButton
 
-**Dependencies**: Phase 2 complete, Phase 3.4 complete
+**Completion Date**: 2025-11-22
 
 ---
 
@@ -292,7 +291,7 @@ This document tracks the implementation progress of the Prompt Organizer feature
 - [x] Status indicator (pending/saved)
 - [x] Click handler for selection
 
-**Completion Date**: 2025-11-22
+**Completion Date**: 2025-11-22 (pre-existing)
 
 ---
 
@@ -306,32 +305,41 @@ This document tracks the implementation progress of the Prompt Organizer feature
 - [x] Category badge display
 - [x] Integration with CategoryService
 
-**Completion Date**: 2025-11-22
+**Completion Date**: 2025-11-22 (pre-existing)
 
 ---
 
-### 3.6 PinnedMenu Extension ⏳
+### 3.6 PinnedMenu Extension ✅
 
 **File**: `src/components/inputMenu/PromptList.tsx` (extend existing)
 
-- [ ] Section A: User pinned prompts
-  - [ ] Filter by `!isAIGenerated`
-- [ ] Section B: AI recommended templates
-  - [ ] Filter by `isAIGenerated && showInPinned`
-- [ ] New/unconfirmed template decoration
-  - [ ] Gradient background with shimmer animation
-  - [ ] Check `aiMetadata.confirmed === false`
-- [ ] Confirmation on first click/execution
-  - [ ] Update `aiMetadata.confirmed = true`
-  - [ ] Remove animation
+- [x] Section A: User pinned prompts
+  - [x] Filter by `!isAIGenerated`
+- [x] Section B: AI recommended templates
+  - [x] Filter by `isAIGenerated && showInPinned`
+- [x] New/unconfirmed template decoration
+  - [x] Gradient background with shimmer animation
+  - [x] Check `aiMetadata.confirmed === false`
+- [x] Confirmation on first click/execution
+  - [x] Update `aiMetadata.confirmed = true`
+  - [x] Remove animation
 
-**Dependencies**: Phase 2 complete
+**File**: `src/components/inputMenu/MenuItem.tsx` (extend existing)
+
+- [x] Add isAIGenerated, isUnconfirmed, onConfirm props
+- [x] Apply shimmer animation styling for unconfirmed templates
+
+**File**: `tailwind.config.ts`
+
+- [x] Add shimmer animation keyframes
+
+**Completion Date**: 2025-11-22
 
 ---
 
 ### 3.7 usePromptOrganizer Hook ✅
 
-**File**: `src/hooks/usePromptOrganizer.ts`
+**File**: `src/hooks/usePromptOrganizer.tsx`
 
 - [x] State management
   - [x] settings state
@@ -345,7 +353,7 @@ This document tracks the implementation progress of the Prompt Organizer feature
 - [x] saveTemplates method
 - [x] Error handling
 
-**Completion Date**: 2025-11-22
+**Completion Date**: 2025-11-22 (pre-existing)
 
 ---
 
@@ -533,4 +541,5 @@ None at the moment. All dependencies for Phase 3 are satisfied.
 ---
 
 **Last Updated**: 2025-11-22
+**Phase 3 Completion Date**: 2025-11-22
 **Next Review Date**: TBD

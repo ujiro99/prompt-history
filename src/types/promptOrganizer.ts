@@ -166,6 +166,8 @@ export interface OrganizerExecutionEstimate {
   targetPromptCount: number
   /** Estimated input tokens */
   estimatedInputTokens: number
+  /** Estimated output tokens (est.) */
+  estimatedOutputTokens: number
   /** Context usage rate (0.0 - 1.0) */
   contextUsageRate: number
   /** Estimated cost (JPY) */

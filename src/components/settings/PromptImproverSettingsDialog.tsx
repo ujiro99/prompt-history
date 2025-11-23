@@ -361,7 +361,7 @@ export const PromptImproverSettingsDialog: React.FC<
                       "settings.promptImprover.enterImprovementPrompt",
                     )}
                     rows={6}
-                    className="max-h-60"
+                    className="max-h-60 font-mono"
                   />
                 </div>
               ) : (
@@ -436,7 +436,7 @@ export const PromptImproverSettingsDialog: React.FC<
                       "settings.promptImprover.previewPlaceholder",
                     )}
                     rows={6}
-                    className="bg-muted/50 font-mono md:text-xs max-h-60"
+                    className="bg-muted/50 font-mono text-xs md:text-xs max-h-60"
                   />
                 </div>
               )}

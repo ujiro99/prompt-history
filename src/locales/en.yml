@@ -36,6 +36,7 @@ buttons:
   unpin: Unstar
   saveAsNew: Save as new
   saveAsCopy: Duplicate
+  complete: Complete
 
 # Status messages
 status:
@@ -215,7 +216,7 @@ settings:
     previewPlaceholder: Improvement prompt will appear here...
     enterImprovementPrompt: Enter improvement prompt...
     description: Configure how to improve prompts.
-  promptOrganizer: Prompt Organizer
+  promptOrganizerSettings: Prompt Organizer Settings
 
 # Import Dialog
 importDialog:
@@ -280,28 +281,73 @@ promptOrganizer:
   title: Organize Prompts
   description: AI-powered prompt organization and template generation
   settings:
+    filterConditions: Filter Conditions for Organization Target Prompts
     filterPeriod: Filter Period
     filterPeriodDays: "$1 days"
+    filterPeriodWeek: "$1 week"
+    filterPeriodMonth: "$1 month"
+    filterPeriodYear: "$1 year"
     minExecutionCount: Minimum Execution Count
     maxPrompts: Maximum Prompts
     organizationPrompt: Organization Prompt
+  estimate:
+    targetPrompts: Number of Target Prompts
+    title: Estimated Cost
+    inputTokens: Input Tokens
+    outputTokens: Output Tokens (est.)
+    contextUsage: Context Usage
+    estimatedCost: Estimated Cost
   buttons:
     organize: Organize
     cancel: Cancel
     save: Save
     discard: Discard
     saveAndPin: Save & Pin
+    preview: Preview Templates
+    saveAll: Save All
   status:
     filtering: Filtering prompts...
     generating: Generating templates...
     error: Error occurred
+    saved: Saved
+    discarded: Discarded
   result:
     templatesGenerated: "$1 templates generated"
     sourceCount: "Based on $1 prompts"
+  summary:
+    title: Organization Complete
+    description: Review the generated templates
+    templatesGenerated: templates generated
+    sourceInfo: Source Information
+    sourcePrompts: Source Prompts
+    period: Analysis Period
+    days: days
+    highlight: Most Representative Template
+    basedOn: "Based on $1 source prompts"
+    usage: Token Usage
+    actualCost: Actual Cost
+    executedAt: Executed at
+  preview:
+    title: Preview Templates
+    description: Review and edit generated templates
+    templateList: Templates
+    title_label: Title
+    useCase: Use Case
+    category: Category
+    content: Content
+    variables: Variables
+    sourcePrompts: Source Prompts
+  aiTemplates:
+    title: AI Recommended
+  errors:
+    noApiKey: Gemini API key is required. Please set it in settings.
+  warnings:
+    noApiKey: Please set your Gemini API key in settings to use this feature.
 
 # Organizer Categories
 organizer:
   category:
+    selectCategory: Select Category
     externalCommunication: External Communication
     internalCommunication: Internal Communication
     documentCreation: Document Creation

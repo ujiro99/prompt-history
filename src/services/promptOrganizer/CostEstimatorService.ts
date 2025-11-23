@@ -14,11 +14,23 @@ import { TemplateGeneratorService } from "./TemplateGeneratorService"
 import { categoryService } from "./CategoryService"
 import { promptsService } from "@/services/storage/prompts"
 import { GEMINI_PRICING, GEMINI_CONTEXT_LIMIT } from "./pricing"
+import { genaiApiKeyStorage } from "@/services/storage/definitions"
 
 /**
  * Cost Estimator Service
  */
 class CostEstimatorService {
+  private geminiClient: GeminiClient
+
+  constructor() {
+    this.geminiClient = GeminiClient.getInstance()
+  }
+
+  private async loadApiKey(): Promise<void> {
+    const apiKey = await genaiApiKeyStorage.getValue()
+    this.geminiClient.initialize(apiKey)
+  }
+
   /**
    * Calculate cost from token usage
    *
@@ -43,6 +55,10 @@ class CostEstimatorService {
   async estimateExecution(
     settings: PromptOrganizerSettings,
   ): Promise<OrganizerExecutionEstimate> {
+    if (!this.geminiClient.isInitialized()) {
+      await this.loadApiKey()
+    }
+
     // 1. Get all prompts
     const allPrompts = await promptsService.getAllPrompts()
 
@@ -61,15 +77,19 @@ class CostEstimatorService {
     )
 
     // 4. Estimate token count
-    const geminiClient = GeminiClient.getInstance()
-    const inputTokens = await geminiClient.estimateTokens(promptText)
+    const inputTokens = await this.geminiClient.estimateTokens(promptText)
+    console.log("Estimated input tokens:", inputTokens)
 
-    // 5. Calculate cost (estimate output tokens as 0)
-    const estimatedCost = this.calculateCost({ inputTokens, outputTokens: 0 })
+    // 5. Calculate cost (estimate output tokens as 0.5 x input tokens)
+    const estimatedCost = this.calculateCost({
+      inputTokens,
+      outputTokens: inputTokens * 0.5,
+    })
 
     return {
       targetPromptCount: targetPrompts.length,
       estimatedInputTokens: inputTokens,
+      estimatedOutputTokens: inputTokens * 0.5,
       contextUsageRate: inputTokens / GEMINI_CONTEXT_LIMIT,
       estimatedCost,
       model: "gemini-2.5-flash",

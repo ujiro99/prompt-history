@@ -20,6 +20,9 @@ type MenuItemProps = {
   onRemove: (promptId: string) => void
   onCopy: (promptId: string) => void
   onTogglePin: (promptId: string, isPinned: boolean) => void
+  isAIGenerated?: boolean
+  isUnconfirmed?: boolean
+  onConfirm?: (promptId: string) => void
 }
 
 const BUTTON_SIZE = 16
@@ -31,6 +34,10 @@ export const MenuItem = (props: MenuItemProps) => {
 
   const handleClick = () => {
     if (promptId) {
+      // If unconfirmed AI template, mark as confirmed
+      if (props.isUnconfirmed && props.onConfirm) {
+        props.onConfirm(promptId)
+      }
       props.onClick(promptId)
     } else {
       console.warn("MenuItem clicked but no data-value found")
@@ -60,6 +67,8 @@ export const MenuItem = (props: MenuItemProps) => {
       className={cn(
         "hover:bg-accent focus:bg-accent focus:text-accent-foreground cursor-default items-center gap-2 rounded-sm text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg:not([class*='size-'])]:size-4",
         "relative flex justify-between px-2 pr-1 py-1 text-sm font-normal font-sans text-foreground cursor-pointer outline-neutral-300",
+        props.isUnconfirmed &&
+          "bg-gradient-to-r from-blue-50 to-purple-50 animate-shimmer",
       )}
       style={{ outlineColor: "#d1d5db" }}
       data-testid={props.testId}

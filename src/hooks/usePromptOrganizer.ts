@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect } from "react"
+import { useDebounce } from "./useDebounce"
 import type {
   PromptOrganizerSettings,
   OrganizerExecutionEstimate,
@@ -14,10 +15,17 @@ import type {
 import { promptOrganizerSettingsStorage } from "@/services/storage/definitions"
 import { promptOrganizerService } from "@/services/promptOrganizer/PromptOrganizerService"
 
+interface UsePromptOrganizerOptions {
+  /** Enable execution estimate calculation */
+  enableEstimate?: boolean
+}
+
 /**
  * Prompt Organizer Hook
  */
-export function usePromptOrganizer() {
+export function usePromptOrganizer({
+  enableEstimate = false,
+}: UsePromptOrganizerOptions) {
   const [settings, setSettings] = useState<PromptOrganizerSettings | null>(null)
   const [estimate, setEstimate] = useState<OrganizerExecutionEstimate | null>(
     null,
@@ -26,20 +34,26 @@ export function usePromptOrganizer() {
   const [isExecuting, setIsExecuting] = useState(false)
   const [error, setError] = useState<OrganizerError | null>(null)
 
+  const debouncedSettings = useDebounce(settings, 200)
+
   // Load settings
   useEffect(() => {
     promptOrganizerSettingsStorage.getValue().then(setSettings)
+    return promptOrganizerSettingsStorage.watch((newSettings) => {
+      setSettings(newSettings)
+    })
   }, [])
 
   // Recalculate estimate when settings change
   useEffect(() => {
-    if (!settings) return
+    if (!enableEstimate) return
+    if (!debouncedSettings) return
 
     promptOrganizerService
-      .estimateExecution(settings)
+      .estimateExecution(debouncedSettings)
       .then(setEstimate)
       .catch(console.error)
-  }, [settings])
+  }, [debouncedSettings, enableEstimate])
 
   /**
    * Execute organization

@@ -46,6 +46,7 @@ interface PromptListProps {
   onCopy: (promptId: string) => void
   onTogglePin: (promptId: string, isPinned: boolean) => void
   onLockChange: (isLocked: boolean) => void
+  onConfirmTemplate?: (promptId: string) => void
 }
 
 /**
@@ -62,6 +63,7 @@ export const PromptList = ({
   onCopy,
   onTogglePin,
   onLockChange,
+  onConfirmTemplate,
 }: PromptListProps) => {
   const [containerElm, setContainerElm] = useState<HTMLElement | null>(null)
   const [hoveredElm, setHoveredElm] = useState<HTMLElement | null>(null)
@@ -73,9 +75,9 @@ export const PromptList = ({
   } = useSettings()
   const [viewportElm, setViewportElm] = useState<HTMLElement | null>(null)
 
-  const { filteredGroups, totalCount } = useMemo(() => {
+  const { filteredGroups, totalCount, aiTemplateGroups } = useMemo(() => {
     if (!isLoaded) {
-      return { filteredGroups: [], totalCount: 0 }
+      return { filteredGroups: [], totalCount: 0, aiTemplateGroups: [] }
     }
 
     const query = deferredSearchQuery.toLowerCase()
@@ -87,7 +89,30 @@ export const PromptList = ({
         p.name?.toLowerCase().includes(query),
     )
 
-    // Group the filtered prompts
+    // For pinned menu, separate user pinned and AI templates
+    if (menuType === "pinned") {
+      // Section A: User pinned prompts (not AI-generated)
+      const userPinned = filtered.filter((p) => !p.isAIGenerated)
+      const userGroups = groupPrompts(userPinned, sortOrder, sideFlipped)
+
+      // Section B: AI recommended templates (AI-generated && showInPinned)
+      const aiTemplates = filtered.filter(
+        (p) => p.isAIGenerated && p.aiMetadata?.showInPinned,
+      )
+      const aiGroups = groupPrompts(aiTemplates, sortOrder, sideFlipped)
+
+      const count =
+        userGroups.reduce((acc, group) => acc + group.prompts.length, 0) +
+        aiGroups.reduce((acc, group) => acc + group.prompts.length, 0)
+
+      return {
+        filteredGroups: userGroups,
+        aiTemplateGroups: aiGroups,
+        totalCount: count,
+      }
+    }
+
+    // For history menu, show all
     const groups = groupPrompts(filtered, sortOrder, sideFlipped)
     console.log("Grouped Prompts:", groups, sideFlipped) // Debug log
 
@@ -96,9 +121,10 @@ export const PromptList = ({
 
     return {
       filteredGroups: groups,
+      aiTemplateGroups: [],
       totalCount: count,
     }
-  }, [isLoaded, prompts, sideFlipped, deferredSearchQuery, sortOrder])
+  }, [isLoaded, prompts, sideFlipped, deferredSearchQuery, sortOrder, menuType])
 
   const isListEmpty = totalCount === 0
 
@@ -208,32 +234,83 @@ export const PromptList = ({
               : emptyMessage}
           </div>
         ) : (
-          filteredGroups.map((group) => (
-            <div key={`group-${group.order}`}>
-              <GroupHeader
-                labelKey={group.label}
-                count={group.prompts.length}
-              />
-              {group.prompts.map((prompt) => (
-                <MenuItem
-                  menuType={menuType}
-                  value={prompt.id}
-                  key={prompt.id}
-                  isPinned={prompt.isPinned}
-                  onEnter={handleEnter}
-                  onClick={onClick}
-                  onEdit={onEdit}
-                  onRemove={onRemove}
-                  onCopy={onCopy}
-                  onTogglePin={onTogglePin}
-                  testId={testId}
-                  name={prompt.name}
-                >
-                  {prompt.name}
-                </MenuItem>
-              ))}
-            </div>
-          ))
+          <>
+            {/* Section A: User Pinned Prompts */}
+            {filteredGroups.map((group) => (
+              <div key={`group-${group.order}`}>
+                <GroupHeader
+                  labelKey={group.label}
+                  count={group.prompts.length}
+                />
+                {group.prompts.map((prompt) => (
+                  <MenuItem
+                    menuType={menuType}
+                    value={prompt.id}
+                    key={prompt.id}
+                    isPinned={prompt.isPinned}
+                    onEnter={handleEnter}
+                    onClick={onClick}
+                    onEdit={onEdit}
+                    onRemove={onRemove}
+                    onCopy={onCopy}
+                    onTogglePin={onTogglePin}
+                    testId={testId}
+                    name={prompt.name}
+                    isAIGenerated={prompt.isAIGenerated}
+                    isUnconfirmed={
+                      prompt.isAIGenerated &&
+                      prompt.aiMetadata?.confirmed === false
+                    }
+                    onConfirm={onConfirmTemplate}
+                  >
+                    {prompt.name}
+                  </MenuItem>
+                ))}
+              </div>
+            ))}
+
+            {/* Section B: AI Recommended Templates (only for pinned menu) */}
+            {menuType === "pinned" && aiTemplateGroups.length > 0 && (
+              <>
+                <div className="border-t my-1" />
+                <div className="px-3 py-1 text-xs font-semibold text-muted-foreground">
+                  {i18n.t("promptOrganizer.aiTemplates.title")}
+                </div>
+                {aiTemplateGroups.map((group) => (
+                  <div key={`ai-group-${group.order}`}>
+                    <GroupHeader
+                      labelKey={group.label}
+                      count={group.prompts.length}
+                    />
+                    {group.prompts.map((prompt) => (
+                      <MenuItem
+                        menuType={menuType}
+                        value={prompt.id}
+                        key={prompt.id}
+                        isPinned={prompt.isPinned}
+                        onEnter={handleEnter}
+                        onClick={onClick}
+                        onEdit={onEdit}
+                        onRemove={onRemove}
+                        onCopy={onCopy}
+                        onTogglePin={onTogglePin}
+                        testId={testId}
+                        name={prompt.name}
+                        isAIGenerated={prompt.isAIGenerated}
+                        isUnconfirmed={
+                          prompt.isAIGenerated &&
+                          prompt.aiMetadata?.confirmed === false
+                        }
+                        onConfirm={onConfirmTemplate}
+                      >
+                        {prompt.name}
+                      </MenuItem>
+                    ))}
+                  </div>
+                ))}
+              </>
+            )}
+          </>
         )}
       </ScrollAreaWithGradient>
     </div>

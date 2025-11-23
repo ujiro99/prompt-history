@@ -186,6 +186,35 @@ export function InputMenu(props: Props): React.ReactElement {
     }
   }
 
+  /**
+   * Confirm AI-generated template
+   */
+  const handleConfirmTemplate = useCallback(async (promptId: string) => {
+    try {
+      const prompt = await serviceFacade.getPrompt(promptId)
+      if (prompt.isAIGenerated && prompt.aiMetadata) {
+        // Update aiMetadata.confirmed to true
+        const saveData: SaveDialogData = {
+          name: prompt.name,
+          content: prompt.content,
+          saveMode: SaveMode.Overwrite,
+          isPinned: prompt.isPinned,
+          variables: prompt.variables,
+          isAIGenerated: true,
+          aiMetadata: {
+            ...prompt.aiMetadata,
+            confirmed: true,
+          },
+          categoryId: prompt.categoryId,
+          useCase: prompt.useCase,
+        }
+        await serviceFacade.updatePrompt(promptId, saveData)
+      }
+    } catch (error) {
+      console.error("Template confirmation failed:", error)
+    }
+  }, [])
+
   const handleInteractOutside = useCallback(() => {
     setSelectedMenu(MENU.None)
     setListLocked(false)
@@ -300,6 +329,7 @@ export function InputMenu(props: Props): React.ReactElement {
               onCopy={openCopyDialog}
               onTogglePin={handleTogglePin}
               onLockChange={setListLocked}
+              onConfirmTemplate={handleConfirmTemplate}
             />
             {historyAnchorElm && historyContentElm && (
               <BridgeArea
@@ -341,6 +371,7 @@ export function InputMenu(props: Props): React.ReactElement {
               onCopy={openCopyDialog}
               onTogglePin={handleTogglePin}
               onLockChange={setListLocked}
+              onConfirmTemplate={handleConfirmTemplate}
             />
             {pinnedAnchorElm && pinnedContentElm && (
               <BridgeArea
