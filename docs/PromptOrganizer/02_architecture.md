@@ -31,18 +31,22 @@ src/services/promptOrganizer/
 ┌─────────────────────────────────────────────────────────┐
 │                    UI Layer (React)                     │
 ├─────────────────────────────────────────────────────────┤
-│  InputPopup (既存)                                      │
+│  InputPopup (既存 - 拡張)                               │
 │   ├─ HistoryMenu                                        │
 │   ├─ PinnedMenu (拡張)                                  │
 │   │   ├─ Section A: ユーザーピン留め                    │
 │   │   └─ Section B: AIおすすめテンプレ (New)            │
+│   ├─ ImproveMenu (拡張: サブメニュー化)                 │
+│   │   ├─ Prompt Improver (既存)                         │
+│   │   └─ Organize Prompts (New) → 実行ダイアログ        │
 │   └─ SettingsMenu (拡張)                                │
-│       └─ プロンプト整理設定 (New)                       │
+│       └─ Prompt Organizer Settings → 設定ダイアログ     │
 │                                                         │
-│  OrganizerDialog (New)                                  │
-│   ├─ 設定ダイアログ                                     │
-│   ├─ 実行サマリ                                         │
-│   └─ プレビュー画面                                     │
+│  Organizer Dialogs (New)                                │
+│   ├─ 実行ダイアログ (PromptOrganizerExecuteDialog)      │
+│   ├─ 設定ダイアログ (OrganizerSettingsDialog)           │
+│   ├─ サマリダイアログ (OrganizerSummaryDialog)          │
+│   └─ プレビューダイアログ (OrganizerPreviewDialog)      │
 ├─────────────────────────────────────────────────────────┤
 │                  Service Layer                          │
 ├─────────────────────────────────────────────────────────┤
@@ -81,15 +85,17 @@ src/services/promptOrganizer/
 ```
 src/
 ├── components/
-│   └── inputMenu/
-│       ├── InputPopup.tsx (拡張)
-│       ├── PromptList.tsx (拡張)
-│       └── organizer/ (New)
-│           ├── OrganizerSettingsDialog.tsx
-│           ├── OrganizerSummaryDialog.tsx
-│           ├── OrganizerPreviewDialog.tsx
-│           ├── TemplateCandidateCard.tsx
-│           └── CategorySelector.tsx
+│   ├── inputMenu/
+│   │   ├── InputPopup.tsx (拡張 - ImproveMenuをサブメニュー化)
+│   │   ├── PromptList.tsx (拡張)
+│   │   └── SettingsMenu.tsx (拡張)
+│   └── promptOrganizer/ (New)
+│       ├── OrganizerExecuteDialog.tsx (New - 実行専用)
+│       ├── OrganizerSettingsDialog.tsx (New - 設定専用)
+│       ├── OrganizerSummaryDialog.tsx
+│       ├── OrganizerPreviewDialog.tsx
+│       ├── TemplateCandidateCard.tsx
+│       └── CategorySelector.tsx
 │
 ├── services/
 │   ├── genai/ (既存)
@@ -139,19 +145,36 @@ docs/
 
 **設計方針**: 既存の`InputPopup.tsx`パターンに合わせたフラット構造を採用し、深いネスト構造を避ける。中間コンテナコンポーネントを削除し、プロップドリリングを削減。
 
+**エントリーポイントの二重化**:
+
+- **Improve Menu → "Organize Prompts"**: 即座に実行したいユーザー向け（ExecuteDialog）
+- **Settings Menu → "Prompt Organizer Settings"**: 詳細設定を変更したいユーザー向け（SettingsDialog）
+
 ```
-OrganizerSettingsDialog
+OrganizerExecuteDialog (実行専用)
   ├─ DialogHeader
-  ├─ PeriodSelector (1週/1ヶ月/1年)
-  ├─ ExecutionCountInput
-  ├─ MaxPromptsInput
-  ├─ OrganizationPromptEditor (Textareaラッパー)
-  ├─ TokenCountDisplay
-  ├─ ContextUsageBar
-  ├─ CostEstimate
+  ├─ ExecutionEstimateDisplay
+  │   ├─ TargetPromptsCount
+  │   ├─ TokenCountDisplay
+  │   ├─ ContextUsageBar
+  │   └─ CostEstimate
+  ├─ SettingsChangeNotice (設定メニューへの誘導)
   └─ DialogFooter
       ├─ CancelButton
       └─ ExecuteButton
+
+OrganizerSettingsDialog (設定専用)
+  ├─ DialogHeader
+  ├─ FilterConditionsSection
+  │   ├─ PeriodSelector (1週/1ヶ月/1年)
+  │   ├─ ExecutionCountInput
+  │   └─ MaxPromptsInput
+  ├─ OrganizationPromptSection
+  │   ├─ OrganizationPromptEditor (Textareaラッパー)
+  │   └─ ResetToDefaultButton
+  └─ DialogFooter
+      ├─ CancelButton
+      └─ SaveButton
 
 OrganizerSummaryDialog
   ├─ DialogHeader
@@ -180,14 +203,23 @@ OrganizerPreviewDialog
       └─ SaveAndPinButton
 ```
 
-### 3.2 PinnedMenu のセクション分割
+### 3.2 Improve Menu のサブメニュー化
+
+**変更内容**: Improve Menu を単一ボタンからドロップダウンメニューに変更
+
+**責務**:
+
+- **Prompt Improver**: 既存のプロンプト改善機能（PromptImproveDialog）
+- **Organize Prompts**: 新規のプロンプト整理実行機能（OrganizerExecuteDialog）
+
+### 3.3 PinnedMenu のセクション分割
 
 `PromptList.tsx` を拡張し、`menuType === "pinned"` の場合に以下の2セクションに分割:
 
 - **Section A: あなたのピン留め** - ユーザーが手動でピン留めしたプロンプト (`!isAIGenerated`)
 - **Section B: AIのおすすめテンプレ** - AI生成テンプレートで `showInPinned === true` のもの
 
-### 3.3 新規未確認の装飾
+### 3.4 新規未確認の装飾
 
 AI生成テンプレートで未確認状態 (`aiMetadata.confirmed === false`) の場合、視覚的フィードバックを提供:
 
@@ -471,8 +503,8 @@ const { data, usage } =
 │                                             │
 │ カスタムカテゴリ:                           │
 │ ┌─────────────────────────────────────┐     │
-│ │ 🎯 マーケティング  (2件)   [✏️] [🗑️] │     │
-│ │ 🔬 リサーチ        (1件)   [✏️] [🗑️] │     │
+│ │ 🎯 マーケティング  (2件)   [✏️] [🗑️]│     │
+│ │ 🔬 リサーチ        (1件)   [✏️] [🗑️]│     │
 │ └─────────────────────────────────────┘     │
 └─────────────────────────────────────────────┘
 ```
@@ -603,23 +635,24 @@ organizer:
 
 ## 6. イベントフロー
 
-### 6.1 整理実行フロー
+### 6.1 実行フロー（Improve Menu経由）
 
 ```
-[ユーザーが設定ダイアログを開く]
+[Improve Menu → "Organize Prompts" クリック]
   ↓
-usePromptOrganizer() が設定を読み込み
-  ↓
-設定変更 → 自動的に見積もり再計算
+[OrganizerExecuteDialog 表示]
+  ├─ 現在の設定を読み込み (promptOrganizerSettingsStorage)
+  ├─ 対象プロンプト数を計算
+  └─ コスト見積もりを表示
   ↓
 [整理するボタン押下]
   ↓
 executeOrganization()
   ├─ isExecuting = true
   ├─ promptOrganizerService.executeOrganization()
-  │   ├─ プロンプト抽出
-  │   ├─ Gemini API 呼び出し
-  │   └─ テンプレート候補生成
+  │   ├─ プロンプト抽出 (PromptFilterService)
+  │   ├─ Gemini API 呼び出し (TemplateGeneratorService)
+  │   └─ テンプレート候補生成 (TemplateConverter)
   ├─ result をセット
   └─ isExecuting = false
   ↓
@@ -640,7 +673,28 @@ saveTemplates(candidates)
 [完了通知]
 ```
 
-### 6.2 Pinned リスト表示フロー
+### 6.2 設定変更フロー（Settings Menu経由）
+
+```
+[Settings Menu → "Prompt Organizer Settings" クリック]
+  ↓
+[OrganizerSettingsDialog 表示]
+  ├─ 現在の設定を読み込み (promptOrganizerSettingsStorage)
+  └─ フォームに設定値を表示
+  ↓
+[ユーザーが設定を変更]
+  ├─ 絞り込み条件 (期間, 実行回数, 最大件数)
+  └─ 整理用プロンプト
+  ↓
+[保存ボタン押下]
+  ├─ バリデーション実行
+  ├─ promptOrganizerSettingsStorage に保存
+  └─ ダイアログを閉じる
+  ↓
+[設定保存完了]
+```
+
+### 6.3 Pinned リスト表示フロー
 
 ```
 [Pinned Menu を開く]

@@ -51,8 +51,7 @@ export const OrganizerSummaryDialog: React.FC<OrganizerSummaryDialogProps> = ({
   /**
    * Format timestamp
    */
-  const formatTimestamp = (timestamp: number): string => {
-    const date = new Date(timestamp)
+  const formatTimestamp = (date: Date): string => {
     return date.toLocaleString()
   }
 
@@ -107,8 +106,7 @@ export const OrganizerSummaryDialog: React.FC<OrganizerSummaryDialogProps> = ({
                   {i18n.t("promptOrganizer.summary.period")}
                 </div>
                 <div className="font-semibold text-lg">
-                  {result.filterPeriodDays}{" "}
-                  {i18n.t("promptOrganizer.summary.days")}
+                  {result.periodDays} {i18n.t("promptOrganizer.summary.days")}
                 </div>
               </div>
             </div>

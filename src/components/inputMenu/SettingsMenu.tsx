@@ -9,7 +9,6 @@ import {
 } from "lucide-react"
 import {
   MenubarMenu,
-  MenubarTrigger,
   MenubarContent,
   MenubarItem,
   MenubarSeparator,
@@ -18,7 +17,7 @@ import {
   MenubarRadioItem,
   MenubarLabel,
 } from "@/components/ui/menubar"
-import { cn } from "@/lib/utils"
+import { MenuTrigger } from "./MenuTrigger"
 import { useSettings } from "@/hooks/useSettings"
 import { useContainer } from "@/hooks/useContainer"
 import { promptExportService } from "@/services/importExport"
@@ -26,37 +25,20 @@ import { ImportDialog } from "./ImportDialog"
 import { ModelSettingsDialog } from "@/components/settings/ModelSettingsDialog"
 import { PromptImproverSettingsDialog } from "@/components/settings/PromptImproverSettingsDialog"
 import { OrganizerSettingsDialog } from "@/components/promptOrganizer/OrganizerSettingsDialog"
-import { OrganizerSummaryDialog } from "@/components/promptOrganizer/OrganizerSummaryDialog"
-import { OrganizerPreviewDialog } from "@/components/promptOrganizer/OrganizerPreviewDialog"
 import { MENU, TestIds } from "@/components/const"
-import type { AppSettings, Prompt } from "@/types/prompt"
+import type { AppSettings } from "@/types/prompt"
 import type { ImportResult } from "@/services/importExport/types"
-import type { PromptOrganizerResult } from "@/types/promptOrganizer"
-import { promptOrganizerService } from "@/services/promptOrganizer/PromptOrganizerService"
 import { i18n } from "#imports"
 
 type Props = {
   onMouseEnter: () => void
-  prompts?: Prompt[]
+  onInteractOutside: () => void
 }
 
-type MenuTriggerProps = React.ComponentProps<typeof MenubarTrigger>
-
-function MenuTrigger(props: MenuTriggerProps): React.ReactElement {
-  return (
-    <MenubarTrigger
-      className={cn(
-        "p-1.5 text-xs gap-0.5 font-normal font-sans text-foreground cursor-pointer",
-        props.disabled && "opacity-50 pointer-events-none",
-      )}
-      {...props}
-    >
-      {props.children}
-    </MenubarTrigger>
-  )
-}
-
-export function SettingsMenu({ onMouseEnter }: Props): React.ReactElement {
+export function SettingsMenu({
+  onMouseEnter,
+  onInteractOutside,
+}: Props): React.ReactElement {
   const { settings, update } = useSettings()
   const { container } = useContainer()
   const [importDialogOpen, setImportDialogOpen] = useState(false)
@@ -64,10 +46,6 @@ export function SettingsMenu({ onMouseEnter }: Props): React.ReactElement {
   const [promptImproverSettingsOpen, setPromptImproverSettingsOpen] =
     useState(false)
   const [organizerSettingsOpen, setOrganizerSettingsOpen] = useState(false)
-  const [organizerSummaryOpen, setOrganizerSummaryOpen] = useState(false)
-  const [organizerPreviewOpen, setOrganizerPreviewOpen] = useState(false)
-  const [organizerResult, setOrganizerResult] =
-    useState<PromptOrganizerResult | null>(null)
 
   /**
    * Handle settings change
@@ -134,41 +112,6 @@ export function SettingsMenu({ onMouseEnter }: Props): React.ReactElement {
     setOrganizerSettingsOpen(true)
   }, [])
 
-  /**
-   * Handle preview templates
-   */
-  const handlePreviewTemplates = useCallback(() => {
-    setOrganizerSummaryOpen(false)
-    setOrganizerPreviewOpen(true)
-  }, [])
-
-  /**
-   * Handle save all templates
-   */
-  const handleSaveAllTemplates = useCallback(async () => {
-    if (!organizerResult) return
-    try {
-      await promptOrganizerService.saveTemplates(organizerResult.templates)
-      setOrganizerSummaryOpen(false)
-      setOrganizerResult(null)
-    } catch (error) {
-      console.error("Save failed:", error)
-    }
-  }, [organizerResult])
-
-  /**
-   * Handle save templates from preview
-   */
-  const handleSaveTemplatesFromPreview = useCallback(async (templates) => {
-    try {
-      await promptOrganizerService.saveTemplates(templates)
-      setOrganizerPreviewOpen(false)
-      setOrganizerResult(null)
-    } catch (error) {
-      console.error("Save failed:", error)
-    }
-  }, [])
-
   return (
     <MenubarMenu value={MENU.Settings}>
       <MenuTrigger
@@ -182,6 +125,7 @@ export function SettingsMenu({ onMouseEnter }: Props): React.ReactElement {
         className="max-w-64"
         data-testid={TestIds.inputPopup.settingsContent}
         container={container}
+        onInteractOutside={onInteractOutside}
       >
         {settings && (
           <>
@@ -316,23 +260,6 @@ export function SettingsMenu({ onMouseEnter }: Props): React.ReactElement {
       <OrganizerSettingsDialog
         open={organizerSettingsOpen}
         onOpenChange={setOrganizerSettingsOpen}
-      />
-
-      {/* Organizer Summary Dialog */}
-      <OrganizerSummaryDialog
-        open={organizerSummaryOpen}
-        onOpenChange={setOrganizerSummaryOpen}
-        result={organizerResult}
-        onPreview={handlePreviewTemplates}
-        onSaveAll={handleSaveAllTemplates}
-      />
-
-      {/* Organizer Preview Dialog */}
-      <OrganizerPreviewDialog
-        open={organizerPreviewOpen}
-        onOpenChange={setOrganizerPreviewOpen}
-        templates={organizerResult?.templates || []}
-        onSave={handleSaveTemplatesFromPreview}
       />
     </MenubarMenu>
   )

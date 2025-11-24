@@ -41,7 +41,10 @@ const MockMenubar = ({ onMouseEnter }: MockMenubarProps) => {
   return (
     <ContainerProvider container={document.body}>
       <Menubar value={value} onValueChange={(v) => setValue(v as MENU)}>
-        <SettingsMenu onMouseEnter={handleMouseEnter} />
+        <SettingsMenu
+          onMouseEnter={handleMouseEnter}
+          onInteractOutside={() => {}}
+        />
       </Menubar>
     </ContainerProvider>
   )

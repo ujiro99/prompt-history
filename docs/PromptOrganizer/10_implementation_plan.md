@@ -5,7 +5,7 @@
 This document tracks the implementation progress of the Prompt Organizer feature based on the design specifications.
 
 **Target Release**: v0.7.0
-**Last Updated**: 2025-11-22
+**Last Updated**: 2025-11-23
 
 ---
 
@@ -15,10 +15,10 @@ This document tracks the implementation progress of the Prompt Organizer feature
 | -------------------------- | ----------- | -------------- |
 | **Phase 1: Foundation**    | 100% (5/5)  | ✅ Complete    |
 | **Phase 2: Core Services** | 100% (8/8)  | ✅ Complete    |
-| **Phase 3: UI Components** | 100% (7/7)  | ✅ Complete    |
-| **Phase 4: Integration**   | 0% (0/2)    | ⏳ Pending     |
+| **Phase 3: UI Components** | 88% (7/8)   | 🚧 In Progress |
+| **Phase 4: Integration**   | 67% (2/3)   | 🚧 In Progress |
 | **Phase 5: Testing**       | 0% (0/3)    | ⏳ Pending     |
-| **Overall**                | 80% (20/25) | 🚧 In Progress |
+| **Overall**                | 81% (22/27) | 🚧 In Progress |
 
 ---
 
@@ -206,7 +206,7 @@ This document tracks the implementation progress of the Prompt Organizer feature
 
 ---
 
-## Phase 3: UI Components ✅ Complete
+## Phase 3: UI Components 🚧 In Progress
 
 ### 3.1 OrganizerSettingsDialog ✅
 
@@ -357,32 +357,92 @@ This document tracks the implementation progress of the Prompt Organizer feature
 
 ---
 
-## Phase 4: Integration ⏳ Pending
+### 3.8 OrganizerExecuteDialog ⏳
 
-### 4.1 Settings Menu Integration ⏳
+**File**: `src/components/promptOrganizer/OrganizerExecuteDialog.tsx`
 
-**File**: `src/components/inputMenu/SettingsMenu.tsx`
+- [ ] Dialog component structure
+- [ ] DialogHeader
+- [ ] Execution estimate display (read-only)
+  - [ ] TargetPromptsCount
+  - [ ] TokenCountDisplay
+  - [ ] ContextUsageBar
+  - [ ] CostEstimate
+- [ ] Settings change notice (link to settings menu)
+- [ ] DialogFooter
+  - [ ] CancelButton
+  - [ ] ExecuteButton with loading state
+- [ ] Error handling UI
+- [ ] Integration with usePromptOrganizer hook
+- [ ] API key validation check
 
-- [ ] Add "Organize Prompts" menu item
-- [ ] OrganizerSettingsDialog integration
-- [ ] Pass prompts prop to dialog
-- [ ] Handle dialog open/close state
+**Purpose**: Execution-only dialog accessible from Improve Menu → "Organize Prompts"
 
-**Dependencies**: Phase 3.1 (OrganizerSettingsDialog) complete
+**Dependencies**: Phase 2 (Core Services), Phase 3.7 (usePromptOrganizer Hook)
+
+**Completion Date**: TBD
 
 ---
 
-### 4.2 Prompt List Integration ⏳
+## Phase 4: Integration 🚧 In Progress
 
-**File**: `src/components/inputMenu/PromptList.tsx` (extends existing component)
+### 4.1 Settings Menu Integration ✅
 
-- [ ] Display AI-generated badge on templates
-- [ ] Filter/sort by AI-generated status
-- [ ] Show template metadata (use case, category)
-- [ ] Handle template confirmation flow
-- [ ] Update confirmed status on first use
+**File**: `src/components/inputMenu/SettingsMenu.tsx`
 
-**Dependencies**: Phase 3.6 (PinnedMenu Extension) complete
+- [x] Add "Organize Prompts" menu item
+- [x] OrganizerSettingsDialog integration
+- [x] OrganizerSummaryDialog integration
+- [x] OrganizerPreviewDialog integration
+- [x] Handle dialog state management
+- [x] Dialog flow orchestration (Settings → Summary → Preview)
+- [x] Template save handlers
+
+**Note**: OrganizerSettingsDialog has been modified to focus on settings only. The execution flow is planned to be initiated from a separate screen.
+
+**Completion Date**: 2025-11-22
+
+---
+
+### 4.2 Prompt List Integration ✅
+
+**File**: `src/components/inputMenu/PromptList.tsx` (extended existing component)
+
+- [x] Display AI-generated badge on templates (via shimmer animation)
+- [x] Filter/sort by AI-generated status (Section A/B split)
+- [x] Show template metadata (use case, category)
+- [x] Handle template confirmation flow
+- [x] Update confirmed status on first use
+
+**File**: `src/components/inputMenu/InputPopup.tsx`
+
+- [x] Add handleConfirmTemplate callback
+- [x] Pass onConfirmTemplate to PromptList components
+- [x] Update aiMetadata.confirmed on template execution
+
+**Completion Date**: 2025-11-22
+
+---
+
+### 4.3 Improve Menu Submenu Integration ⏳
+
+**File**: `src/components/inputMenu/InputPopup.tsx`
+
+- [ ] Transform Improve Menu from single button to dropdown menu
+- [ ] Add MenubarContent with side="top"
+- [ ] Add two MenubarItem components:
+  - [ ] "Prompt Improver" → openImproveDialog (existing functionality)
+  - [ ] "Organize Prompts" → openOrganizerExecuteDialog (new functionality)
+- [ ] Update menu trigger to use onMouseEnter instead of onClick
+- [ ] Add state management for OrganizerExecuteDialog
+- [ ] Integrate OrganizerExecuteDialog component
+- [ ] Handle dialog flow: Execute → Summary → Preview
+
+**Purpose**: Provide quick access to prompt organization from Improve Menu
+
+**Dependencies**: Phase 3.8 (OrganizerExecuteDialog)
+
+**Completion Date**: TBD
 
 ---
 
@@ -542,4 +602,5 @@ None at the moment. All dependencies for Phase 3 are satisfied.
 
 **Last Updated**: 2025-11-22
 **Phase 3 Completion Date**: 2025-11-22
+**Phase 4 Completion Date**: 2025-11-22
 **Next Review Date**: TBD

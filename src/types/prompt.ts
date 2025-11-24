@@ -142,6 +142,14 @@ export interface SaveDialogData {
   isPinned: boolean
   /** Variable configurations */
   variables?: VariableConfig[]
+  /** AI-generated flag */
+  isAIGenerated?: boolean
+  /** AI generation metadata (only for AI-generated prompts) */
+  aiMetadata?: AIGeneratedMetadata
+  /** Category ID (null for uncategorized) */
+  categoryId?: string | null
+  /** Use case description */
+  useCase?: string
 }
 
 /**
