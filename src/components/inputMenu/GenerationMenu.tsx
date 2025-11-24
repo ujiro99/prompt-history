@@ -137,7 +137,6 @@ export function GenerationMenu({
   return (
     <MenubarMenu value={MENU.Improve}>
       <MenuTrigger
-        disabled={!saveEnabled}
         onMouseEnter={onMouseEnter}
         data-testid={TestIds.inputPopup.improveTrigger}
       >
@@ -148,13 +147,13 @@ export function GenerationMenu({
         container={container}
         onInteractOutside={onInteractOutside}
       >
-        <MenubarItem onClick={openImproveDialog}>
+        <MenubarItem onClick={openImproveDialog} disabled={!saveEnabled}>
           <Sparkles size={16} />
-          {i18n.t("settings.promptImproverSettings")}
+          {i18n.t("dialogs.promptImprove.title")}
         </MenubarItem>
         <MenubarItem onClick={openOrganizerExecuteDialog}>
           <NotebookPen size={16} />
-          {i18n.t("settings.promptOrganizerSettings")}
+          {i18n.t("promptOrganizer.title")}
         </MenubarItem>
       </MenubarContent>
 
