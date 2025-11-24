@@ -187,8 +187,8 @@ describe("TemplateGeneratorService", () => {
 
       expect(mockGeminiClient.generateStructuredContent).toHaveBeenCalledOnce()
 
-      const callArgs =
-        mockGeminiClient.generateStructuredContent.mock.calls[0]
+      const callArgs = mockGeminiClient.generateStructuredContent.mock
+        .calls[0] as any[]
       const [prompt, schema, config] = callArgs
 
       expect(prompt).toContain("Test organization prompt")
@@ -321,8 +321,9 @@ describe("TemplateGeneratorService", () => {
         defaultCategories,
       )
 
-      const schema =
-        mockGeminiClient.generateStructuredContent.mock.calls[0][1]
+      const schema = (
+        mockGeminiClient.generateStructuredContent.mock.calls[0] as any[]
+      )[1]
 
       expect(schema).toEqual({
         type: "object",

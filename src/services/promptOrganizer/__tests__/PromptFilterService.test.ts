@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest"
+import { describe, it, expect, vi } from "vitest"
 import { PromptFilterService } from "../PromptFilterService"
 import type { Prompt } from "@/types/prompt"
 import type { PromptOrganizerSettings } from "@/types/promptOrganizer"
@@ -13,6 +13,7 @@ describe("PromptFilterService", () => {
     createdAt: new Date("2025-01-01"),
     updatedAt: new Date("2025-01-01"),
     lastExecutedAt: new Date("2025-01-15"),
+    lastExecutionUrl: "https://example.com",
     executionCount: 5,
     isPinned: false,
     isAIGenerated: false,
@@ -241,7 +242,7 @@ describe("PromptFilterService", () => {
           executionCount: 10,
           lastExecutedAt: new Date("2025-01-19"),
           isPinned: true,
-          variables: { foo: "bar" },
+          variables: [{ name: "foo", type: "text", defaultValue: "bar" }],
         }),
       ]
 

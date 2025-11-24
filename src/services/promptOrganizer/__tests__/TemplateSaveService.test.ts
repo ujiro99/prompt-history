@@ -18,6 +18,7 @@ const { mockTemplateConverter, mockPromptsService, mockPinsService } =
         createdAt: new Date(),
         updatedAt: new Date(),
         lastExecutedAt: new Date(),
+        lastExecutionUrl: "https://example.com",
         isPinned: candidate.userAction === "save_and_pin",
         isAIGenerated: true,
         aiMetadata: {

@@ -253,7 +253,7 @@ describe("TemplateConverter", () => {
 
       const prompt = templateConverter.convertToPrompt(candidate)
 
-      expect(prompt.aiMetadata.confirmed).toBe(true)
+      expect(prompt.aiMetadata?.confirmed).toBe(true)
     })
 
     it("should set isPinned to true when userAction is 'save_and_pin'", () => {
@@ -280,7 +280,7 @@ describe("TemplateConverter", () => {
       const candidate = createTemplateCandidate({
         variables: [
           { name: "var1", type: "text", defaultValue: "default1" },
-          { name: "var2", type: "select", defaultValue: "", options: ["a", "b"] },
+          { name: "var2", type: "text", defaultValue: "" },
         ],
       })
 
@@ -288,7 +288,7 @@ describe("TemplateConverter", () => {
 
       expect(prompt.variables).toEqual([
         { name: "var1", type: "text", defaultValue: "default1" },
-        { name: "var2", type: "select", defaultValue: "", options: ["a", "b"] },
+        { name: "var2", type: "text", defaultValue: "" },
       ])
     })
 
@@ -315,7 +315,7 @@ describe("TemplateConverter", () => {
         confirmed: true,
         showInPinned: true,
       })
-      expect(prompt.aiMetadata.extractedVariables).toHaveLength(1)
+      expect(prompt.aiMetadata?.extractedVariables).toHaveLength(1)
     })
   })
 })
