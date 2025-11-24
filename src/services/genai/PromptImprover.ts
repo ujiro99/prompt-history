@@ -7,10 +7,8 @@ import { GeminiClient } from "./GeminiClient"
 import type { ImproveOptions } from "./types"
 import { GeminiError, GeminiErrorType } from "./types"
 import { improvePromptCacheService } from "../storage/improvePromptCache"
-import {
-  genaiApiKeyStorage,
-  improvePromptSettingsStorage,
-} from "../storage/definitions"
+import { improvePromptSettingsStorage } from "../storage/definitions"
+import { getGenaiApiKey } from "../storage/genaiApiKey"
 import {
   SYSTEM_INSTRUCTION,
   DEFAULT_IMPROVEMENT_PROMPT,
@@ -55,26 +53,14 @@ export class PromptImprover {
    * Load API key from storage or environment variable (dev mode only)
    */
   private async loadApiKey(): Promise<void> {
-    // Try loading from storage first
-    const storedApiKey = await genaiApiKeyStorage.getValue()
+    const apiKey = await getGenaiApiKey()
 
-    if (storedApiKey && storedApiKey.trim() !== "") {
-      this.client.initialize(storedApiKey)
-      return
+    if (apiKey) {
+      this.client.initialize(apiKey)
+    } else {
+      // API key not configured - will show warning in UI
+      console.warn("API key not configured")
     }
-
-    // In development mode, fallback to environment variable
-    const isProductionMode = import.meta.env.MODE === "production"
-    if (!isProductionMode) {
-      const envApiKey = import.meta.env.WXT_GENAI_API_KEY
-      if (envApiKey) {
-        this.client.initialize(envApiKey)
-        return
-      }
-    }
-
-    // API key not configured - will show warning in UI
-    console.warn("API key not configured")
   }
 
   /**

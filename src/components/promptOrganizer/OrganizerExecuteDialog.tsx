@@ -54,10 +54,8 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
       setSettings(loadedSettings)
 
       // Check API key
-      const { genaiApiKeyStorage } = await import(
-        "@/services/storage/definitions"
-      )
-      const apiKey = await genaiApiKeyStorage.getValue()
+      const { getGenaiApiKey } = await import("@/services/storage/genaiApiKey")
+      const apiKey = await getGenaiApiKey()
       setApiKeyMissing(!apiKey)
 
       // Calculate estimate

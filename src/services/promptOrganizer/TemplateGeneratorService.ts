@@ -4,7 +4,7 @@
  */
 
 import { GeminiClient } from "@/services/genai/GeminiClient"
-import { genaiApiKeyStorage } from "@/services/storage/definitions"
+import { getGenaiApiKey } from "@/services/storage/genaiApiKey"
 import type {
   PromptForOrganization,
   OrganizePromptsResponse,
@@ -27,29 +27,16 @@ export class TemplateGeneratorService {
 
   /**
    * Load API key from storage or environment variable (dev mode only)
-   * Based on PromptImprover.ts implementation
    */
   private async loadApiKey(): Promise<void> {
-    // Try loading from storage first
-    const storedApiKey = await genaiApiKeyStorage.getValue()
+    const apiKey = await getGenaiApiKey()
 
-    if (storedApiKey && storedApiKey.trim() !== "") {
-      this.geminiClient.initialize(storedApiKey)
-      return
+    if (apiKey) {
+      this.geminiClient.initialize(apiKey)
+    } else {
+      // API key not configured - will throw error in generateTemplates
+      console.warn("API key not configured")
     }
-
-    // In development mode, fallback to environment variable
-    const isProductionMode = import.meta.env.MODE === "production"
-    if (!isProductionMode) {
-      const envApiKey = import.meta.env.WXT_GENAI_API_KEY
-      if (envApiKey) {
-        this.geminiClient.initialize(envApiKey)
-        return
-      }
-    }
-
-    // API key not configured - will throw error in generateTemplates
-    console.warn("API key not configured")
   }
 
   /**

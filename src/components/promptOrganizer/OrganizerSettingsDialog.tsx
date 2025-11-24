@@ -24,10 +24,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import {
-  promptOrganizerSettingsStorage,
-  genaiApiKeyStorage,
-} from "@/services/storage/definitions"
+import { Progress } from "@/components/ui/progress"
+import { promptOrganizerSettingsStorage } from "@/services/storage/definitions"
+import { getGenaiApiKey } from "@/services/storage/genaiApiKey"
 import { useContainer } from "@/hooks/useContainer"
 import { usePromptOrganizer } from "@/hooks/usePromptOrganizer"
 import { useDebounce } from "@/hooks/useDebounce"
@@ -79,7 +78,7 @@ export const OrganizerSettingsDialog: React.FC<
         const storedSettings = await promptOrganizerSettingsStorage.getValue()
         setSettings(storedSettings)
 
-        const apiKey = await genaiApiKeyStorage.getValue()
+        const apiKey = await getGenaiApiKey()
         setHasApiKey(!!apiKey)
       }
       loadData()
@@ -264,7 +263,9 @@ export const OrganizerSettingsDialog: React.FC<
                       {i18n.t("promptOrganizer.estimate.outputTokens")}
                     </span>
                     <span className="font-mono">
-                      {estimate.estimatedOutputTokens.toLocaleString()}
+                      {Math.ceil(
+                        estimate.estimatedOutputTokens,
+                      ).toLocaleString()}
                     </span>
                   </div>
                 </div>
@@ -279,12 +280,10 @@ export const OrganizerSettingsDialog: React.FC<
                       {getContextUsagePercentage().toFixed(1)}%
                     </span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-blue-500 h-2 rounded-full transition-all"
-                      style={{ width: `${getContextUsagePercentage()}%` }}
-                    />
-                  </div>
+                  <Progress
+                    value={getContextUsagePercentage()}
+                    className="h-2"
+                  />
                 </div>
 
                 {/* Cost Estimate */}

@@ -14,7 +14,7 @@ import { TemplateGeneratorService } from "./TemplateGeneratorService"
 import { categoryService } from "./CategoryService"
 import { promptsService } from "@/services/storage/prompts"
 import { GEMINI_PRICING, GEMINI_CONTEXT_LIMIT } from "./pricing"
-import { genaiApiKeyStorage } from "@/services/storage/definitions"
+import { getGenaiApiKey } from "@/services/storage/genaiApiKey"
 
 /**
  * Cost Estimator Service
@@ -27,7 +27,7 @@ export class CostEstimatorService {
   }
 
   private async loadApiKey(): Promise<void> {
-    const apiKey = await genaiApiKeyStorage.getValue()
+    const apiKey = await getGenaiApiKey()
     this.geminiClient.initialize(apiKey)
   }
 

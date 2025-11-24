@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useContainer } from "@/hooks/useContainer"
 import { genaiApiKeyStorage } from "@/services/storage/definitions"
+import { getGenaiApiKey } from "@/services/storage/genaiApiKey"
 import { i18n } from "#imports"
 import { stopPropagation } from "@/utils/dom"
 
@@ -66,7 +67,7 @@ export const ModelSettingsDialog: React.FC<ModelSettingsDialogProps> = ({
        */
       const loadSettings = async () => {
         try {
-          const storedApiKey = await genaiApiKeyStorage.getValue()
+          const storedApiKey = await getGenaiApiKey()
           setApiKey(storedApiKey || "")
         } catch (error) {
           console.error("Failed to load settings:", error)
