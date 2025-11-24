@@ -19,7 +19,7 @@ import { genaiApiKeyStorage } from "@/services/storage/definitions"
 /**
  * Cost Estimator Service
  */
-class CostEstimatorService {
+export class CostEstimatorService {
   private geminiClient: GeminiClient
 
   constructor() {

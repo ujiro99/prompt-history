@@ -5,7 +5,7 @@
 This document tracks the implementation progress of the Prompt Organizer feature based on the design specifications.
 
 **Target Release**: v0.7.0
-**Last Updated**: 2025-11-23
+**Last Updated**: 2025-11-24
 
 ---
 
@@ -15,10 +15,10 @@ This document tracks the implementation progress of the Prompt Organizer feature
 | -------------------------- | ----------- | -------------- |
 | **Phase 1: Foundation**    | 100% (5/5)  | ✅ Complete    |
 | **Phase 2: Core Services** | 100% (8/8)  | ✅ Complete    |
-| **Phase 3: UI Components** | 88% (7/8)   | 🚧 In Progress |
-| **Phase 4: Integration**   | 67% (2/3)   | 🚧 In Progress |
-| **Phase 5: Testing**       | 0% (0/3)    | ⏳ Pending     |
-| **Overall**                | 81% (22/27) | 🚧 In Progress |
+| **Phase 3: UI Components** | 100% (8/8)  | ✅ Complete    |
+| **Phase 4: Integration**   | 100% (3/3)  | ✅ Complete    |
+| **Phase 5: Testing**       | 33% (1/3)   | 🚧 In Progress |
+| **Overall**                | 93% (25/27) | 🚧 In Progress |
 
 ---
 
@@ -357,30 +357,30 @@ This document tracks the implementation progress of the Prompt Organizer feature
 
 ---
 
-### 3.8 OrganizerExecuteDialog ⏳
+### 3.8 OrganizerExecuteDialog ✅
 
 **File**: `src/components/promptOrganizer/OrganizerExecuteDialog.tsx`
 
-- [ ] Dialog component structure
-- [ ] DialogHeader
-- [ ] Execution estimate display (read-only)
-  - [ ] TargetPromptsCount
-  - [ ] TokenCountDisplay
-  - [ ] ContextUsageBar
-  - [ ] CostEstimate
-- [ ] Settings change notice (link to settings menu)
-- [ ] DialogFooter
-  - [ ] CancelButton
-  - [ ] ExecuteButton with loading state
-- [ ] Error handling UI
-- [ ] Integration with usePromptOrganizer hook
-- [ ] API key validation check
+- [x] Dialog component structure
+- [x] DialogHeader
+- [x] Execution estimate display (read-only)
+  - [x] TargetPromptsCount
+  - [x] TokenCountDisplay
+  - [x] ContextUsageBar
+  - [x] CostEstimate
+- [x] Settings change notice (link to settings menu)
+- [x] DialogFooter
+  - [x] CancelButton
+  - [x] ExecuteButton with loading state
+- [x] Error handling UI
+- [x] Integration with promptOrganizerService
+- [x] API key validation check
 
 **Purpose**: Execution-only dialog accessible from Improve Menu → "Organize Prompts"
 
-**Dependencies**: Phase 2 (Core Services), Phase 3.7 (usePromptOrganizer Hook)
+**Dependencies**: Phase 2 (Core Services)
 
-**Completion Date**: TBD
+**Completion Date**: 2025-11-24
 
 ---
 
@@ -424,45 +424,65 @@ This document tracks the implementation progress of the Prompt Organizer feature
 
 ---
 
-### 4.3 Improve Menu Submenu Integration ⏳
+### 4.3 Improve Menu Submenu Integration ✅
 
-**File**: `src/components/inputMenu/InputPopup.tsx`
+**Files**:
+- `src/components/inputMenu/ImproveMenu.tsx` (new)
+- `src/components/inputMenu/MenuTrigger.tsx` (new)
+- `src/components/inputMenu/InputPopup.tsx` (refactored)
 
-- [ ] Transform Improve Menu from single button to dropdown menu
-- [ ] Add MenubarContent with side="top"
-- [ ] Add two MenubarItem components:
-  - [ ] "Prompt Improver" → openImproveDialog (existing functionality)
-  - [ ] "Organize Prompts" → openOrganizerExecuteDialog (new functionality)
-- [ ] Update menu trigger to use onMouseEnter instead of onClick
-- [ ] Add state management for OrganizerExecuteDialog
-- [ ] Integrate OrganizerExecuteDialog component
-- [ ] Handle dialog flow: Execute → Summary → Preview
+**ImproveMenu.tsx**:
+- [x] Extract Improve Menu to separate component
+- [x] Add MenubarContent with side="top"
+- [x] Add two MenubarItem components:
+  - [x] "Prompt Improver" → openImproveDialog (existing functionality)
+  - [x] "Organize Prompts" → openOrganizerExecuteDialog (new functionality)
+- [x] Update menu trigger to use onMouseEnter
+- [x] Add state management for all dialogs (Improve, Execute, Summary, Preview)
+- [x] Integrate PromptImproveDialog component
+- [x] Integrate OrganizerExecuteDialog component
+- [x] Integrate OrganizerSummaryDialog component
+- [x] Integrate OrganizerPreviewDialog component
+- [x] Handle dialog flow: Execute → Summary → Preview
 
-**Purpose**: Provide quick access to prompt organization from Improve Menu
+**MenuTrigger.tsx**:
+- [x] Extract common MenuTrigger component
+- [x] Shared by ImproveMenu and SettingsMenu
+
+**InputPopup.tsx**:
+- [x] Replace inline Improve Menu with ImproveMenu component
+- [x] Remove duplicate dialog state and handlers
+- [x] Clean up unused imports and code
+
+**Purpose**: Provide quick access to prompt organization from Improve Menu while maintaining clean code structure
 
 **Dependencies**: Phase 3.8 (OrganizerExecuteDialog)
 
-**Completion Date**: TBD
+**Completion Date**: 2025-11-24
 
 ---
 
-## Phase 5: Testing ⏳ Pending
+## Phase 5: Testing 🚧 In Progress
 
-### 5.1 Unit Tests ⏳
+### 5.1 Unit Tests ✅
 
 **Files**: Various `__tests__/` directories
 
-Service Tests:
+Service Tests (Priority High - Core Services):
 
-- [ ] CategoryService.test.ts
-- [ ] PromptFilterService.test.ts
-- [ ] TemplateGeneratorService.test.ts
-- [ ] PromptOrganizerService.test.ts
-- [ ] CostEstimatorService.test.ts
-- [ ] TemplateSaveService.test.ts
-- [ ] TemplateConverter.test.ts
+- [x] CategoryService.test.ts (14 tests)
+- [x] PromptFilterService.test.ts (10 tests)
+- [x] TemplateGeneratorService.test.ts (15 tests)
+- [x] PromptOrganizerService.test.ts (14 tests)
+- [x] CostEstimatorService.test.ts (11 tests)
+- [x] TemplateSaveService.test.ts (9 tests)
+- [x] TemplateConverter.test.ts (16 tests)
 
-Component Tests:
+**Total Service Tests**: 89 tests across 7 files - All passing ✅
+
+**Completion Date**: 2025-11-24
+
+Component Tests (Priority Medium):
 
 - [ ] OrganizerSettingsDialog.test.tsx
 - [ ] OrganizerSummaryDialog.test.tsx
@@ -481,7 +501,7 @@ Hook Tests:
 
 ---
 
-### 5.2 Integration Tests ⏳
+### 5.2 Integration Tests ⏳ (Priority Low)
 
 **File**: `src/services/promptOrganizer/__tests__/integration.test.ts`
 
@@ -495,7 +515,7 @@ Hook Tests:
 
 ---
 
-### 5.3 E2E Tests ⏳
+### 5.3 E2E Tests ⏳ (Priority Low)
 
 **File**: `e2e/tests/prompt-organizer.spec.ts`
 
@@ -600,7 +620,7 @@ None at the moment. All dependencies for Phase 3 are satisfied.
 
 ---
 
-**Last Updated**: 2025-11-22
-**Phase 3 Completion Date**: 2025-11-22
-**Phase 4 Completion Date**: 2025-11-22
+**Last Updated**: 2025-11-24
+**Phase 3 Completion Date**: 2025-11-24
+**Phase 4 Completion Date**: 2025-11-24
 **Next Review Date**: TBD

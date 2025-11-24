@@ -11,7 +11,7 @@ import { pinsService } from "@/services/storage/pins"
 /**
  * Template Save Service
  */
-class TemplateSaveService {
+export class TemplateSaveService {
   /**
    * Save selected templates
    *
