@@ -15,7 +15,7 @@ import { PromptServiceFacade } from "@/services/promptServiceFacade"
 import { SaveMode } from "@/types/prompt"
 import { MENU, TestIds } from "@/components/const"
 import { PromptList } from "@/components/inputMenu/PromptList"
-import { ImproveMenu } from "./ImproveMenu"
+import { GenerationMenu } from "./GenerationMenu"
 import { SettingsMenu } from "./SettingsMenu"
 import { isEmpty } from "@/lib/utils"
 import type { Prompt, SaveDialogData } from "@/types/prompt"
@@ -350,7 +350,7 @@ export function InputMenu(props: Props): React.ReactElement {
         </MenubarMenu>
 
         {/* Prompt Generation Menu */}
-        <ImproveMenu
+        <GenerationMenu
           onMouseEnter={() => handleMenuEnter(MENU.Improve)}
           saveEnabled={props.saveEnabled}
           onInteractOutside={handleInteractOutside}

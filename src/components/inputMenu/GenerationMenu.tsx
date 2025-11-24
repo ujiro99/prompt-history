@@ -31,7 +31,7 @@ type Props = {
   onInteractOutside: () => void
 }
 
-export function ImproveMenu({
+export function GenerationMenu({
   onMouseEnter,
   saveEnabled,
   onInteractOutside,
