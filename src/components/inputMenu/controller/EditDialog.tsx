@@ -25,6 +25,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { ScrollAreaWithGradient } from "@/components/inputMenu/ScrollAreaWithGradient"
 import { useContainer } from "@/hooks/useContainer"
 import { useSettings } from "@/hooks/useSettings"
+import { stopPropagation } from "@/utils/dom"
 import { analytics } from "#imports"
 
 /**
@@ -169,10 +170,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
           container={container}
           className="w-xl sm:max-w-xl max-h-9/10"
           onKeyDown={handleKeyDown}
-          onKeyPress={(e) => e.stopPropagation()} // For chatgpt
-          onKeyUp={(e) => e.stopPropagation()}
-          onWheel={(e) => e.stopPropagation()}
-          onTouchMove={(e) => e.stopPropagation()}
+          {...stopPropagation()}
         >
           <DialogHeader>
             <DialogTitle>

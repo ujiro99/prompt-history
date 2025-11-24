@@ -24,6 +24,7 @@ import type { ImprovePromptSettings } from "@/types/prompt"
 import { ImprovePromptInputMethod } from "@/types/prompt"
 import { i18n } from "#imports"
 import { sleep } from "@/lib/utils"
+import { stopPropagation } from "@/utils/dom"
 
 /**
  * Props for PromptImproverSettingsDialog
@@ -294,10 +295,7 @@ export const PromptImproverSettingsDialog: React.FC<
         container={container}
         className="w-xl sm:max-w-2xl"
         onKeyDown={handleKeyDown}
-        onKeyPress={(e) => e.stopPropagation()} // For chatgpt
-        onKeyUp={(e) => e.stopPropagation()}
-        onWheel={(e) => e.stopPropagation()}
-        onTouchMove={(e) => e.stopPropagation()}
+        {...stopPropagation()}
       >
         <DialogHeader>
           <DialogTitle>{i18n.t("settings.promptImproverSettings")}</DialogTitle>

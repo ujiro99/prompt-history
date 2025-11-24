@@ -20,6 +20,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { useContainer } from "@/hooks/useContainer"
 import { CategorySelector } from "./CategorySelector"
 import { TemplateCandidateCard } from "./TemplateCandidateCard"
+import { stopPropagation } from "@/utils/dom"
 import type { TemplateCandidate } from "@/types/promptOrganizer"
 
 interface OrganizerPreviewDialogProps {
@@ -113,10 +114,7 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
       <DialogContent
         className="w-full max-w-6xl h-[80vh]"
         container={container}
-        onKeyPress={(e) => e.stopPropagation()}
-        onKeyUp={(e) => e.stopPropagation()}
-        onWheel={(e) => e.stopPropagation()}
-        onTouchMove={(e) => e.stopPropagation()}
+        {...stopPropagation()}
       >
         <DialogHeader>
           <DialogTitle>{i18n.t("promptOrganizer.preview.title")}</DialogTitle>

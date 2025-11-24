@@ -11,6 +11,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
 import { useContainer } from "@/hooks/useContainer"
+import { stopPropagation } from "@/utils/dom"
 
 /**
  * Props for variable expansion info dialog
@@ -78,8 +79,7 @@ export const VariableExpansionInfoDialog: React.FC<
       <DialogContent
         container={container}
         className="w-xl sm:max-w-xl max-h-9/10"
-        onWheel={(e) => e.stopPropagation()}
-        onTouchMove={(e) => e.stopPropagation()}
+        {...stopPropagation()}
       >
         <DialogHeader>
           <DialogTitle>

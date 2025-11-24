@@ -33,6 +33,7 @@ import { usePromptOrganizer } from "@/hooks/usePromptOrganizer"
 import { useDebounce } from "@/hooks/useDebounce"
 import type { PromptOrganizerSettings } from "@/types/promptOrganizer"
 import { sleep } from "@/lib/utils"
+import { stopPropagation } from "@/utils/dom"
 
 interface OrganizerSettingsDialogProps {
   open: boolean
@@ -133,10 +134,7 @@ export const OrganizerSettingsDialog: React.FC<
       <DialogContent
         className="w-xl sm:max-w-2xl"
         container={container}
-        onKeyPress={(e) => e.stopPropagation()}
-        onKeyUp={(e) => e.stopPropagation()}
-        onWheel={(e) => e.stopPropagation()}
-        onTouchMove={(e) => e.stopPropagation()}
+        {...stopPropagation()}
       >
         <DialogHeader>
           <DialogTitle>

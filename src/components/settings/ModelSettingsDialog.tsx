@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input"
 import { useContainer } from "@/hooks/useContainer"
 import { genaiApiKeyStorage } from "@/services/storage/definitions"
 import { i18n } from "#imports"
+import { stopPropagation } from "@/utils/dom"
 
 /**
  * Props for ModelSettingsDialog
@@ -121,10 +122,7 @@ export const ModelSettingsDialog: React.FC<ModelSettingsDialogProps> = ({
         container={container}
         className="w-xl sm:max-w-2xl"
         onKeyDown={handleKeyDown}
-        onKeyPress={(e) => e.stopPropagation()} // For chatgpt
-        onKeyUp={(e) => e.stopPropagation()}
-        onWheel={(e) => e.stopPropagation()}
-        onTouchMove={(e) => e.stopPropagation()}
+        {...stopPropagation()}
       >
         <DialogHeader>
           <DialogTitle>{i18n.t("settings.promptImproverSettings")}</DialogTitle>

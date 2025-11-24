@@ -14,6 +14,8 @@ import { Loader2, AlertCircle, Info } from "lucide-react"
 import { i18n } from "#imports"
 import { promptOrganizerSettingsStorage } from "@/services/storage/definitions"
 import { costEstimatorService } from "@/services/promptOrganizer/CostEstimatorService"
+import { useContainer } from "@/hooks/useContainer"
+import { stopPropagation } from "@/utils/dom"
 import type { PromptOrganizerSettings } from "@/types/promptOrganizer"
 import type { OrganizerExecutionEstimate } from "@/types/promptOrganizer"
 
@@ -37,6 +39,7 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
   const [isExecuting, setIsExecuting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [apiKeyMissing, setApiKeyMissing] = useState(false)
+  const { container } = useContainer()
 
   // Load settings and calculate estimate when dialog opens
   useEffect(() => {
@@ -98,7 +101,11 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent
+        className="sm:max-w-[500px]"
+        container={container}
+        {...stopPropagation()}
+      >
         <DialogHeader>
           <DialogTitle>{i18n.t("promptOrganizer.title")}</DialogTitle>
           <DialogDescription>

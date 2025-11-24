@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { Sparkles, Loader2, AlertCircle } from "lucide-react"
 import type { VariableConfig } from "@/types/prompt"
-import { mergeVariableConfigs } from "@/utils/variables/variableParser"
 import { VariableExpansionInfoDialog } from "./VariableExpansionInfoDialog"
 import { PromptImproverSettingsDialog } from "@/components/settings/PromptImproverSettingsDialog"
 import {
@@ -20,6 +19,8 @@ import { useSettings } from "@/hooks/useSettings"
 import { analytics } from "#imports"
 import { ImprovePromptData } from "@/types/prompt"
 import { PromptImprover } from "@/services/genai/PromptImprover"
+import { stopPropagation } from "@/utils/dom"
+import { mergeVariableConfigs } from "@/utils/variables/variableParser"
 
 /**
  * Props for prompt edit dialog
@@ -266,10 +267,7 @@ export const PromptImproveDialog: React.FC<PromptImproveDialogProps> = ({
           container={container}
           className="w-xl sm:max-w-xl max-h-9/10"
           onKeyDown={handleKeyDown}
-          onKeyPress={(e) => e.stopPropagation()} // For chatgpt
-          onKeyUp={(e) => e.stopPropagation()}
-          onWheel={(e) => e.stopPropagation()}
-          onTouchMove={(e) => e.stopPropagation()}
+          {...stopPropagation()}
         >
           <DialogHeader>
             <DialogTitle>{i18n.t("dialogs.promptImprove.title")}</DialogTitle>

@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { useContainer } from "@/hooks/useContainer"
+import { stopPropagation } from "@/utils/dom"
 import type { PromptOrganizerResult } from "@/types/promptOrganizer"
 
 interface OrganizerSummaryDialogProps {
@@ -62,10 +63,7 @@ export const OrganizerSummaryDialog: React.FC<OrganizerSummaryDialogProps> = ({
       <DialogContent
         className="w-xl sm:max-w-2xl"
         container={container}
-        onKeyPress={(e) => e.stopPropagation()}
-        onKeyUp={(e) => e.stopPropagation()}
-        onWheel={(e) => e.stopPropagation()}
-        onTouchMove={(e) => e.stopPropagation()}
+        {...stopPropagation()}
       >
         <DialogHeader>
           <DialogTitle>{i18n.t("promptOrganizer.summary.title")}</DialogTitle>
