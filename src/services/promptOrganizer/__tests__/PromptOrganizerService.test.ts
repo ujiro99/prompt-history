@@ -188,7 +188,7 @@ describe("PromptOrganizerService", () => {
       expect(mockPromptFilterService.filterPrompts).toHaveBeenCalledOnce()
       expect(mockCategoryService.getAll).toHaveBeenCalledOnce()
       expect(mockTemplateGeneratorService.generateTemplates).toHaveBeenCalledOnce()
-      expect(mockCostEstimatorService.calculateCost).toHaveBeenCalledOnce()
+      expect(mockCostEstimatorService.calculateCost).toHaveBeenCalledTimes(2) // Called for both estimated and actual cost
       expect(result).toHaveProperty("templates")
       expect(result).toHaveProperty("sourceCount", 2)
       expect(result).toHaveProperty("periodDays", 30)
@@ -432,6 +432,9 @@ describe("PromptOrganizerService", () => {
             updatedAt: expect.any(Date),
           },
         ],
+        {
+          onProgress: undefined,
+        },
       )
     })
   })

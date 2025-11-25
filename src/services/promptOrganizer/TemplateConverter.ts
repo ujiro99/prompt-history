@@ -33,9 +33,9 @@ class TemplateConverter {
 
     return {
       id: crypto.randomUUID(),
-      title: generated.title,
+      title: generated.title.slice(0, 20), // Enforce max length (20 chars)
       content: generated.content,
-      useCase: generated.useCase,
+      useCase: generated.useCase.slice(0, 40), // Enforce max length (40 chars)
       categoryId: generated.categoryId,
       variables,
       aiMetadata: {

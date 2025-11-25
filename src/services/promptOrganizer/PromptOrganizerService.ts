@@ -12,6 +12,7 @@ import type {
 } from "@/types/promptOrganizer"
 import { PromptFilterService } from "./PromptFilterService"
 import { TemplateGeneratorService } from "./TemplateGeneratorService"
+import { templateConverter } from "./TemplateConverter"
 import { categoryService } from "./CategoryService"
 import { DEFAULT_CATEGORIES } from "./defaultCategories"
 import { costEstimatorService } from "./CostEstimatorService"
@@ -69,38 +70,24 @@ export class PromptOrganizerService {
       },
     )
 
-    // 4. Convert to template candidates
+    // 4. Convert to template candidates using TemplateConverter
     const now = new Date()
     const templateCandidates: TemplateCandidate[] = await Promise.all(
       templates.map(async (template) => {
-        // Get category to validate it exists
-        const category = categories.find((c) => c.id === template.categoryId)
+        // Use TemplateConverter for conversion with type inference and length constraints
+        const candidate = templateConverter.convertToCandidate(
+          template,
+          settings.filterPeriodDays,
+        )
+
+        // Apply category validation with fallback
+        const category = categories.find((c) => c.id === candidate.categoryId)
 
         return {
-          id: crypto.randomUUID(),
-          title: template.title.slice(0, 20), // Enforce max length
-          content: template.content,
-          useCase: template.useCase.slice(0, 40), // Enforce max length
+          ...candidate,
           categoryId: category
-            ? template.categoryId
+            ? candidate.categoryId
             : DEFAULT_CATEGORIES["other"].id, // Fallback to General
-          variables: template.variables.map((v) => ({
-            name: v.name,
-            type: "text" as const,
-            description: v.description,
-          })),
-          aiMetadata: {
-            generatedAt: now,
-            sourcePromptIds: template.sourcePromptIds,
-            sourceCount: template.sourcePromptIds.length,
-            sourcePeriodDays: settings.filterPeriodDays,
-            extractedVariables: template.variables,
-            confirmed: false,
-            showInPinned:
-              template.sourcePromptIds.length >= 3 &&
-              template.variables.length >= 2,
-          },
-          userAction: "pending" as const,
         }
       }),
     )
