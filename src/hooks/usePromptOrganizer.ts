@@ -11,6 +11,7 @@ import type {
   PromptOrganizerResult,
   OrganizerError,
   TemplateCandidate,
+  GenerationProgress,
 } from "@/types/promptOrganizer"
 import { promptOrganizerSettingsStorage } from "@/services/storage/definitions"
 import { promptOrganizerService } from "@/services/promptOrganizer/PromptOrganizerService"
@@ -32,6 +33,7 @@ export function usePromptOrganizer({
   )
   const [result, setResult] = useState<PromptOrganizerResult | null>(null)
   const [isExecuting, setIsExecuting] = useState(false)
+  const [progress, setProgress] = useState<GenerationProgress | null>(null)
   const [error, setError] = useState<OrganizerError | null>(null)
 
   const debouncedSettings = useDebounce(settings, 200)
@@ -56,25 +58,54 @@ export function usePromptOrganizer({
   }, [debouncedSettings, enableEstimate])
 
   /**
-   * Execute organization
+   * Execute organization with streaming progress
    */
   const executeOrganization = async () => {
     if (!settings) return
 
     setIsExecuting(true)
     setError(null)
+    setProgress({
+      chunk: "",
+      accumulated: "",
+      estimatedProgress: 0,
+      status: "generating",
+    })
 
     try {
-      const result = await promptOrganizerService.executeOrganization(settings)
+      const result = await promptOrganizerService.executeOrganization(
+        settings,
+        {
+          onProgress: (progressInfo) => {
+            setProgress(progressInfo)
+          },
+        },
+      )
       setResult(result)
     } catch (err) {
-      setError({
-        code: "API_ERROR",
-        message: (err as Error).message,
-      })
+      const errorMessage = (err as Error).message
+      if (errorMessage.includes("cancelled")) {
+        setError({
+          code: "CANCELLED",
+          message: "Generation cancelled by user",
+        })
+      } else {
+        setError({
+          code: "API_ERROR",
+          message: errorMessage,
+        })
+      }
     } finally {
       setIsExecuting(false)
+      setProgress(null)
     }
+  }
+
+  /**
+   * Cancel ongoing generation
+   */
+  const cancelGeneration = () => {
+    promptOrganizerService.cancel()
   }
 
   /**
@@ -96,8 +127,10 @@ export function usePromptOrganizer({
     estimate,
     result,
     isExecuting,
+    progress,
     error,
     executeOrganization,
+    cancelGeneration,
     saveTemplates,
   }
 }

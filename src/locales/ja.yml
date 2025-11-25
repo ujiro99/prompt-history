@@ -314,6 +314,7 @@ promptOrganizer:
   result:
     templatesGenerated: "$1件のテンプレートが生成されました"
     sourceCount: "$1件のプロンプトに基づいています"
+    actualCost: 確定コスト
   summary:
     title: 整理完了
     description: 生成されたテンプレートを確認
@@ -331,6 +332,7 @@ promptOrganizer:
     title: テンプレートをプレビュー
     description: 生成されたテンプレートを確認・編集
     templateList: テンプレート一覧
+    emptyState: リストからプロンプトを選択してください。
     title_label: タイトル
     useCase: 用途
     category: カテゴリ

@@ -4,6 +4,7 @@
  */
 
 import { GeminiClient } from "@/services/genai/GeminiClient"
+import { GeminiErrorType } from "@/services/genai/types"
 import { getGenaiApiKey } from "@/services/storage/genaiApiKey"
 import type {
   PromptForOrganization,
@@ -12,7 +13,9 @@ import type {
   PromptOrganizerSettings,
   TokenUsage,
   Category,
+  GenerationProgress,
 } from "@/types/promptOrganizer"
+import { schema } from "./outputSchema"
 import { SYSTEM_ORGANIZATION_INSTRUCTION } from "@/services/genai/defaultPrompts"
 
 /**
@@ -20,6 +23,7 @@ import { SYSTEM_ORGANIZATION_INSTRUCTION } from "@/services/genai/defaultPrompts
  */
 export class TemplateGeneratorService {
   private geminiClient: GeminiClient
+  private abortController: AbortController | null = null
 
   constructor() {
     this.geminiClient = GeminiClient.getInstance()
@@ -40,16 +44,24 @@ export class TemplateGeneratorService {
   }
 
   /**
-   * Generate templates from filtered prompts
+   * Generate templates from filtered prompts with streaming support
    * @param prompts - Filtered prompts for organization
    * @param settings - Organizer settings
+   * @param categories - Available categories
+   * @param options - Generation options (progress callback)
    * @returns Generated templates and token usage
    */
   public async generateTemplates(
     prompts: PromptForOrganization[],
     settings: PromptOrganizerSettings,
     categories: Array<Category>,
+    options?: {
+      onProgress?: (progress: GenerationProgress) => void
+    },
   ): Promise<{ templates: GeneratedTemplate[]; usage: TokenUsage }> {
+    // Create new AbortController for this request
+    this.abortController = new AbortController()
+
     // Initialize client if not already initialized
     if (!this.geminiClient.isInitialized()) {
       await this.loadApiKey()
@@ -69,73 +81,99 @@ export class TemplateGeneratorService {
       categories,
     )
 
-    // Define JSON schema for structured output
-    const schema = {
-      type: "object",
-      properties: {
-        templates: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              title: { type: "string" },
-              content: { type: "string" },
-              useCase: { type: "string" },
-              categoryId: { type: "string" },
-              sourcePromptIds: {
-                type: "array",
-                items: { type: "string" },
-              },
-              variables: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    name: { type: "string" },
-                    description: { type: "string" },
-                  },
-                  required: ["name"],
-                },
-              },
-            },
-            required: [
-              "title",
-              "content",
-              "useCase",
-              "categoryId",
-              "sourcePromptIds",
-              "variables",
-            ],
-          },
-        },
-      },
-      required: ["templates"],
-    }
-
     const config = {
-      systemInstruction: SYSTEM_ORGANIZATION_INSTRUCTION, // Fixed role definition
+      systemInstruction: SYSTEM_ORGANIZATION_INSTRUCTION,
     }
 
-    // Call Gemini API
-    const response =
-      await this.geminiClient.generateStructuredContent<OrganizePromptsResponse>(
-        prompt,
-        schema,
-        config,
-      )
-    console.log("Gemini response:", response)
+    try {
+      const usage: TokenUsage = {
+        inputTokens: 0,
+        outputTokens: 0,
+      }
 
-    // For MVP, we'll return mock token usage
-    // TODO: Get actual token usage from Gemini API response
-    const usage: TokenUsage = {
-      inputTokens: 0,
-      outputTokens: 0,
-    }
+      // Call Gemini API with streaming
+      const response =
+        await this.geminiClient.generateStructuredContentStream<OrganizePromptsResponse>(
+          prompt,
+          schema,
+          config,
+          {
+            signal: this.abortController.signal,
+            onProgress: (chunk, accumulated, tokenUsage) => {
+              // Estimate progress based on JSON structure
+              const progress = this.estimateProgress(accumulated)
+              options?.onProgress?.({
+                chunk,
+                accumulated,
+                estimatedProgress: progress,
+                status: "generating",
+              })
+              // Accumulate token usages
+              usage.inputTokens = tokenUsage.prompt
+              usage.outputTokens = tokenUsage.thoughts + tokenUsage.candidates
+            },
+          },
+        )
 
-    return {
-      templates: response.templates,
-      usage,
+      console.log("Gemini response:", response)
+
+      // Notify completion
+      options?.onProgress?.({
+        chunk: "",
+        accumulated: "",
+        estimatedProgress: 100,
+        status: "complete",
+      })
+
+      return {
+        templates: response.templates,
+        usage,
+      }
+    } catch (error) {
+      // Handle cancellation
+      if (error instanceof Error) {
+        const errorMessage = error.message
+        if (
+          errorMessage.includes("cancelled") ||
+          (error as any).type === GeminiErrorType.CANCELLED
+        ) {
+          throw new Error("Generation cancelled by user")
+        }
+      }
+      throw error
+    } finally {
+      this.abortController = null
     }
+  }
+
+  /**
+   * Cancel ongoing generation
+   */
+  public cancel(): void {
+    if (this.abortController) {
+      this.abortController.abort()
+    }
+  }
+
+  /**
+   * Estimate progress based on accumulated JSON
+   * This is a heuristic - we look for key indicators in the partial JSON
+   * @param accumulated - Accumulated JSON string
+   * @returns Estimated progress percentage (0-100)
+   */
+  private estimateProgress(accumulated: string): number {
+    if (!accumulated) return 0
+
+    // Try to count completed templates in partial JSON
+    // Look for "title": pattern as indicator of template objects
+    const titleMatches = accumulated.match(/"title":/g)
+    const templateCount = titleMatches ? titleMatches.length : 0
+
+    // Estimate based on expected template count (assume 5-10 templates)
+    const estimatedTotal = 8
+    const progress = Math.min((templateCount / estimatedTotal) * 90, 90)
+
+    return Math.round(progress)
   }
 
   /**

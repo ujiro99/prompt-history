@@ -10,22 +10,22 @@ import type { Category } from "@/types/promptOrganizer"
  * Categories are defined as a Record for direct storage usage
  */
 export const DEFAULT_CATEGORIES: Record<string, Category> = {
-  "external-communication": {
-    id: "external-communication",
+  externalCommunication: {
+    id: "externalCommunication",
     name: "organizer.category.externalCommunication",
     isDefault: true,
     createdAt: new Date("2025-01-01"),
     updatedAt: new Date("2025-01-01"),
   },
-  "internal-communication": {
-    id: "internal-communication",
+  internalCommunication: {
+    id: "internalCommunication",
     name: "organizer.category.internalCommunication",
     isDefault: true,
     createdAt: new Date("2025-01-01"),
     updatedAt: new Date("2025-01-01"),
   },
-  "document-creation": {
-    id: "document-creation",
+  documentCreation: {
+    id: "documentCreation",
     name: "organizer.category.documentCreation",
     isDefault: true,
     createdAt: new Date("2025-01-01"),

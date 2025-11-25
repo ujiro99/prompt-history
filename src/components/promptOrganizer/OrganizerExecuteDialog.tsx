@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { Loader2, AlertCircle, Info } from "lucide-react"
 import { i18n } from "#imports"
 import { promptOrganizerSettingsStorage } from "@/services/storage/definitions"
@@ -17,18 +18,27 @@ import { costEstimatorService } from "@/services/promptOrganizer/CostEstimatorSe
 import { useContainer } from "@/hooks/useContainer"
 import { stopPropagation } from "@/utils/dom"
 import type { PromptOrganizerSettings } from "@/types/promptOrganizer"
-import type { OrganizerExecutionEstimate } from "@/types/promptOrganizer"
+import type {
+  OrganizerExecutionEstimate,
+  GenerationProgress,
+} from "@/types/promptOrganizer"
 
 type Props = {
   open: boolean
   onOpenChange: (open: boolean) => void
   onExecute: () => Promise<void>
+  isExecuting?: boolean
+  progress?: GenerationProgress | null
+  onCancel?: () => void
 }
 
 export const OrganizerExecuteDialog: React.FC<Props> = ({
   open,
   onOpenChange,
   onExecute,
+  isExecuting: externalIsExecuting,
+  progress,
+  onCancel,
 }) => {
   const [_settings, setSettings] = useState<PromptOrganizerSettings | null>(
     null,
@@ -36,10 +46,13 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
   const [estimate, setEstimate] = useState<OrganizerExecutionEstimate | null>(
     null,
   )
-  const [isExecuting, setIsExecuting] = useState(false)
+  const [localIsExecuting, setLocalIsExecuting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [apiKeyMissing, setApiKeyMissing] = useState(false)
   const { container } = useContainer()
+
+  // Use external isExecuting if provided, otherwise use local state
+  const isExecuting = externalIsExecuting ?? localIsExecuting
 
   // Load settings and calculate estimate when dialog opens
   useEffect(() => {
@@ -73,19 +86,28 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
       return
     }
 
-    setIsExecuting(true)
+    setLocalIsExecuting(true)
     setError(null)
 
     try {
       await onExecute()
-      onOpenChange(false)
+      // Don't close immediately if using external isExecuting
+      if (!externalIsExecuting) {
+        onOpenChange(false)
+      }
     } catch (err) {
       console.error("Execution failed:", err)
       setError(
         err instanceof Error ? err.message : i18n.t("errors.unknownError"),
       )
     } finally {
-      setIsExecuting(false)
+      setLocalIsExecuting(false)
+    }
+  }
+
+  const handleCancel = () => {
+    if (onCancel) {
+      onCancel()
     }
   }
 
@@ -198,7 +220,7 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
           )}
 
           {/* Settings Change Notice */}
-          {!apiKeyMissing && (
+          {!apiKeyMissing && !isExecuting && (
             <Alert>
               <Info className="h-4 w-4" />
               <AlertDescription className="text-xs">
@@ -206,25 +228,73 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
               </AlertDescription>
             </Alert>
           )}
+
+          {/* Progress Display */}
+          {isExecuting && progress && (
+            <div className="space-y-3">
+              <h3 className="text-sm font-medium">
+                ⚡ {i18n.t("promptOrganizer.status.generating")}
+              </h3>
+
+              <div className="rounded-lg border p-4 space-y-3">
+                {/* Progress Bar */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-muted-foreground">進捗</span>
+                    <span className="font-medium">
+                      {progress.estimatedProgress}%
+                    </span>
+                  </div>
+                  <Progress
+                    value={progress.estimatedProgress}
+                    className="h-2"
+                  />
+                </div>
+
+                {/* Partial JSON Preview (Optional) */}
+                {progress.accumulated && progress.accumulated.length > 50 && (
+                  <div className="space-y-1">
+                    <span className="text-xs text-muted-foreground">
+                      受信中のデータ:
+                    </span>
+                    <ScrollArea className="h-16 rounded border bg-muted p-2">
+                      <pre className="text-xs font-mono whitespace-pre-wrap break-all">
+                        {progress.accumulated.substring(0, 300)}...
+                      </pre>
+                    </ScrollArea>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={isExecuting}
-          >
-            {i18n.t("promptOrganizer.buttons.cancel")}
-          </Button>
-          <Button
-            onClick={handleExecute}
-            disabled={isExecuting || apiKeyMissing || !estimate}
-          >
-            {isExecuting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isExecuting
-              ? i18n.t("promptOrganizer.status.generating")
-              : i18n.t("promptOrganizer.buttons.organize")}
-          </Button>
+          {isExecuting ? (
+            <>
+              {/* Cancel button during execution */}
+              <Button variant="outline" onClick={handleCancel}>
+                {i18n.t("common.cancel")}
+              </Button>
+            </>
+          ) : (
+            <>
+              {/* Normal buttons before execution */}
+              <Button
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={isExecuting}
+              >
+                {i18n.t("promptOrganizer.buttons.cancel")}
+              </Button>
+              <Button
+                onClick={handleExecute}
+                disabled={isExecuting || apiKeyMissing || !estimate}
+              >
+                {i18n.t("promptOrganizer.buttons.organize")}
+              </Button>
+            </>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

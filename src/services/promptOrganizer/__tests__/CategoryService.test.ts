@@ -8,7 +8,9 @@ const { mockCategoriesMap, mockStorage } = vi.hoisted(() => {
   const mockStorage = {
     getValue: vi.fn(async () => ({ ...mockCategoriesMap })),
     setValue: vi.fn(async (value: Record<string, Category>) => {
-      Object.keys(mockCategoriesMap).forEach((key) => delete mockCategoriesMap[key])
+      Object.keys(mockCategoriesMap).forEach(
+        (key) => delete mockCategoriesMap[key],
+      )
       Object.assign(mockCategoriesMap, value)
     }),
   }
@@ -24,19 +26,21 @@ describe("CategoryService", () => {
 
   beforeEach(() => {
     // Reset mock storage
-    Object.keys(mockCategoriesMap).forEach((key) => delete mockCategoriesMap[key])
+    Object.keys(mockCategoriesMap).forEach(
+      (key) => delete mockCategoriesMap[key],
+    )
 
     // Add default categories
-    mockCategoriesMap["external-communication"] = {
-      id: "external-communication",
+    mockCategoriesMap["externalCommunication"] = {
+      id: "externalCommunication",
       name: "External Communication",
       description: "Communication with clients and customers",
       isDefault: true,
       createdAt: new Date("2025-01-01"),
       updatedAt: new Date("2025-01-01"),
     }
-    mockCategoriesMap["internal-communication"] = {
-      id: "internal-communication",
+    mockCategoriesMap["internalCommunication"] = {
+      id: "internalCommunication",
       name: "Internal Communication",
       description: "Team communication and internal reports",
       isDefault: true,
@@ -56,11 +60,11 @@ describe("CategoryService", () => {
       expect(categories).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            id: "external-communication",
+            id: "externalCommunication",
             name: "External Communication",
           }),
           expect.objectContaining({
-            id: "internal-communication",
+            id: "internalCommunication",
             name: "Internal Communication",
           }),
         ]),
@@ -68,30 +72,13 @@ describe("CategoryService", () => {
     })
 
     it("should return empty array when no categories exist", async () => {
-      Object.keys(mockCategoriesMap).forEach((key) => delete mockCategoriesMap[key])
+      Object.keys(mockCategoriesMap).forEach(
+        (key) => delete mockCategoriesMap[key],
+      )
 
       const categories = await service.getAll()
 
       expect(categories).toEqual([])
-    })
-  })
-
-  describe("getById", () => {
-    it("should return category by ID", async () => {
-      const category = await service.getById("external-communication")
-
-      expect(category).toEqual(
-        expect.objectContaining({
-          id: "external-communication",
-          name: "External Communication",
-        }),
-      )
-    })
-
-    it("should return undefined for non-existent ID", async () => {
-      const category = await service.getById("non-existent")
-
-      expect(category).toBeUndefined()
     })
   })
 
@@ -114,10 +101,7 @@ describe("CategoryService", () => {
     })
 
     it("should create a new category with name and description", async () => {
-      const category = await service.create(
-        "Test Category",
-        "Test Description",
-      )
+      const category = await service.create("Test Category", "Test Description")
 
       expect(category).toMatchObject({
         name: "Test Category",
@@ -136,12 +120,12 @@ describe("CategoryService", () => {
 
   describe("update", () => {
     it("should update category name", async () => {
-      const updated = await service.update("external-communication", {
+      const updated = await service.update("externalCommunication", {
         name: "Updated Name",
       })
 
       expect(updated).toMatchObject({
-        id: "external-communication",
+        id: "externalCommunication",
         name: "Updated Name",
         description: "Communication with clients and customers",
       })
@@ -150,25 +134,25 @@ describe("CategoryService", () => {
     })
 
     it("should update category description", async () => {
-      const updated = await service.update("external-communication", {
+      const updated = await service.update("externalCommunication", {
         description: "Updated Description",
       })
 
       expect(updated).toMatchObject({
-        id: "external-communication",
+        id: "externalCommunication",
         name: "External Communication",
         description: "Updated Description",
       })
     })
 
     it("should update both name and description", async () => {
-      const updated = await service.update("external-communication", {
+      const updated = await service.update("externalCommunication", {
         name: "New Name",
         description: "New Description",
       })
 
       expect(updated).toMatchObject({
-        id: "external-communication",
+        id: "externalCommunication",
         name: "New Name",
         description: "New Description",
       })
@@ -183,11 +167,11 @@ describe("CategoryService", () => {
 
   describe("delete", () => {
     it("should delete an existing category", async () => {
-      await service.delete("external-communication")
+      await service.delete("externalCommunication")
 
       expect(mockStorage.setValue).toHaveBeenCalledWith(
         expect.not.objectContaining({
-          "external-communication": expect.anything(),
+          externalCommunication: expect.anything(),
         }),
       )
     })

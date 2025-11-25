@@ -124,9 +124,10 @@ export const OrganizerSummaryDialog: React.FC<OrganizerSummaryDialogProps> = ({
                   {representativeTemplate.useCase}
                 </div>
                 <div className="text-xs text-muted-foreground mt-2">
-                  {i18n.t("promptOrganizer.summary.basedOn", {
-                    count: representativeTemplate.aiMetadata.sourceCount,
-                  })}
+                  {i18n.t(
+                    "promptOrganizer.summary.basedOn",
+                    representativeTemplate.aiMetadata.sourceCount,
+                  )}
                 </div>
               </div>
             </div>

@@ -4,8 +4,8 @@ import {
   Download,
   Upload,
   Brain,
-  Sparkles,
   NotebookPen,
+  WandSparkles,
 } from "lucide-react"
 import {
   MenubarMenu,
@@ -226,7 +226,7 @@ export function SettingsMenu({
               {i18n.t("settings.modelSettings")}
             </MenubarItem>
             <MenubarItem onClick={handleOpenPromptImproverSettings}>
-              <Sparkles size={16} />
+              <WandSparkles size={16} />
               {i18n.t("settings.promptImproverSettings")}
             </MenubarItem>
             <MenubarItem onClick={handleOpenPromptOrganizer}>

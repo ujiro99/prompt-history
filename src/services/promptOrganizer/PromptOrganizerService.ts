@@ -8,6 +8,7 @@ import type {
   PromptOrganizerResult,
   TemplateCandidate,
   OrganizerExecutionEstimate,
+  GenerationProgress,
 } from "@/types/promptOrganizer"
 import { PromptFilterService } from "./PromptFilterService"
 import { TemplateGeneratorService } from "./TemplateGeneratorService"
@@ -32,10 +33,14 @@ export class PromptOrganizerService {
   /**
    * Execute prompt organization
    * @param settings - Organizer settings
+   * @param options - Execution options (progress callback)
    * @returns Organization result with templates
    */
   public async executeOrganization(
     settings: PromptOrganizerSettings,
+    options?: {
+      onProgress?: (progress: GenerationProgress) => void
+    },
   ): Promise<PromptOrganizerResult> {
     // 1. Get all prompts
     const prompts = await promptsService.getAllPrompts()
@@ -54,11 +59,14 @@ export class PromptOrganizerService {
 
     const categories = await categoryService.getAll()
 
-    // 3. Generate templates using Gemini
+    // 3. Generate templates using Gemini with progress callback
     const { templates, usage } = await this.generatorService.generateTemplates(
       targetPrompts,
       settings,
       categories,
+      {
+        onProgress: options?.onProgress,
+      },
     )
 
     // 4. Convert to template candidates
@@ -66,7 +74,7 @@ export class PromptOrganizerService {
     const templateCandidates: TemplateCandidate[] = await Promise.all(
       templates.map(async (template) => {
         // Get category to validate it exists
-        const category = await categoryService.getById(template.categoryId)
+        const category = categories.find((c) => c.id === template.categoryId)
 
         return {
           id: crypto.randomUUID(),
@@ -97,11 +105,12 @@ export class PromptOrganizerService {
       }),
     )
 
-    // 5. Calculate estimated cost
+    // 5. Calculate estimated cost and actual cost
     const estimatedCost = costEstimatorService.calculateCost({
       inputTokens: usage.inputTokens,
-      outputTokens: usage.outputTokens,
+      outputTokens: usage.inputTokens * 0.5,
     })
+    const actualCost = costEstimatorService.calculateCost(usage)
 
     return {
       templates: templateCandidates,
@@ -111,7 +120,15 @@ export class PromptOrganizerService {
       inputTokens: usage.inputTokens,
       outputTokens: usage.outputTokens,
       estimatedCost,
+      actualCost,
     }
+  }
+
+  /**
+   * Cancel ongoing generation
+   */
+  public cancel(): void {
+    this.generatorService.cancel()
   }
 
   /**

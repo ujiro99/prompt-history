@@ -314,6 +314,7 @@ promptOrganizer:
   result:
     templatesGenerated: "$1 templates generated"
     sourceCount: "Based on $1 prompts"
+    actualCost: Actual Cost
   summary:
     title: Organization Complete
     description: Review the generated templates
@@ -331,6 +332,7 @@ promptOrganizer:
     title: Preview Templates
     description: Review and edit generated templates
     templateList: Templates
+    emptyState: Please select a prompt from the list.
     title_label: Title
     useCase: Use Case
     category: Category

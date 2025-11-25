@@ -21,7 +21,9 @@
       "mcp__serena__find_file",
       "mcp__serena__think_about_collected_information",
       "mcp__serena__think_about_whether_you_are_done",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "mcp__serena__insert_after_symbol",
+      "Bash(pnpm test:run:*)"
     ],
     "deny": [],
     "ask": []

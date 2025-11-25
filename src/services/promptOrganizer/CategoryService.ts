@@ -20,16 +20,6 @@ export class CategoryService {
   }
 
   /**
-   * Get category by ID
-   * @param id - Category ID
-   * @returns Category or undefined
-   */
-  public async getById(id: string): Promise<Category | undefined> {
-    const categoriesMap = await categoriesStorage.getValue()
-    return categoriesMap[id]
-  }
-
-  /**
    * Create a new category
    * @param name - Category name
    * @param description - Category description

@@ -126,6 +126,8 @@ export const PromptList = ({
     }
   }, [isLoaded, prompts, sideFlipped, deferredSearchQuery, sortOrder, menuType])
 
+  console.log("PromptList Render:", aiTemplateGroups)
+
   const isListEmpty = totalCount === 0
 
   const testId =

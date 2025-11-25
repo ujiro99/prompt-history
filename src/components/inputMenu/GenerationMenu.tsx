@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react"
-import { Sparkles, NotebookPen } from "lucide-react"
+import { Sparkles, NotebookPen, WandSparkles } from "lucide-react"
 import {
   MenubarMenu,
   MenubarContent,
@@ -9,18 +9,15 @@ import { MenuTrigger } from "./MenuTrigger"
 import { useCaretNode } from "@/hooks/useCaretNode"
 import { useContainer } from "@/hooks/useContainer"
 import { usePromptExecution } from "@/hooks/usePromptExecution"
+import { usePromptOrganizer } from "@/hooks/usePromptOrganizer"
 import { PromptImproveDialog } from "@/components/inputMenu/controller/PromptImproveDialog"
 import { OrganizerExecuteDialog } from "@/components/promptOrganizer/OrganizerExecuteDialog"
 import { OrganizerSummaryDialog } from "@/components/promptOrganizer/OrganizerSummaryDialog"
 import { OrganizerPreviewDialog } from "@/components/promptOrganizer/OrganizerPreviewDialog"
 import { PromptServiceFacade } from "@/services/promptServiceFacade"
-import { promptOrganizerService } from "@/services/promptOrganizer/PromptOrganizerService"
 import { MENU, TestIds } from "@/components/const"
 import type { ImprovePromptData } from "@/types/prompt"
-import type {
-  PromptOrganizerResult,
-  TemplateCandidate,
-} from "@/types/promptOrganizer"
+import type { TemplateCandidate } from "@/types/promptOrganizer"
 import { i18n } from "#imports"
 
 const serviceFacade = PromptServiceFacade.getInstance()
@@ -39,14 +36,23 @@ export function GenerationMenu({
   const { container } = useContainer()
   const { nodeAtCaret } = useCaretNode()
   const { setPrompt } = usePromptExecution({ nodeAtCaret })
+  const {
+    result,
+    isExecuting,
+    progress,
+    error,
+    executeOrganization,
+    cancelGeneration,
+    saveTemplates,
+  } = usePromptOrganizer({})
 
   const [improvePromptData, setImprovePromptData] =
     useState<ImprovePromptData | null>(null)
   const [organizerExecuteOpen, setOrganizerExecuteOpen] = useState(false)
   const [organizerSummaryOpen, setOrganizerSummaryOpen] = useState(false)
   const [organizerPreviewOpen, setOrganizerPreviewOpen] = useState(false)
-  const [organizerResult, setOrganizerResult] =
-    useState<PromptOrganizerResult | null>(null)
+
+  console.log("result", result)
 
   /**
    * Open prompt-improve dialog
@@ -81,20 +87,12 @@ export function GenerationMenu({
    * Execute prompt organization
    */
   const handleExecuteOrganization = useCallback(async () => {
-    try {
-      const { promptOrganizerSettingsStorage } = await import(
-        "@/services/storage/definitions"
-      )
-      const settings = await promptOrganizerSettingsStorage.getValue()
-      const result = await promptOrganizerService.executeOrganization(settings)
-      setOrganizerResult(result)
+    await executeOrganization()
+    if (!error) {
       setOrganizerExecuteOpen(false)
       setOrganizerSummaryOpen(true)
-    } catch (error) {
-      console.error("Organization failed:", error)
-      throw error
     }
-  }, [])
+  }, [executeOrganization, error])
 
   /**
    * Preview templates
@@ -108,30 +106,24 @@ export function GenerationMenu({
    * Save all templates
    */
   const handleSaveAllTemplates = useCallback(async () => {
-    if (!organizerResult) return
-    try {
-      await promptOrganizerService.saveTemplates(organizerResult.templates)
+    if (!result) return
+    await saveTemplates(result.templates)
+    if (!error) {
       setOrganizerSummaryOpen(false)
-      setOrganizerResult(null)
-    } catch (error) {
-      console.error("Save failed:", error)
     }
-  }, [organizerResult])
+  }, [result, saveTemplates, error])
 
   /**
    * Save templates from preview
    */
   const handleSaveTemplatesFromPreview = useCallback(
     async (templates: TemplateCandidate[]) => {
-      try {
-        await promptOrganizerService.saveTemplates(templates)
+      await saveTemplates(templates)
+      if (!error) {
         setOrganizerPreviewOpen(false)
-        setOrganizerResult(null)
-      } catch (error) {
-        console.error("Save failed:", error)
       }
     },
-    [],
+    [saveTemplates, error],
   )
 
   return (
@@ -148,7 +140,7 @@ export function GenerationMenu({
         onInteractOutside={onInteractOutside}
       >
         <MenubarItem onClick={openImproveDialog} disabled={!saveEnabled}>
-          <Sparkles size={16} />
+          <WandSparkles size={16} />
           {i18n.t("dialogs.promptImprove.title")}
         </MenubarItem>
         <MenubarItem onClick={openOrganizerExecuteDialog}>
@@ -172,13 +164,16 @@ export function GenerationMenu({
         open={organizerExecuteOpen}
         onOpenChange={setOrganizerExecuteOpen}
         onExecute={handleExecuteOrganization}
+        isExecuting={isExecuting}
+        progress={progress}
+        onCancel={cancelGeneration}
       />
 
       {/* Organizer Summary Dialog */}
       <OrganizerSummaryDialog
         open={organizerSummaryOpen}
         onOpenChange={setOrganizerSummaryOpen}
-        result={organizerResult}
+        result={result}
         onPreview={handlePreviewTemplates}
         onSaveAll={handleSaveAllTemplates}
       />
@@ -187,7 +182,7 @@ export function GenerationMenu({
       <OrganizerPreviewDialog
         open={organizerPreviewOpen}
         onOpenChange={setOrganizerPreviewOpen}
-        templates={organizerResult?.templates || []}
+        templates={result?.templates || []}
         onSave={handleSaveTemplatesFromPreview}
       />
     </MenubarMenu>

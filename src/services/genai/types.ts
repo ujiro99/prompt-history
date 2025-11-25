@@ -41,6 +41,15 @@ export interface GeminiConfig {
 }
 
 /**
+ * Token usage on Gemini API
+ */
+export interface TokenUsage {
+  prompt: number // input
+  thoughts: number // output
+  candidates: number // output
+}
+
+/**
  * Error types for Gemini API
  */
 export enum GeminiErrorType {

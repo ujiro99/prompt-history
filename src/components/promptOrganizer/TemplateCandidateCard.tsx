@@ -5,6 +5,7 @@
 
 import { i18n } from "#imports"
 import type { TemplateCandidate } from "@/types/promptOrganizer"
+import { cn } from "@/lib/utils"
 
 interface TemplateCandidateCardProps {
   candidate: TemplateCandidate
@@ -82,19 +83,22 @@ export const TemplateCandidateCard = ({
 
   return (
     <div
-      className={`p-4 cursor-pointer transition-colors hover:bg-gray-50 border rounded-lg ${isSelected ? "ring-2 ring-blue-500" : ""
-        } ${className || ""}`}
+      className={cn(
+        "p-4 cursor-pointer transition-colors hover:bg-gray-50 border rounded-lg",
+        isSelected ? "ring-2 ring-blue-500" : "",
+        className,
+      )}
       onClick={onClick}
     >
-      <div className="space-y-2">
+      <div className="space-y-1">
         {/* Header: Title and Status */}
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-lg">{candidate.title}</h3>
+          <h3 className="font-semibold text-sm">{candidate.title}</h3>
           {getStatusBadge()}
         </div>
 
         {/* Use case */}
-        <p className="text-sm text-gray-600">{candidate.useCase}</p>
+        <p className="text-xs text-mute-foreground">{candidate.useCase}</p>
 
         {/* Category badge */}
         <div>
@@ -103,17 +107,12 @@ export const TemplateCandidateCard = ({
           </span>
         </div>
 
-        {/* Content preview with variable highlighting */}
-        <div className="text-sm mt-2">
-          {highlightVariables(truncateContent(candidate.content))}
-        </div>
-
         {/* Footer: Source count */}
         <div className="flex items-center text-xs text-gray-500 mt-2">
           <span>
-            {i18n.t("promptOrganizer.result.sourceCount", {
-              count: candidate.aiMetadata.sourceCount,
-            })}
+            {i18n.t("promptOrganizer.result.sourceCount", [
+              candidate.aiMetadata.sourceCount,
+            ])}
           </span>
         </div>
       </div>

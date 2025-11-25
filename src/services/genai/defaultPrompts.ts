@@ -70,14 +70,16 @@ CRITICAL RULES:
 export const DEFAULT_ORGANIZATION_PROMPT = `Analyze and organize the following user prompts using these guidelines:
 
 Step 1: Cluster similar prompts
-1. Group prompts by similarity in content, purpose, task, and patterns
-2. After clustering, discard clusters that contain only a single prompt and exclude them from all subsequent steps
+1. Cluster prompts based on similarity in content, purpose, tasks, and patterns
+2. After clustering, filter only to clusters containing two or more prompts.
 
 Step 2: For each cluster, generate a reusable template:
 1. **Pattern Extraction**: Identify common patterns
 2. **Variable Identification**: Replace variable parts with {{variable_name}} format
    - Examples: customer_names, dates, numbers, specific content
 3. **Template Creation**: Create concise, reusable templates
+   - Use the same language as the original prompt.
+   - Maintain line breaks, headings, and emphasis formatting.
 4. **Title**: Provide a clear title (max 20 chars)
 5. **Use Case Definition**: Describe the use case to clarify context and purpose (max 40 chars)
 6. **Category Assignment**: Select or suggest appropriate categories

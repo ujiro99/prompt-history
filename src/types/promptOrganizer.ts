@@ -144,8 +144,10 @@ export interface PromptOrganizerResult {
   inputTokens: number
   /** Output token count */
   outputTokens: number
-  /** Estimated cost (JPY) */
+  /** Estimated cost */
   estimatedCost: number
+  /** Actual cost */
+  actualCost: number
 }
 
 /**
@@ -170,7 +172,7 @@ export interface OrganizerExecutionEstimate {
   estimatedOutputTokens: number
   /** Context usage rate (0.0 - 1.0) */
   contextUsageRate: number
-  /** Estimated cost (JPY) */
+  /** Estimated cost */
   estimatedCost: number
   /** Model name */
   model: string
@@ -186,4 +188,18 @@ export interface OrganizerError {
   code: string
   /** Error message */
   message: string
+}
+
+/**
+ * Generation progress information
+ */
+export interface GenerationProgress {
+  /** Latest chunk received */
+  chunk: string | null
+  /** Accumulated response so far */
+  accumulated: string
+  /** Estimated progress percentage (0-100) */
+  estimatedProgress: number
+  /** Current status */
+  status: "generating" | "complete" | "error"
 }
