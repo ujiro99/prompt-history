@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Eye, EyeOff } from "lucide-react"
+import { Info, Eye, EyeOff, TriangleAlert } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -10,6 +10,14 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import {
+  Field,
+  FieldLabel,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLegend,
+} from "@/components/ui/field"
 import { useContainer } from "@/hooks/useContainer"
 import { genaiApiKeyStorage } from "@/services/storage/definitions"
 import { getGenaiApiKey } from "@/services/storage/genaiApiKey"
@@ -132,79 +140,77 @@ export const ModelSettingsDialog: React.FC<ModelSettingsDialogProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
-          {/* API Key Settings */}
-          <div className="space-y-3">
-            <label className="text-base font-semibold">
-              {i18n.t("settings.promptImprover.apiKeySettings")}
-            </label>
+        <FieldGroup>
+          <FieldLegend className="mb-0">
+            {i18n.t("settings.promptImprover.apiKeySettings")}
+          </FieldLegend>
 
-            <div className="space-y-2">
-              <label htmlFor="api-key" className="text-sm font-medium">
-                {i18n.t("settings.promptImprover.geminiApiKey")}
-              </label>
-              <div className="flex gap-2">
-                <Input
-                  id="api-key"
-                  type={showApiKey ? "text" : "password"}
-                  value={apiKey}
-                  onChange={(e) => {
-                    setApiKey(e.target.value)
-                    setApiKeyError(null)
-                  }}
-                  placeholder={i18n.t("settings.promptImprover.enterApiKey")}
-                  className={apiKeyError ? "border-destructive" : ""}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setShowApiKey(!showApiKey)}
-                >
-                  {showApiKey ? (
-                    <EyeOff className="size-4" />
-                  ) : (
-                    <Eye className="size-4" />
-                  )}
-                </Button>
-              </div>
-              {apiKeyError && (
-                <p className="text-sm text-destructive">{apiKeyError}</p>
-              )}
-
-              <div className="space-y-1 text-sm">
-                <p className="flex items-start gap-1.5 text-muted-foreground">
-                  <span>ℹ️</span>
-                  <span>
-                    {i18n.t("settings.promptImprover.getApiKeyInfo")}{" "}
-                    <a
-                      href="https://ai.google.dev/gemini-api/docs/api-key"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary underline hover:no-underline"
-                    >
-                      https://ai.google.dev/gemini-api/docs/api-key
-                    </a>
-                  </span>
-                </p>
-                <p className="flex items-start gap-1.5 text-muted-foreground">
-                  <span>⚠️</span>
-                  <span>
-                    {i18n.t("settings.promptImprover.freeApiWarning")}{" "}
-                    <a
-                      href="https://ai.google.dev/gemini-api/terms"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary underline hover:no-underline"
-                    >
-                      {i18n.t("settings.promptImprover.learnMore")}
-                    </a>
-                  </span>
-                </p>
-              </div>
+          <Field>
+            <FieldLabel htmlFor="api-key">
+              {i18n.t("settings.promptImprover.geminiApiKey")}
+            </FieldLabel>
+            <div className="flex gap-2 mb-2">
+              <Input
+                id="api-key"
+                type={showApiKey ? "text" : "password"}
+                value={apiKey}
+                onChange={(e) => {
+                  setApiKey(e.target.value)
+                  setApiKeyError(null)
+                }}
+                placeholder={i18n.t("settings.promptImprover.enterApiKey")}
+                className={apiKeyError ? "border-destructive" : ""}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => setShowApiKey(!showApiKey)}
+              >
+                {showApiKey ? (
+                  <EyeOff className="size-4" />
+                ) : (
+                  <Eye className="size-4" />
+                )}
+              </Button>
             </div>
-          </div>
-        </div>
+            <FieldError>{apiKeyError}</FieldError>
+
+            <FieldDescription>
+              <p className="flex items-center gap-1.5">
+                <Info className="size-4.5 stroke-blue-500 fill-blue-100" />
+                <span>
+                  {i18n.t("settings.promptImprover.getApiKeyInfo")}{" "}
+                  <a
+                    href="https://ai.google.dev/gemini-api/docs/api-key"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline underline-offset-4 hover:text-primary"
+                  >
+                    https://ai.google.dev/gemini-api/docs/api-key
+                  </a>
+                </span>
+              </p>
+            </FieldDescription>
+
+            <FieldDescription>
+              <p className="flex items-start gap-1.5">
+                <TriangleAlert className="size-5.5 stroke-amber-500 fill-amber-100 mt-0.5" />
+                <span>
+                  {i18n.t("settings.promptImprover.freeApiWarning")}{" "}
+                  <a
+                    href="https://ai.google.dev/gemini-api/terms"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline underline-offset-4 hover:text-primary"
+                  >
+                    {i18n.t("settings.promptImprover.learnMore")}
+                  </a>
+                </span>
+              </p>
+            </FieldDescription>
+          </Field>
+        </FieldGroup>
 
         <DialogFooter>
           <Button variant="secondary" onClick={handleCancel}>
