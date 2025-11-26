@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react"
-import { Sparkles, Loader2 } from "lucide-react"
+import { Sparkles, Loader2, Settings } from "lucide-react"
 import type { VariableConfig } from "@/types/prompt"
 import { VariableExpansionInfoDialog } from "./VariableExpansionInfoDialog"
 import { PromptImproverSettingsDialog } from "@/components/settings/PromptImproverSettingsDialog"
@@ -211,10 +211,10 @@ export const PromptImproveDialog: React.FC<PromptImproveDialogProps> = ({
   }
 
   /**
-   * Open settings dialog
+   * Open model settings dialog
    */
-  const handleOpenSettings = () => {
-    setSettingsDialogOpen(true)
+  const handleOpenModelSettings = () => {
+    setModelSettingsDialogOpen(true)
   }
 
   /**
@@ -272,18 +272,28 @@ export const PromptImproveDialog: React.FC<PromptImproveDialogProps> = ({
           onKeyDown={handleKeyDown}
           {...stopPropagation()}
         >
-          <DialogHeader>
-            <DialogTitle>{i18n.t("dialogs.promptImprove.title")}</DialogTitle>
-            <DialogDescription>
-              {i18n.t("dialogs.promptImprove.message")}
-            </DialogDescription>
-          </DialogHeader>
+          <div className="flex items-center gap-2">
+            <DialogHeader className="flex-1">
+              <DialogTitle>{i18n.t("dialogs.promptImprove.title")}</DialogTitle>
+              <DialogDescription>
+                {i18n.t("dialogs.promptImprove.message")}
+              </DialogDescription>
+            </DialogHeader>
+            <Button
+              onClick={() => setSettingsDialogOpen(true)}
+              variant="ghost"
+              size="sm"
+              className="group"
+            >
+              <Settings className="size-5 stroke-neutral-600 group-hover:stroke-neutral-800" />
+            </Button>
+          </div>
 
           {/* API Key Warning */}
           {!isApiKeyConfigured && (
             <ApiKeyWarningBanner
-              variant="warning"
-              onOpenSettings={handleOpenSettings}
+              variant="destructive"
+              onOpenSettings={handleOpenModelSettings}
             />
           )}
 

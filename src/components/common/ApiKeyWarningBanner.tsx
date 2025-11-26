@@ -25,9 +25,9 @@ export const ApiKeyWarningBanner: React.FC<ApiKeyWarningBannerProps> = ({
         text: "text-warning-foreground",
       }
       : {
-        bg: "bg-destructive",
-        border: "border-destructive-foreground/20",
-        text: "text-destructive-foreground",
+        bg: "bg-destructive-foreground",
+        border: "border-destructive/40",
+        text: "text-destructive",
       }
 
   return (

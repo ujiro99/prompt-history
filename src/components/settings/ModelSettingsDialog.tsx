@@ -149,7 +149,7 @@ export const ModelSettingsDialog: React.FC<ModelSettingsDialogProps> = ({
             <FieldLabel htmlFor="api-key">
               {i18n.t("settings.promptImprover.geminiApiKey")}
             </FieldLabel>
-            <div className="flex gap-2 mb-2">
+            <div className="flex gap-2">
               <Input
                 id="api-key"
                 type={showApiKey ? "text" : "password"}
@@ -177,7 +177,7 @@ export const ModelSettingsDialog: React.FC<ModelSettingsDialogProps> = ({
             <FieldError>{apiKeyError}</FieldError>
 
             <FieldDescription>
-              <p className="flex items-center gap-1.5">
+              <p className="flex items-center gap-1.5 mt-2">
                 <Info className="size-4.5 stroke-blue-500 fill-blue-100" />
                 <span>
                   {i18n.t("settings.promptImprover.getApiKeyInfo")}{" "}

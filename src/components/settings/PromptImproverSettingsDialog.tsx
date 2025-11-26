@@ -105,15 +105,21 @@ export const PromptImproverSettingsDialog: React.FC<
             // Try to fetch from URL for preview
             await fetchPromptFromUrl(storedSettings.urlContent, true)
           }
-
-          const apiKey = await getGenaiApiKey()
-          setHasApiKey(!!apiKey)
         } catch (error) {
           console.error("Failed to load settings:", error)
         }
       }
-
       loadSettings()
+
+      const loadApiKey = async () => {
+        try {
+          const apiKey = await getGenaiApiKey()
+          setHasApiKey(!!apiKey)
+        } catch (error) {
+          console.error("Failed to load API key status:", error)
+        }
+      }
+      loadApiKey()
     }
   }, [open])
 
@@ -421,7 +427,7 @@ export const PromptImproverSettingsDialog: React.FC<
                           variant="ghost"
                           size="sm"
                           onClick={handleSetDefaultUrl}
-                          className="w-auto text-xs h-auto px-2 py-1 absolute -right-1 -top-7"
+                          className="w-auto text-xs h-auto px-2 py-1.5 absolute -right-1 -top-8"
                         >
                           {i18n.t("settings.promptImprover.setDefault")}
                         </Button>
