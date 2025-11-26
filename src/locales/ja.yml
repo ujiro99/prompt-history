@@ -24,6 +24,8 @@ common:
   defaultValue: デフォルト値
   options: 選択肢
   commaSeparatedValues: カンマ区切りで入力
+  apiKeyNotConfigured: APIキーが設定されていません。設定からAPIキーを設定してください。
+  openSettings: 設定を開く
 
 # Buttons
 buttons:
@@ -85,8 +87,6 @@ dialogs:
     improving: 改善中...
     previewTitle: 改善されたプロンプト
     error: プロンプトの改善に失敗しました
-    apiKeyNotConfigured: Gemini APIキーが設定されていません。設定からAPIキーを設定してください。
-    openSettings: 設定を開く
 
 # Tabs
 tabs:
@@ -203,7 +203,7 @@ settings:
     getApiKeyInfo: APIキーの取得方法：
     freeApiWarning: 重要：無料のAPIキーはモデルのトレーニングに使用される可能性があります。
     learnMore: 詳細を見る
-    improvementPromptSettings: 改善用プロンプト設定
+    improvementPromptSettings: 改善用プロンプトの設定方法
     modeUrl: URL (GitHub Gist など)
     modeText: 直接入力
     improvementPromptText: 改善用プロンプト
@@ -343,8 +343,6 @@ promptOrganizer:
     title: AI推奨テンプレート
   errors:
     noApiKey: Gemini APIキーが必要です。設定でAPIキーを設定してください。
-  warnings:
-    noApiKey: この機能を使用するには、設定でGemini APIキーを設定してください。
 
 # Organizer Categories
 organizer:

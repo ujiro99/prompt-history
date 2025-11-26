@@ -254,12 +254,20 @@ export function SettingsMenu({
       <PromptImproverSettingsDialog
         open={promptImproverSettingsOpen}
         onOpenChange={setPromptImproverSettingsOpen}
+        onClickModelSettings={() => {
+          setPromptImproverSettingsOpen(false)
+          setModelSettingsOpen(true)
+        }}
       />
 
       {/* Organizer Settings Dialog */}
       <OrganizerSettingsDialog
         open={organizerSettingsOpen}
         onOpenChange={setOrganizerSettingsOpen}
+        onClickModelSettings={() => {
+          setOrganizerSettingsOpen(false)
+          setModelSettingsOpen(true)
+        }}
       />
     </MenubarMenu>
   )

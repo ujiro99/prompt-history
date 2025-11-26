@@ -76,35 +76,14 @@ export interface Prompt {
 /**
  * Prompt data for storage (date fields are ISO strings)
  */
-export interface StoredPrompt {
-  /** Unique identifier for prompt (UUID) */
-  id: string
-  /** Prompt name */
-  name: string
-  /** Prompt content */
-  content: string
-  /** Execution count */
-  executionCount: number
+export interface StoredPrompt
+  extends Omit<Prompt, "lastExecutedAt" | "createdAt" | "updatedAt"> {
   /** Latest execution date */
   lastExecutedAt: string
-  /** Pin flag */
-  isPinned: boolean
-  /** Last execution URL */
-  lastExecutionUrl: string
   /** Creation date */
   createdAt: string
   /** Update date */
   updatedAt: string
-  /** Variable configurations */
-  variables?: VariableConfig[]
-  /** AI-generated flag */
-  isAIGenerated?: boolean
-  /** AI generation metadata (only for AI-generated prompts) */
-  aiMetadata?: AIGeneratedMetadata
-  /** Category ID (null for uncategorized) */
-  categoryId?: string | null
-  /** Use case description (optional) */
-  useCase?: string
 }
 
 /**

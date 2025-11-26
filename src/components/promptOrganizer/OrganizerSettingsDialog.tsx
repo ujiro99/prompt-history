@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Progress } from "@/components/ui/progress"
+import { ApiKeyWarningBanner } from "@/components/common/ApiKeyWarningBanner"
 import { promptOrganizerSettingsStorage } from "@/services/storage/definitions"
 import { getGenaiApiKey } from "@/services/storage/genaiApiKey"
 import { useContainer } from "@/hooks/useContainer"
@@ -37,6 +38,7 @@ import { stopPropagation } from "@/utils/dom"
 interface OrganizerSettingsDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  onClickModelSettings: () => void
 }
 
 /**
@@ -60,7 +62,7 @@ const PERIOD_OPTIONS = [
 
 export const OrganizerSettingsDialog: React.FC<
   OrganizerSettingsDialogProps
-> = ({ open, onOpenChange }) => {
+> = ({ open, onOpenChange, onClickModelSettings }) => {
   const [settings, setSettings] = useState<PromptOrganizerSettings | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [hasApiKey, setHasApiKey] = useState(false)
@@ -301,16 +303,17 @@ export const OrganizerSettingsDialog: React.FC<
 
           {/* API Key Warning */}
           {!hasApiKey && (
-            <div className="rounded-lg bg-yellow-50 p-4 text-sm text-yellow-800">
-              {i18n.t("promptOrganizer.warnings.noApiKey")}
-            </div>
+            <ApiKeyWarningBanner
+              variant="warning"
+              onOpenSettings={onClickModelSettings}
+            />
           )}
         </div>
 
         <DialogFooter>
           <Button
             onClick={() => onOpenChange(false)}
-            disabled={isSaving || !hasApiKey}
+            disabled={isSaving}
             className="min-w-24"
           >
             {isSaving ? (

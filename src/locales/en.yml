@@ -24,6 +24,8 @@ common:
   defaultValue: Default Value
   options: Options
   commaSeparatedValues: Comma-separated values
+  apiKeyNotConfigured: API key is not configured. Please set your API key in settings.
+  openSettings: Open Settings
 
 # Buttons
 buttons:
@@ -85,8 +87,6 @@ dialogs:
     improving: Improving...
     previewTitle: Improved Prompt
     error: Failed to improve prompt
-    apiKeyNotConfigured: Gemini API key is not configured. Please set your API key in settings.
-    openSettings: Open Settings
 
 # Tabs
 tabs:
@@ -343,8 +343,6 @@ promptOrganizer:
     title: AI Recommended
   errors:
     noApiKey: Gemini API key is required. Please set it in settings.
-  warnings:
-    noApiKey: Please set your Gemini API key in settings to use this feature.
 
 # Organizer Categories
 organizer:

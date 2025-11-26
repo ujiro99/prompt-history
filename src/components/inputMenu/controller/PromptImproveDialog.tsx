@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from "react"
-import { Sparkles, Loader2, AlertCircle } from "lucide-react"
+import { Sparkles, Loader2 } from "lucide-react"
 import type { VariableConfig } from "@/types/prompt"
 import { VariableExpansionInfoDialog } from "./VariableExpansionInfoDialog"
 import { PromptImproverSettingsDialog } from "@/components/settings/PromptImproverSettingsDialog"
+import { ModelSettingsDialog } from "@/components/settings/ModelSettingsDialog"
+import { ApiKeyWarningBanner } from "@/components/common/ApiKeyWarningBanner"
 import {
   Dialog,
   DialogTitle,
@@ -61,6 +63,7 @@ export const PromptImproveDialog: React.FC<PromptImproveDialogProps> = ({
   const promptImproverRef = useRef<PromptImprover | null>(null)
   const [isApiKeyConfigured, setIsApiKeyConfigured] = useState(false)
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false)
+  const [modelSettingsDialogOpen, setModelSettingsDialogOpen] = useState(false)
 
   // Check if variable expansion is enabled (default: true)
   const variableExpansionEnabled = settings?.variableExpansionEnabled ?? true
@@ -276,25 +279,12 @@ export const PromptImproveDialog: React.FC<PromptImproveDialogProps> = ({
             </DialogDescription>
           </DialogHeader>
 
-          {/* API Key Not Configured Warning Banner */}
+          {/* API Key Warning */}
           {!isApiKeyConfigured && (
-            <div className="p-3 mb-4 bg-warning/10 border border-warning/20 rounded-md">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <AlertCircle className="size-4 text-warning" />
-                  <span className="text-sm text-warning">
-                    {i18n.t("dialogs.promptImprove.apiKeyNotConfigured")}
-                  </span>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleOpenSettings}
-                >
-                  {i18n.t("dialogs.promptImprove.openSettings")}
-                </Button>
-              </div>
-            </div>
+            <ApiKeyWarningBanner
+              variant="warning"
+              onOpenSettings={handleOpenSettings}
+            />
           )}
 
           <div className="space-y-4">
@@ -409,9 +399,17 @@ export const PromptImproveDialog: React.FC<PromptImproveDialogProps> = ({
         open={isInfoDialogOpen}
         onOpenChange={setIsInfoDialogOpen}
       />
+      <ModelSettingsDialog
+        open={modelSettingsDialogOpen}
+        onOpenChange={setModelSettingsDialogOpen}
+      />
       <PromptImproverSettingsDialog
         open={settingsDialogOpen}
         onOpenChange={setSettingsDialogOpen}
+        onClickModelSettings={() => {
+          setSettingsDialogOpen(false)
+          setModelSettingsDialogOpen(true)
+        }}
       />
     </>
   )
