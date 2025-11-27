@@ -186,8 +186,7 @@ export function GenerationMenu({
       <OrganizerPreviewDialog
         open={organizerPreviewOpen}
         onOpenChange={setOrganizerPreviewOpen}
-        templates={result?.templates || []}
-        pendingTemplates={pendingTemplates}
+        templates={pendingTemplates || []}
         onSave={handleSaveTemplatesFromPreview}
       />
     </MenubarMenu>

@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { AlertCircle } from "lucide-react"
+import { AlertCircle, Settings } from "lucide-react"
 import { i18n } from "#imports"
 import { promptOrganizerSettingsStorage } from "@/services/storage/definitions"
 import { costEstimatorService } from "@/services/promptOrganizer/CostEstimatorService"
@@ -19,8 +19,8 @@ import { useContainer } from "@/hooks/useContainer"
 import { useAiModel } from "@/hooks/useAiModel"
 import { stopPropagation } from "@/utils/dom"
 import { ApiKeyWarningBanner } from "@/components/common/ApiKeyWarningBanner"
-import { PromptImproverSettingsDialog } from "@/components/settings/PromptImproverSettingsDialog"
 import { ModelSettingsDialog } from "@/components/settings/ModelSettingsDialog"
+import { OrganizerSettingsDialog } from "@/components/promptOrganizer/OrganizerSettingsDialog"
 import type {
   PromptOrganizerSettings,
   OrganizerExecutionEstimate,
@@ -68,32 +68,36 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
 
   // Load settings and calculate estimate when dialog opens
   useEffect(() => {
-    if (open) {
-      loadSettingsAndEstimate()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, genaiApiKey])
+    const updateSettings = async (loadedSettings: PromptOrganizerSettings) => {
+      try {
+        setSettings(loadedSettings)
 
-  const loadSettingsAndEstimate = async () => {
-    try {
-      const loadedSettings = await promptOrganizerSettingsStorage.getValue()
-      setSettings(loadedSettings)
+        // Check API key (using hook value)
+        if (!genaiApiKey) {
+          setEstimate(null)
+          return
+        }
 
-      // Check API key (using hook value)
-      if (!genaiApiKey) {
-        setEstimate(null)
-        return
+        // Calculate estimate
+        const estimateResult =
+          await costEstimatorService.estimateExecution(loadedSettings)
+        setEstimate(estimateResult)
+      } catch (err) {
+        console.error("Failed to load settings:", err)
+        setError(i18n.t("errors.unknownError"))
       }
-
-      // Calculate estimate
-      const estimateResult =
-        await costEstimatorService.estimateExecution(loadedSettings)
-      setEstimate(estimateResult)
-    } catch (err) {
-      console.error("Failed to load settings:", err)
-      setError(i18n.t("errors.unknownError"))
     }
-  }
+
+    if (open) {
+      promptOrganizerSettingsStorage
+        .getValue()
+        .then((loadedSettings) => updateSettings(loadedSettings))
+
+      return promptOrganizerSettingsStorage.watch((loadedSettings) => {
+        updateSettings(loadedSettings)
+      })
+    }
+  }, [open, genaiApiKey])
 
   const handleExecute = async () => {
     if (apiKeyMissing) {
@@ -143,12 +147,22 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
           container={container}
           {...stopPropagation()}
         >
-          <DialogHeader>
-            <DialogTitle>{i18n.t("promptOrganizer.title")}</DialogTitle>
-            <DialogDescription>
-              {i18n.t("promptOrganizer.description")}
-            </DialogDescription>
-          </DialogHeader>
+          <div className="flex items-center gap-2">
+            <DialogHeader className="flex-1">
+              <DialogTitle>{i18n.t("promptOrganizer.title")}</DialogTitle>
+              <DialogDescription>
+                {i18n.t("promptOrganizer.description")}
+              </DialogDescription>
+            </DialogHeader>
+            <Button
+              onClick={() => setSettingsDialogOpen(true)}
+              variant="ghost"
+              size="sm"
+              className="group mr-1"
+            >
+              <Settings className="size-5 stroke-neutral-600 group-hover:stroke-neutral-800" />
+            </Button>
+          </div>
 
           <div className="space-y-4 pb-4">
             {/* API Key Warning */}
@@ -302,7 +316,7 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
         open={modelSettingsDialogOpen}
         onOpenChange={setModelSettingsDialogOpen}
       />
-      <PromptImproverSettingsDialog
+      <OrganizerSettingsDialog
         open={settingsDialogOpen}
         onOpenChange={setSettingsDialogOpen}
         onClickModelSettings={() => {

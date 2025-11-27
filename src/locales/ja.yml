@@ -39,6 +39,7 @@ buttons:
   saveAsNew: 新規として保存
   saveAsCopy: 複製する
   complete: 完了
+  finish: 終了
 
 # Status messages
 status:

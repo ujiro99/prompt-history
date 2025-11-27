@@ -27,7 +27,6 @@ interface OrganizerPreviewDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   templates: TemplateCandidate[]
-  pendingTemplates: TemplateCandidate[]
   onSave?: (templates: TemplateCandidate[]) => void
   onClose?: () => void
 }
@@ -36,19 +35,15 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
   open,
   onOpenChange,
   templates,
-  pendingTemplates,
   onSave,
   onClose,
 }) => {
   const [selectedIndex, setSelectedIndex] = useState(0)
-  const [editedTemplates, setEditedTemplates] = useState([
-    ...templates,
-    ...pendingTemplates,
-  ])
+  const [editedTemplates, setEditedTemplates] = useState([...templates])
   const [showSourcePrompts, setShowSourcePrompts] = useState(false)
   const { container } = useContainer()
 
-  console.log("Edited Templates:", editedTemplates, templates, pendingTemplates)
+  console.log("Edited Templates:", editedTemplates)
 
   const selectedTemplate = editedTemplates[selectedIndex]
 
@@ -117,20 +112,20 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
   }
 
   /**
-   * Handle save all
+   * Handle finish
    */
-  const handleSaveAll = () => {
+  const handleFinish = () => {
     if (onSave) {
-      console.log("Saving all templates:", editedTemplates)
+      console.log("Saving templates:", editedTemplates)
       onSave(editedTemplates)
     }
     onOpenChange(false)
   }
 
   useEffect(() => {
-    setEditedTemplates([...templates, ...pendingTemplates])
+    setEditedTemplates(templates)
     setSelectedIndex(0)
-  }, [templates, pendingTemplates])
+  }, [templates])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -331,9 +326,7 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
           <Button variant="outline" onClick={handleCancel}>
             {i18n.t("common.cancel")}
           </Button>
-          <Button onClick={handleSaveAll}>
-            {i18n.t("promptOrganizer.buttons.saveAll")}
-          </Button>
+          <Button onClick={handleFinish}>{i18n.t("buttons.finish")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -39,6 +39,7 @@ buttons:
   saveAsNew: Save as new
   saveAsCopy: Duplicate
   complete: Complete
+  finish: Finish
 
 # Status messages
 status:
