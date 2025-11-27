@@ -23,8 +23,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Progress } from "@/components/ui/progress"
 import { ApiKeyWarningBanner } from "@/components/common/ApiKeyWarningBanner"
+import { EstimationDisplay } from "@/components/promptOrganizer/EstimationDisplay"
 import { promptOrganizerSettingsStorage } from "@/services/storage/definitions"
 import { useContainer } from "@/hooks/useContainer"
 import { usePromptOrganizer } from "@/hooks/usePromptOrganizer"
@@ -86,15 +86,6 @@ export const OrganizerSettingsDialog: React.FC<
       ...settings,
       filterPeriodDays: parseInt(value),
     })
-  }
-
-  /**
-   * Calculate context usage percentage
-   */
-  const getContextUsagePercentage = (): number => {
-    if (!estimate) return 0
-    const maxTokens = 1000000 // Gemini 1.5 Flash context window
-    return (estimate.estimatedInputTokens / maxTokens) * 100
   }
 
   if (!settings) return null
@@ -206,47 +197,8 @@ export const OrganizerSettingsDialog: React.FC<
 
           {/* Estimation Display */}
           {estimate && (
-            <section className="space-y-2">
-              <h3 className="text-sm font-semibold">
-                {i18n.t("promptOrganizer.estimate.title")}
-              </h3>
-              <div className="rounded-lg bg-muted p-4 space-y-3">
-                {/* Token Count Display */}
-                <div className="space-y-1">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-muted-foreground">
-                      {i18n.t("promptOrganizer.estimate.targetPrompts")}
-                    </span>
-                    <span className="font-mono">
-                      {estimate.targetPromptCount}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-muted-foreground">
-                      {i18n.t("promptOrganizer.estimate.inputTokens")}
-                    </span>
-                    <span className="font-mono">
-                      {estimate.estimatedInputTokens.toLocaleString()}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Context Usage Bar */}
-                <div className="space-y-1">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-muted-foreground">
-                      {i18n.t("promptOrganizer.estimate.contextUsage")}
-                    </span>
-                    <span className="font-mono">
-                      {getContextUsagePercentage().toFixed(1)}%
-                    </span>
-                  </div>
-                  <Progress
-                    value={getContextUsagePercentage()}
-                    className="h-2"
-                  />
-                </div>
-              </div>
+            <section>
+              <EstimationDisplay estimate={estimate} />
             </section>
           )}
 

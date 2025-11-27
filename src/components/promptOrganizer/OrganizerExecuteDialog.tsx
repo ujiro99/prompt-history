@@ -21,6 +21,7 @@ import { stopPropagation } from "@/utils/dom"
 import { ApiKeyWarningBanner } from "@/components/common/ApiKeyWarningBanner"
 import { ModelSettingsDialog } from "@/components/settings/ModelSettingsDialog"
 import { OrganizerSettingsDialog } from "@/components/promptOrganizer/OrganizerSettingsDialog"
+import { EstimationDisplay } from "@/components/promptOrganizer/EstimationDisplay"
 import type {
   PromptOrganizerSettings,
   OrganizerExecutionEstimate,
@@ -133,10 +134,6 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
     setSettingsDialogOpen(true)
   }
 
-  const contextUsagePercent = estimate
-    ? (estimate.estimatedInputTokens / 1000000) * 100
-    : 0
-
   const hasPendingTemplates = pendingTemplates && pendingTemplates.length > 0
 
   return (
@@ -199,48 +196,9 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
               </Alert>
             )}
 
-            {/* Execution Estimate Display */}
-            {estimate && !apiKeyMissing && (
-              <div className="space-y-3">
-                <h3 className="text-sm font-medium">
-                  📊 {i18n.t("promptOrganizer.estimate.title")}
-                </h3>
-
-                <div className="rounded-lg border p-4 space-y-3">
-                  {/* Target Prompts Count */}
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">
-                      {i18n.t("promptOrganizer.estimate.targetPrompts")}
-                    </span>
-                    <span className="font-medium">
-                      {estimate.targetPromptCount}件
-                    </span>
-                  </div>
-
-                  {/* Input Tokens */}
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">
-                      {i18n.t("promptOrganizer.estimate.inputTokens")}
-                    </span>
-                    <span className="font-medium">
-                      {estimate.estimatedInputTokens.toLocaleString()} tokens
-                    </span>
-                  </div>
-
-                  {/* Context Usage Bar */}
-                  <div className="space-y-1">
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-muted-foreground">
-                        {i18n.t("promptOrganizer.estimate.contextUsage")}
-                      </span>
-                      <span className="font-medium">
-                        {contextUsagePercent.toFixed(1)}%
-                      </span>
-                    </div>
-                    <Progress value={contextUsagePercent} className="h-2" />
-                  </div>
-                </div>
-              </div>
+            {/* Estimation Display */}
+            {!apiKeyMissing && (
+              <EstimationDisplay estimate={estimate} hideWhenNoEstimate />
             )}
 
             {/* Progress Display */}
