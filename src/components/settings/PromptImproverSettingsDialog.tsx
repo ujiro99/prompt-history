@@ -28,9 +28,9 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { ApiKeyWarningBanner } from "@/components/common/ApiKeyWarningBanner"
 import { useContainer } from "@/hooks/useContainer"
+import { useAiModel } from "@/hooks/useAiModel"
 import { improvePromptSettingsStorage } from "@/services/storage/definitions"
 import { improvePromptCacheService } from "@/services/storage/improvePromptCache"
-import { getGenaiApiKey } from "@/services/storage/genaiApiKey"
 import type { ImprovePromptSettings } from "@/types/prompt"
 import { ImprovePromptInputMethod } from "@/types/prompt"
 import { i18n } from "#imports"
@@ -56,6 +56,7 @@ export const PromptImproverSettingsDialog: React.FC<
   PromptImproverSettingsDialogProps
 > = ({ open, onOpenChange, onClickModelSettings }) => {
   const { container } = useContainer()
+  const { genaiApiKey } = useAiModel()
 
   // Improvement prompt settings (improvement guidelines only, system role is fixed)
   const [settings, setSettings] = useState<ImprovePromptSettings>({
@@ -74,7 +75,7 @@ export const PromptImproverSettingsDialog: React.FC<
   const [urlError, setUrlError] = useState<string | null>(null)
 
   // API key state
-  const [hasApiKey, setHasApiKey] = useState(false)
+  const hasApiKey = !!genaiApiKey
 
   /**
    * Load settings from storage
@@ -110,16 +111,6 @@ export const PromptImproverSettingsDialog: React.FC<
         }
       }
       loadSettings()
-
-      const loadApiKey = async () => {
-        try {
-          const apiKey = await getGenaiApiKey()
-          setHasApiKey(!!apiKey)
-        } catch (error) {
-          console.error("Failed to load API key status:", error)
-        }
-      }
-      loadApiKey()
     }
   }, [open])
 

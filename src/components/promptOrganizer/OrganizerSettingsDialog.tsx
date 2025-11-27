@@ -27,10 +27,10 @@ import {
 import { Progress } from "@/components/ui/progress"
 import { ApiKeyWarningBanner } from "@/components/common/ApiKeyWarningBanner"
 import { promptOrganizerSettingsStorage } from "@/services/storage/definitions"
-import { getGenaiApiKey } from "@/services/storage/genaiApiKey"
 import { useContainer } from "@/hooks/useContainer"
 import { usePromptOrganizer } from "@/hooks/usePromptOrganizer"
 import { useDebounce } from "@/hooks/useDebounce"
+import { useAiModel } from "@/hooks/useAiModel"
 import type { PromptOrganizerSettings } from "@/types/promptOrganizer"
 import { sleep } from "@/lib/utils"
 import { stopPropagation } from "@/utils/dom"
@@ -65,23 +65,22 @@ export const OrganizerSettingsDialog: React.FC<
 > = ({ open, onOpenChange, onClickModelSettings }) => {
   const [settings, setSettings] = useState<PromptOrganizerSettings | null>(null)
   const [isSaving, setIsSaving] = useState(false)
-  const [hasApiKey, setHasApiKey] = useState(false)
   const isFirstRender = useRef(true)
   const { container } = useContainer()
   const { estimate } = usePromptOrganizer({ enableEstimate: open })
   const debouncedSettings = useDebounce(settings, 400)
 
+  const { genaiApiKey } = useAiModel()
+  const hasApiKey = !!genaiApiKey
+
   /**
-   * Load settings and API key on dialog open
+   * Load settings on dialog open
    */
   useEffect(() => {
     if (open) {
       const loadData = async () => {
         const storedSettings = await promptOrganizerSettingsStorage.getValue()
         setSettings(storedSettings)
-
-        const apiKey = await getGenaiApiKey()
-        setHasApiKey(!!apiKey)
       }
       loadData()
       return () => {

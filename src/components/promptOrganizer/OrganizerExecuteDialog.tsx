@@ -16,6 +16,7 @@ import { i18n } from "#imports"
 import { promptOrganizerSettingsStorage } from "@/services/storage/definitions"
 import { costEstimatorService } from "@/services/promptOrganizer/CostEstimatorService"
 import { useContainer } from "@/hooks/useContainer"
+import { useAiModel } from "@/hooks/useAiModel"
 import { stopPropagation } from "@/utils/dom"
 import { ApiKeyWarningBanner } from "@/components/common/ApiKeyWarningBanner"
 import { PromptImproverSettingsDialog } from "@/components/settings/PromptImproverSettingsDialog"
@@ -51,10 +52,11 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
   )
   const [localIsExecuting, setLocalIsExecuting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [apiKeyMissing, setApiKeyMissing] = useState(false)
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false)
   const [modelSettingsDialogOpen, setModelSettingsDialogOpen] = useState(false)
   const { container } = useContainer()
+  const { genaiApiKey } = useAiModel()
+  const apiKeyMissing = !genaiApiKey
 
   // Use external isExecuting if provided, otherwise use local state
   const isExecuting = externalIsExecuting ?? localIsExecuting
@@ -64,18 +66,16 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
     if (open) {
       loadSettingsAndEstimate()
     }
-  }, [open])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, genaiApiKey])
 
   const loadSettingsAndEstimate = async () => {
     try {
       const loadedSettings = await promptOrganizerSettingsStorage.getValue()
       setSettings(loadedSettings)
 
-      // Check API key
-      const { getGenaiApiKey } = await import("@/services/storage/genaiApiKey")
-      const apiKey = await getGenaiApiKey()
-      setApiKeyMissing(!apiKey)
-      if (!apiKey) {
+      // Check API key (using hook value)
+      if (!genaiApiKey) {
         setEstimate(null)
         return
       }

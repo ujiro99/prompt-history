@@ -19,8 +19,8 @@ import {
   FieldLegend,
 } from "@/components/ui/field"
 import { useContainer } from "@/hooks/useContainer"
+import { useAiModel } from "@/hooks/useAiModel"
 import { genaiApiKeyStorage } from "@/services/storage/definitions"
-import { getGenaiApiKey } from "@/services/storage/genaiApiKey"
 import { i18n } from "#imports"
 import { stopPropagation } from "@/utils/dom"
 
@@ -40,6 +40,7 @@ export const ModelSettingsDialog: React.FC<ModelSettingsDialogProps> = ({
   onOpenChange,
 }) => {
   const { container } = useContainer()
+  const { genaiApiKey } = useAiModel()
 
   // API Key settings
   const [apiKey, setApiKey] = useState("")
@@ -70,21 +71,9 @@ export const ModelSettingsDialog: React.FC<ModelSettingsDialogProps> = ({
    */
   useEffect(() => {
     if (open) {
-      /**
-       * Load settings from storage
-       */
-      const loadSettings = async () => {
-        try {
-          const storedApiKey = await getGenaiApiKey()
-          setApiKey(storedApiKey || "")
-        } catch (error) {
-          console.error("Failed to load settings:", error)
-        }
-      }
-
-      loadSettings()
+      setApiKey(genaiApiKey || "")
     }
-  }, [open])
+  }, [open, genaiApiKey])
 
   /**
    * Save settings
