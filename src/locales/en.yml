@@ -283,10 +283,10 @@ promptOrganizer:
   settings:
     filterConditions: Filter Conditions for Organization Target Prompts
     filterPeriod: Filter Period
-    filterPeriodDays: "$1 days"
-    filterPeriodWeek: "$1 week"
-    filterPeriodMonth: "$1 month"
-    filterPeriodYear: "$1 year"
+    filterPeriodDays: "$1 days ago"
+    filterPeriodWeek: "$1 week ago"
+    filterPeriodMonth: "$1 month ago"
+    filterPeriodYear: "$1 year ago"
     minExecutionCount: Minimum Execution Count
     maxPrompts: Maximum Prompts
     organizationPrompt: Organization Prompt
@@ -294,9 +294,7 @@ promptOrganizer:
     targetPrompts: Number of Target Prompts
     title: Estimated Cost
     inputTokens: Input Tokens
-    outputTokens: Output Tokens (est.)
     contextUsage: Context Usage
-    estimatedCost: Estimated Cost
   buttons:
     organize: Organize
     cancel: Cancel

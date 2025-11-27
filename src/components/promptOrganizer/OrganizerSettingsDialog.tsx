@@ -1,6 +1,6 @@
 /**
  * Organizer Settings Dialog Component
- * Settings input form with cost estimation display
+ * Settings input form with token count display
  */
 
 import { useState, useEffect, useRef } from "react"
@@ -45,6 +45,10 @@ interface OrganizerSettingsDialogProps {
  * Period options for filter
  */
 const PERIOD_OPTIONS = [
+  {
+    value: "3",
+    label: i18n.t("promptOrganizer.settings.filterPeriodDays", [3]),
+  },
   {
     value: "7",
     label: i18n.t("promptOrganizer.settings.filterPeriodWeek", [1]),
@@ -162,7 +166,7 @@ export const OrganizerSettingsDialog: React.FC<
                     value={settings.filterPeriodDays.toString()}
                     onValueChange={handlePeriodChange}
                   >
-                    <SelectTrigger className="min-w-24">
+                    <SelectTrigger className="min-w-24 w-full">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -259,16 +263,6 @@ export const OrganizerSettingsDialog: React.FC<
                       {estimate.estimatedInputTokens.toLocaleString()}
                     </span>
                   </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-muted-foreground">
-                      {i18n.t("promptOrganizer.estimate.outputTokens")}
-                    </span>
-                    <span className="font-mono">
-                      {Math.ceil(
-                        estimate.estimatedOutputTokens,
-                      ).toLocaleString()}
-                    </span>
-                  </div>
                 </div>
 
                 {/* Context Usage Bar */}
@@ -285,16 +279,6 @@ export const OrganizerSettingsDialog: React.FC<
                     value={getContextUsagePercentage()}
                     className="h-2"
                   />
-                </div>
-
-                {/* Cost Estimate */}
-                <div className="flex justify-between text-sm border-t pt-2">
-                  <span className="font-medium">
-                    {i18n.t("promptOrganizer.estimate.estimatedCost")}
-                  </span>
-                  <span className="font-mono font-semibold">
-                    ¥{estimate.estimatedCost.toFixed(2)}
-                  </span>
                 </div>
               </div>
             </section>

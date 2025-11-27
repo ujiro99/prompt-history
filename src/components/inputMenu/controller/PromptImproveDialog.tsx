@@ -283,7 +283,7 @@ export const PromptImproveDialog: React.FC<PromptImproveDialogProps> = ({
               onClick={() => setSettingsDialogOpen(true)}
               variant="ghost"
               size="sm"
-              className="group"
+              className="group mr-1"
             >
               <Settings className="size-5 stroke-neutral-600 group-hover:stroke-neutral-800" />
             </Button>

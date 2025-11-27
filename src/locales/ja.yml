@@ -283,10 +283,10 @@ promptOrganizer:
   settings:
     filterConditions: 整理対象プロンプトの絞り込み条件
     filterPeriod: 最終実行日
-    filterPeriodDays: "$1日"
-    filterPeriodWeek: "$1 週"
-    filterPeriodMonth: "$1 月"
-    filterPeriodYear: "$1 年"
+    filterPeriodDays: "$1 日前"
+    filterPeriodWeek: "$1 週間前"
+    filterPeriodMonth: "$1 ヶ月前"
+    filterPeriodYear: "$1 年前"
     minExecutionCount: 最小実行回数
     maxPrompts: 最大プロンプト数
     organizationPrompt: 整理用プロンプト
@@ -294,9 +294,7 @@ promptOrganizer:
     targetPrompts: 対象プロンプト数
     title: 推定コスト
     inputTokens: 入力トークン数
-    outputTokens: 出力トークン数（推定）
     contextUsage: コンテキスト使用率
-    estimatedCost: 推定コスト
   buttons:
     organize: 整理する
     cancel: キャンセル
