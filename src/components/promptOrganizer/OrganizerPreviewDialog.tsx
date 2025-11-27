@@ -27,19 +27,28 @@ interface OrganizerPreviewDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   templates: TemplateCandidate[]
+  pendingTemplates: TemplateCandidate[]
   onSave?: (templates: TemplateCandidate[]) => void
+  onClose?: () => void
 }
 
 export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
   open,
   onOpenChange,
   templates,
+  pendingTemplates,
   onSave,
+  onClose,
 }) => {
   const [selectedIndex, setSelectedIndex] = useState(0)
-  const [editedTemplates, setEditedTemplates] = useState(templates)
+  const [editedTemplates, setEditedTemplates] = useState([
+    ...templates,
+    ...pendingTemplates,
+  ])
   const [showSourcePrompts, setShowSourcePrompts] = useState(false)
   const { container } = useContainer()
+
+  console.log("Edited Templates:", editedTemplates, templates, pendingTemplates)
 
   const selectedTemplate = editedTemplates[selectedIndex]
 
@@ -98,6 +107,16 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
   }
 
   /**
+   * Handle cancel
+   */
+  const handleCancel = () => {
+    if (onClose) {
+      onClose()
+    }
+    onOpenChange(false)
+  }
+
+  /**
    * Handle save all
    */
   const handleSaveAll = () => {
@@ -109,9 +128,9 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
   }
 
   useEffect(() => {
-    setEditedTemplates(templates)
+    setEditedTemplates([...templates, ...pendingTemplates])
     setSelectedIndex(0)
-  }, [templates])
+  }, [templates, pendingTemplates])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -309,7 +328,7 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={handleCancel}>
             {i18n.t("common.cancel")}
           </Button>
           <Button onClick={handleSaveAll}>

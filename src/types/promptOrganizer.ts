@@ -203,3 +203,13 @@ export interface GenerationProgress {
   /** Current status */
   status: "generating" | "complete" | "error"
 }
+
+/**
+ * Pending organizer templates (stored until user saves or discards)
+ */
+export interface PendingOrganizerTemplates {
+  /** Template candidates */
+  templates: TemplateCandidate[]
+  /** Last generated at */
+  generatedAt: number
+}

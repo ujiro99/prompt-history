@@ -38,6 +38,7 @@ export function GenerationMenu({
   const { setPrompt } = usePromptExecution({ nodeAtCaret })
   const {
     result,
+    pendingTemplates,
     isExecuting,
     progress,
     error,
@@ -51,8 +52,6 @@ export function GenerationMenu({
   const [organizerExecuteOpen, setOrganizerExecuteOpen] = useState(false)
   const [organizerSummaryOpen, setOrganizerSummaryOpen] = useState(false)
   const [organizerPreviewOpen, setOrganizerPreviewOpen] = useState(false)
-
-  console.log("result", result)
 
   /**
    * Open prompt-improve dialog
@@ -167,6 +166,11 @@ export function GenerationMenu({
         isExecuting={isExecuting}
         progress={progress}
         onCancel={cancelGeneration}
+        pendingTemplates={pendingTemplates}
+        onOpenPreview={() => {
+          setOrganizerPreviewOpen(true)
+          setOrganizerExecuteOpen(false)
+        }}
       />
 
       {/* Organizer Summary Dialog */}
@@ -183,6 +187,7 @@ export function GenerationMenu({
         open={organizerPreviewOpen}
         onOpenChange={setOrganizerPreviewOpen}
         templates={result?.templates || []}
+        pendingTemplates={pendingTemplates}
         onSave={handleSaveTemplatesFromPreview}
       />
     </MenubarMenu>

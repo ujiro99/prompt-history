@@ -341,6 +341,9 @@ promptOrganizer:
     sourcePrompts: Source Prompts
   aiTemplates:
     title: AI Recommended
+  pendingTemplates:
+    warning: You have unreviewed generation results. ($1 items)
+    review: Review
   errors:
     noApiKey: Gemini API key is required. Please set it in settings.
 

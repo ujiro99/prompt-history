@@ -13,7 +13,10 @@ import type {
   TemplateCandidate,
   GenerationProgress,
 } from "@/types/promptOrganizer"
-import { promptOrganizerSettingsStorage } from "@/services/storage/definitions"
+import {
+  promptOrganizerSettingsStorage,
+  pendingOrganizerTemplatesStorage,
+} from "@/services/storage/definitions"
 import { promptOrganizerService } from "@/services/promptOrganizer/PromptOrganizerService"
 
 interface UsePromptOrganizerOptions {
@@ -32,6 +35,9 @@ export function usePromptOrganizer({
     null,
   )
   const [result, setResult] = useState<PromptOrganizerResult | null>(null)
+  const [pendingTemplates, setPendingTemplates] = useState<TemplateCandidate[]>(
+    [],
+  )
   const [isExecuting, setIsExecuting] = useState(false)
   const [progress, setProgress] = useState<GenerationProgress | null>(null)
   const [error, setError] = useState<OrganizerError | null>(null)
@@ -43,6 +49,16 @@ export function usePromptOrganizer({
     promptOrganizerSettingsStorage.getValue().then(setSettings)
     return promptOrganizerSettingsStorage.watch((newSettings) => {
       setSettings(newSettings)
+    })
+  }, [])
+
+  // Load pending templates
+  useEffect(() => {
+    pendingOrganizerTemplatesStorage.getValue().then((pending) => {
+      setPendingTemplates(pending?.templates || [])
+    })
+    return pendingOrganizerTemplatesStorage.watch((pending) => {
+      setPendingTemplates(pending?.templates || [])
     })
   }, [])
 
@@ -82,6 +98,14 @@ export function usePromptOrganizer({
         },
       )
       setResult(result)
+
+      // Append new templates to existing pending templates
+      const existing = await pendingOrganizerTemplatesStorage.getValue()
+      const existingTemplates = existing?.templates || []
+      await pendingOrganizerTemplatesStorage.setValue({
+        templates: [...existingTemplates, ...result.templates],
+        generatedAt: Date.now(),
+      })
     } catch (err) {
       const errorMessage = (err as Error).message
       if (errorMessage.includes("cancelled")) {
@@ -109,11 +133,38 @@ export function usePromptOrganizer({
   }
 
   /**
-   * Save templates
+   * Save templates (partial save supported)
    */
   const saveTemplates = async (candidates: TemplateCandidate[]) => {
     try {
-      await promptOrganizerService.saveTemplates(candidates)
+      // Save only templates with "save" or "save_and_pin" action
+      const templatesToSave = candidates.filter(
+        (c) => c.userAction === "save" || c.userAction === "save_and_pin",
+      )
+      await promptOrganizerService.saveTemplates(templatesToSave)
+
+      // Remove processed templates from pending storage
+      const processedIds = new Set(
+        candidates.filter((c) => c.userAction !== "pending").map((c) => c.id),
+      )
+
+      const existing = await pendingOrganizerTemplatesStorage.getValue()
+      if (existing) {
+        const remaining = existing.templates.filter(
+          (t) => !processedIds.has(t.id),
+        )
+
+        if (remaining.length > 0) {
+          // Keep unprocessed templates in pending state
+          await pendingOrganizerTemplatesStorage.setValue({
+            templates: remaining,
+            generatedAt: existing.generatedAt,
+          })
+        } else {
+          // Clear pending state if all templates are processed
+          await pendingOrganizerTemplatesStorage.setValue(null)
+        }
+      }
     } catch (err) {
       setError({
         code: "API_ERROR",
@@ -126,6 +177,7 @@ export function usePromptOrganizer({
     settings,
     estimate,
     result,
+    pendingTemplates,
     isExecuting,
     progress,
     error,

@@ -21,10 +21,11 @@ import { stopPropagation } from "@/utils/dom"
 import { ApiKeyWarningBanner } from "@/components/common/ApiKeyWarningBanner"
 import { PromptImproverSettingsDialog } from "@/components/settings/PromptImproverSettingsDialog"
 import { ModelSettingsDialog } from "@/components/settings/ModelSettingsDialog"
-import type { PromptOrganizerSettings } from "@/types/promptOrganizer"
 import type {
+  PromptOrganizerSettings,
   OrganizerExecutionEstimate,
   GenerationProgress,
+  TemplateCandidate,
 } from "@/types/promptOrganizer"
 
 type Props = {
@@ -34,6 +35,8 @@ type Props = {
   isExecuting?: boolean
   progress?: GenerationProgress | null
   onCancel?: () => void
+  pendingTemplates?: TemplateCandidate[]
+  onOpenPreview?: () => void
 }
 
 export const OrganizerExecuteDialog: React.FC<Props> = ({
@@ -43,6 +46,8 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
   isExecuting: externalIsExecuting,
   progress,
   onCancel,
+  pendingTemplates,
+  onOpenPreview,
 }) => {
   const [_settings, setSettings] = useState<PromptOrganizerSettings | null>(
     null,
@@ -128,6 +133,8 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
     ? (estimate.estimatedInputTokens / 1000000) * 100
     : 0
 
+  const hasPendingTemplates = pendingTemplates && pendingTemplates.length > 0
+
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -143,10 +150,31 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 pb-4">
             {/* API Key Warning */}
             {apiKeyMissing && (
               <ApiKeyWarningBanner onOpenSettings={handleOpenSettings} />
+            )}
+
+            {/* Pending Templates Warning */}
+            {hasPendingTemplates && !isExecuting && (
+              <Alert className="bg-neutral-100 border-neutral-200 flex items-center">
+                <AlertDescription className="text-neutral-600 flex items-center flex-1">
+                  <AlertCircle className="h-4 w-4" />
+                  {i18n.t("promptOrganizer.pendingTemplates.warning", [
+                    pendingTemplates.length,
+                  ])}
+                </AlertDescription>
+                {onOpenPreview && (
+                  <Button
+                    variant="outline"
+                    onClick={onOpenPreview}
+                    className="ml-2"
+                  >
+                    {i18n.t("promptOrganizer.pendingTemplates.review")}
+                  </Button>
+                )}
+              </Alert>
             )}
 
             {/* Error Display */}

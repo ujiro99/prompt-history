@@ -6,7 +6,11 @@ import type {
   AppSettings,
   ImprovePromptSettings,
 } from "@/types/prompt"
-import type { Category, PromptOrganizerSettings } from "@/types/promptOrganizer"
+import type {
+  Category,
+  PromptOrganizerSettings,
+  PendingOrganizerTemplates,
+} from "@/types/promptOrganizer"
 import type { AiConfigCacheData } from "./aiConfigCache"
 import type { ImprovePromptCacheData } from "./improvePromptCache"
 import { DEFAULT_CATEGORIES } from "../promptOrganizer/defaultCategories"
@@ -157,3 +161,17 @@ export const promptOrganizerSettingsStorage =
     version: 1,
     migrations: {},
   })
+
+/**
+ * Pending Organizer Templates storage definition
+ * Stores template candidates that are pending user action (save/discard)
+ */
+export const pendingOrganizerTemplatesStorage =
+  storage.defineItem<PendingOrganizerTemplates | null>(
+    "local:pendingOrganizerTemplates",
+    {
+      fallback: null,
+      version: 1,
+      migrations: {},
+    },
+  )
