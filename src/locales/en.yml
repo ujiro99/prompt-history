@@ -282,7 +282,8 @@ errors:
 # Prompt Organizer
 promptOrganizer:
   title: Organize Prompts
-  description: AI-powered prompt organization and template generation
+  description: Analyze and refine prompts using AI
+  targetPrompts: Organization Target Prompts
   settings:
     filterConditions: Filter Conditions for Organization Target Prompts
     filterPeriod: Filter Period

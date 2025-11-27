@@ -282,7 +282,8 @@ errors:
 # Prompt Organizer
 promptOrganizer:
   title: プロンプト整理
-  description: AI駆動のプロンプト整理とテンプレート生成
+  description: AIによりプロンプトを分析・精製します
+  targetPrompts: 整理対象プロンプト
   settings:
     filterConditions: 整理対象プロンプトの絞り込み条件
     filterPeriod: 最終実行日

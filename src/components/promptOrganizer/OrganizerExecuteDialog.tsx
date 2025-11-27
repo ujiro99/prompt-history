@@ -14,7 +14,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { AlertCircle, Settings } from "lucide-react"
 import { i18n } from "#imports"
 import { promptOrganizerSettingsStorage } from "@/services/storage/definitions"
-import { costEstimatorService } from "@/services/promptOrganizer/CostEstimatorService"
+import { promptOrganizerService } from "@/services/promptOrganizer/PromptOrganizerService"
 import { useContainer } from "@/hooks/useContainer"
 import { useAiModel } from "@/hooks/useAiModel"
 import { stopPropagation } from "@/utils/dom"
@@ -22,11 +22,13 @@ import { ApiKeyWarningBanner } from "@/components/common/ApiKeyWarningBanner"
 import { ModelSettingsDialog } from "@/components/settings/ModelSettingsDialog"
 import { OrganizerSettingsDialog } from "@/components/promptOrganizer/OrganizerSettingsDialog"
 import { EstimationDisplay } from "@/components/promptOrganizer/EstimationDisplay"
+import { ScrollAreaWithGradient } from "@/components/inputMenu/ScrollAreaWithGradient"
 import type {
   PromptOrganizerSettings,
   OrganizerExecutionEstimate,
   GenerationProgress,
   TemplateCandidate,
+  PromptForOrganization,
 } from "@/types/promptOrganizer"
 
 type Props = {
@@ -50,12 +52,12 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
   pendingTemplates,
   onOpenPreview,
 }) => {
-  const [_settings, setSettings] = useState<PromptOrganizerSettings | null>(
-    null,
-  )
   const [estimate, setEstimate] = useState<OrganizerExecutionEstimate | null>(
     null,
   )
+  const [targetPrompts, setTargetPrompts] = useState<
+    PromptForOrganization[] | null
+  >(null)
   const [localIsExecuting, setLocalIsExecuting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false)
@@ -67,22 +69,26 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
   // Use external isExecuting if provided, otherwise use local state
   const isExecuting = externalIsExecuting ?? localIsExecuting
 
+  useEffect(() => {
+    // Check API key (using hook value)
+    if (!genaiApiKey) {
+      setEstimate(null)
+      return
+    }
+  }, [genaiApiKey])
+
   // Load settings and calculate estimate when dialog opens
   useEffect(() => {
     const updateSettings = async (loadedSettings: PromptOrganizerSettings) => {
       try {
-        setSettings(loadedSettings)
-
-        // Check API key (using hook value)
-        if (!genaiApiKey) {
-          setEstimate(null)
-          return
-        }
-
         // Calculate estimate
         const estimateResult =
-          await costEstimatorService.estimateExecution(loadedSettings)
+          await promptOrganizerService.estimateExecution(loadedSettings)
         setEstimate(estimateResult)
+        // Get target prompts
+        const targets =
+          await promptOrganizerService.targetPrompts(loadedSettings)
+        setTargetPrompts(targets)
       } catch (err) {
         console.error("Failed to load settings:", err)
         setError(i18n.t("errors.unknownError"))
@@ -93,12 +99,11 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
       promptOrganizerSettingsStorage
         .getValue()
         .then((loadedSettings) => updateSettings(loadedSettings))
-
       return promptOrganizerSettingsStorage.watch((loadedSettings) => {
         updateSettings(loadedSettings)
       })
     }
-  }, [open, genaiApiKey])
+  }, [open])
 
   const handleExecute = async () => {
     if (apiKeyMissing) {
@@ -195,6 +200,35 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
+
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold">
+                {i18n.t("promptOrganizer.targetPrompts")}
+              </h3>
+              <div className="bg-neutral-100 rounded-md overflow-hidden">
+                <ScrollAreaWithGradient
+                  className="max-h-40 px-2.5 py-3"
+                  gradientHeight={"2rem"}
+                  style={
+                    {
+                      "--ph-gradient-background": "rgb(243 244 246)",
+                    } as React.CSSProperties
+                  }
+                  indicatorVisible={false}
+                >
+                  <div className="space-y-1.5">
+                    {targetPrompts?.map((prompt, index) => (
+                      <div
+                        key={prompt.id}
+                        className="text-xs font-mono break-all"
+                      >
+                        {index + 1}. {prompt.name}{" "}
+                      </div>
+                    ))}
+                  </div>
+                </ScrollAreaWithGradient>
+              </div>
+            </div>
 
             {/* Estimation Display */}
             {!apiKeyMissing && (

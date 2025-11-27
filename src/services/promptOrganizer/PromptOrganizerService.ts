@@ -9,6 +9,7 @@ import type {
   TemplateCandidate,
   OrganizerExecutionEstimate,
   GenerationProgress,
+  PromptForOrganization,
 } from "@/types/promptOrganizer"
 import { PromptFilterService } from "./PromptFilterService"
 import { TemplateGeneratorService } from "./TemplateGeneratorService"
@@ -43,16 +44,12 @@ export class PromptOrganizerService {
       onProgress?: (progress: GenerationProgress) => void
     },
   ): Promise<PromptOrganizerResult> {
-    // 1. Get all prompts
-    const prompts = await promptsService.getAllPrompts()
-
-    // 2. Filter prompts
-    const targetPrompts = this.filterService.filterPrompts(prompts, settings)
+    // 1. Get filtered prompts
+    const targetPrompts = await this.targetPrompts(settings)
     console.log(
       `${targetPrompts.length} prompts selected for organization`,
       targetPrompts,
     )
-    console.log("Organization settings:", settings)
 
     if (targetPrompts.length === 0) {
       throw new Error("No prompts match the filter criteria")
@@ -60,7 +57,7 @@ export class PromptOrganizerService {
 
     const categories = await categoryService.getAll()
 
-    // 3. Generate templates using Gemini with progress callback
+    // 2. Generate templates using Gemini with progress callback
     const { templates, usage } = await this.generatorService.generateTemplates(
       targetPrompts,
       settings,
@@ -70,7 +67,7 @@ export class PromptOrganizerService {
       },
     )
 
-    // 4. Convert to template candidates using TemplateConverter
+    // 3. Convert to template candidates using TemplateConverter
     const now = new Date()
     const templateCandidates: TemplateCandidate[] = await Promise.all(
       templates.map(async (template) => {
@@ -92,7 +89,7 @@ export class PromptOrganizerService {
       }),
     )
 
-    // 5. Calculate estimated cost and actual cost
+    // 4. Calculate estimated cost and actual cost
     const estimatedCost = costEstimatorService.calculateCost({
       inputTokens: usage.inputTokens,
       outputTokens: usage.inputTokens * 0.5,
@@ -116,6 +113,23 @@ export class PromptOrganizerService {
    */
   public cancel(): void {
     this.generatorService.cancel()
+  }
+
+  /**
+   * Get target prompts based on settings
+   *  * @param settings - Organizer settings
+   *  * @returns List of target prompts with id and name
+   */
+  public targetPrompts(
+    settings: PromptOrganizerSettings,
+  ): Promise<PromptForOrganization[]> {
+    return (async () => {
+      // 1. Get all prompts
+      const allPrompts = await promptsService.getAllPrompts()
+
+      // 2. Filter target prompts
+      return this.filterService.filterPrompts(allPrompts, settings)
+    })()
   }
 
   /**
