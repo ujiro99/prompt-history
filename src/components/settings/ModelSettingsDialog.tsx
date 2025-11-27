@@ -123,20 +123,20 @@ export const ModelSettingsDialog: React.FC<ModelSettingsDialogProps> = ({
         {...stopPropagation()}
       >
         <DialogHeader>
-          <DialogTitle>{i18n.t("settings.promptImproverSettings")}</DialogTitle>
+          <DialogTitle>{i18n.t("settings.modelSettings.title")}</DialogTitle>
           <DialogDescription>
-            {i18n.t("settings.promptImprover.description")}
+            {i18n.t("settings.modelSettings.description")}
           </DialogDescription>
         </DialogHeader>
 
         <FieldGroup>
           <FieldLegend className="mb-0">
-            {i18n.t("settings.promptImprover.apiKeySettings")}
+            {i18n.t("settings.modelSettings.apiKeySettings")}
           </FieldLegend>
 
           <Field>
             <FieldLabel htmlFor="api-key">
-              {i18n.t("settings.promptImprover.geminiApiKey")}
+              {i18n.t("settings.modelSettings.geminiApiKey")}
             </FieldLabel>
             <div className="flex gap-2">
               <Input
@@ -147,7 +147,7 @@ export const ModelSettingsDialog: React.FC<ModelSettingsDialogProps> = ({
                   setApiKey(e.target.value)
                   setApiKeyError(null)
                 }}
-                placeholder={i18n.t("settings.promptImprover.enterApiKey")}
+                placeholder={i18n.t("settings.modelSettings.enterApiKey")}
                 className={apiKeyError ? "border-destructive" : ""}
               />
               <Button
@@ -165,11 +165,11 @@ export const ModelSettingsDialog: React.FC<ModelSettingsDialogProps> = ({
             </div>
             <FieldError>{apiKeyError}</FieldError>
 
-            <FieldDescription>
-              <p className="flex items-center gap-1.5 mt-2">
+            <div className="mt-2 space-y-2">
+              <FieldDescription className="flex items-center gap-1.5">
                 <Info className="size-4.5 stroke-blue-500 fill-blue-100" />
                 <span>
-                  {i18n.t("settings.promptImprover.getApiKeyInfo")}{" "}
+                  {i18n.t("settings.modelSettings.getApiKeyInfo")}{" "}
                   <a
                     href="https://ai.google.dev/gemini-api/docs/api-key"
                     target="_blank"
@@ -179,25 +179,23 @@ export const ModelSettingsDialog: React.FC<ModelSettingsDialogProps> = ({
                     https://ai.google.dev/gemini-api/docs/api-key
                   </a>
                 </span>
-              </p>
-            </FieldDescription>
+              </FieldDescription>
 
-            <FieldDescription>
-              <p className="flex items-start gap-1.5">
+              <FieldDescription className="flex items-start gap-1.5">
                 <TriangleAlert className="size-5.5 stroke-amber-500 fill-amber-100 mt-0.5" />
                 <span>
-                  {i18n.t("settings.promptImprover.freeApiWarning")}{" "}
+                  {i18n.t("settings.modelSettings.freeApiWarning")}{" "}
                   <a
                     href="https://ai.google.dev/gemini-api/terms"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="underline underline-offset-4 hover:text-primary"
                   >
-                    {i18n.t("settings.promptImprover.learnMore")}
+                    {i18n.t("settings.modelSettings.learnMore")}
                   </a>
                 </span>
-              </p>
-            </FieldDescription>
+              </FieldDescription>
+            </div>
           </Field>
         </FieldGroup>
 

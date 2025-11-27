@@ -223,7 +223,7 @@ export function SettingsMenu({
             </MenubarLabel>
             <MenubarItem onClick={() => setModelSettingsOpen(true)}>
               <Brain size={16} />
-              {i18n.t("settings.modelSettings")}
+              {i18n.t("settings.modelSettings.title")}
             </MenubarItem>
             <MenubarItem onClick={handleOpenPromptImproverSettings}>
               <WandSparkles size={16} />

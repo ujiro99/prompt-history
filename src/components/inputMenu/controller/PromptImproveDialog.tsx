@@ -18,11 +18,13 @@ import { ButtonGroup } from "@/components/ui/button-group"
 import { Textarea } from "@/components/ui/textarea"
 import { useContainer } from "@/hooks/useContainer"
 import { useSettings } from "@/hooks/useSettings"
+import { useAiModel } from "@/hooks/useAiModel"
 import { analytics } from "#imports"
 import { ImprovePromptData } from "@/types/prompt"
 import { PromptImprover } from "@/services/genai/PromptImprover"
 import { stopPropagation } from "@/utils/dom"
 import { mergeVariableConfigs } from "@/utils/variables/variableParser"
+import { improvePromptSettingsStorage } from "@/services/storage/definitions"
 
 /**
  * Props for prompt edit dialog
@@ -56,12 +58,14 @@ export const PromptImproveDialog: React.FC<PromptImproveDialogProps> = ({
   const { container } = useContainer()
   const { settings } = useSettings()
 
+  const { genaiApiKey } = useAiModel()
+  const isApiKeyConfigured = Boolean(genaiApiKey)
+
   // Prompt improvement states
   const [improvedContent, setImprovedContent] = useState("")
   const [isImproving, setIsImproving] = useState(false)
   const [improvementError, setImprovementError] = useState<string | null>(null)
   const promptImproverRef = useRef<PromptImprover | null>(null)
-  const [isApiKeyConfigured, setIsApiKeyConfigured] = useState(false)
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false)
   const [modelSettingsDialogOpen, setModelSettingsDialogOpen] = useState(false)
 
@@ -79,19 +83,15 @@ export const PromptImproveDialog: React.FC<PromptImproveDialogProps> = ({
   useEffect(() => {
     if (!promptImproverRef.current) {
       promptImproverRef.current = new PromptImprover()
-    }
+      promptImproverRef.current.loadSettings()
 
-    // Check API key configuration
-    const checkApiKeyConfig = async () => {
-      if (promptImproverRef.current) {
-        await promptImproverRef.current.loadSettings()
-        setIsApiKeyConfigured(promptImproverRef.current.isApiKeyConfigured())
-      }
+      // Watch for settings changes
+      return improvePromptSettingsStorage.watch(() => {
+        promptImproverRef.current?.loadSettings().catch((error) => {
+          console.error("Failed to load prompt improver settings:", error)
+        })
+      })
     }
-
-    checkApiKeyConfig().catch((error) => {
-      console.error("Failed to check API key configuration:", error)
-    })
   }, [])
 
   // Update initial values
@@ -134,29 +134,6 @@ export const PromptImproveDialog: React.FC<PromptImproveDialogProps> = ({
       setVariables([])
     }
   }, [content, variableExpansionEnabled])
-
-  // Reload settings when settings dialog closes
-  useEffect(() => {
-    let isMounted = true
-    if (!settingsDialogOpen && open && promptImproverRef.current) {
-      // Settings dialog was closed, reload settings
-      promptImproverRef.current
-        .loadSettings()
-        .then(() => {
-          if (isMounted && promptImproverRef.current) {
-            setIsApiKeyConfigured(
-              promptImproverRef.current.isApiKeyConfigured(),
-            )
-          }
-        })
-        .catch((error) => {
-          console.error("Failed to reload settings:", error)
-        })
-    }
-    return () => {
-      isMounted = false
-    }
-  }, [settingsDialogOpen, open])
 
   /**
    * Improve prompt using Gemini AI

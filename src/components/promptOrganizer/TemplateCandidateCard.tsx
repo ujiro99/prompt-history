@@ -20,34 +20,6 @@ export const TemplateCandidateCard = ({
   onClick,
   className,
 }: TemplateCandidateCardProps) => {
-  // Truncate content for preview
-  const truncateContent = (
-    content: string,
-    maxLength: number = 100,
-  ): string => {
-    if (content.length <= maxLength) return content
-    return content.slice(0, maxLength) + "..."
-  }
-
-  // Highlight variables in content
-  const highlightVariables = (content: string): React.ReactElement => {
-    const parts = content.split(/(\{\{[^}]+\}\})/g)
-    return (
-      <>
-        {parts.map((part, index) => {
-          if (part.match(/\{\{[^}]+\}\}/)) {
-            return (
-              <span key={index} className="text-primary font-semibold">
-                {part}
-              </span>
-            )
-          }
-          return <span key={index}>{part}</span>
-        })}
-      </>
-    )
-  }
-
   // Get category name (with i18n for default categories)
   const getCategoryLabel = (categoryId: string): string => {
     // Try i18n key first for default categories

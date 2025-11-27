@@ -124,10 +124,6 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
     setSettingsDialogOpen(true)
   }
 
-  const formatCost = (cost: number) => {
-    return `¥${cost.toFixed(2)}`
-  }
-
   const contextUsagePercent = estimate
     ? (estimate.estimatedInputTokens / 1000000) * 100
     : 0
@@ -189,16 +185,6 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
                     </span>
                   </div>
 
-                  {/* Output Tokens (estimate) */}
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">
-                      {i18n.t("promptOrganizer.estimate.outputTokens")}
-                    </span>
-                    <span className="font-medium text-muted-foreground">
-                      (AI生成後に確定)
-                    </span>
-                  </div>
-
                   {/* Context Usage Bar */}
                   <div className="space-y-1">
                     <div className="flex justify-between items-center text-sm">
@@ -210,19 +196,6 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
                       </span>
                     </div>
                     <Progress value={contextUsagePercent} className="h-2" />
-                  </div>
-
-                  {/* Estimated Cost */}
-                  <div className="flex justify-between items-center text-sm pt-2 border-t">
-                    <span className="text-muted-foreground">
-                      {i18n.t("promptOrganizer.estimate.estimatedCost")}
-                    </span>
-                    <span className="font-medium text-lg">
-                      {formatCost(estimate.estimatedCost)}
-                      <span className="text-xs text-muted-foreground ml-1">
-                        / 回 (参考)
-                      </span>
-                    </span>
                   </div>
                 </div>
               </div>

@@ -42,6 +42,8 @@ export class PromptImprover {
    * Supports both user settings and environment variable fallbacks
    */
   public async loadSettings(): Promise<void> {
+    console.log("Loading Prompt Improver settings...")
+
     // Load API key
     await this.loadApiKey()
 
@@ -64,20 +66,6 @@ export class PromptImprover {
   }
 
   /**
-   * Check if API key is configured
-   */
-  public isApiKeyConfigured(): boolean {
-    return this.client.isInitialized()
-  }
-
-  /**
-   * Check if the service is ready
-   */
-  public isReady(): boolean {
-    return this.client.isInitialized()
-  }
-
-  /**
    * Improve a prompt using Gemini AI
    * @param options - Improvement options including callbacks
    */
@@ -95,7 +83,7 @@ export class PromptImprover {
     }
 
     // Check if API key is configured
-    if (!this.isApiKeyConfigured()) {
+    if (!this.client.isInitialized()) {
       const error = new GeminiError(
         "API key not configured. Please set your API key in settings.",
         GeminiErrorType.API_KEY_MISSING,

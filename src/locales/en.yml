@@ -194,15 +194,17 @@ settings:
     pinned: Starred only
   export: Export prompts
   import: Import prompts
-  modelSettings: Model Settings
-  promptImproverSettings: Prompt Improver Settings
-  promptImprover:
+  modelSettings:
+    title: Model Settings
+    description: Configure the AI model to use.
     apiKeySettings: API Key Settings
     geminiApiKey: Gemini API Key
     enterApiKey: Enter your Gemini API key
     getApiKeyInfo: "Get your API key:"
     freeApiWarning: "Important: Free API keys may be used for model training."
     learnMore: Learn more
+  promptImproverSettings: Prompt Improver Settings
+  promptImprover:
     improvementPromptSettings: Improvement Prompt Settings
     modeUrl: URL (GitHub Gist, etc.)
     modeText: Direct Input
@@ -292,7 +294,7 @@ promptOrganizer:
     organizationPrompt: Organization Prompt
   estimate:
     targetPrompts: Number of Target Prompts
-    title: Estimated Cost
+    title: Input Token Estimate
     inputTokens: Input Tokens
     contextUsage: Context Usage
   buttons:

@@ -111,9 +111,10 @@ describe("useLazyStorage", () => {
       })
 
       // value should update immediately, debouncedValue should not
+      // isSaving should be false during debounce period
       expect(result.current.value).toBe("value1")
       expect(result.current.debouncedValue).toBe("initial")
-      expect(result.current.isSaving).toBe(true)
+      expect(result.current.isSaving).toBe(false)
 
       expect(mockStorageItem.setValue).not.toHaveBeenCalled()
 
@@ -123,9 +124,10 @@ describe("useLazyStorage", () => {
       })
 
       // value updates again, debouncedValue still old
+      // isSaving should still be false during debounce period
       expect(result.current.value).toBe("value2")
       expect(result.current.debouncedValue).toBe("initial")
-      expect(result.current.isSaving).toBe(true)
+      expect(result.current.isSaving).toBe(false)
 
       expect(mockStorageItem.setValue).not.toHaveBeenCalled()
 
@@ -141,7 +143,7 @@ describe("useLazyStorage", () => {
       expect(result.current.isSaving).toBe(false)
     })
 
-    it("should keep isSaving true during debounce period", async () => {
+    it("should keep isSaving false during debounce period", async () => {
       mockStorageItem.getValue = vi.fn().mockResolvedValue("initial")
       mockStorageItem.setValue = vi.fn().mockResolvedValue(undefined)
 
@@ -155,18 +157,21 @@ describe("useLazyStorage", () => {
         result.current.setValue("test")
       })
 
-      expect(result.current.isSaving).toBe(true)
+      // isSaving should be false during debounce period
+      expect(result.current.isSaving).toBe(false)
 
       await act(async () => {
         await new Promise((resolve) => setTimeout(resolve, 200))
       })
 
-      expect(result.current.isSaving).toBe(true)
+      // Still false during debounce period
+      expect(result.current.isSaving).toBe(false)
 
       await act(async () => {
         await new Promise((resolve) => setTimeout(resolve, 400))
       })
 
+      // After timeout completion, isSaving should be false again (after write completes)
       expect(result.current.isSaving).toBe(false)
     })
 
@@ -188,7 +193,8 @@ describe("useLazyStorage", () => {
       expect(result.current.value).toBe("updated")
       // debouncedValue should still be old
       expect(result.current.debouncedValue).toBe("initial")
-      expect(result.current.isSaving).toBe(true)
+      // isSaving should be false during debounce period
+      expect(result.current.isSaving).toBe(false)
 
       expect(mockStorageItem.setValue).not.toHaveBeenCalled()
 
@@ -216,7 +222,8 @@ describe("useLazyStorage", () => {
         result.current.setValue("first")
       })
 
-      expect(result.current.isSaving).toBe(true)
+      // isSaving should be false during debounce period
+      expect(result.current.isSaving).toBe(false)
 
       await act(async () => {
         await new Promise((resolve) => setTimeout(resolve, 200))
@@ -226,7 +233,8 @@ describe("useLazyStorage", () => {
         result.current.setValue("second")
       })
 
-      expect(result.current.isSaving).toBe(true)
+      // Still false during debounce period
+      expect(result.current.isSaving).toBe(false)
 
       await act(async () => {
         await new Promise((resolve) => setTimeout(resolve, 200))
@@ -236,7 +244,8 @@ describe("useLazyStorage", () => {
         result.current.setValue("third")
       })
 
-      expect(result.current.isSaving).toBe(true)
+      // Still false during debounce period
+      expect(result.current.isSaving).toBe(false)
 
       expect(mockStorageItem.setValue).not.toHaveBeenCalled()
 
@@ -273,7 +282,8 @@ describe("useLazyStorage", () => {
 
       expect(result.current.value).toBe("hello")
       expect(result.current.debouncedValue).toBe("")
-      expect(result.current.isSaving).toBe(true)
+      // isSaving should be false during debounce period
+      expect(result.current.isSaving).toBe(false)
 
       expect(mockStorageItem.setValue).not.toHaveBeenCalled()
 
@@ -307,7 +317,8 @@ describe("useLazyStorage", () => {
       })
 
       expect(result.current.value).toBe("test")
-      expect(result.current.isSaving).toBe(true)
+      // isSaving should be false during debounce period
+      expect(result.current.isSaving).toBe(false)
 
       await act(async () => {
         await new Promise((resolve) => setTimeout(resolve, 400))
@@ -336,7 +347,8 @@ describe("useLazyStorage", () => {
         result.current.setValue("value")
       })
 
-      expect(result.current.isSaving).toBe(true)
+      // isSaving should be false during debounce period
+      expect(result.current.isSaving).toBe(false)
 
       await act(async () => {
         await new Promise((resolve) => setTimeout(resolve, 600))
@@ -365,7 +377,8 @@ describe("useLazyStorage", () => {
         result.current.setValue("test")
       })
 
-      expect(result.current.isSaving).toBe(true)
+      // isSaving should be false during debounce period
+      expect(result.current.isSaving).toBe(false)
 
       unmount()
 

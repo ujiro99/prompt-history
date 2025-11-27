@@ -27,6 +27,20 @@ const { mockGeminiClient, mockGenaiApiKeyStorage, mockSystemInstruction } =
           ],
         }),
       ),
+      generateStructuredContentStream: vi.fn(
+        async (): Promise<OrganizePromptsResponse> => ({
+          templates: [
+            {
+              title: "Test Template",
+              content: "Test {{variable}}",
+              useCase: "Test use case",
+              categoryId: "test-cat",
+              sourcePromptIds: ["1", "2"],
+              variables: [{ name: "variable", description: "Test variable" }],
+            },
+          ],
+        }),
+      ),
     }
 
     const mockGenaiApiKeyStorage = {
@@ -170,7 +184,11 @@ describe("TemplateGeneratorService", () => {
         { id: "1", name: "Single", content: "Content", executionCount: 3 },
       ]
 
-      const prompt = service.buildPrompt(prompts, "Test prompt", defaultCategories)
+      const prompt = service.buildPrompt(
+        prompts,
+        "Test prompt",
+        defaultCategories,
+      )
 
       expect(prompt).toContain("1. Single")
       expect(prompt).not.toContain("2.")
@@ -179,15 +197,17 @@ describe("TemplateGeneratorService", () => {
 
   describe("generateTemplates", () => {
     it("should call GeminiClient with correct parameters", async () => {
-      const result = await service.generateTemplates(
+      const _result = await service.generateTemplates(
         defaultPrompts,
         defaultSettings,
         defaultCategories,
       )
 
-      expect(mockGeminiClient.generateStructuredContent).toHaveBeenCalledOnce()
+      expect(
+        mockGeminiClient.generateStructuredContentStream,
+      ).toHaveBeenCalledOnce()
 
-      const callArgs = mockGeminiClient.generateStructuredContent.mock
+      const callArgs = mockGeminiClient.generateStructuredContentStream.mock
         .calls[0] as any[]
       const [prompt, schema, config] = callArgs
 
@@ -266,7 +286,7 @@ describe("TemplateGeneratorService", () => {
     })
 
     it("should handle multiple templates in response", async () => {
-      mockGeminiClient.generateStructuredContent.mockResolvedValueOnce({
+      mockGeminiClient.generateStructuredContentStream.mockResolvedValueOnce({
         templates: [
           {
             title: "Template 1",
@@ -322,7 +342,7 @@ describe("TemplateGeneratorService", () => {
       )
 
       const schema = (
-        mockGeminiClient.generateStructuredContent.mock.calls[0] as any[]
+        mockGeminiClient.generateStructuredContentStream.mock.calls[0] as any[]
       )[1]
 
       expect(schema).toEqual({

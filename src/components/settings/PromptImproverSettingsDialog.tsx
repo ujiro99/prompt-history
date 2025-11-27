@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { AlertCircle, Info } from "lucide-react"
+import { AlertCircle, Info, RefreshCw } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -29,13 +29,14 @@ import { Separator } from "@/components/ui/separator"
 import { ApiKeyWarningBanner } from "@/components/common/ApiKeyWarningBanner"
 import { useContainer } from "@/hooks/useContainer"
 import { useAiModel } from "@/hooks/useAiModel"
+import { useLazyStorage } from "@/hooks/useLazyStorage"
 import { improvePromptSettingsStorage } from "@/services/storage/definitions"
 import { improvePromptCacheService } from "@/services/storage/improvePromptCache"
-import type { ImprovePromptSettings } from "@/types/prompt"
 import { ImprovePromptInputMethod } from "@/types/prompt"
 import { i18n } from "#imports"
 import { sleep } from "@/lib/utils"
 import { stopPropagation } from "@/utils/dom"
+import type { ImprovePromptSettings } from "@/types/prompt"
 
 /**
  * Props for PromptImproverSettingsDialog
@@ -58,12 +59,14 @@ export const PromptImproverSettingsDialog: React.FC<
   const { container } = useContainer()
   const { genaiApiKey } = useAiModel()
 
-  // Improvement prompt settings (improvement guidelines only, system role is fixed)
-  const [settings, setSettings] = useState<ImprovePromptSettings>({
-    mode: ImprovePromptInputMethod.URL,
-    textContent: "",
-    urlContent: "",
-    lastModified: 0,
+  const {
+    value: settings,
+    setValue: _setSettings,
+    isLoading,
+    isSaving,
+  } = useLazyStorage(improvePromptSettingsStorage, {
+    debounceDelay: 400,
+    artificialSetDelay: 600,
   })
 
   // Preview and fetch states
@@ -78,41 +81,66 @@ export const PromptImproverSettingsDialog: React.FC<
   const hasApiKey = !!genaiApiKey
 
   /**
-   * Load settings from storage
+   * Initialize settings on load
    */
   useEffect(() => {
-    if (open) {
-      /**
-       * Load settings from storage
-       */
-      const loadSettings = async () => {
+    if (isLoading) {
+      const initSettings = async () => {
         try {
-          const storedSettings = await improvePromptSettingsStorage.getValue()
-
-          // Use default URL if urlContent is empty
-          if (!storedSettings.urlContent && DefaultUrl) {
-            storedSettings.urlContent = DefaultUrl
-          }
-
-          setSettings(storedSettings)
-
+          if (!settings) return
           // Load preview based on mode
-          if (storedSettings.mode === "text" && storedSettings.textContent) {
-            setPreviewPrompt(storedSettings.textContent)
-          } else if (
-            storedSettings.mode === "url" &&
-            storedSettings.urlContent
-          ) {
+          if (settings.mode === "text" && settings.textContent) {
+            setPreviewPrompt(settings.textContent)
+          } else if (settings.mode === "url" && settings.urlContent) {
             // Try to fetch from URL for preview
-            await fetchPromptFromUrl(storedSettings.urlContent, true)
+            await fetchPromptFromUrl(settings.urlContent, true)
           }
         } catch (error) {
           console.error("Failed to load settings:", error)
         }
       }
-      loadSettings()
+      initSettings()
     }
-  }, [open])
+  }, [isLoading, settings])
+
+  /**
+   * Validate inputs
+   */
+  const validate = (newSettings: ImprovePromptSettings): boolean => {
+    let isValid = true
+    if (!newSettings) return false
+    // Validate based on mode
+    if (newSettings.mode === "url") {
+      if (!newSettings.urlContent.trim()) {
+        setUrlError(i18n.t("errors.urlRequired"))
+        isValid = false
+      } else {
+        try {
+          new URL(newSettings.urlContent)
+          setUrlError(null)
+        } catch {
+          setUrlError(i18n.t("errors.invalidUrl"))
+          isValid = false
+        }
+      }
+    } else if (newSettings.mode === "text") {
+      // Text mode validation is handled by checking if textContent is not empty
+      // when saving, but we don't block save if empty (user might want to clear)
+    }
+
+    return isValid
+  }
+
+  const setSettings = (
+    updater: (prev: ImprovePromptSettings) => ImprovePromptSettings,
+  ) => {
+    _setSettings((prevVal: ImprovePromptSettings | null) => {
+      if (!prevVal) return prevVal
+      const newVal = updater(prevVal)
+      validate(newVal)
+      return newVal
+    })
+  }
 
   /**
    * Handle mode change
@@ -124,9 +152,9 @@ export const PromptImproverSettingsDialog: React.FC<
     }))
 
     // Update preview when mode changes
-    if (mode === "text" && settings.textContent) {
+    if (mode === "text" && settings?.textContent) {
       setPreviewPrompt(settings.textContent)
-    } else if (mode === "url" && settings.urlContent) {
+    } else if (mode === "url" && settings?.urlContent) {
       // Preview will be updated when user clicks fetch
       setPreviewPrompt("")
     } else {
@@ -153,26 +181,24 @@ export const PromptImproverSettingsDialog: React.FC<
       ...prev,
       urlContent: value,
     }))
-    setUrlError(null)
   }
 
   /**
    * Set default URL
    */
   const handleSetDefaultUrl = () => {
-    if (DefaultUrl) {
-      setSettings((prev) => ({
-        ...prev,
-        urlContent: DefaultUrl,
-      }))
-      setUrlError(null)
-    }
+    setSettings((prev) => ({
+      ...prev,
+      urlContent: DefaultUrl,
+    }))
+    setUrlError(null)
   }
 
   /**
    * Fetch prompt from URL
    */
   const handleFetchPrompt = async () => {
+    if (!settings) return
     await fetchPromptFromUrl(settings.urlContent, false)
   }
 
@@ -236,55 +262,6 @@ export const PromptImproverSettingsDialog: React.FC<
   }
 
   /**
-   * Validate inputs
-   */
-  const validate = (): boolean => {
-    let isValid = true
-    // Validate based on mode
-    if (settings.mode === "url") {
-      if (!settings.urlContent.trim()) {
-        setUrlError(i18n.t("errors.urlRequired"))
-        isValid = false
-      } else {
-        try {
-          new URL(settings.urlContent)
-          setUrlError(null)
-        } catch {
-          setUrlError(i18n.t("errors.invalidUrl"))
-          isValid = false
-        }
-      }
-    } else if (settings.mode === "text") {
-      // Text mode validation is handled by checking if textContent is not empty
-      // when saving, but we don't block save if empty (user might want to clear)
-    }
-
-    return isValid
-  }
-
-  /**
-   * Save settings
-   */
-  const handleSave = async () => {
-    if (!validate()) {
-      return
-    }
-
-    try {
-      // Save system prompt settings
-      await improvePromptSettingsStorage.setValue(settings)
-
-      // Close dialog
-      onOpenChange(false)
-    } catch (error) {
-      console.error("Failed to save settings:", error)
-      setFetchError(
-        `Failed to save settings: ${error instanceof Error ? error.message : "Unknown error"}`,
-      )
-    }
-  }
-
-  /**
    * Cancel and close
    */
   const handleCancel = () => {
@@ -303,6 +280,9 @@ export const PromptImproverSettingsDialog: React.FC<
     event.stopPropagation()
     event.nativeEvent.stopImmediatePropagation()
   }
+
+  // Don't render until settings are loaded
+  if (isLoading || !settings) return null
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -480,10 +460,20 @@ export const PromptImproverSettingsDialog: React.FC<
         </div>
 
         <DialogFooter>
-          <Button variant="secondary" onClick={handleCancel}>
-            {i18n.t("common.cancel")}
+          <Button
+            onClick={handleCancel}
+            disabled={isSaving || !!urlError}
+            className="min-w-24"
+          >
+            {isSaving ? (
+              <>
+                <RefreshCw className="size-4 animate-spin mr-2" />{" "}
+                <span>{i18n.t("status.saving")}</span>
+              </>
+            ) : (
+              i18n.t("buttons.complete")
+            )}
           </Button>
-          <Button onClick={handleSave}>{i18n.t("common.save")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

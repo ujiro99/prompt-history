@@ -3,7 +3,6 @@
  * Settings input form with token count display
  */
 
-import { useState, useEffect, useRef } from "react"
 import { i18n } from "#imports"
 import { RefreshCw } from "lucide-react"
 import {
@@ -29,10 +28,8 @@ import { ApiKeyWarningBanner } from "@/components/common/ApiKeyWarningBanner"
 import { promptOrganizerSettingsStorage } from "@/services/storage/definitions"
 import { useContainer } from "@/hooks/useContainer"
 import { usePromptOrganizer } from "@/hooks/usePromptOrganizer"
-import { useDebounce } from "@/hooks/useDebounce"
+import { useLazyStorage } from "@/hooks/useLazyStorage"
 import { useAiModel } from "@/hooks/useAiModel"
-import type { PromptOrganizerSettings } from "@/types/promptOrganizer"
-import { sleep } from "@/lib/utils"
 import { stopPropagation } from "@/utils/dom"
 
 interface OrganizerSettingsDialogProps {
@@ -67,49 +64,18 @@ const PERIOD_OPTIONS = [
 export const OrganizerSettingsDialog: React.FC<
   OrganizerSettingsDialogProps
 > = ({ open, onOpenChange, onClickModelSettings }) => {
-  const [settings, setSettings] = useState<PromptOrganizerSettings | null>(null)
-  const [isSaving, setIsSaving] = useState(false)
-  const isFirstRender = useRef(true)
   const { container } = useContainer()
   const { estimate } = usePromptOrganizer({ enableEstimate: open })
-  const debouncedSettings = useDebounce(settings, 400)
-
+  const {
+    value: settings,
+    setValue: setSettings,
+    isSaving,
+  } = useLazyStorage(promptOrganizerSettingsStorage, {
+    debounceDelay: 400,
+    artificialSetDelay: 600,
+  })
   const { genaiApiKey } = useAiModel()
   const hasApiKey = !!genaiApiKey
-
-  /**
-   * Load settings on dialog open
-   */
-  useEffect(() => {
-    if (open) {
-      const loadData = async () => {
-        const storedSettings = await promptOrganizerSettingsStorage.getValue()
-        setSettings(storedSettings)
-      }
-      loadData()
-      return () => {
-        isFirstRender.current = true
-      }
-    }
-  }, [open])
-
-  /**
-   * Persist settings on change
-   */
-  useEffect(() => {
-    if (!debouncedSettings) return
-    if (isFirstRender.current) {
-      isFirstRender.current = false
-      return
-    }
-    const saveData = async () => {
-      setIsSaving(true)
-      await promptOrganizerSettingsStorage.setValue(debouncedSettings)
-      await sleep(600)
-      setIsSaving(false)
-    }
-    saveData()
-  }, [debouncedSettings])
 
   /**
    * Handle period change

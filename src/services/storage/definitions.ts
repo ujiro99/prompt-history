@@ -119,7 +119,7 @@ export const improvePromptSettingsStorage =
     fallback: {
       mode: ImprovePromptInputMethod.URL,
       textContent: "",
-      urlContent: "",
+      urlContent: import.meta.env.WXT_IMPROVE_PROMPT_URL || "",
       lastModified: 0,
     },
     version: 1,

@@ -194,15 +194,17 @@ settings:
     pinned: スター付きのみ
   export: プロンプトをエクスポート
   import: プロンプトをインポート
-  modelSettings: モデル設定
-  promptImproverSettings: プロンプト改善の設定
-  promptImprover:
+  modelSettings:
+    title: モデル設定
+    description: 使用するAIモデルを設定します。
     apiKeySettings: APIキー設定
     geminiApiKey: Gemini APIキー
     enterApiKey: Gemini APIキーを入力してください
     getApiKeyInfo: APIキーの取得方法：
     freeApiWarning: 重要：無料のAPIキーはモデルのトレーニングに使用される可能性があります。
     learnMore: 詳細を見る
+  promptImproverSettings: プロンプト改善の設定
+  promptImprover:
     improvementPromptSettings: 改善用プロンプトの設定方法
     modeUrl: URL (GitHub Gist など)
     modeText: 直接入力
@@ -292,7 +294,7 @@ promptOrganizer:
     organizationPrompt: 整理用プロンプト
   estimate:
     targetPrompts: 対象プロンプト数
-    title: 推定コスト
+    title: 入力トークン数 見積もり
     inputTokens: 入力トークン数
     contextUsage: コンテキスト使用率
   buttons:

@@ -14,9 +14,9 @@ import {
  * @returns An object with the following properties:
  *   - value: Current value (updates immediately on setValue)
  *   - debouncedValue: Debounced value (updates after debounce delay, matches what will be saved to storage)
- *   - setValue: Function to update the value
+ *   - setValue: Function to update the value (accepts T | null or a function (prevValue: T | null) => T | null)
  *   - isLoading: True when loading initial value from storage
- *   - isSaving: True when saving value to storage (including debounce wait time)
+ *   - isSaving: True when saving value to storage (not including debounce wait time)
  *
  * @example Basic usage without debounce
  * ```typescript
@@ -46,15 +46,24 @@ import {
  * // debouncedValue: updates after 300ms
  * // storage write: happens at 300ms + 200ms = 500ms
  * ```
+ *
+ * @example With function updater
+ * ```typescript
+ * const { value, setValue } = useLazyStorage(settingsStorage)
+ * setValue((prev) => {
+ *   if (!prev) return prev  // Can return null to skip update
+ *   return { ...prev, updated: true }
+ * })
+ * ```
  */
 export function useLazyStorage<T>(
   storageItem: WxtStorageItemLike<T>,
   options?: {
-    artificialSetDelay?: number
     debounceDelay?: number
+    artificialSetDelay?: number
   },
 ) {
-  const { artificialSetDelay = 0, debounceDelay = 0 } = options ?? {}
+  const { debounceDelay = 0, artificialSetDelay = 0 } = options ?? {}
   const [value, setValue] = useState<T | null>(null)
   const [debouncedValue, setDebouncedValue] = useState<T | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -62,6 +71,8 @@ export function useLazyStorage<T>(
 
   // Ref to track debounce timer
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // Ref to track if we are actually writing to storage (not just debouncing)
+  const isWritingRef = useRef(false)
 
   // Create lazy storage wrapper
   const lazyStorage = useMemo(
@@ -89,6 +100,9 @@ export function useLazyStorage<T>(
   // Watch for changes
   useEffect(() => {
     return lazyStorage.watch((newValue: T) => {
+      // Prevent overwriting local changes during actual storage write
+      if (isWritingRef.current) return
+      console.log("Storage value changed:", newValue)
       setValue(newValue)
       setDebouncedValue(newValue)
     })
@@ -96,37 +110,44 @@ export function useLazyStorage<T>(
 
   // Wrapped set function with debounce support
   const setLazyValue = useCallback(
-    async (newValue: T | ((prevValue: T | null) => T)) => {
+    async (newValue: T | null | ((prevValue: T | null) => T | null)) => {
       // 1. Calculate the actual value to set
       const valueToSet =
         typeof newValue === "function"
-          ? (newValue as (prevValue: T | null) => T)(value)
+          ? (newValue as (prevValue: T | null) => T | null)(value)
           : newValue
 
       // 2. Immediately update local state for responsive UI
       setValue(valueToSet)
 
-      // 3. Set saving state
-      setIsSaving(true)
-
-      // 4. Clear any existing debounce timer
+      // 3. Clear any existing debounce timer
       if (debounceTimerRef.current !== null) {
         clearTimeout(debounceTimerRef.current)
         debounceTimerRef.current = null
       }
 
-      // 5. Debounce storage update if delay is configured
+      // 4. Debounce storage update if delay is configured
       if (debounceDelay > 0) {
         debounceTimerRef.current = setTimeout(async () => {
+          setIsSaving(true)
+          isWritingRef.current = true
           setDebouncedValue(valueToSet)
-          await lazyStorage.set(valueToSet)
+          if (valueToSet !== null) {
+            await lazyStorage.set(valueToSet)
+          }
+          isWritingRef.current = false
           debounceTimerRef.current = null
           setIsSaving(false)
         }, debounceDelay)
       } else {
         // No debounce - update storage immediately
+        setIsSaving(true)
+        isWritingRef.current = true
         setDebouncedValue(valueToSet)
-        await lazyStorage.set(valueToSet)
+        if (valueToSet !== null) {
+          await lazyStorage.set(valueToSet)
+        }
+        isWritingRef.current = false
         setIsSaving(false)
       }
     },
