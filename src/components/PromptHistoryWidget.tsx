@@ -8,6 +8,7 @@ import { isEmpty, uuid } from "@/lib/utils"
 import type { Prompt, NotificationData, PromptError } from "../types/prompt"
 import { TestIds } from "@/components/const"
 import { i18n } from "#imports"
+import { SvgGradients } from "@/components/common/SvgGradients"
 
 // Singleton instance for compatibility
 const serviceFacade = PromptServiceFacade.getInstance()
@@ -153,6 +154,7 @@ export const PromptHistoryWidget: React.FC = () => {
 
   return (
     <div ref={containerRef} data-testid={TestIds.widget.container}>
+      <SvgGradients />
       <AppProviders
         container={containerRef.current}
         inputElement={targetElement}

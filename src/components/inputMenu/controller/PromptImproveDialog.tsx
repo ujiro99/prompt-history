@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react"
+import { cn } from "@/lib/utils"
 import { Sparkles, Loader2, Settings } from "lucide-react"
 import type { VariableConfig } from "@/types/prompt"
 import { VariableExpansionInfoDialog } from "./VariableExpansionInfoDialog"
@@ -326,6 +327,14 @@ export const PromptImproveDialog: React.FC<PromptImproveDialogProps> = ({
                           type="button"
                           variant="outline"
                           onClick={handleImprove}
+                          className={cn(
+                            "flex items-center",
+                            "bg-gradient-to-r from-purple-50 to-blue-50",
+                            "border-purple-200 hover:border-purple-300",
+                            "hover:from-purple-100 hover:to-blue-100",
+                            "text-purple-700 hover:text-purple-800",
+                            "transition-all duration-200",
+                          )}
                           disabled={
                             isImproving ||
                             isLoading ||
@@ -333,7 +342,10 @@ export const PromptImproveDialog: React.FC<PromptImproveDialogProps> = ({
                             !isApiKeyConfigured
                           }
                         >
-                          <Sparkles className="mr-0.5 size-4 fill-yellow-300 stroke-yellow-400" />
+                          <Sparkles
+                            className="mr-0.5 size-4"
+                            fill="url(#lucideGradient)"
+                          />
                           {i18n.t("dialogs.promptImprove.improveButton")}
                         </Button>
                       </div>

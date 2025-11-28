@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react"
-import { AlertCircle, Settings, Play } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { AlertCircle, Settings, Play, Square } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -122,6 +123,12 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
     if (onCancel) {
       onCancel()
     }
+  }
+
+  const handleClose = () => {
+    if (onCancel) {
+      onCancel()
+    }
     onOpenChange(false)
   }
 
@@ -195,9 +202,12 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
               </Alert>
             )}
 
-            <div className="space-y-3">
+            <div className="space-y-2">
               <h3 className="text-sm font-semibold">
                 {i18n.t("promptOrganizer.targetPrompts")}
+                <span className="font-medium font-mono text-foreground/70">
+                  ({targetPrompts ? targetPrompts.length : 0})
+                </span>
               </h3>
               <div className="bg-neutral-100 rounded-md overflow-hidden">
                 <ScrollAreaWithGradient
@@ -222,27 +232,42 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
                   </div>
                 </ScrollAreaWithGradient>
               </div>
+
+              {/* Estimation Display */}
+              {!apiKeyMissing && (
+                <EstimationDisplay
+                  estimate={estimate}
+                  hideWhenNoEstimate
+                  collapsible
+                />
+              )}
             </div>
 
             <div className="flex justify-center">
-              <Button
-                onClick={handleExecute}
-                disabled={isExecuting || apiKeyMissing || !estimate}
-                variant="outline"
-              >
-                <Play className="size-4 fill-yellow-300 stroke-yellow-400" />
-                {i18n.t("promptOrganizer.buttons.organize")}
-              </Button>
+              {isExecuting ? (
+                /* Cancel button during execution */
+                <Button onClick={handleCancel} variant="outline">
+                  <Square className="size-4" />
+                  {i18n.t("buttons.cancel")}
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleExecute}
+                  disabled={isExecuting || apiKeyMissing || !estimate}
+                  variant="outline"
+                  className={cn(
+                    "bg-gradient-to-r from-purple-50 to-blue-50",
+                    "border-purple-200 hover:border-purple-300",
+                    "hover:from-purple-100 hover:to-blue-100",
+                    "text-purple-700 hover:text-purple-800",
+                    "transition-all duration-200",
+                  )}
+                >
+                  <Play className="size-4" fill="url(#lucideGradient)" />
+                  {i18n.t("promptOrganizer.buttons.organize")}
+                </Button>
+              )}
             </div>
-
-            {/* Estimation Display */}
-            {!apiKeyMissing && (
-              <EstimationDisplay
-                estimate={estimate}
-                hideWhenNoEstimate
-                collapsible
-              />
-            )}
 
             {/* Progress Display */}
             {isExecuting && progress && (
@@ -286,8 +311,8 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
 
           <DialogFooter>
             {/* Cancel button during execution */}
-            <Button variant="secondary" onClick={handleCancel}>
-              {i18n.t("common.cancel")}
+            <Button variant="secondary" onClick={handleClose}>
+              {i18n.t("buttons.finish")}
             </Button>
           </DialogFooter>
         </DialogContent>

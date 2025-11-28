@@ -43,14 +43,17 @@ export const EstimationDisplay: React.FC<EstimationDisplayProps> = ({
   return (
     <>
       {collapsible ? (
-        <Collapsible className="space-y-3">
-          <CollapsibleTrigger className="w-full flex items-center justify-start gap-2 hover:bg-muted transition rounded-md p-1.5">
+        <Collapsible className="space-y-1 flex flex-col items-end">
+          <CollapsibleTrigger className="flex items-center gap-2 hover:bg-muted transition rounded-md px-2 py-1.5">
             <h3 className="text-sm font-semibold cursor-pointer">
               {i18n.t("promptOrganizer.estimate.title")}
             </h3>
+            <span className="text-xs text-foreground/70 font-mono">
+              {estimate?.estimatedInputTokens} tokens
+            </span>
             <ChevronsUpDown size={16} />
           </CollapsibleTrigger>
-          <CollapsibleContent className="CollapsibleContent">
+          <CollapsibleContent className="CollapsibleContent w-full">
             <EstimationDisplayContent estimate={estimate} />
           </CollapsibleContent>
         </Collapsible>
