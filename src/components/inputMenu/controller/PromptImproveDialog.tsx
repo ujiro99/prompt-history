@@ -325,7 +325,6 @@ export const PromptImproveDialog: React.FC<PromptImproveDialogProps> = ({
                         <Button
                           type="button"
                           variant="outline"
-                          size="sm"
                           onClick={handleImprove}
                           disabled={
                             isImproving ||

@@ -300,7 +300,7 @@ promptOrganizer:
     inputTokens: 入力トークン数
     contextUsage: コンテキスト使用率
   buttons:
-    organize: 整理する
+    organize: 整理を開始
     cancel: キャンセル
     save: 保存
     discard: 破棄

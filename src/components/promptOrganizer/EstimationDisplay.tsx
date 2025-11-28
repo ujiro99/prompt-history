@@ -3,13 +3,21 @@
  * Shows token usage and context estimation for prompt organization
  */
 
+import { ChevronsUpDown } from "lucide-react"
 import { i18n } from "#imports"
 import { Progress } from "@/components/ui/progress"
 import type { OrganizerExecutionEstimate } from "@/types/promptOrganizer"
+import {
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent,
+} from "@/components/ui/collapsible"
+import "@/components/ui/collapsible.css"
 
 interface EstimationDisplayProps {
   estimate: OrganizerExecutionEstimate | null
   hideWhenNoEstimate?: boolean
+  collapsible?: boolean
 }
 
 const MAX_TOKENS = 1000000 // Gemini 1.5 Flash context window
@@ -27,45 +35,66 @@ const calculateContextUsagePercentage = (
 export const EstimationDisplay: React.FC<EstimationDisplayProps> = ({
   estimate,
   hideWhenNoEstimate = false,
+  collapsible = false,
 }) => {
   if (!estimate && hideWhenNoEstimate) {
     return null
   }
+  return (
+    <>
+      {collapsible ? (
+        <Collapsible className="space-y-3">
+          <CollapsibleTrigger className="w-full flex items-center justify-start gap-2 hover:bg-muted transition rounded-md p-1.5">
+            <h3 className="text-sm font-semibold cursor-pointer">
+              {i18n.t("promptOrganizer.estimate.title")}
+            </h3>
+            <ChevronsUpDown size={16} />
+          </CollapsibleTrigger>
+          <CollapsibleContent className="CollapsibleContent">
+            <EstimationDisplayContent estimate={estimate} />
+          </CollapsibleContent>
+        </Collapsible>
+      ) : (
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold">
+            {i18n.t("promptOrganizer.estimate.title")}
+          </h3>
+          <EstimationDisplayContent estimate={estimate} />
+        </div>
+      )}
+    </>
+  )
+}
 
+const EstimationDisplayContent: React.FC<EstimationDisplayProps> = ({
+  estimate,
+}) => {
   const contextUsagePercent = calculateContextUsagePercentage(estimate)
 
   return (
-    <div className="space-y-3">
-      <h3 className="text-sm font-semibold">
-        {i18n.t("promptOrganizer.estimate.title")}
-      </h3>
-
-      <div className="rounded-lg bg-muted p-4">
-        <div className="space-y-2">
-          <div className="flex justify-between text-xs">
-            <span className="text-foreground">
-              {i18n.t("promptOrganizer.estimate.targetPrompts")}
-            </span>
-            <span className="font-mono">
-              {estimate?.targetPromptCount ?? 0}
-            </span>
-          </div>
-          <div className="flex justify-between text-xs">
-            <span className="text-foreground">
-              {i18n.t("promptOrganizer.estimate.inputTokens")}
-            </span>
-            <span className="font-mono">
-              {estimate?.estimatedInputTokens.toLocaleString() ?? 0}
-            </span>
-          </div>
-          <div className="flex justify-between text-xs">
-            <span className="text-foreground">
-              {i18n.t("promptOrganizer.estimate.contextUsage")}
-            </span>
-            <span className="font-mono">{contextUsagePercent.toFixed(1)}%</span>
-          </div>
-          <Progress value={contextUsagePercent} className="h-2" />
+    <div className="rounded-lg bg-muted p-4">
+      <div className="space-y-2">
+        <div className="flex justify-between text-xs">
+          <span className="text-foreground">
+            {i18n.t("promptOrganizer.estimate.targetPrompts")}
+          </span>
+          <span className="font-mono">{estimate?.targetPromptCount ?? 0}</span>
         </div>
+        <div className="flex justify-between text-xs">
+          <span className="text-foreground">
+            {i18n.t("promptOrganizer.estimate.inputTokens")}
+          </span>
+          <span className="font-mono">
+            {estimate?.estimatedInputTokens.toLocaleString() ?? 0}
+          </span>
+        </div>
+        <div className="flex justify-between text-xs">
+          <span className="text-foreground">
+            {i18n.t("promptOrganizer.estimate.contextUsage")}
+          </span>
+          <span className="font-mono">{contextUsagePercent.toFixed(1)}%</span>
+        </div>
+        <Progress value={contextUsagePercent} className="h-2" />
       </div>
     </div>
   )

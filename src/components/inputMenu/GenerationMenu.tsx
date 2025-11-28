@@ -118,11 +118,8 @@ export function GenerationMenu({
   const handleSaveTemplatesFromPreview = useCallback(
     async (templates: TemplateCandidate[]) => {
       await saveTemplates(templates)
-      if (!error) {
-        setOrganizerPreviewOpen(false)
-      }
     },
-    [saveTemplates, error],
+    [saveTemplates],
   )
 
   return (

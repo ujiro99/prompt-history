@@ -300,7 +300,7 @@ promptOrganizer:
     inputTokens: Input Tokens
     contextUsage: Context Usage
   buttons:
-    organize: Organize
+    organize: Start organizing
     cancel: Cancel
     save: Save
     discard: Discard

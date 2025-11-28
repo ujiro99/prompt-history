@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react"
+import { AlertCircle, Settings, Play } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -11,7 +12,6 @@ import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { AlertCircle, Settings } from "lucide-react"
 import { i18n } from "#imports"
 import { promptOrganizerSettingsStorage } from "@/services/storage/definitions"
 import { promptOrganizerService } from "@/services/promptOrganizer/PromptOrganizerService"
@@ -35,7 +35,7 @@ type Props = {
   open: boolean
   onOpenChange: (open: boolean) => void
   onExecute: () => Promise<void>
-  isExecuting?: boolean
+  isExecuting: boolean
   progress?: GenerationProgress | null
   onCancel?: () => void
   pendingTemplates?: TemplateCandidate[]
@@ -46,7 +46,7 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
   open,
   onOpenChange,
   onExecute,
-  isExecuting: externalIsExecuting,
+  isExecuting,
   progress,
   onCancel,
   pendingTemplates,
@@ -58,16 +58,12 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
   const [targetPrompts, setTargetPrompts] = useState<
     PromptForOrganization[] | null
   >(null)
-  const [localIsExecuting, setLocalIsExecuting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false)
   const [modelSettingsDialogOpen, setModelSettingsDialogOpen] = useState(false)
   const { container } = useContainer()
   const { genaiApiKey } = useAiModel()
   const apiKeyMissing = !genaiApiKey
-
-  // Use external isExecuting if provided, otherwise use local state
-  const isExecuting = externalIsExecuting ?? localIsExecuting
 
   useEffect(() => {
     // Check API key (using hook value)
@@ -110,22 +106,15 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
       return
     }
 
-    setLocalIsExecuting(true)
     setError(null)
 
     try {
       await onExecute()
-      // Don't close immediately if using external isExecuting
-      if (!externalIsExecuting) {
-        onOpenChange(false)
-      }
     } catch (err) {
       console.error("Execution failed:", err)
       setError(
         err instanceof Error ? err.message : i18n.t("errors.unknownError"),
       )
-    } finally {
-      setLocalIsExecuting(false)
     }
   }
 
@@ -133,6 +122,7 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
     if (onCancel) {
       onCancel()
     }
+    onOpenChange(false)
   }
 
   const handleOpenSettings = () => {
@@ -147,6 +137,10 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
         <DialogContent
           className="sm:max-w-[500px]"
           container={container}
+          onInteractOutside={(e) => {
+            // Prevent closing the dialog while executing
+            if (isExecuting) e.preventDefault()
+          }}
           {...stopPropagation()}
         >
           <div className="flex items-center gap-2">
@@ -166,7 +160,7 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
             </Button>
           </div>
 
-          <div className="space-y-4 pb-4">
+          <div className="space-y-4">
             {/* API Key Warning */}
             {apiKeyMissing && (
               <ApiKeyWarningBanner onOpenSettings={handleOpenSettings} />
@@ -230,9 +224,24 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
               </div>
             </div>
 
+            <div className="flex justify-center">
+              <Button
+                onClick={handleExecute}
+                disabled={isExecuting || apiKeyMissing || !estimate}
+                variant="outline"
+              >
+                <Play className="size-4 fill-yellow-300 stroke-yellow-400" />
+                {i18n.t("promptOrganizer.buttons.organize")}
+              </Button>
+            </div>
+
             {/* Estimation Display */}
             {!apiKeyMissing && (
-              <EstimationDisplay estimate={estimate} hideWhenNoEstimate />
+              <EstimationDisplay
+                estimate={estimate}
+                hideWhenNoEstimate
+                collapsible
+              />
             )}
 
             {/* Progress Display */}
@@ -276,31 +285,10 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
           </div>
 
           <DialogFooter>
-            {isExecuting ? (
-              <>
-                {/* Cancel button during execution */}
-                <Button variant="outline" onClick={handleCancel}>
-                  {i18n.t("common.cancel")}
-                </Button>
-              </>
-            ) : (
-              <>
-                {/* Normal buttons before execution */}
-                <Button
-                  variant="outline"
-                  onClick={() => onOpenChange(false)}
-                  disabled={isExecuting}
-                >
-                  {i18n.t("promptOrganizer.buttons.cancel")}
-                </Button>
-                <Button
-                  onClick={handleExecute}
-                  disabled={isExecuting || apiKeyMissing || !estimate}
-                >
-                  {i18n.t("promptOrganizer.buttons.organize")}
-                </Button>
-              </>
-            )}
+            {/* Cancel button during execution */}
+            <Button variant="secondary" onClick={handleCancel}>
+              {i18n.t("common.cancel")}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
