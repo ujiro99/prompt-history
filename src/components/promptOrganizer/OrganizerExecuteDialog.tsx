@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { cn } from "@/lib/utils"
 import { AlertCircle, Settings, Play, Square } from "lucide-react"
 import {
@@ -37,8 +37,8 @@ type Props = {
   onOpenChange: (open: boolean) => void
   onExecute: () => Promise<void>
   isExecuting: boolean
-  progress?: GenerationProgress | null
-  onCancel?: () => void
+  progress: GenerationProgress | null
+  onCancel: () => void
   pendingTemplates?: TemplateCandidate[]
   onOpenPreview?: () => void
 }
@@ -65,6 +65,7 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
   const { container } = useContainer()
   const { genaiApiKey } = useAiModel()
   const apiKeyMissing = !genaiApiKey
+  const scrollViewportRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     // Check API key (using hook value)
@@ -101,6 +102,13 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
       })
     }
   }, [open])
+
+  // Auto-scroll to bottom when new data is accumulated
+  useEffect(() => {
+    const viewport = scrollViewportRef.current
+    if (!viewport || !progress?.accumulated) return
+    viewport.scrollTop = viewport.scrollHeight
+  }, [progress?.accumulated])
 
   const handleExecute = async () => {
     if (apiKeyMissing) {
@@ -167,7 +175,7 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
             </Button>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-6">
             {/* API Key Warning */}
             {apiKeyMissing && (
               <ApiKeyWarningBanner onOpenSettings={handleOpenSettings} />
@@ -202,7 +210,7 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
               </Alert>
             )}
 
-            <div className="space-y-2">
+            <section className="space-y-2">
               <h3 className="text-sm font-semibold">
                 {i18n.t("promptOrganizer.targetPrompts")}
                 <span className="font-medium font-mono text-foreground/70">
@@ -211,7 +219,7 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
               </h3>
               <div className="bg-neutral-100 rounded-md overflow-hidden">
                 <ScrollAreaWithGradient
-                  className="max-h-40 px-2.5 py-3"
+                  className="max-h-40 px-3 py-2.5"
                   gradientHeight={"2rem"}
                   style={
                     {
@@ -241,13 +249,23 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
                   collapsible
                 />
               )}
-            </div>
+            </section>
 
-            <div className="flex justify-center">
+            <section className="flex justify-center">
               {isExecuting ? (
                 /* Cancel button during execution */
-                <Button onClick={handleCancel} variant="outline">
-                  <Square className="size-4" />
+                <Button
+                  onClick={handleCancel}
+                  variant="outline"
+                  className={cn(
+                    "bg-gradient-to-r from-purple-50 to-blue-50",
+                    "border-purple-200 hover:border-purple-300",
+                    "hover:from-purple-100 hover:to-blue-100",
+                    "text-purple-700 hover:text-purple-800",
+                    "transition-all duration-200",
+                  )}
+                >
+                  <Square className="size-4" fill="url(#lucideGradient)" />
                   {i18n.t("buttons.cancel")}
                 </Button>
               ) : (
@@ -267,21 +285,44 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
                   {i18n.t("promptOrganizer.buttons.organize")}
                 </Button>
               )}
-            </div>
+            </section>
 
             {/* Progress Display */}
             {isExecuting && progress && (
-              <div className="space-y-3">
-                <h3 className="text-sm font-medium">
-                  ⚡ {i18n.t("promptOrganizer.status.generating")}
-                </h3>
+              <section className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-medium">
+                    <StatusLabel status={progress.status} />
+                  </h3>
+                </div>
 
-                <div className="rounded-lg border p-4 space-y-3">
+                <div className="rounded-lg border p-4 space-y-1 text-xs font-mono text-muted-dforeground">
+                  {/* Token Usage */}
+                  <div className="grid grid-cols-2">
+                    <p>
+                      <span>
+                        {i18n.t("promptOrganizer.estimate.thoughtsTokens")}
+                        :{" "}
+                      </span>
+                      <span className="text-muted-foreground">
+                        {progress.thoughtsTokens ?? 0} tokens
+                      </span>
+                    </p>
+                    <p>
+                      <span>
+                        {i18n.t("promptOrganizer.estimate.outputTokens")}:{" "}
+                      </span>
+                      <span className="text-muted-foreground">
+                        {progress.outputTokens ?? 0} tokens
+                      </span>
+                    </p>
+                  </div>
+
                   {/* Progress Bar */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-muted-foreground">進捗</span>
-                      <span className="font-medium">
+                  <div className="space-y-1 pt-1">
+                    <div className="flex justify-between items-center">
+                      <span>進捗</span>
+                      <span className="text-muted-foreground">
                         {progress.estimatedProgress}%
                       </span>
                     </div>
@@ -291,21 +332,22 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
                     />
                   </div>
 
-                  {/* Partial JSON Preview (Optional) */}
+                  {/* Partial JSON Preview */}
                   {progress.accumulated && progress.accumulated.length > 50 && (
-                    <div className="space-y-1">
-                      <span className="text-xs text-muted-foreground">
-                        受信中のデータ:
-                      </span>
-                      <ScrollArea className="h-16 rounded border bg-muted p-2">
+                    <div className="space-y-1 pt-1">
+                      <p>受信中のデータ:</p>
+                      <ScrollArea
+                        className="h-16 rounded border bg-muted p-2"
+                        viewportRef={scrollViewportRef}
+                      >
                         <pre className="text-xs font-mono whitespace-pre-wrap break-all">
-                          {progress.accumulated.substring(0, 300)}...
+                          {progress.accumulated}
                         </pre>
                       </ScrollArea>
                     </div>
                   )}
                 </div>
-              </div>
+              </section>
             )}
           </div>
 
@@ -330,5 +372,62 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
         }}
       />
     </>
+  )
+}
+
+const StatusLabel: React.FC<{ status: GenerationProgress["status"] }> = ({
+  status,
+}) => {
+  const [dot, setDot] = useState("")
+  const [message, setMessage] = useState("")
+
+  useEffect(() => {
+    if (status === "complete" || status === "error") return
+
+    let count = 0
+    const interval = setInterval(() => {
+      count = (count + 1) % 4
+      setDot(".".repeat(count))
+    }, 500)
+
+    return () => clearInterval(interval)
+  }, [status])
+
+  useEffect(() => {
+    const updateThinking = () => {
+      let count = 0
+      const interval = setInterval(() => {
+        count = (count + 1) % 3
+        setMessage(i18n.t(`promptOrganizer.status.thinking${count}`))
+      }, 500 * 4)
+      return () => clearInterval(interval)
+    }
+
+    switch (status) {
+      case "sending":
+        setMessage(i18n.t("promptOrganizer.status.sending"))
+        break
+      case "thinking":
+        setMessage(i18n.t("promptOrganizer.status.thinking0"))
+        return updateThinking()
+      case "generating":
+        setMessage(i18n.t("promptOrganizer.status.generating"))
+        break
+      case "complete":
+        setMessage(i18n.t("promptOrganizer.status.complete"))
+        break
+      case "error":
+        setMessage(i18n.t("promptOrganizer.status.error"))
+        break
+      default:
+        setMessage("Processing")
+    }
+  }, [status])
+
+  return (
+    <span>
+      ⚡ {message}
+      {dot}
+    </span>
   )
 }

@@ -298,6 +298,8 @@ promptOrganizer:
     targetPrompts: Number of Target Prompts
     title: Input Token Estimate
     inputTokens: Input Tokens
+    thoughtsTokens: Thoughts Tokens
+    outputTokens: Output Tokens
     contextUsage: Context Usage
   buttons:
     organize: Start organizing
@@ -308,8 +310,12 @@ promptOrganizer:
     preview: Preview Templates
     saveAll: Save All
   status:
-    filtering: Filtering prompts...
-    generating: Generating templates...
+    sending: Sending target prompts
+    thinking0: Classifying target prompts
+    thinking1: Extracting patterns
+    thinking2: Refining prompts
+    generating: Receiving refined results
+    complete: Completed!
     error: Error occurred
     saved: Saved
     discarded: Discarded

@@ -93,6 +93,7 @@ export class PromptOrganizerService {
     const estimatedCost = costEstimatorService.calculateCost({
       inputTokens: usage.inputTokens,
       outputTokens: usage.inputTokens * 0.5,
+      thoughtsTokens: usage.inputTokens,
     })
     const actualCost = costEstimatorService.calculateCost(usage)
 

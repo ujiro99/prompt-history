@@ -86,12 +86,12 @@ export function GenerationMenu({
    * Execute prompt organization
    */
   const handleExecuteOrganization = useCallback(async () => {
-    await executeOrganization()
-    if (!error) {
+    const ret = await executeOrganization()
+    if (ret) {
       setOrganizerExecuteOpen(false)
       setOrganizerSummaryOpen(true)
     }
-  }, [executeOrganization, error])
+  }, [executeOrganization])
 
   /**
    * Preview templates
@@ -162,6 +162,17 @@ export function GenerationMenu({
         onExecute={handleExecuteOrganization}
         isExecuting={isExecuting}
         progress={progress}
+        // progress={{
+        //   chunk: "test",
+        //   accumulated:
+        //     "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
+        //     "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" +
+        //     "ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        //   estimatedProgress: 50,
+        //   status: "generating",
+        //   outputTokens: 1234,
+        //   thoughtsTokens: 5678,
+        // }}
         onCancel={cancelGeneration}
         pendingTemplates={pendingTemplates}
         onOpenPreview={() => {

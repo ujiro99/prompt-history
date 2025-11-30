@@ -75,9 +75,11 @@ export function usePromptOrganizer({
 
   /**
    * Execute organization with streaming progress
+   *  @return Success status
    */
-  const executeOrganization = async () => {
-    if (!settings) return
+  const executeOrganization = async (): Promise<boolean> => {
+    if (!settings) return false
+    let ret = false
 
     setIsExecuting(true)
     setError(null)
@@ -85,7 +87,7 @@ export function usePromptOrganizer({
       chunk: "",
       accumulated: "",
       estimatedProgress: 0,
-      status: "generating",
+      status: "sending",
     })
 
     try {
@@ -106,6 +108,8 @@ export function usePromptOrganizer({
         templates: [...existingTemplates, ...result.templates],
         generatedAt: Date.now(),
       })
+
+      ret = true
     } catch (err) {
       const errorMessage = (err as Error).message
       if (errorMessage.includes("cancelled")) {
@@ -123,6 +127,8 @@ export function usePromptOrganizer({
       setIsExecuting(false)
       setProgress(null)
     }
+
+    return ret
   }
 
   /**

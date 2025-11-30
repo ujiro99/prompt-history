@@ -43,7 +43,7 @@ export interface GeminiConfig {
 /**
  * Token usage on Gemini API
  */
-export interface TokenUsage {
+export interface Usage {
   prompt: number // input
   thoughts: number // output
   candidates: number // output

@@ -298,6 +298,8 @@ promptOrganizer:
     targetPrompts: 対象プロンプト数
     title: 入力トークン数 見積もり
     inputTokens: 入力トークン数
+    thoughtsTokens: 思考トークン数
+    outputTokens: 出力トークン数
     contextUsage: コンテキスト使用率
   buttons:
     organize: 整理を開始
@@ -308,8 +310,12 @@ promptOrganizer:
     preview: テンプレートをプレビュー
     saveAll: すべて保存
   status:
-    filtering: プロンプトをフィルタリング中...
-    generating: テンプレートを生成中...
+    sending: 対象プロンプトを送信中
+    thinking0: 対象プロンプトを分類中
+    thinking1: パターンを抽出中
+    thinking2: プロンプトを精製中
+    generating: 精製結果を受信中
+    complete: 完了しました
     error: エラーが発生しました
     saved: 保存済み
     discarded: 破棄済み

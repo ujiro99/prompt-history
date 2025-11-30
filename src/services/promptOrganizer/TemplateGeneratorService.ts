@@ -89,6 +89,7 @@ export class TemplateGeneratorService {
       const usage: TokenUsage = {
         inputTokens: 0,
         outputTokens: 0,
+        thoughtsTokens: 0,
       }
 
       // Call Gemini API with streaming
@@ -100,22 +101,39 @@ export class TemplateGeneratorService {
           {
             signal: this.abortController.signal,
             onProgress: (chunk, accumulated, tokenUsage) => {
-              // Estimate progress based on JSON structure
-              const progress = this.estimateProgress(accumulated)
+              // Calculate progress based on JSON structure
+              const progress = this.calculateProgress(
+                accumulated,
+                prompts.length,
+                {
+                  inputTokens: tokenUsage.prompt,
+                  outputTokens: tokenUsage.candidates,
+                  thoughtsTokens: tokenUsage.thoughts,
+                },
+              )
+              const status = this.calculateStatus({
+                inputTokens: tokenUsage.prompt,
+                outputTokens: tokenUsage.candidates,
+                thoughtsTokens: tokenUsage.thoughts,
+              })
+
               options?.onProgress?.({
                 chunk,
                 accumulated,
                 estimatedProgress: progress,
-                status: "generating",
+                status,
+                outputTokens: tokenUsage.candidates,
+                thoughtsTokens: tokenUsage.thoughts,
               })
               // Accumulate token usages
               usage.inputTokens = tokenUsage.prompt
-              usage.outputTokens = tokenUsage.thoughts + tokenUsage.candidates
+              usage.thoughtsTokens = tokenUsage.thoughts
+              usage.outputTokens = tokenUsage.candidates
             },
           },
         )
 
-      console.log("Gemini response:", response)
+      console.info("Gemini response:", response)
 
       // Notify completion
       options?.onProgress?.({
@@ -123,6 +141,8 @@ export class TemplateGeneratorService {
         accumulated: "",
         estimatedProgress: 100,
         status: "complete",
+        outputTokens: usage.outputTokens,
+        thoughtsTokens: usage.thoughtsTokens,
       })
 
       return {
@@ -130,6 +150,7 @@ export class TemplateGeneratorService {
         usage,
       }
     } catch (error) {
+      console.error("Error during template generation:", error)
       // Handle cancellation
       if (error instanceof Error) {
         const errorMessage = error.message
@@ -156,24 +177,55 @@ export class TemplateGeneratorService {
   }
 
   /**
-   * Estimate progress based on accumulated JSON
+   * Calculate progress based on accumulated JSON
    * This is a heuristic - we look for key indicators in the partial JSON
    * @param accumulated - Accumulated JSON string
+   * @param inputPromptCount - Number of input prompts
+   * @param tokenUsage - Current token usage
    * @returns Estimated progress percentage (0-100)
+   *   - 0: No progress
+   *   - 20: Started receiving thoughtsToken.
+   *   - 40-90: Receiving candidatesToken.
+   *   - 100: Complete
    */
-  private estimateProgress(accumulated: string): number {
-    if (!accumulated) return 0
+  private calculateProgress(
+    accumulated: string,
+    inputPromptCount: number,
+    tokenUsage: TokenUsage,
+  ): number {
+    if (!accumulated) {
+      if (tokenUsage.thoughtsTokens > 0) {
+        return 20
+      }
+      return 0
+    }
 
     // Try to count completed templates in partial JSON
     // Look for "title": pattern as indicator of template objects
     const titleMatches = accumulated.match(/"title":/g)
     const templateCount = titleMatches ? titleMatches.length : 0
 
-    // Estimate based on expected template count (assume 5-10 templates)
-    const estimatedTotal = 8
-    const progress = Math.min((templateCount / estimatedTotal) * 90, 90)
+    // Estimate total templates based on input tokens
+    const estimatedTotal = inputPromptCount / 4
+    const progress = Math.min((templateCount / estimatedTotal) * 50, 50) + 40
 
     return Math.round(progress)
+  }
+
+  /**
+   * Calculate current status based on token usages
+   * @param tokenUsage - Current token usage
+   * @returns Status string
+   * "sending" | "thinking" | "generating"
+   */
+  private calculateStatus(tokenUsage: TokenUsage) {
+    if (tokenUsage.thoughtsTokens === 0) {
+      return "sending"
+    } else if (tokenUsage.outputTokens > 0) {
+      return "generating"
+    } else {
+      return "thinking"
+    }
   }
 
   /**

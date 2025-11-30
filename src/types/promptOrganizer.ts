@@ -158,6 +158,8 @@ export interface TokenUsage {
   inputTokens: number
   /** Output token count */
   outputTokens: number
+  /** Thoughts token count */
+  thoughtsTokens: number
 }
 
 /**
@@ -201,7 +203,11 @@ export interface GenerationProgress {
   /** Estimated progress percentage (0-100) */
   estimatedProgress: number
   /** Current status */
-  status: "generating" | "complete" | "error"
+  status: "sending" | "thinking" | "generating" | "complete" | "error"
+  /** Thoughts tokens */
+  thoughtsTokens?: number
+  /** Output tokens */
+  outputTokens?: number
 }
 
 /**

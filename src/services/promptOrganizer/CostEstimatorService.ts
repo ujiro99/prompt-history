@@ -41,7 +41,8 @@ export class CostEstimatorService {
     const inputCost =
       (usage.inputTokens / 1_000_000) * GEMINI_PRICING.inputTokenPer1M
     const outputCost =
-      (usage.outputTokens / 1_000_000) * GEMINI_PRICING.outputTokenPer1M
+      ((usage.outputTokens + usage.thoughtsTokens) / 1_000_000) *
+      GEMINI_PRICING.outputTokenPer1M
     const totalUsd = inputCost + outputCost
     return totalUsd * GEMINI_PRICING.usdToJpy
   }
@@ -84,12 +85,13 @@ export class CostEstimatorService {
     const estimatedCost = this.calculateCost({
       inputTokens,
       outputTokens: inputTokens * 0.5,
+      thoughtsTokens: inputTokens,
     })
 
     return {
       targetPromptCount: targetPrompts.length,
       estimatedInputTokens: inputTokens,
-      estimatedOutputTokens: inputTokens * 0.5,
+      estimatedOutputTokens: inputTokens * 1.5, // including thoughts tokens
       contextUsageRate: inputTokens / GEMINI_CONTEXT_LIMIT,
       estimatedCost,
       model: "gemini-2.5-flash",

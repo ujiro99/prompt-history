@@ -4,7 +4,7 @@
  */
 
 import { GoogleGenAI } from "@google/genai"
-import type { GeminiConfig, StreamChunk, TokenUsage } from "./types"
+import type { GeminiConfig, StreamChunk, Usage } from "./types"
 import { GeminiError, GeminiErrorType } from "./types"
 
 /**
@@ -136,7 +136,7 @@ export class GeminiClient {
       onProgress?: (
         chunk: string | null,
         accumulated: string,
-        tokenUsage: TokenUsage,
+        tokenUsage: Usage,
       ) => void
     },
   ): Promise<T> {
@@ -181,8 +181,6 @@ export class GeminiClient {
         if (options?.signal?.aborted) {
           throw new GeminiError("Request cancelled", GeminiErrorType.CANCELLED)
         }
-
-        console.log(chunk)
 
         if (chunk.text) {
           accumulated += chunk.text

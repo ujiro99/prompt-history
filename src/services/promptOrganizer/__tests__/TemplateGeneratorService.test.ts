@@ -388,4 +388,90 @@ describe("TemplateGeneratorService", () => {
       })
     })
   })
+
+  describe("calculateStatus", () => {
+    it("should return 'sending' when thoughtsTokens is 0", () => {
+      const tokenUsage = {
+        inputTokens: 0,
+        thoughtsTokens: 0,
+        outputTokens: 0,
+      }
+
+      const status = (service as any).calculateStatus(tokenUsage)
+
+      expect(status).toBe("sending")
+    })
+
+    it("should return 'sending' when thoughtsTokens is 0 even if outputTokens is positive", () => {
+      const tokenUsage = {
+        inputTokens: 100,
+        thoughtsTokens: 0,
+        outputTokens: 50,
+      }
+
+      const status = (service as any).calculateStatus(tokenUsage)
+
+      expect(status).toBe("sending")
+    })
+
+    it("should return 'generating' when thoughtsTokens is positive and outputTokens is positive", () => {
+      const tokenUsage = {
+        inputTokens: 100,
+        thoughtsTokens: 50,
+        outputTokens: 200,
+      }
+
+      const status = (service as any).calculateStatus(tokenUsage)
+
+      expect(status).toBe("generating")
+    })
+
+    it("should return 'thinking' when thoughtsTokens is positive but outputTokens is 0", () => {
+      const tokenUsage = {
+        inputTokens: 100,
+        thoughtsTokens: 50,
+        outputTokens: 0,
+      }
+
+      const status = (service as any).calculateStatus(tokenUsage)
+
+      expect(status).toBe("thinking")
+    })
+
+    it("should return 'thinking' when thoughtsTokens is positive but outputTokens is negative", () => {
+      const tokenUsage = {
+        inputTokens: 100,
+        thoughtsTokens: 50,
+        outputTokens: -1,
+      }
+
+      const status = (service as any).calculateStatus(tokenUsage)
+
+      expect(status).toBe("thinking")
+    })
+
+    it("should return 'generating' when all tokens are minimal positive values", () => {
+      const tokenUsage = {
+        inputTokens: 1,
+        thoughtsTokens: 1,
+        outputTokens: 1,
+      }
+
+      const status = (service as any).calculateStatus(tokenUsage)
+
+      expect(status).toBe("generating")
+    })
+
+    it("should return 'thinking' when thoughtsTokens is large but outputTokens is 0", () => {
+      const tokenUsage = {
+        inputTokens: 10000,
+        thoughtsTokens: 5000,
+        outputTokens: 0,
+      }
+
+      const status = (service as any).calculateStatus(tokenUsage)
+
+      expect(status).toBe("thinking")
+    })
+  })
 })
