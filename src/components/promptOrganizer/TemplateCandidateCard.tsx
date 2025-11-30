@@ -56,13 +56,20 @@ export const TemplateCandidateCard = ({
   return (
     <div
       className={cn(
-        "p-4 cursor-pointer transition-colors hover:bg-gray-50 border rounded-lg",
+        "px-4 pt-2 pb-3 cursor-pointer transition-colors hover:bg-gray-50 border rounded-lg",
         isSelected ? "ring-2 ring-blue-500" : "",
         className,
       )}
       onClick={onClick}
     >
       <div className="space-y-1">
+        {/* Category badge */}
+        <div>
+          <span className="px-2 py-1 text-[10px] rounded bg-gray-100 text-neutral-800">
+            {getCategoryLabel(candidate.categoryId)}
+          </span>
+        </div>
+
         {/* Header: Title and Status */}
         <div className="relative flex items-center">
           <h3 className="font-semibold text-sm">{candidate.title}</h3>
@@ -72,15 +79,8 @@ export const TemplateCandidateCard = ({
         {/* Use case */}
         <p className="text-xs text-mute-foreground">{candidate.useCase}</p>
 
-        {/* Category badge */}
-        <div>
-          <span className="px-2 py-1 text-xs rounded bg-gray-100 text-gray-800">
-            {getCategoryLabel(candidate.categoryId)}
-          </span>
-        </div>
-
         {/* Footer: Source count */}
-        <div className="flex items-center text-xs text-gray-500 mt-2">
+        <div className="flex items-center text-xs text-neutral-500 pt-1">
           <span>
             {i18n.t("promptOrganizer.result.sourceCount", [
               candidate.aiMetadata.sourceCount,
