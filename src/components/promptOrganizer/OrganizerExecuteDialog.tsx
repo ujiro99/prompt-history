@@ -217,7 +217,7 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
                   ({targetPrompts ? targetPrompts.length : 0})
                 </span>
               </h3>
-              <div className="bg-neutral-100 rounded-md overflow-hidden">
+              <div className="bg-neutral-100 border border-neutral-200 rounded-md overflow-hidden">
                 <ScrollAreaWithGradient
                   className="max-h-40 px-3 py-2.5"
                   gradientHeight={"2rem"}

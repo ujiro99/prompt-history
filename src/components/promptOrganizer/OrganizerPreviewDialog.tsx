@@ -21,6 +21,7 @@ import { useContainer } from "@/hooks/useContainer"
 import { CategorySelector } from "./CategorySelector"
 import { TemplateCandidateCard } from "./TemplateCandidateCard"
 import { stopPropagation } from "@/utils/dom"
+import { VariableSettingsSection } from "@/components/shared"
 import type { TemplateCandidate } from "@/types/promptOrganizer"
 
 interface OrganizerPreviewDialogProps {
@@ -40,7 +41,6 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
 }) => {
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [editedTemplates, setEditedTemplates] = useState([...templates])
-  const [showSourcePrompts, setShowSourcePrompts] = useState(false)
   const { container } = useContainer()
 
   console.log("Edited Templates:", editedTemplates)
@@ -118,7 +118,7 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
         </DialogHeader>
 
         {/* Two Column Layout */}
-        <div className="grid grid-cols-3 gap-2 py-4 flex-1 min-h-0">
+        <div className="grid grid-cols-3 gap-2 py-2 flex-1 min-h-0">
           {/* Left Pane: Template List */}
           <div className="col-span-1 flex flex-col min-h-0 gap-2">
             <div className="text-sm font-medium">
@@ -151,7 +151,7 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
             ) : (
               <>
                 <ScrollArea className="flex-1 min-h-0">
-                  <div className="space-y-4 p-2">
+                  <div className="space-y-4 pl-2 pr-4">
                     {/* Title Input */}
                     <div className="space-y-2">
                       <div className="text-sm font-medium">
@@ -209,58 +209,37 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
                     </div>
 
                     {/* Variables List */}
-                    {selectedTemplate.variables.length > 0 && (
-                      <div className="space-y-2">
-                        <div className="text-sm font-medium">
-                          {i18n.t("promptOrganizer.preview.variables")}
-                        </div>
-                        <div className="rounded-lg border p-3 space-y-2">
-                          {selectedTemplate.variables.map((variable, index) => (
-                            <div
-                              key={index}
-                              className="flex items-center justify-between text-sm"
-                            >
-                              <span className="font-mono text-primary">
-                                {`{{${variable.name}}}`}
-                              </span>
-                              <span className="text-muted-foreground">
-                                {variable.type}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                    <VariableSettingsSection
+                      variables={selectedTemplate.variables}
+                      content={selectedTemplate.content}
+                      onChange={(vars) => updateTemplate({ variables: vars })}
+                      enableAutoDetection={true}
+                      headerText={i18n.t("promptOrganizer.preview.variables")}
+                      showHeader={selectedTemplate.variables.length > 0}
+                      scrollAreaClassName="max-h-60"
+                    />
 
                     {/* Source Prompts Collapse */}
-                    <div className="space-y-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setShowSourcePrompts(!showSourcePrompts)}
-                        className="w-full justify-between"
-                      >
+                    <section className="space-y-2">
+                      <h3>
                         <span className="text-sm font-medium">
                           {i18n.t("promptOrganizer.preview.sourcePrompts")} (
                           {selectedTemplate.aiMetadata.sourceCount})
                         </span>
-                        <span>{showSourcePrompts ? "▲" : "▼"}</span>
-                      </Button>
-                      {showSourcePrompts && (
-                        <div className="rounded-lg border p-3 space-y-1">
-                          {selectedTemplate.aiMetadata.sourcePromptIds.map(
-                            (id) => (
-                              <div
-                                key={id}
-                                className="text-xs text-muted-foreground font-mono"
-                              >
-                                {id}
-                              </div>
-                            ),
-                          )}
-                        </div>
-                      )}
-                    </div>
+                      </h3>
+                      <div className="rounded-lg p-3 space-y-1 bg-muted/30 border border-neutral-200">
+                        {selectedTemplate.aiMetadata.sourcePromptIds.map(
+                          (id) => (
+                            <div
+                              key={id}
+                              className="text-xs text-muted-foreground font-mono"
+                            >
+                              {id}
+                            </div>
+                          ),
+                        )}
+                      </div>
+                    </section>
                   </div>
                 </ScrollArea>
 

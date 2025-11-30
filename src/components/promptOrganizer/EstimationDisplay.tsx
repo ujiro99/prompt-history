@@ -75,7 +75,7 @@ const EstimationDisplayContent: React.FC<EstimationDisplayProps> = ({
   const contextUsagePercent = calculateContextUsagePercentage(estimate)
 
   return (
-    <div className="rounded-lg bg-muted p-4">
+    <div className="rounded-lg bg-muted border border-neutral-200 p-4">
       <div className="space-y-2">
         <div className="flex justify-between text-xs">
           <span className="text-foreground">

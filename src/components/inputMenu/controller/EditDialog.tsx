@@ -3,8 +3,8 @@ import { ChevronDown, HelpCircle } from "lucide-react"
 import { SaveMode } from "@/types/prompt"
 import type { SaveDialogData, VariableConfig } from "@/types/prompt"
 import { mergeVariableConfigs } from "@/utils/variables/variableParser"
-import { VariableConfigField } from "./VariableConfigField"
 import { VariableExpansionInfoDialog } from "./VariableExpansionInfoDialog"
+import { VariableSettingsSection } from "@/components/shared"
 import {
   Dialog,
   DialogTitle,
@@ -22,7 +22,6 @@ import { Button } from "@/components/ui/button"
 import { ButtonGroup } from "@/components/ui/button-group"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { ScrollAreaWithGradient } from "@/components/inputMenu/ScrollAreaWithGradient"
 import { useContainer } from "@/hooks/useContainer"
 import { useSettings } from "@/hooks/useSettings"
 import { stopPropagation } from "@/utils/dom"
@@ -103,15 +102,6 @@ export const EditDialog: React.FC<EditDialogProps> = ({
       setVariables([])
     }
   }, [content, variableExpansionEnabled])
-
-  /**
-   * Handle variable configuration change
-   */
-  const handleVariableChange = (index: number, config: VariableConfig) => {
-    const updatedVariables = [...variables]
-    updatedVariables[index] = config
-    setVariables(updatedVariables)
-  }
 
   /**
    * Save processing
@@ -241,31 +231,12 @@ export const EditDialog: React.FC<EditDialogProps> = ({
             </div>
 
             {/* Variable configuration section */}
-            {variables.length > 0 && (
-              <div className="space-y-2">
-                <div>
-                  <label className="text-sm font-semibold text-foreground">
-                    {i18n.t("dialogs.edit.variableSettings")}
-                  </label>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {i18n.t("dialogs.edit.variableSettingsDescription")}
-                  </p>
-                </div>
-                <ScrollAreaWithGradient
-                  className="max-h-60 border-t-1"
-                  gradientHeight={25}
-                >
-                  {variables.map((variable, index) => (
-                    <VariableConfigField
-                      key={variable.name}
-                      variable={variable}
-                      initialVariable={initialVariables?.[index]}
-                      onChange={(config) => handleVariableChange(index, config)}
-                    />
-                  ))}
-                </ScrollAreaWithGradient>
-              </div>
-            )}
+            <VariableSettingsSection
+              variables={variables}
+              onChange={setVariables}
+              enableAutoDetection={false}
+              scrollAreaClassName="max-h-60"
+            />
           </div>
 
           <DialogFooter className="mt-3">

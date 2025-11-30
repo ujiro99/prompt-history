@@ -1,5 +1,4 @@
 import { useRef } from "react"
-import { ChevronDownIcon } from "lucide-react"
 import { i18n } from "#imports"
 import {
   Select,
@@ -83,7 +82,6 @@ export const SelectField = (props: SelectFieldProps) => {
     >
       <SelectTrigger id={`var-${name}`} className={props.className}>
         <SelectValue placeholder={i18n.t("placeholders.selectOption")} />
-        <ChevronDownIcon className="size-4 opacity-50" />
       </SelectTrigger>
       <SelectContent
         container={container}

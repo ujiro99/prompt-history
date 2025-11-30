@@ -339,6 +339,7 @@ const SortOrderSelect = ({ sortOrder, className }: SortOrderSelectProps) => {
           <SelectTrigger
             className={cn("transition hover:bg-neutral-100", className)}
             size="sm"
+            renderIcon={false}
           >
             <Settings2 className="size-4" />
           </SelectTrigger>
