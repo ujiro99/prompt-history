@@ -317,8 +317,8 @@ promptOrganizer:
     generating: 精製結果を受信中
     complete: 完了しました
     error: エラーが発生しました
-    saved: 保存済み
-    discarded: 破棄済み
+    save: 保存
+    discard: 破棄
   result:
     templatesGenerated: "$1件のテンプレートが生成されました"
     sourceCount: "$1件のプロンプトに基づいています"
@@ -337,9 +337,9 @@ promptOrganizer:
     actualCost: 実際のコスト
     executedAt: 実行日時
   preview:
-    title: テンプレートをプレビュー
-    description: 生成されたテンプレートを確認・編集
-    templateList: テンプレート一覧
+    title: 精製結果をプレビュー
+    description: 精製されたプロンプトを確認・編集
+    promptList: プロンプト一覧
     emptyState: リストからプロンプトを選択してください。
     title_label: タイトル
     useCase: 用途

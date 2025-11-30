@@ -60,27 +60,6 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
   }
 
   /**
-   * Highlight variables in content
-   */
-  const highlightVariables = (content: string): React.ReactElement => {
-    const parts = content.split(/(\{\{[^}]+\}\})/g)
-    return (
-      <>
-        {parts.map((part, index) => {
-          if (part.match(/\{\{[^}]+\}\}/)) {
-            return (
-              <span key={index} className="text-primary font-semibold">
-                {part}
-              </span>
-            )
-          }
-          return <span key={index}>{part}</span>
-        })}
-      </>
-    )
-  }
-
-  /**
    * Handle discard action
    */
   const handleDiscard = () => {
@@ -112,13 +91,10 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
   }
 
   /**
-   * Handle finish
+   * Handle complete and save all changes
    */
-  const handleFinish = () => {
-    if (onSave) {
-      console.log("Saving templates:", editedTemplates)
-      onSave(editedTemplates)
-    }
+  const handleComplete = () => {
+    onSave?.(editedTemplates)
     onOpenChange(false)
   }
 
@@ -142,14 +118,14 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
         </DialogHeader>
 
         {/* Two Column Layout */}
-        <div className="grid grid-cols-3 gap-4 py-4 flex-1 min-h-0">
+        <div className="grid grid-cols-3 gap-2 py-4 flex-1 min-h-0">
           {/* Left Pane: Template List */}
           <div className="col-span-1 flex flex-col min-h-0 gap-2">
             <div className="text-sm font-medium">
-              {i18n.t("promptOrganizer.preview.templateList")}
+              {i18n.t("promptOrganizer.preview.promptList")}
             </div>
             <ScrollArea className="flex-1 min-h-0">
-              <div className="space-y-2 p-2">
+              <div className="space-y-2 p-0.5 pr-4">
                 {editedTemplates.map((template, index) => (
                   <TemplateCandidateCard
                     key={template.id}
@@ -230,9 +206,6 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
                         rows={8}
                         className="font-mono text-xs"
                       />
-                      <div className="text-xs text-muted-foreground p-2 bg-muted rounded">
-                        {highlightVariables(selectedTemplate.content)}
-                      </div>
                     </div>
 
                     {/* Variables List */}
@@ -293,27 +266,13 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
 
                 {/* Template Actions */}
                 <div className="flex gap-2 border-t pt-4">
-                  <Button
-                    variant="outline"
-                    onClick={handleDiscard}
-                    disabled={selectedTemplate.userAction === "discard"}
-                  >
+                  <Button variant="outline" onClick={handleDiscard}>
                     {i18n.t("promptOrganizer.buttons.discard")}
                   </Button>
-                  <Button
-                    variant="outline"
-                    onClick={handleSave}
-                    disabled={
-                      selectedTemplate.userAction === "save" ||
-                      selectedTemplate.userAction === "save_and_pin"
-                    }
-                  >
+                  <Button variant="outline" onClick={handleSave}>
                     {i18n.t("promptOrganizer.buttons.save")}
                   </Button>
-                  <Button
-                    onClick={handleSaveAndPin}
-                    disabled={selectedTemplate.userAction === "save_and_pin"}
-                  >
+                  <Button onClick={handleSaveAndPin}>
                     {i18n.t("promptOrganizer.buttons.saveAndPin")}
                   </Button>
                 </div>
@@ -326,7 +285,7 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
           <Button variant="outline" onClick={handleCancel}>
             {i18n.t("common.cancel")}
           </Button>
-          <Button onClick={handleFinish}>{i18n.t("buttons.finish")}</Button>
+          <Button onClick={handleComplete}>{i18n.t("buttons.complete")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

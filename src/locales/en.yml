@@ -317,8 +317,8 @@ promptOrganizer:
     generating: Receiving refined results
     complete: Completed!
     error: Error occurred
-    saved: Saved
-    discarded: Discarded
+    save: Save
+    discard: Discard
   result:
     templatesGenerated: "$1 templates generated"
     sourceCount: "Based on $1 prompts"
@@ -337,9 +337,9 @@ promptOrganizer:
     actualCost: Actual Cost
     executedAt: Executed at
   preview:
-    title: Preview Templates
-    description: Review and edit generated templates
-    templateList: Templates
+    title: Preview Refined Results
+    description: Review and edit refined prompts
+    promptList: Prompt List
     emptyState: Please select a prompt from the list.
     title_label: Title
     useCase: Use Case

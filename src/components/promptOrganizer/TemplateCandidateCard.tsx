@@ -39,13 +39,13 @@ export const TemplateCandidateCard = ({
       case "save_and_pin":
         return (
           <span className="ml-2 px-2 py-1 text-xs rounded bg-green-100 text-green-800">
-            {i18n.t("promptOrganizer.status.saved")}
+            {i18n.t("promptOrganizer.status.save")}
           </span>
         )
       case "discard":
         return (
           <span className="ml-2 px-2 py-1 text-xs rounded bg-red-100 text-red-800">
-            {i18n.t("promptOrganizer.status.discarded")}
+            {i18n.t("promptOrganizer.status.discard")}
           </span>
         )
       default:
@@ -64,9 +64,9 @@ export const TemplateCandidateCard = ({
     >
       <div className="space-y-1">
         {/* Header: Title and Status */}
-        <div className="flex items-center justify-between">
+        <div className="relative flex items-center">
           <h3 className="font-semibold text-sm">{candidate.title}</h3>
-          {getStatusBadge()}
+          <p className="absolute top-0 right-0">{getStatusBadge()}</p>
         </div>
 
         {/* Use case */}
