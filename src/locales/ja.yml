@@ -306,9 +306,12 @@ promptOrganizer:
     cancel: キャンセル
     save: 保存
     discard: 破棄
-    saveAndPin: 保存してピン留め
+    saveAndPin: 保存してスター
     preview: テンプレートをプレビュー
     saveAll: すべて保存
+    notReviewed: $1件が未確認です
+    apply: 選択を反映させる (残り$1件)
+    applyAll: 選択を反映させる
   status:
     sending: 対象プロンプトを送信中
     thinking0: 対象プロンプトを分類中
@@ -318,9 +321,11 @@ promptOrganizer:
     complete: 完了しました
     error: エラーが発生しました
     save: 保存
+    pin: スター
     discard: 破棄
+    pending: 保留
   result:
-    templatesGenerated: "$1件のテンプレートが生成されました"
+    templatesGenerated: "$1件のテンプレートが精製されました"
     sourceCount: "$1件のプロンプトに基づいています"
     actualCost: 確定コスト
   summary:
@@ -350,7 +355,7 @@ promptOrganizer:
   aiTemplates:
     title: AI推奨テンプレート
   pendingTemplates:
-    warning: 未確認の生成結果があります。（$1件）
+    warning: 未確認の精製結果があります。（$1件）
     review: 確認する
   errors:
     noApiKey: Gemini APIキーが必要です。設定でAPIキーを設定してください。

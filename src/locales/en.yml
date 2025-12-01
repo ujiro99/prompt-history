@@ -306,9 +306,12 @@ promptOrganizer:
     cancel: Cancel
     save: Save
     discard: Discard
-    saveAndPin: Save & Pin
+    saveAndPin: Save & Star
     preview: Preview Templates
     saveAll: Save All
+    notReviewed: $1 items pending review
+    apply: Apply selections (remaining $1)
+    applyAll: Apply all selections
   status:
     sending: Sending target prompts
     thinking0: Classifying target prompts
@@ -318,7 +321,9 @@ promptOrganizer:
     complete: Completed!
     error: Error occurred
     save: Save
+    pin: Star
     discard: Discard
+    pending: Pending
   result:
     templatesGenerated: "$1 templates generated"
     sourceCount: "Based on $1 prompts"
@@ -350,7 +355,7 @@ promptOrganizer:
   aiTemplates:
     title: AI Recommended
   pendingTemplates:
-    warning: You have unreviewed generation results. ($1 items)
+    warning: You have unreviewed refined results. ($1 items)
     review: Review
   errors:
     noApiKey: Gemini API key is required. Please set it in settings.

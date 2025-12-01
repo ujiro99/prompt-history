@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { Save, Trash, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -22,6 +23,7 @@ import { CategorySelector } from "./CategorySelector"
 import { TemplateCandidateCard } from "./TemplateCandidateCard"
 import { stopPropagation } from "@/utils/dom"
 import { VariableSettingsSection } from "@/components/shared"
+import { cn } from "@/lib/utils"
 import type { TemplateCandidate } from "@/types/promptOrganizer"
 
 interface OrganizerPreviewDialogProps {
@@ -29,7 +31,6 @@ interface OrganizerPreviewDialogProps {
   onOpenChange: (open: boolean) => void
   templates: TemplateCandidate[]
   onSave?: (templates: TemplateCandidate[]) => void
-  onClose?: () => void
 }
 
 export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
@@ -37,15 +38,18 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
   onOpenChange,
   templates,
   onSave,
-  onClose,
 }) => {
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [editedTemplates, setEditedTemplates] = useState([...templates])
   const { container } = useContainer()
-
-  console.log("Edited Templates:", editedTemplates)
-
   const selectedTemplate = editedTemplates[selectedIndex]
+  const userAction = selectedTemplate?.userAction
+  const userReviewedCount = editedTemplates.filter(
+    (t) => t.userAction !== "pending",
+  ).length
+  const pendingCount = editedTemplates.filter(
+    (t) => t.userAction === "pending",
+  ).length
 
   /**
    * Update selected template
@@ -64,6 +68,9 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
    */
   const handleDiscard = () => {
     updateTemplate({ userAction: "discard" })
+    setSelectedIndex((prevIndex) =>
+      prevIndex + 1 < editedTemplates.length ? prevIndex + 1 : 0,
+    )
   }
 
   /**
@@ -71,6 +78,9 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
    */
   const handleSave = () => {
     updateTemplate({ userAction: "save" })
+    setSelectedIndex((prevIndex) =>
+      prevIndex + 1 < editedTemplates.length ? prevIndex + 1 : 0,
+    )
   }
 
   /**
@@ -78,15 +88,15 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
    */
   const handleSaveAndPin = () => {
     updateTemplate({ userAction: "save_and_pin" })
+    setSelectedIndex((prevIndex) =>
+      prevIndex + 1 < editedTemplates.length ? prevIndex + 1 : 0,
+    )
   }
 
   /**
    * Handle cancel
    */
   const handleCancel = () => {
-    if (onClose) {
-      onClose()
-    }
     onOpenChange(false)
   }
 
@@ -151,7 +161,7 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
             ) : (
               <>
                 <ScrollArea className="flex-1 min-h-0">
-                  <div className="space-y-4 pl-2 pr-4">
+                  <div className="space-y-4 pl-2 pr-4 pb-2">
                     {/* Title Input */}
                     <div className="space-y-2">
                       <div className="text-sm font-medium">
@@ -204,7 +214,7 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
                           updateTemplate({ content: e.target.value })
                         }
                         rows={8}
-                        className="font-mono text-xs"
+                        className="font-mono text-xs max-h-60"
                       />
                     </div>
 
@@ -216,10 +226,9 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
                       enableAutoDetection={true}
                       headerText={i18n.t("promptOrganizer.preview.variables")}
                       showHeader={selectedTemplate.variables.length > 0}
-                      scrollAreaClassName="max-h-60"
                     />
 
-                    {/* Source Prompts Collapse */}
+                    {/* Source Prompts */}
                     <section className="space-y-2">
                       <h3>
                         <span className="text-sm font-medium">
@@ -244,16 +253,84 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
                 </ScrollArea>
 
                 {/* Template Actions */}
-                <div className="flex gap-2 border-t pt-4">
-                  <Button variant="outline" onClick={handleDiscard}>
-                    {i18n.t("promptOrganizer.buttons.discard")}
-                  </Button>
-                  <Button variant="outline" onClick={handleSave}>
-                    {i18n.t("promptOrganizer.buttons.save")}
-                  </Button>
-                  <Button onClick={handleSaveAndPin}>
-                    {i18n.t("promptOrganizer.buttons.saveAndPin")}
-                  </Button>
+                <div className="pt-2">
+                  <p className="text-xs text-center mb-2 text-foreground/90">
+                    この精製したプロンプトを保存しますか？
+                  </p>
+                  <div className="flex justify-center gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={handleDiscard}
+                      className={cn(
+                        "group",
+                        userAction === "discard"
+                          ? [
+                              "ring-2 ring-red-400 bg-red-50 text-red-900",
+                              "hover:bg-red-100/80 hover:text-red-900",
+                            ]
+                          : "",
+                      )}
+                    >
+                      <Trash
+                        className={cn(
+                          "size-4 stroke-neutral-500 fill-neutral-100 transition",
+                          "group-hover:scale-120 group-hover:stroke-red-500 group-hover:fill-red-100 ",
+                          userAction === "discard"
+                            ? "stroke-red-600 fill-red-200"
+                            : "",
+                        )}
+                      />
+                      {i18n.t("promptOrganizer.buttons.discard")}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={handleSave}
+                      className={cn(
+                        "group",
+                        userAction === "save"
+                          ? [
+                              "ring-2 ring-green-400 bg-green-50 text-green-900",
+                              "hover:bg-green-100/80 hover:text-green-900",
+                            ]
+                          : "",
+                      )}
+                    >
+                      <Save
+                        className={cn(
+                          "size-4 stroke-neutral-500 fill-neutral-100 transition",
+                          "group-hover:scale-120 group-hover:stroke-green-600 group-hover:fill-green-100",
+                          userAction === "save"
+                            ? "stroke-green-700 fill-green-200"
+                            : "",
+                        )}
+                      />
+                      {i18n.t("promptOrganizer.buttons.save")}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={handleSaveAndPin}
+                      className={cn(
+                        "group",
+                        userAction === "save_and_pin"
+                          ? [
+                              "ring-2 ring-amber-400 bg-amber-50 text-amber-900",
+                              "hover:bg-amber-100/80 hover:text-amber-900",
+                            ]
+                          : "",
+                      )}
+                    >
+                      <Star
+                        className={cn(
+                          "size-4 stroke-neutral-500 fill-neutral-100 transition",
+                          "group-hover:scale-120 group-hover:stroke-amber-500 group-hover:fill-amber-100",
+                          userAction === "save_and_pin"
+                            ? "stroke-amber-600 fill-amber-200"
+                            : "",
+                        )}
+                      />
+                      {i18n.t("promptOrganizer.buttons.saveAndPin")}
+                    </Button>
+                  </div>
                 </div>
               </>
             )}
@@ -261,10 +338,24 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={handleCancel}>
+          <Button variant="secondary" onClick={handleCancel}>
             {i18n.t("common.cancel")}
           </Button>
-          <Button onClick={handleComplete}>{i18n.t("buttons.complete")}</Button>
+          <Button onClick={handleComplete} disabled={userReviewedCount === 0}>
+            {userReviewedCount > 0 ? (
+              pendingCount === 0 ? (
+                <>
+                  {i18n.t("promptOrganizer.buttons.applyAll", [pendingCount])}
+                </>
+              ) : (
+                <>{i18n.t("promptOrganizer.buttons.apply", [pendingCount])}</>
+              )
+            ) : (
+              <>
+                {i18n.t("promptOrganizer.buttons.notReviewed", [pendingCount])}
+              </>
+            )}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

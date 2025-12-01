@@ -4,6 +4,7 @@
  */
 
 import { i18n } from "#imports"
+import { Star } from "lucide-react"
 import type { TemplateCandidate } from "@/types/promptOrganizer"
 import { cn } from "@/lib/utils"
 
@@ -36,16 +37,32 @@ export const TemplateCandidateCard = ({
   const getStatusBadge = () => {
     switch (candidate.userAction) {
       case "save":
-      case "save_and_pin":
         return (
           <span className="ml-2 px-2 py-1 text-xs rounded bg-green-100 text-green-800">
             {i18n.t("promptOrganizer.status.save")}
+          </span>
+        )
+      case "save_and_pin":
+        return (
+          <span className="ml-2 px-2 py-1 text-xs rounded bg-amber-100 text-amber-600">
+            <Star
+              className={cn(
+                "size-3 inline mr-0.5 mb-1 stroke-amber-600 fill-amber-300",
+              )}
+            />
+            {i18n.t("promptOrganizer.status.pin")}
           </span>
         )
       case "discard":
         return (
           <span className="ml-2 px-2 py-1 text-xs rounded bg-red-100 text-red-800">
             {i18n.t("promptOrganizer.status.discard")}
+          </span>
+        )
+      case "pending":
+        return (
+          <span className="ml-2 px-2 py-1 text-xs rounded bg-yellow-100 text-yellow-800">
+            {i18n.t("promptOrganizer.status.pending")}
           </span>
         )
       default:
@@ -57,24 +74,22 @@ export const TemplateCandidateCard = ({
     <div
       className={cn(
         "px-4 pt-2 pb-3 cursor-pointer transition-colors hover:bg-gray-50 border rounded-lg",
-        isSelected ? "ring-2 ring-blue-500" : "",
+        isSelected ? "ring-2 ring-neutral-300" : "",
         className,
       )}
       onClick={onClick}
     >
       <div className="space-y-1">
         {/* Category badge */}
-        <div>
-          <span className="px-2 py-1 text-[10px] rounded bg-gray-100 text-neutral-800">
+        <div className="relative">
+          <span className="px-1.5 py-1 text-[10px] rounded bg-gray-100 text-neutral-900">
             {getCategoryLabel(candidate.categoryId)}
           </span>
+          <p className="absolute top-0 right-0">{getStatusBadge()}</p>
         </div>
 
         {/* Header: Title and Status */}
-        <div className="relative flex items-center">
-          <h3 className="font-semibold text-sm">{candidate.title}</h3>
-          <p className="absolute top-0 right-0">{getStatusBadge()}</p>
-        </div>
+        <h3 className="font-semibold text-sm">{candidate.title}</h3>
 
         {/* Use case */}
         <p className="text-xs text-mute-foreground">{candidate.useCase}</p>
