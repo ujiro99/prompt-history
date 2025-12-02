@@ -2,7 +2,7 @@
  * @vitest-environment happy-dom
  */
 import { describe, it, expect, beforeEach, vi } from "vitest"
-import { render, screen, fireEvent } from "@testing-library/react"
+import { render, screen } from "@testing-library/react"
 import { VariableSettingsSection } from "../VariableSettingsSection"
 import type { VariableConfig } from "@/types/prompt"
 import { ContainerProvider } from "@/contexts/ContainerContext"
@@ -15,7 +15,9 @@ vi.mock("#imports", () => ({
 }))
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => {
-  return <ContainerProvider container={document.body}>{children}</ContainerProvider>
+  return (
+    <ContainerProvider container={document.body}>{children}</ContainerProvider>
+  )
 }
 
 describe("VariableSettingsSection", () => {
@@ -24,7 +26,11 @@ describe("VariableSettingsSection", () => {
   const sampleVariables: VariableConfig[] = [
     { name: "userName", type: "text", defaultValue: "John" },
     { name: "age", type: "text" },
-    { name: "country", type: "select", selectOptions: { options: ["USA", "UK", "Japan"] } },
+    {
+      name: "country",
+      type: "select",
+      selectOptions: { options: ["USA", "UK", "Japan"] },
+    },
   ]
 
   beforeEach(() => {
@@ -38,7 +44,6 @@ describe("VariableSettingsSection", () => {
           <VariableSettingsSection
             variables={sampleVariables}
             onChange={mockOnChange}
-            mode="edit"
           />
         </TestWrapper>,
       )
@@ -58,8 +63,12 @@ describe("VariableSettingsSection", () => {
         </TestWrapper>,
       )
 
-      expect(screen.getByText("dialogs.edit.variableSettings")).toBeInTheDocument()
-      expect(screen.getByText("dialogs.edit.variableSettingsDescription")).toBeInTheDocument()
+      expect(
+        screen.getByText("dialogs.edit.variableSettings"),
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText("dialogs.edit.variableSettingsDescription"),
+      ).toBeInTheDocument()
     })
 
     it("should hide header when showHeader is false", () => {
@@ -73,7 +82,9 @@ describe("VariableSettingsSection", () => {
         </TestWrapper>,
       )
 
-      expect(screen.queryByText("dialogs.edit.variableSettings")).not.toBeInTheDocument()
+      expect(
+        screen.queryByText("dialogs.edit.variableSettings"),
+      ).not.toBeInTheDocument()
     })
 
     it("should use custom header and description text", () => {
@@ -95,10 +106,7 @@ describe("VariableSettingsSection", () => {
     it("should not render when variables array is empty", () => {
       const { container } = render(
         <TestWrapper>
-          <VariableSettingsSection
-            variables={[]}
-            onChange={mockOnChange}
-          />
+          <VariableSettingsSection variables={[]} onChange={mockOnChange} />
         </TestWrapper>,
       )
 
@@ -113,7 +121,6 @@ describe("VariableSettingsSection", () => {
           <VariableSettingsSection
             variables={sampleVariables}
             onChange={mockOnChange}
-            mode="edit"
             enableAutoDetection={false}
           />
         </TestWrapper>,
@@ -151,7 +158,11 @@ describe("VariableSettingsSection", () => {
     it("should preserve existing variable configurations when auto-detecting", () => {
       const content = "Hello {{userName}}, you are {{age}} years old."
       const existingVariables: VariableConfig[] = [
-        { name: "userName", type: "select", selectOptions: { options: ["John", "Jane"] } },
+        {
+          name: "userName",
+          type: "select",
+          selectOptions: { options: ["John", "Jane"] },
+        },
       ]
 
       render(
@@ -169,12 +180,16 @@ describe("VariableSettingsSection", () => {
       const calledVariables = mockOnChange.mock.calls[0][0]
 
       // userName should preserve its select type configuration
-      const userNameVar = calledVariables.find((v: VariableConfig) => v.name === "userName")
+      const userNameVar = calledVariables.find(
+        (v: VariableConfig) => v.name === "userName",
+      )
       expect(userNameVar?.type).toBe("select")
       expect(userNameVar?.selectOptions?.options).toEqual(["John", "Jane"])
 
       // age should be added as new variable with default type
-      const ageVar = calledVariables.find((v: VariableConfig) => v.name === "age")
+      const ageVar = calledVariables.find(
+        (v: VariableConfig) => v.name === "age",
+      )
       expect(ageVar?.type).toBe("text")
     })
 
@@ -223,13 +238,12 @@ describe("VariableSettingsSection", () => {
           <VariableSettingsSection
             variables={sampleVariables}
             onChange={mockOnChange}
-            maxHeight="20rem"
           />
         </TestWrapper>,
       )
 
       // ScrollAreaWithGradient should be rendered with the scroll-gradient-container class
-      const scrollArea = container.querySelector('.scroll-gradient-container')
+      const scrollArea = container.querySelector(".scroll-gradient-container")
       expect(scrollArea).toBeInTheDocument()
     })
   })

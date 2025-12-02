@@ -352,6 +352,7 @@ promptOrganizer:
     content: Prompt Content
     variables: Variables
     sourcePrompts: Source Prompts
+    savePromptQuestion: Would you like to save this refined prompt?
   aiTemplates:
     title: AI Recommended
   pendingTemplates:

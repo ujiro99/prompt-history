@@ -125,7 +125,7 @@ export interface PromptForOrganization {
  */
 export interface OrganizePromptsResponse {
   /** List of generated templates */
-  templates: GeneratedTemplate[]
+  prompts: GeneratedTemplate[]
 }
 
 /**

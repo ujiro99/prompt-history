@@ -129,6 +129,7 @@ describe("CostEstimatorService", () => {
       const usage: TokenUsage = {
         inputTokens: 10000,
         outputTokens: 5000,
+        thoughtsTokens: 0,
       }
 
       const cost = service.calculateCost(usage)
@@ -144,6 +145,7 @@ describe("CostEstimatorService", () => {
       const usage: TokenUsage = {
         inputTokens: 0,
         outputTokens: 0,
+        thoughtsTokens: 0,
       }
 
       const cost = service.calculateCost(usage)
@@ -155,6 +157,7 @@ describe("CostEstimatorService", () => {
       const usage: TokenUsage = {
         inputTokens: 10000,
         outputTokens: 0,
+        thoughtsTokens: 0,
       }
 
       const cost = service.calculateCost(usage)
@@ -168,6 +171,7 @@ describe("CostEstimatorService", () => {
       const usage: TokenUsage = {
         inputTokens: 0,
         outputTokens: 10000,
+        thoughtsTokens: 0,
       }
 
       const cost = service.calculateCost(usage)
@@ -181,6 +185,7 @@ describe("CostEstimatorService", () => {
       const usage: TokenUsage = {
         inputTokens: 1_000_000,
         outputTokens: 500_000,
+        thoughtsTokens: 0,
       }
 
       const cost = service.calculateCost(usage)
@@ -209,12 +214,17 @@ describe("CostEstimatorService", () => {
       expect(estimate).toMatchObject({
         targetPromptCount: 2,
         estimatedInputTokens: 10000,
-        estimatedOutputTokens: 5000,
+        estimatedOutputTokens: 15000, // including thoughts tokens (0.5x output + 1x thoughts)
         model: "gemini-2.5-flash",
         contextLimit: 1_000_000,
       })
       expect(estimate.contextUsageRate).toBeCloseTo(0.01, 2)
-      expect(estimate.estimatedCost).toBeCloseTo(2.325, 3)
+      // Input: (10000 / 1000000) * 0.3 = 0.003 USD
+      // Output: (5000 / 1000000) * 2.5 = 0.0125 USD
+      // Thoughts: (10000 / 1000000) * 2.5 = 0.025 USD
+      // Total: 0.0405 USD
+      // JPY: 0.0405 * 150 = 6.075
+      expect(estimate.estimatedCost).toBeCloseTo(6.075, 3)
 
       vi.useRealTimers()
     })
@@ -262,13 +272,14 @@ describe("CostEstimatorService", () => {
       expect(estimate.contextUsageRate).toBeCloseTo(0.5, 2)
     })
 
-    it("should estimate output tokens as 0.5 x input tokens", async () => {
+    it("should estimate output tokens as 1.5 x input tokens (including thoughts)", async () => {
       mockGeminiClient.estimateTokens.mockResolvedValueOnce(20000)
 
       const estimate = await service.estimateExecution(defaultSettings)
 
       expect(estimate.estimatedInputTokens).toBe(20000)
-      expect(estimate.estimatedOutputTokens).toBe(10000)
+      // 0.5x output tokens + 1x thoughts tokens = 1.5x total
+      expect(estimate.estimatedOutputTokens).toBe(30000)
     })
   })
 })

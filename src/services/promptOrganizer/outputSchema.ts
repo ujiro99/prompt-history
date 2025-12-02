@@ -2,7 +2,7 @@
 export const schema = {
   type: "object",
   properties: {
-    templates: {
+    prompts: {
       type: "array",
       items: {
         type: "object",
@@ -38,5 +38,5 @@ export const schema = {
       },
     },
   },
-  required: ["templates"],
+  required: ["prompts"],
 }

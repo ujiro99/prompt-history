@@ -146,7 +146,7 @@ export class TemplateGeneratorService {
       })
 
       return {
-        templates: response.templates,
+        templates: response.prompts,
         usage,
       }
     } catch (error) {
@@ -247,7 +247,7 @@ export class TemplateGeneratorService {
     const promptList = prompts
       .map(
         (p, idx) =>
-          `${idx + 1}. ${p.name}\n   Content: ${p.content}\n   Execution count: ${p.executionCount}`,
+          `${idx + 1}. ${p.name}\n   ID: ${p.id}\n   Content: ${p.content}\n   Execution count: ${p.executionCount}`,
       )
       .join("\n\n")
 
@@ -259,6 +259,6 @@ ${categoryList}
 Prompts to analyze:
 ${promptList}
 
-Please generate templates in JSON format according to the schema.`
+Please generate prompts in JSON format according to the schema.`
   }
 }

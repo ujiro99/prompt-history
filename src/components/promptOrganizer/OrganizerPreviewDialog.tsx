@@ -25,6 +25,7 @@ import { stopPropagation } from "@/utils/dom"
 import { VariableSettingsSection } from "@/components/shared"
 import { cn } from "@/lib/utils"
 import type { TemplateCandidate } from "@/types/promptOrganizer"
+import { StorageService } from "@/services/storage"
 
 interface OrganizerPreviewDialogProps {
   open: boolean
@@ -41,6 +42,9 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
 }) => {
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [editedTemplates, setEditedTemplates] = useState([...templates])
+  const [sourcePromptNames, setSourcePromptNames] = useState<
+    Map<string, string>
+  >(new Map())
   const { container } = useContainer()
   const selectedTemplate = editedTemplates[selectedIndex]
   const userAction = selectedTemplate?.userAction
@@ -112,6 +116,45 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
     setEditedTemplates(templates)
     setSelectedIndex(0)
   }, [templates])
+
+  /**
+   * Load source prompt names when selected template changes
+   */
+  useEffect(() => {
+    if (!selectedTemplate) return
+
+    const loadSourcePromptNames = async () => {
+      const storage = StorageService.getInstance()
+      const names = new Map<string, string>()
+
+      try {
+        // Fetch all prompts once instead of multiple getPrompt calls
+        const allPrompts = await storage.getAllPrompts()
+        const promptMap = new Map(allPrompts.map((p) => [p.id, p.name]))
+
+        for (const promptId of selectedTemplate.aiMetadata.sourcePromptIds) {
+          // Get name from the prompt map
+          const promptName = promptMap.get(promptId)
+          if (promptName) {
+            names.set(promptId, promptName)
+          } else {
+            names.set(promptId, promptId) // Fallback to ID if prompt not found
+          }
+        }
+
+        setSourcePromptNames(names)
+      } catch (error) {
+        console.error("Failed to load source prompt names:", error)
+        // On error, fallback to using IDs
+        for (const promptId of selectedTemplate.aiMetadata.sourcePromptIds) {
+          names.set(promptId, promptId)
+        }
+        setSourcePromptNames(names)
+      }
+    }
+
+    loadSourcePromptNames()
+  }, [selectedTemplate])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -241,9 +284,9 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
                           (id) => (
                             <div
                               key={id}
-                              className="text-xs text-muted-foreground font-mono"
+                              className="text-xs text-muted-foreground"
                             >
-                              {id}
+                              {sourcePromptNames.get(id) || id}
                             </div>
                           ),
                         )}
@@ -255,7 +298,7 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
                 {/* Template Actions */}
                 <div className="pt-2">
                   <p className="text-xs text-center mb-2 text-foreground/90">
-                    この精製したプロンプトを保存しますか？
+                    {i18n.t("promptOrganizer.preview.savePromptQuestion")}
                   </p>
                   <div className="flex justify-center gap-2">
                     <Button

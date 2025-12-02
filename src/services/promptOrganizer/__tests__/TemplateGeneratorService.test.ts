@@ -15,7 +15,7 @@ const { mockGeminiClient, mockGenaiApiKeyStorage, mockSystemInstruction } =
       isInitialized: vi.fn(() => true),
       generateStructuredContent: vi.fn(
         async (): Promise<OrganizePromptsResponse> => ({
-          templates: [
+          prompts: [
             {
               title: "Test Template",
               content: "Test {{variable}}",
@@ -29,7 +29,7 @@ const { mockGeminiClient, mockGenaiApiKeyStorage, mockSystemInstruction } =
       ),
       generateStructuredContentStream: vi.fn(
         async (): Promise<OrganizePromptsResponse> => ({
-          templates: [
+          prompts: [
             {
               title: "Test Template",
               content: "Test {{variable}}",
@@ -107,8 +107,8 @@ describe("TemplateGeneratorService", () => {
   ]
 
   const defaultPrompts: PromptForOrganization[] = [
-    { id: "1", name: "Prompt 1", content: "Content 1", executionCount: 10 },
-    { id: "2", name: "Prompt 2", content: "Content 2", executionCount: 5 },
+    { id: "id1", name: "Prompt 1", content: "Content 1", executionCount: 10 },
+    { id: "id2", name: "Prompt 2", content: "Content 2", executionCount: 5 },
   ]
 
   describe("buildPrompt", () => {
@@ -133,9 +133,11 @@ describe("TemplateGeneratorService", () => {
 
       expect(prompt).toContain("Prompts to analyze:")
       expect(prompt).toContain("1. Prompt 1")
+      expect(prompt).toContain("   ID: id1")
       expect(prompt).toContain("   Content: Content 1")
       expect(prompt).toContain("   Execution count: 10")
       expect(prompt).toContain("2. Prompt 2")
+      expect(prompt).toContain("   ID: id2")
       expect(prompt).toContain("   Content: Content 2")
       expect(prompt).toContain("   Execution count: 5")
     })
@@ -159,7 +161,7 @@ describe("TemplateGeneratorService", () => {
       )
 
       expect(prompt).toContain(
-        "Please generate templates in JSON format according to the schema.",
+        "Please generate prompts in JSON format according to the schema.",
       )
     })
 
@@ -213,14 +215,14 @@ describe("TemplateGeneratorService", () => {
 
       expect(prompt).toContain("Test organization prompt")
       expect(schema).toHaveProperty("type", "object")
-      expect(schema).toHaveProperty("properties.templates")
+      expect(schema).toHaveProperty("properties.prompts")
       expect(config).toHaveProperty(
         "systemInstruction",
         "Test system instruction",
       )
     })
 
-    it("should return templates and usage", async () => {
+    it("should return prompts and usage", async () => {
       const result = await service.generateTemplates(
         defaultPrompts,
         defaultSettings,
@@ -285,9 +287,9 @@ describe("TemplateGeneratorService", () => {
       )
     })
 
-    it("should handle multiple templates in response", async () => {
+    it("should handle multiple prompts in response", async () => {
       mockGeminiClient.generateStructuredContentStream.mockResolvedValueOnce({
-        templates: [
+        prompts: [
           {
             title: "Template 1",
             content: "Content 1 {{var1}}",
@@ -348,7 +350,7 @@ describe("TemplateGeneratorService", () => {
       expect(schema).toEqual({
         type: "object",
         properties: {
-          templates: {
+          prompts: {
             type: "array",
             items: {
               type: "object",
@@ -384,7 +386,7 @@ describe("TemplateGeneratorService", () => {
             },
           },
         },
-        required: ["templates"],
+        required: ["prompts"],
       })
     })
   })

@@ -10,6 +10,7 @@ import { BridgeArea } from "../BridgeArea"
 import type { Prompt } from "@/types/prompt"
 import { i18n } from "#imports"
 import { TestIds } from "@/components/const"
+import { stopPropagation } from "@/utils/dom"
 
 interface PromptDetailProps {
   open: boolean
@@ -73,8 +74,8 @@ export const PromptPreview = ({
             align={"end"}
             sideOffset={8}
             onOpenAutoFocus={noFocus}
-            onWheel={(e) => e.stopPropagation()}
             data-testid={TestIds.inputPopup.promptPreview}
+            {...stopPropagation()}
           >
             <div className="space-y-2 text-foreground">
               <ScrollAreaWithGradient

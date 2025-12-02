@@ -352,6 +352,7 @@ promptOrganizer:
     content: プロンプト内容
     variables: 変数
     sourcePrompts: ソースプロンプト
+    savePromptQuestion: この精製したプロンプトを保存しますか？
   aiTemplates:
     title: AI推奨テンプレート
   pendingTemplates:
