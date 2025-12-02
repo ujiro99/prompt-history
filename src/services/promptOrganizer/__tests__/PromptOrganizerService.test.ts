@@ -98,32 +98,34 @@ const {
   }
 
   const mockPromptsService = {
-    getAllPrompts: vi.fn(async (): Promise<Prompt[]> => [
-      {
-        id: "1",
-        name: "Prompt 1",
-        content: "Content 1",
-        executionCount: 10,
-        lastExecutedAt: new Date("2025-01-19"),
-        lastExecutionUrl: "https://example.com",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        isPinned: false,
-        isAIGenerated: false,
-      },
-      {
-        id: "2",
-        name: "Prompt 2",
-        content: "Content 2",
-        executionCount: 5,
-        lastExecutedAt: new Date("2025-01-18"),
-        lastExecutionUrl: "https://example.com",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        isPinned: false,
-        isAIGenerated: false,
-      },
-    ]),
+    getAllPrompts: vi.fn(
+      async (): Promise<Prompt[]> => [
+        {
+          id: "1",
+          name: "Prompt 1",
+          content: "Content 1",
+          executionCount: 10,
+          lastExecutedAt: new Date("2025-01-19"),
+          lastExecutionUrl: "https://example.com",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          isPinned: false,
+          isAIGenerated: false,
+        },
+        {
+          id: "2",
+          name: "Prompt 2",
+          content: "Content 2",
+          executionCount: 5,
+          lastExecutedAt: new Date("2025-01-18"),
+          lastExecutionUrl: "https://example.com",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          isPinned: false,
+          isAIGenerated: false,
+        },
+      ],
+    ),
   }
 
   return {
@@ -187,7 +189,9 @@ describe("PromptOrganizerService", () => {
       expect(mockPromptsService.getAllPrompts).toHaveBeenCalledOnce()
       expect(mockPromptFilterService.filterPrompts).toHaveBeenCalledOnce()
       expect(mockCategoryService.getAll).toHaveBeenCalledOnce()
-      expect(mockTemplateGeneratorService.generateTemplates).toHaveBeenCalledOnce()
+      expect(
+        mockTemplateGeneratorService.generateTemplates,
+      ).toHaveBeenCalledOnce()
       expect(mockCostEstimatorService.calculateCost).toHaveBeenCalledTimes(2) // Called for both estimated and actual cost
       expect(result).toHaveProperty("templates")
       expect(result).toHaveProperty("sourceCount", 2)
@@ -220,51 +224,6 @@ describe("PromptOrganizerService", () => {
         confirmed: false,
         showInPinned: true,
       })
-    })
-
-    it("should enforce title max length (20 chars)", async () => {
-      mockTemplateGeneratorService.generateTemplates.mockResolvedValueOnce({
-        templates: [
-          {
-            title: "This is a very long template title that exceeds limit",
-            content: "Content",
-            useCase: "Use case",
-            categoryId: "test-cat",
-            sourcePromptIds: ["1"],
-            variables: [],
-          },
-        ],
-        usage: { inputTokens: 1000, outputTokens: 500 },
-      })
-
-      const result = await service.executeOrganization(defaultSettings)
-
-      expect(result.templates[0].title).toBe("This is a very long ")
-      expect(result.templates[0].title.length).toBe(20)
-    })
-
-    it("should enforce useCase max length (40 chars)", async () => {
-      mockTemplateGeneratorService.generateTemplates.mockResolvedValueOnce({
-        templates: [
-          {
-            title: "Title",
-            content: "Content",
-            useCase:
-              "This is a very long use case description that exceeds the limit",
-            categoryId: "test-cat",
-            sourcePromptIds: ["1"],
-            variables: [],
-          },
-        ],
-        usage: { inputTokens: 1000, outputTokens: 500 },
-      })
-
-      const result = await service.executeOrganization(defaultSettings)
-
-      expect(result.templates[0].useCase).toBe(
-        "This is a very long use case description",
-      )
-      expect(result.templates[0].useCase.length).toBe(40)
     })
 
     it("should fallback to 'other' category when category not found", async () => {

@@ -36,7 +36,7 @@ export const DEFAULT_IMPROVEMENT_PROMPT = `Analyze and improve the following use
 
 1. Maintain the original intent and purpose
 2. Clarify any ambiguous expressions
-3. Add appropriate structure (bullets, sections, XML tags)
+3. Add appropriate structure (bullets, sections)
 4. Consider adding: persona, constraints, examples, or output format specifications
 5. Keep the improved prompt concise and focused
 

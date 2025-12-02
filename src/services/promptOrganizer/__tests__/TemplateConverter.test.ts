@@ -3,6 +3,7 @@ import { templateConverter } from "../TemplateConverter"
 import type {
   GeneratedTemplate,
   TemplateCandidate,
+  PromptForOrganization,
 } from "@/types/promptOrganizer"
 
 describe("TemplateConverter", () => {
@@ -35,10 +36,181 @@ describe("TemplateConverter", () => {
     ...overrides,
   })
 
+  const createTargetPrompts = (): PromptForOrganization[] => [
+    {
+      id: "id1",
+      name: "Prompt 1",
+      content: "Content 1",
+      executionCount: 10,
+    },
+    {
+      id: "id2",
+      name: "Prompt 2",
+      content: "Content 2",
+      executionCount: 5,
+    },
+    {
+      id: "id3",
+      name: "Prompt 3",
+      content: "Content 3",
+      executionCount: 3,
+    },
+  ]
+
+  describe("correctSourcePromptIds", () => {
+    it("should keep IDs when exact match exists", () => {
+      const sourcePromptIds = ["id1", "id2", "id3"]
+      const targetPrompts = createTargetPrompts()
+
+      const correctedIds = templateConverter.correctSourcePromptIds(
+        sourcePromptIds,
+        targetPrompts,
+      )
+
+      expect(correctedIds).toEqual(["id1", "id2", "id3"])
+    })
+
+    it("should correct 1-char corrupted ID", () => {
+      const sourcePromptIds = [
+        "prompt_9eb3c927-53c9-4eea-9ba0-a344c6e95bd4", // corrupted (d→c)
+      ]
+      const targetPrompts: PromptForOrganization[] = [
+        {
+          id: "prompt_9eb3c927-53c9-4eea-9ba0-a344d6e95bd4", // correct
+          name: "Test",
+          content: "Test",
+          executionCount: 1,
+        },
+      ]
+
+      const correctedIds = templateConverter.correctSourcePromptIds(
+        sourcePromptIds,
+        targetPrompts,
+      )
+
+      expect(correctedIds).toEqual([
+        "prompt_9eb3c927-53c9-4eea-9ba0-a344d6e95bd4",
+      ])
+    })
+
+    it("should correct 4-char corrupted ID (above 90% threshold)", () => {
+      const sourcePromptIds = [
+        "prompt_9eb3c927-53c9-4eea-9ba0-a344d6e95xxx", // 4 chars diff
+      ]
+      const targetPrompts: PromptForOrganization[] = [
+        {
+          id: "prompt_9eb3c927-53c9-4eea-9ba0-a344d6e95bd4",
+          name: "Test",
+          content: "Test",
+          executionCount: 1,
+        },
+      ]
+
+      const correctedIds = templateConverter.correctSourcePromptIds(
+        sourcePromptIds,
+        targetPrompts,
+      )
+
+      expect(correctedIds).toEqual([
+        "prompt_9eb3c927-53c9-4eea-9ba0-a344d6e95bd4",
+      ])
+    })
+
+    it("should NOT correct 5-char corrupted ID (below 90% threshold)", () => {
+      const sourcePromptIds = [
+        "prompt_9eb3c927-53c9-4eea-9ba0-a344c6e9xxxx", // 5 chars diff
+      ]
+      const targetPrompts: PromptForOrganization[] = [
+        {
+          id: "prompt_9eb3c927-53c9-4eea-9ba0-a344d6e95bd4",
+          name: "Test",
+          content: "Test",
+          executionCount: 1,
+        },
+      ]
+
+      const correctedIds = templateConverter.correctSourcePromptIds(
+        sourcePromptIds,
+        targetPrompts,
+      )
+
+      // Should keep corrupted ID as-is
+      expect(correctedIds).toEqual([
+        "prompt_9eb3c927-53c9-4eea-9ba0-a344c6e9xxxx",
+      ])
+    })
+
+    it("should handle multiple corrupted IDs", () => {
+      const sourcePromptIds = [
+        "prompt_abc12345-1234-1234-1234-123456789abc",
+        "prompt_def67890-5678-5678-5678-567890abcdex", // 1 char diff
+      ]
+      const targetPrompts: PromptForOrganization[] = [
+        {
+          id: "prompt_abc12345-1234-1234-1234-123456789abc",
+          name: "Test 1",
+          content: "Test 1",
+          executionCount: 1,
+        },
+        {
+          id: "prompt_def67890-5678-5678-5678-567890abcdef",
+          name: "Test 2",
+          content: "Test 2",
+          executionCount: 1,
+        },
+      ]
+
+      const correctedIds = templateConverter.correctSourcePromptIds(
+        sourcePromptIds,
+        targetPrompts,
+      )
+
+      expect(correctedIds).toEqual([
+        "prompt_abc12345-1234-1234-1234-123456789abc", // exact match
+        "prompt_def67890-5678-5678-5678-567890abcdef", // corrected
+      ])
+    })
+
+    it("should choose highest similarity when multiple matches", () => {
+      const sourcePromptIds = [
+        "prompt_9eb3c927-53c9-4eea-9ba0-a344c6e95bd4", // 1 char diff from id1
+      ]
+      const targetPrompts: PromptForOrganization[] = [
+        {
+          id: "prompt_9eb3c927-53c9-4eea-9ba0-a344d6e95bd4", // exact match (100%)
+          name: "Test 1",
+          content: "Test 1",
+          executionCount: 1,
+        },
+        {
+          id: "prompt_9eb3c927-53c9-4eea-9ba0-a344cce95bd4", // 2 char diff
+          name: "Test 2",
+          content: "Test 2",
+          executionCount: 1,
+        },
+      ]
+
+      const correctedIds = templateConverter.correctSourcePromptIds(
+        sourcePromptIds,
+        targetPrompts,
+      )
+
+      // Should choose exact match
+      expect(correctedIds).toEqual([
+        "prompt_9eb3c927-53c9-4eea-9ba0-a344d6e95bd4",
+      ])
+    })
+  })
+
   describe("convertToCandidate", () => {
     it("should convert GeneratedTemplate to TemplateCandidate", () => {
       const generated = createGeneratedTemplate()
-      const candidate = templateConverter.convertToCandidate(generated, 30)
+      const targetPrompts = createTargetPrompts()
+      const candidate = templateConverter.convertToCandidate(
+        generated,
+        30,
+        targetPrompts,
+      )
 
       expect(candidate).toMatchObject({
         title: "Test Template",
@@ -53,7 +225,8 @@ describe("TemplateConverter", () => {
 
     it("should set aiMetadata correctly", () => {
       const generated = createGeneratedTemplate()
-      const candidate = templateConverter.convertToCandidate(generated, 30)
+      const targetPrompts = createTargetPrompts()
+      const candidate = templateConverter.convertToCandidate(generated, 30, targetPrompts)
 
       expect(candidate.aiMetadata).toMatchObject({
         generatedAt: new Date("2025-01-20T10:00:00Z"),
@@ -74,7 +247,8 @@ describe("TemplateConverter", () => {
         ],
       })
 
-      const candidate = templateConverter.convertToCandidate(generated, 30)
+      const targetPrompts = createTargetPrompts()
+      const candidate = templateConverter.convertToCandidate(generated, 30, targetPrompts)
 
       expect(candidate.aiMetadata.showInPinned).toBe(true)
     })
@@ -88,7 +262,8 @@ describe("TemplateConverter", () => {
         ],
       })
 
-      const candidate = templateConverter.convertToCandidate(generated, 30)
+      const targetPrompts = createTargetPrompts()
+      const candidate = templateConverter.convertToCandidate(generated, 30, targetPrompts)
 
       expect(candidate.aiMetadata.showInPinned).toBe(false)
     })
@@ -99,7 +274,8 @@ describe("TemplateConverter", () => {
         variables: [{ name: "var1", description: "Var 1" }],
       })
 
-      const candidate = templateConverter.convertToCandidate(generated, 30)
+      const targetPrompts = createTargetPrompts()
+      const candidate = templateConverter.convertToCandidate(generated, 30, targetPrompts)
 
       expect(candidate.aiMetadata.showInPinned).toBe(false)
     })
@@ -112,7 +288,8 @@ describe("TemplateConverter", () => {
         ],
       })
 
-      const candidate = templateConverter.convertToCandidate(generated, 30)
+      const targetPrompts = createTargetPrompts()
+      const candidate = templateConverter.convertToCandidate(generated, 30, targetPrompts)
 
       expect(candidate.variables).toHaveLength(2)
       expect(candidate.variables[0]).toMatchObject({
@@ -138,7 +315,8 @@ describe("TemplateConverter", () => {
         ],
       })
 
-      const candidate = templateConverter.convertToCandidate(generated, 30)
+      const targetPrompts = createTargetPrompts()
+      const candidate = templateConverter.convertToCandidate(generated, 30, targetPrompts)
 
       expect(candidate.variables[0].type).toBe("text")
       expect(candidate.variables[1].type).toBe("text")
@@ -154,7 +332,8 @@ describe("TemplateConverter", () => {
         ],
       })
 
-      const candidate = templateConverter.convertToCandidate(generated, 30)
+      const targetPrompts = createTargetPrompts()
+      const candidate = templateConverter.convertToCandidate(generated, 30, targetPrompts)
 
       expect(candidate.variables[0].type).toBe("textarea")
       expect(candidate.variables[1].type).toBe("textarea")
@@ -170,7 +349,8 @@ describe("TemplateConverter", () => {
         ],
       })
 
-      const candidate = templateConverter.convertToCandidate(generated, 30)
+      const targetPrompts = createTargetPrompts()
+      const candidate = templateConverter.convertToCandidate(generated, 30, targetPrompts)
 
       expect(candidate.variables[0].type).toBe("textarea")
       expect(candidate.variables[1].type).toBe("textarea")
@@ -185,7 +365,8 @@ describe("TemplateConverter", () => {
         ],
       })
 
-      const candidate = templateConverter.convertToCandidate(generated, 30)
+      const targetPrompts = createTargetPrompts()
+      const candidate = templateConverter.convertToCandidate(generated, 30, targetPrompts)
 
       expect(candidate.variables[0].type).toBe("text")
       expect(candidate.variables[1].type).toBe("text")

@@ -56,17 +56,17 @@ export interface ExtractedVariable {
  * Template generated from Gemini API
  */
 export interface GeneratedTemplate {
-  /** Template name (max 20 characters) */
+  /** Template name */
   title: string
   /** Template content (including variables) */
   content: string
-  /** Use case (max 40 characters) */
+  /** Use case */
   useCase: string
   /** Category ID */
   categoryId: string
   /** Source prompt IDs list */
   sourcePromptIds: string[]
-  /** Extracted variables */
+  /** Extracted variables from content */
   variables: ExtractedVariable[]
 }
 

@@ -22,7 +22,7 @@ export class TemplateSaveService {
       (c) => c.userAction === "save" || c.userAction === "save_and_pin",
     )
 
-    console.log(`Saving ${toSave.length} templates`)
+    console.log(`Saving ${toSave.length} templates`, toSave)
 
     for (const candidate of toSave) {
       // Convert TemplateCandidate to Prompt

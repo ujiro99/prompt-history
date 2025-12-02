@@ -71,10 +71,11 @@ export class PromptOrganizerService {
     const now = new Date()
     const templateCandidates: TemplateCandidate[] = await Promise.all(
       templates.map(async (template) => {
-        // Use TemplateConverter for conversion with type inference and length constraints
+        // Use TemplateConverter for conversion with ID correction
         const candidate = templateConverter.convertToCandidate(
           template,
           settings.filterPeriodDays,
+          targetPrompts, // Pass targetPrompts for ID correction
         )
 
         // Apply category validation with fallback

@@ -91,14 +91,12 @@ export const PromptList = ({
 
     // For pinned menu, separate user pinned and AI templates
     if (menuType === "pinned") {
-      // Section A: User pinned prompts (not AI-generated)
-      const userPinned = filtered.filter((p) => !p.isAIGenerated)
+      // Section A: User pinned prompts (not AI-recommended)
+      const userPinned = filtered.filter((p) => !p.aiMetadata?.showInPinned)
       const userGroups = groupPrompts(userPinned, sortOrder, sideFlipped)
 
-      // Section B: AI recommended templates (AI-generated && showInPinned)
-      const aiTemplates = filtered.filter(
-        (p) => p.isAIGenerated && p.aiMetadata?.showInPinned,
-      )
+      // Section B: AI recommended templates
+      const aiTemplates = filtered.filter((p) => p.aiMetadata?.showInPinned)
       const aiGroups = groupPrompts(aiTemplates, sortOrder, sideFlipped)
 
       const count =
