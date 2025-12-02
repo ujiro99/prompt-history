@@ -10,7 +10,10 @@ import type {
   PromptForOrganization,
 } from "@/types/promptOrganizer"
 import type { Prompt, VariableConfig, VariableType } from "@/types/prompt"
-import { findBestMatch } from "@/utils/stringSimilarity"
+import {
+  findBestMatch,
+  findBestMatchLevenshtein,
+} from "@/utils/stringSimilarity"
 
 /**
  * Template Converter Service
@@ -37,8 +40,14 @@ class TemplateConverter {
         continue
       }
 
-      // Try fuzzy match with 90% threshold
-      const bestMatch = findBestMatch(corruptedId, targetIds, 90)
+      // Try position-based fuzzy match with 90% threshold
+      let bestMatch = findBestMatch(corruptedId, targetIds, 90)
+
+      // If no match, try Levenshtein distance-based matching
+      // This handles 1-char deletion/insertion patterns better
+      if (!bestMatch) {
+        bestMatch = findBestMatchLevenshtein(corruptedId, targetIds, 90)
+      }
 
       if (bestMatch) {
         console.warn(
