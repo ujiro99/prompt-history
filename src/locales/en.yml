@@ -307,8 +307,8 @@ promptOrganizer:
     save: Save
     discard: Discard
     saveAndPin: Save & Star
-    preview: Preview Templates
-    saveAll: Save All
+    preview: Review Others
+    saveAll: Save all organized results
     notReviewed: $1 items pending review
     apply: Apply selections (remaining $1)
     applyAll: Apply all selections
@@ -325,22 +325,15 @@ promptOrganizer:
     discard: Discard
     pending: Pending
   result:
-    templatesGenerated: "$1 templates generated"
     sourceCount: "Based on $1 prompts"
     actualCost: Actual Cost
   summary:
     title: Organization Complete
-    description: Review the generated templates
-    templatesGenerated: templates generated
-    sourceInfo: Source Information
-    sourcePrompts: Source Prompts
-    period: Analysis Period
-    days: days
-    highlight: Most Representative Template
-    basedOn: "Based on $1 source prompts"
-    usage: Token Usage
-    actualCost: Actual Cost
-    executedAt: Executed at
+    summary: We've selected $1 prompt and organized it into $2.
+    noTemplates: No templates were refined.
+    organizationPerformed: Organization Performed
+    examplePrompts: Example Organized Prompts
+    templateCreated: Created "$1" template.
   preview:
     title: Preview Refined Results
     description: Review and edit refined prompts

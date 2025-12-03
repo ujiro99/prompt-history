@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect } from "react"
+import { i18n } from "#imports"
 import { useDebounce } from "./useDebounce"
 import type {
   PromptOrganizerSettings,
@@ -18,10 +19,84 @@ import {
   pendingOrganizerTemplatesStorage,
 } from "@/services/storage/definitions"
 import { promptOrganizerService } from "@/services/promptOrganizer/PromptOrganizerService"
+import { successMessageGeneratorService } from "@/services/promptOrganizer/SuccessMessageGeneratorService"
+import type { GeneratedTemplate } from "@/types/promptOrganizer"
 
 interface UsePromptOrganizerOptions {
   /** Enable execution estimate calculation */
   enableEstimate?: boolean
+}
+
+/**
+ * Extract the first complete template from partial JSON
+ * @param accumulated - Accumulated JSON string
+ * @returns First complete template or null
+ */
+function extractFirstCompleteTemplate(
+  accumulated: string,
+): GeneratedTemplate | null {
+  // Find "prompts": [ marker
+  const promptsMarker = '"prompts": ['
+  const promptsIndex = accumulated.indexOf(promptsMarker)
+  if (promptsIndex === -1) return null
+
+  // Get text after "prompts": [
+  const startIndex = promptsIndex + promptsMarker.length
+  const remainingText = accumulated.substring(startIndex).trim()
+
+  // Find the first complete object by counting braces
+  let depth = 0
+  let inString = false
+  let escapeNext = false
+  let firstObjectEnd = -1
+
+  for (let i = 0; i < remainingText.length; i++) {
+    const char = remainingText[i]
+
+    if (escapeNext) {
+      escapeNext = false
+      continue
+    }
+
+    if (char === "\\") {
+      escapeNext = true
+      continue
+    }
+
+    if (char === '"') {
+      inString = !inString
+      continue
+    }
+
+    if (!inString) {
+      if (char === "{") {
+        depth++
+      } else if (char === "}") {
+        depth--
+        if (depth === 0) {
+          firstObjectEnd = i
+          break
+        }
+      }
+    }
+  }
+
+  // If we found a complete object, try to parse it
+  if (firstObjectEnd !== -1) {
+    const firstObjectStr = remainingText.substring(0, firstObjectEnd + 1)
+    try {
+      const firstTemplate = JSON.parse(firstObjectStr)
+      // Validate that it has required fields
+      if (firstTemplate.title && firstTemplate.content) {
+        return firstTemplate
+      }
+    } catch (error) {
+      // Not valid JSON yet
+      console.debug("Failed to parse first template:", error)
+    }
+  }
+
+  return null
 }
 
 /**
@@ -89,6 +164,15 @@ export function usePromptOrganizer({
       estimatedProgress: 0,
       status: "sending",
     })
+    setResult({
+      successMessage: "",
+      successMessageGenerated: false,
+    } as PromptOrganizerResult)
+
+    let successMessage: string = ""
+    let successMessageGenerated = false
+    const abortController = new AbortController()
+    let isFirstTemplateProcessed = false
 
     try {
       const result = await promptOrganizerService.executeOrganization(
@@ -96,10 +180,63 @@ export function usePromptOrganizer({
         {
           onProgress: (progressInfo) => {
             setProgress(progressInfo)
+
+            // Generate success message for the first template only
+            if (!isFirstTemplateProcessed && progressInfo.accumulated) {
+              const firstTemplate = extractFirstCompleteTemplate(
+                progressInfo.accumulated,
+              )
+
+              if (firstTemplate) {
+                isFirstTemplateProcessed = true
+
+                // Generate success message asynchronously (background execution)
+                successMessageGeneratorService
+                  .generateSuccessMessage(firstTemplate, abortController.signal)
+                  .then((message) => {
+                    successMessage = message
+                  })
+                  .catch((err) => {
+                    console.error("Failed to generate success message:", err)
+                    // Fallback: default message
+                    successMessage = i18n.t(
+                      "promptOrganizer.summary.templateCreated",
+                      [firstTemplate.title],
+                    )
+                  })
+                  .finally(() => {
+                    console.log("First template success message generated.")
+                    successMessageGenerated = true
+                  })
+              }
+            }
           },
         },
       )
-      setResult(result)
+
+      if (!successMessageGenerated) {
+        console.log("Generating success message...")
+        abortController.abort() // Cancel if still running
+        successMessage =
+          await successMessageGeneratorService.generateSuccessMessage(
+            {
+              ...result.templates[0],
+              sourcePromptIds:
+                result.templates[0].aiMetadata.sourcePromptIds || [],
+            },
+            undefined,
+          )
+        successMessageGenerated = true
+      }
+
+      // Add success message to result
+      const resultWithMessage = {
+        ...result,
+        successMessage,
+        successMessageGenerated,
+      }
+      console.log("Organization result:", resultWithMessage)
+      setResult(resultWithMessage)
 
       // Append new templates to existing pending templates
       const existing = await pendingOrganizerTemplatesStorage.getValue()

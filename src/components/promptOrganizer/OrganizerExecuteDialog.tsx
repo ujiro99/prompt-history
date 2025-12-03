@@ -210,7 +210,7 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
               </Alert>
             )}
 
-            <section className="space-y-2">
+            <section className="space-y-1">
               <h3 className="text-sm font-semibold">
                 {i18n.t("promptOrganizer.targetPrompts")}
                 <span className="font-medium font-mono text-foreground/70">

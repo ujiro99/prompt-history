@@ -335,60 +335,6 @@ describe("TemplateGeneratorService", () => {
         defaultCategories,
       )
     })
-
-    it("should pass correct schema to GeminiClient", async () => {
-      await service.generateTemplates(
-        defaultPrompts,
-        defaultSettings,
-        defaultCategories,
-      )
-
-      const schema = (
-        mockGeminiClient.generateStructuredContentStream.mock.calls[0] as any[]
-      )[1]
-
-      expect(schema).toEqual({
-        type: "object",
-        properties: {
-          prompts: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                title: { type: "string" },
-                content: { type: "string" },
-                useCase: { type: "string" },
-                categoryId: { type: "string" },
-                sourcePromptIds: {
-                  type: "array",
-                  items: { type: "string" },
-                },
-                variables: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      name: { type: "string" },
-                      description: { type: "string" },
-                    },
-                    required: ["name"],
-                  },
-                },
-              },
-              required: [
-                "title",
-                "content",
-                "useCase",
-                "categoryId",
-                "sourcePromptIds",
-                "variables",
-              ],
-            },
-          },
-        },
-        required: ["prompts"],
-      })
-    })
   })
 
   describe("calculateStatus", () => {

@@ -88,3 +88,42 @@ Prioritization:
 - Focus on frequently executed prompts
 - Prioritize prompts with clear reusability
 - Exclude one-time or highly specific prompts`
+
+export const ORGANIZATION_SUMMARY_PROMPT = `You are a UX writing specialist for products designed for users who work with LLMs in their daily workflows.
+Based on the prompt information I will provide, create a short 1–2 sentence success message that instantly helps the user imagine how this prompt will make their work easier.
+
+Context:
+  This message will be shown as a "result highlight" after the auto-organization feature runs.
+  The goal is not to convey "things were somehow organized," but to make the user feel: "It understands how I work, and this will genuinely make my tasks easier."
+  Ensure the message includes a clear "situation + purpose" so users can easily picture their real usage scenario.
+
+Input format:
+You will receive a JSON object containing:
+  - title: The prompt name (e.g., "Apology email to a client")
+  - content: The prompt text with variables (e.g., {client_name}, {project_name})
+  - useCase: A one-sentence "situation + purpose" statement (e.g., "Sending an apology email to a client")
+  - categoryId: Category ID (e.g., "external_communication")
+  - sourcePromptIds: Array of IDs for prompts this one was generated from (you may use the count to suggest how frequently similar prompts were used)
+  - variables: Array of extracted variables (e.g., [{ name: "client_name" }, { name: "due_date" }])
+
+Output requirements:
+  - Write in the same language as the prompt "content."
+  - Plain text only—no JSON, no bullet points.
+  - Keep it within 1–2 sentences.
+  - If a sentence becomes too long, split it into two.
+
+Information to naturally include in the message:
+  - When this prompt is useful (based on useCase)
+  - How it makes the user’s task easier (e.g., avoids writing from scratch, removes structural guesswork, prevents omissions)
+  - If appropriate, nuance that it was "found from past N uses" (based on sourcePromptIds.length)
+  - If variables exist, mention that "you only need to fill in the necessary details to accomplish X" (optional if no variables)
+
+Examples (tone only—do not reuse):
+  - "We consolidated the prompts you used for past {useCase} tasks into one, so you can produce the same quality output just by filling in the required fields."
+  - "We organized the patterns you repeatedly used for {useCase}, and turned them into a ready-to-use universal prompt."
+
+Below, you will receive a single JSON object.
+Based on its contents, generate one success message that satisfies all requirements above.
+
+[INPUT]
+`

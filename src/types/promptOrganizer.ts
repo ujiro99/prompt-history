@@ -148,6 +148,10 @@ export interface PromptOrganizerResult {
   estimatedCost: number
   /** Actual cost */
   actualCost: number
+  /** Success message for the first template*/
+  successMessage?: string
+  /** Success message generated flag */
+  successMessageGenerated?: boolean
 }
 
 /**

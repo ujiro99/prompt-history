@@ -186,6 +186,13 @@ export function GenerationMenu({
         open={organizerSummaryOpen}
         onOpenChange={setOrganizerSummaryOpen}
         result={result}
+        // result={{
+        //   templates: [{}, {}],
+        //   sourceCount: 10,
+        //   successMessage:
+        //     "以前よく使われていた「テキストを任意の言語に翻訳」する作業を、必要な情報を埋めるだけで、よりスムーズに行えるようになりました。",
+        //   successMessageGenerated: true,
+        // }}
         onPreview={handlePreviewTemplates}
         onSaveAll={handleSaveAllTemplates}
       />

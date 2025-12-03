@@ -4,10 +4,10 @@
  */
 
 import { i18n } from "#imports"
+import { NotebookPen, Save, Sparkles, BookOpenText } from "lucide-react"
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { useContainer } from "@/hooks/useContainer"
 import { stopPropagation } from "@/utils/dom"
+import { cn } from "@/lib/utils"
 import type { PromptOrganizerResult } from "@/types/promptOrganizer"
 
 interface OrganizerSummaryDialogProps {
@@ -34,150 +35,65 @@ export const OrganizerSummaryDialog: React.FC<OrganizerSummaryDialogProps> = ({
 }) => {
   const { container } = useContainer()
 
-  if (!result) return null
-
-  /**
-   * Get representative template for highlight
-   */
-  const getRepresentativeTemplate = () => {
-    if (result.templates.length === 0) return null
-    // Return the template with the most source prompts
-    return result.templates.reduce((prev, current) =>
-      current.aiMetadata.sourceCount > prev.aiMetadata.sourceCount
-        ? current
-        : prev,
-    )
-  }
-
-  /**
-   * Format timestamp
-   */
-  const formatTimestamp = (date: Date): string => {
-    return date.toLocaleString()
-  }
-
-  const representativeTemplate = getRepresentativeTemplate()
+  const templateCount = result?.templates?.length ?? 0
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="w-xl sm:max-w-2xl"
+        className="w-xl sm:max-w-2xl p-8"
         container={container}
         {...stopPropagation()}
       >
         <DialogHeader>
           <DialogTitle>{i18n.t("promptOrganizer.summary.title")}</DialogTitle>
-          <DialogDescription>
-            {i18n.t("promptOrganizer.summary.description")}
-          </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          {/* Template Count Badge */}
-          <div className="rounded-lg bg-blue-50 border border-blue-200 p-4">
-            <div className="flex items-center justify-center space-x-2">
-              <span className="text-3xl font-bold text-blue-600">
-                {result.templates.length}
-              </span>
-              <span className="text-lg text-blue-800">
-                {i18n.t("promptOrganizer.summary.templatesGenerated")}
-              </span>
-            </div>
-          </div>
-
-          {/* Source Info Card */}
-          <div className="rounded-lg bg-muted p-4 space-y-2">
-            <div className="text-sm font-medium">
-              {i18n.t("promptOrganizer.summary.sourceInfo")}
-            </div>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <div className="text-muted-foreground">
-                  {i18n.t("promptOrganizer.summary.sourcePrompts")}
-                </div>
-                <div className="font-semibold text-lg">
-                  {result.sourceCount}
-                </div>
+        <div className="space-y-7 py-5">
+          {templateCount === 0 ? (
+            <p>{i18n.t("promptOrganizer.summary.noTemplates")}</p>
+          ) : (
+            <>
+              <div className="space-y-2">
+                <label className="inline-block font-semibold text-base text-foreground/80">
+                  <Sparkles className="size-5 inline-block mr-1.5 -mt-1" />
+                  {i18n.t("promptOrganizer.summary.organizationPerformed")}
+                </label>
+                <p className="font-serif text-lg tracking-wide">
+                  {result &&
+                    result.successMessageGenerated &&
+                    i18n.t("promptOrganizer.summary.summary", [
+                      result.sourceCount,
+                      result.templates.length,
+                    ])}
+                </p>
               </div>
-              <div>
-                <div className="text-muted-foreground">
-                  {i18n.t("promptOrganizer.summary.period")}
-                </div>
-                <div className="font-semibold text-lg">
-                  {result.periodDays} {i18n.t("promptOrganizer.summary.days")}
-                </div>
+              <div className="space-y-2">
+                <label className="inline-block font-semibold text-base text-foreground/80">
+                  <BookOpenText className="size-5 inline-block mr-1.5 -mt-1" />
+                  {i18n.t("promptOrganizer.summary.examplePrompts")}
+                </label>
+                <p className="font-serif text-lg/8">
+                  {result && result.successMessage}
+                </p>
               </div>
-            </div>
-          </div>
-
-          {/* Highlight Card - Representative Template */}
-          {representativeTemplate && (
-            <div className="rounded-lg border p-4 space-y-2">
-              <div className="text-sm font-medium text-muted-foreground">
-                {i18n.t("promptOrganizer.summary.highlight")}
+              <div className="flex justify-center tracking-wide">
+                <Button variant="outline" onClick={onPreview} className="group">
+                  <NotebookPen
+                    className={cn(
+                      "size-4 stroke-neutral-600 fill-neutral-100 transition",
+                      "group-hover:scale-120 group-hover:fill-neutral-200",
+                    )}
+                  />
+                  {i18n.t("promptOrganizer.buttons.preview")}
+                </Button>
               </div>
-              <div className="space-y-1">
-                <div className="font-semibold">
-                  {representativeTemplate.title}
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  {representativeTemplate.useCase}
-                </div>
-                <div className="text-xs text-muted-foreground mt-2">
-                  {i18n.t(
-                    "promptOrganizer.summary.basedOn",
-                    representativeTemplate.aiMetadata.sourceCount,
-                  )}
-                </div>
-              </div>
-            </div>
+            </>
           )}
-
-          {/* Token Usage and Cost */}
-          <div className="rounded-lg bg-muted p-4 space-y-3">
-            <div className="text-sm font-medium">
-              {i18n.t("promptOrganizer.summary.usage")}
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between text-xs">
-                <span className="text-muted-foreground">
-                  {i18n.t("promptOrganizer.estimate.inputTokens")}
-                </span>
-                <span className="font-mono">
-                  {result.inputTokens.toLocaleString()}
-                </span>
-              </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-muted-foreground">
-                  {i18n.t("promptOrganizer.estimate.outputTokens")}
-                </span>
-                <span className="font-mono">
-                  {result.outputTokens.toLocaleString()}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm border-t pt-2">
-                <span className="font-medium">
-                  {i18n.t("promptOrganizer.summary.actualCost")}
-                </span>
-                <span className="font-mono font-semibold">
-                  ¥{result.estimatedCost.toFixed(2)}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Execution Timestamp */}
-          <div className="text-xs text-muted-foreground text-center">
-            {i18n.t("promptOrganizer.summary.executedAt")}:{" "}
-            {formatTimestamp(result.executedAt)}
-          </div>
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onPreview}>
-            {i18n.t("promptOrganizer.buttons.preview")}
-          </Button>
-          <Button onClick={onSaveAll}>
+          <Button variant="secondary" onClick={onSaveAll}>
+            <Save className="size-4" />
             {i18n.t("promptOrganizer.buttons.saveAll")}
           </Button>
         </DialogFooter>

@@ -307,8 +307,8 @@ promptOrganizer:
     save: 保存
     discard: 破棄
     saveAndPin: 保存してスター
-    preview: テンプレートをプレビュー
-    saveAll: すべて保存
+    preview: 他のプロンプトも見る
+    saveAll: この整理内容を保存
     notReviewed: $1件が未確認です
     apply: 選択を反映させる (残り$1件)
     applyAll: 選択を反映させる
@@ -325,22 +325,15 @@ promptOrganizer:
     discard: 破棄
     pending: 保留
   result:
-    templatesGenerated: "$1件のテンプレートが精製されました"
     sourceCount: "$1件のプロンプトに基づいています"
     actualCost: 確定コスト
   summary:
-    title: 整理完了
-    description: 生成されたテンプレートを確認
-    templatesGenerated: 件のテンプレートを生成
-    sourceInfo: ソース情報
-    sourcePrompts: ソースプロンプト
-    period: 分析期間
-    days: 日間
-    highlight: 代表的なテンプレート
-    basedOn: "$1件のソースプロンプトに基づいています"
-    usage: トークン使用量
-    actualCost: 実際のコスト
-    executedAt: 実行日時
+    title: プロンプトの整理が完了しました
+    summary: $1件のプロンプトを厳選し、$2件に整理しました。
+    noTemplates: テンプレートは整理されませんでした。。
+    organizationPerformed: 今回行った整理
+    examplePrompts: 整理したプロンプトの例
+    templateCreated: 「$1」のテンプレートを作成しました。
   preview:
     title: 精製結果をプレビュー
     description: 精製されたプロンプトを確認・編集
