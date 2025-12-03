@@ -39,7 +39,7 @@ buttons:
   saveAsNew: Save as new
   saveAsCopy: Duplicate
   complete: Complete
-  finish: Finish
+  close: Close
 
 # Status messages
 status:
@@ -282,8 +282,7 @@ errors:
 # Prompt Organizer
 promptOrganizer:
   title: Organize Prompts
-  description: Analyze and refine prompts using AI
-  targetPrompts: Organization Target Prompts
+  description: Configure how to organize prompts.
   settings:
     filterConditions: Filter Conditions for Organization Target Prompts
     filterPeriod: Filter Period
@@ -294,16 +293,23 @@ promptOrganizer:
     minExecutionCount: Minimum Execution Count
     maxPrompts: Maximum Prompts
     organizationPrompt: Organization Prompt
+  execute:
+    title: Prompt Organization and Refinement
+    description: AI will analyze and refine prompts into a more general and reusable format.
+    targetPrompts: Prompts for Organization
+    noTargetPrompts: There are no target prompts. Please change the filter conditions.
+    progress: Progress
+    receivingPrompts: Receiving prompts
   estimate:
+    title: Estimated Input Token Count
     targetPrompts: Number of Target Prompts
-    title: Input Token Estimate
     inputTokens: Input Tokens
     thoughtsTokens: Thoughts Tokens
     outputTokens: Output Tokens
     contextUsage: Context Usage
   buttons:
-    organize: Start organizing
-    cancel: Cancel
+    organize: Start Prompt Organization and Refinement
+    cancel: Cancel this process
     save: Save
     discard: Discard
     saveAndPin: Save & Star
@@ -349,7 +355,7 @@ promptOrganizer:
   aiTemplates:
     title: AI Recommended
   pendingTemplates:
-    warning: You have unreviewed refined results. ($1 items)
+    warning: $1 refined prompts are pending
     review: Review
   errors:
     noApiKey: Gemini API key is required. Please set it in settings.

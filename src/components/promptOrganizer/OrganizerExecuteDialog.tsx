@@ -66,6 +66,7 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
   const { genaiApiKey } = useAiModel()
   const apiKeyMissing = !genaiApiKey
   const scrollViewportRef = useRef<HTMLDivElement>(null)
+  const targetExists = targetPrompts && targetPrompts.length > 0
 
   useEffect(() => {
     // Check API key (using hook value)
@@ -156,13 +157,16 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
             // Prevent closing the dialog while executing
             if (isExecuting) e.preventDefault()
           }}
+          showCloseButton={!isExecuting}
           {...stopPropagation()}
         >
           <div className="flex items-center gap-2">
             <DialogHeader className="flex-1">
-              <DialogTitle>{i18n.t("promptOrganizer.title")}</DialogTitle>
+              <DialogTitle>
+                {i18n.t("promptOrganizer.execute.title")}
+              </DialogTitle>
               <DialogDescription>
-                {i18n.t("promptOrganizer.description")}
+                {i18n.t("promptOrganizer.execute.description")}
               </DialogDescription>
             </DialogHeader>
             <Button
@@ -212,7 +216,7 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
 
             <section className="space-y-1">
               <h3 className="text-sm font-semibold">
-                {i18n.t("promptOrganizer.targetPrompts")}
+                {i18n.t("promptOrganizer.execute.targetPrompts")}
                 <span className="font-medium font-mono text-foreground/70">
                   ({targetPrompts ? targetPrompts.length : 0})
                 </span>
@@ -229,14 +233,20 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
                   indicatorVisible={false}
                 >
                   <div className="space-y-1.5">
-                    {targetPrompts?.map((prompt, index) => (
-                      <div
-                        key={prompt.id}
-                        className="text-xs font-mono break-all"
-                      >
-                        {index + 1}. {prompt.name}{" "}
-                      </div>
-                    ))}
+                    {targetExists ? (
+                      targetPrompts?.map((prompt, index) => (
+                        <div
+                          key={prompt.id}
+                          className="text-xs font-mono break-all"
+                        >
+                          {index + 1}. {prompt.name}{" "}
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-xs text-foreground/80">
+                        {i18n.t("promptOrganizer.execute.noTargetPrompts")}
+                      </p>
+                    )}
                   </div>
                 </ScrollAreaWithGradient>
               </div>
@@ -266,12 +276,14 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
                   )}
                 >
                   <Square className="size-4" fill="url(#lucideGradient)" />
-                  {i18n.t("buttons.cancel")}
+                  {i18n.t("promptOrganizer.buttons.cancel")}
                 </Button>
               ) : (
                 <Button
                   onClick={handleExecute}
-                  disabled={isExecuting || apiKeyMissing || !estimate}
+                  disabled={
+                    isExecuting || apiKeyMissing || !estimate || !targetExists
+                  }
                   variant="outline"
                   className={cn(
                     "bg-gradient-to-r from-purple-50 to-blue-50",
@@ -321,7 +333,7 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
                   {/* Progress Bar */}
                   <div className="space-y-1 pt-1">
                     <div className="flex justify-between items-center">
-                      <span>進捗</span>
+                      <span>{i18n.t("promptOrganizer.execute.progress")}</span>
                       <span className="text-muted-foreground">
                         {progress.estimatedProgress}%
                       </span>
@@ -335,7 +347,7 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
                   {/* Partial JSON Preview */}
                   {progress.accumulated && progress.accumulated.length > 50 && (
                     <div className="space-y-1 pt-1">
-                      <p>受信中のデータ:</p>
+                      <p>{i18n.t("promptOrganizer.execute.receivingPrompts")}</p>
                       <ScrollArea
                         className="h-16 rounded border bg-muted p-2"
                         viewportRef={scrollViewportRef}
@@ -352,10 +364,12 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
           </div>
 
           <DialogFooter>
-            {/* Cancel button during execution */}
-            <Button variant="secondary" onClick={handleClose}>
-              {i18n.t("buttons.finish")}
-            </Button>
+            {/* Close button */}
+            {isExecuting ? null : (
+              <Button variant="secondary" onClick={handleClose}>
+                {i18n.t("buttons.close")}
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

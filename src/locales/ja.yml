@@ -39,7 +39,7 @@ buttons:
   saveAsNew: 新規として保存
   saveAsCopy: 複製する
   complete: 完了
-  finish: 終了
+  close: 閉じる
 
 # Status messages
 status:
@@ -230,7 +230,7 @@ importDialog:
   selectAnotherFile: 別のファイルを選択
   execute: インポートを実行
   executeLabel: CSVファイルからプロンプトをインポート
-  close: 終了
+  close: 閉じる
   cancel: キャンセル
   status:
     idle: CSVファイルを選択してください
@@ -281,9 +281,8 @@ errors:
 
 # Prompt Organizer
 promptOrganizer:
-  title: プロンプト整理
-  description: AIによりプロンプトを分析・精製します
-  targetPrompts: 整理対象プロンプト
+  title: プロンプトの整理
+  description: プロンプトの整理方法を設定します。
   settings:
     filterConditions: 整理対象プロンプトの絞り込み条件
     filterPeriod: 最終実行日
@@ -294,16 +293,23 @@ promptOrganizer:
     minExecutionCount: 最小実行回数
     maxPrompts: 最大プロンプト数
     organizationPrompt: 整理用プロンプト
+  execute:
+    title: プロンプトの整理と精製
+    description: AIがプロンプトを分析し、汎用的に再利用しやすい形へ整えます。
+    targetPrompts: 整理するプロンプト
+    noTargetPrompts: 対象のプロンプトがありません。絞り込み条件を変更してください。
+    progress: 進行状況
+    receivingPrompts: 受信中のプロンプト
   estimate:
+    title: 推定入力トークン数
     targetPrompts: 対象プロンプト数
-    title: 入力トークン数 見積もり
     inputTokens: 入力トークン数
     thoughtsTokens: 思考トークン数
     outputTokens: 出力トークン数
     contextUsage: コンテキスト使用率
   buttons:
-    organize: 整理を開始
-    cancel: キャンセル
+    organize: プロンプトの整理と精製を開始
+    cancel: この処理をキャンセルする
     save: 保存
     discard: 破棄
     saveAndPin: 保存してスター
@@ -349,7 +355,7 @@ promptOrganizer:
   aiTemplates:
     title: AI推奨テンプレート
   pendingTemplates:
-    warning: 未確認の精製結果があります。（$1件）
+    warning: 未確認の精製済みプロンプトが$1件あります
     review: 確認する
   errors:
     noApiKey: Gemini APIキーが必要です。設定でAPIキーを設定してください。

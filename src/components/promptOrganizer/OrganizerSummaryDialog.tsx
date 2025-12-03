@@ -54,7 +54,7 @@ export const OrganizerSummaryDialog: React.FC<OrganizerSummaryDialogProps> = ({
           ) : (
             <>
               <div className="space-y-2">
-                <label className="inline-block font-semibold text-base text-foreground/80">
+                <label className="inline-block font-semibold text-base text-foreground/60">
                   <Sparkles className="size-5 inline-block mr-1.5 -mt-1" />
                   {i18n.t("promptOrganizer.summary.organizationPerformed")}
                 </label>
@@ -68,7 +68,7 @@ export const OrganizerSummaryDialog: React.FC<OrganizerSummaryDialogProps> = ({
                 </p>
               </div>
               <div className="space-y-2">
-                <label className="inline-block font-semibold text-base text-foreground/80">
+                <label className="inline-block font-semibold text-base text-foreground/60">
                   <BookOpenText className="size-5 inline-block mr-1.5 -mt-1" />
                   {i18n.t("promptOrganizer.summary.examplePrompts")}
                 </label>
@@ -77,7 +77,12 @@ export const OrganizerSummaryDialog: React.FC<OrganizerSummaryDialogProps> = ({
                 </p>
               </div>
               <div className="flex justify-center tracking-wide">
-                <Button variant="outline" onClick={onPreview} className="group">
+                <Button
+                  variant="outline"
+                  onClick={onPreview}
+                  className="group"
+                  size="lg"
+                >
                   <NotebookPen
                     className={cn(
                       "size-4 stroke-neutral-600 fill-neutral-100 transition",
