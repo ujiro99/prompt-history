@@ -107,7 +107,6 @@ You will receive a JSON object containing:
   - variables: Array of extracted variables (e.g., [{ name: "client_name" }, { name: "due_date" }])
 
 Output requirements:
-  - Write in the same language as the prompt "content."
   - Plain text only—no JSON, no bullet points.
   - Keep it within 1–2 sentences.
   - If a sentence becomes too long, split it into two.

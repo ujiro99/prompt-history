@@ -56,11 +56,18 @@ export class SuccessMessageGeneratorService {
     const templateJson = JSON.stringify(template, null, 2)
     const prompt = `${ORGANIZATION_SUMMARY_PROMPT}\n${templateJson}`
 
+    const systemInstruction = `You are a UX writing expert.
+Your role is to suggest better prompts for users who interact with AI chatbots daily.
+
+CRITICAL RULES:
+  - Output in language code: ${chrome.i18n.getUILanguage()}`
+
     try {
       // Generate success message using Gemini stream
       let accumulatedText = ""
       const stream = this.geminiClient.generateContentStream(prompt, {
         model: "gemini-2.5-flash-lite",
+        systemInstruction,
         generateContentConfig: {
           thinkingConfig: {
             includeThoughts: false,
