@@ -40,6 +40,7 @@ export function GenerationMenu({
     result,
     pendingTemplates,
     isExecuting,
+    isCanceling,
     progress,
     error,
     executeOrganization,
@@ -161,18 +162,9 @@ export function GenerationMenu({
         onOpenChange={setOrganizerExecuteOpen}
         onExecute={handleExecuteOrganization}
         isExecuting={isExecuting}
+        isCanceling={isCanceling}
         progress={progress}
-        // progress={{
-        //   chunk: "test",
-        //   accumulated:
-        //     "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
-        //     "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" +
-        //     "ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
-        //   estimatedProgress: 50,
-        //   status: "generating",
-        //   outputTokens: 1234,
-        //   thoughtsTokens: 5678,
-        // }}
+        error={error}
         onCancel={cancelGeneration}
         pendingTemplates={pendingTemplates}
         onOpenPreview={() => {

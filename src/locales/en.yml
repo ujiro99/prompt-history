@@ -311,6 +311,7 @@ promptOrganizer:
   buttons:
     organize: Start Prompt Organization and Refinement
     cancel: Cancel this process
+    canceling: Canceling...
     save: Save
     discard: Discard
     saveAndPin: Save & Star

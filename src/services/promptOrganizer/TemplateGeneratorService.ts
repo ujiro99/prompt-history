@@ -150,7 +150,6 @@ export class TemplateGeneratorService {
         usage,
       }
     } catch (error) {
-      console.error("Error during template generation:", error)
       // Handle cancellation
       if (error instanceof Error) {
         const errorMessage = error.message
@@ -158,9 +157,11 @@ export class TemplateGeneratorService {
           errorMessage.includes("cancelled") ||
           (error as any).type === GeminiErrorType.CANCELLED
         ) {
+          console.warn(error)
           throw new Error("Generation cancelled by user")
         }
       }
+      console.error("Error during template generation:", error)
       throw error
     } finally {
       this.abortController = null

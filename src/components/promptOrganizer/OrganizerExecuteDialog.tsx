@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react"
 import { cn } from "@/lib/utils"
-import { AlertCircle, Settings, Play, Square } from "lucide-react"
+import { AlertCircle, Settings, Play, Square, Ban } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { i18n } from "#imports"
@@ -38,6 +38,7 @@ type Props = {
   onOpenChange: (open: boolean) => void
   onExecute: () => Promise<void>
   isExecuting: boolean
+  isCanceling: boolean
   progress: GenerationProgress | null
   error?: OrganizerError | null
   onCancel: () => void
@@ -50,6 +51,7 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
   onOpenChange,
   onExecute,
   isExecuting,
+  isCanceling,
   progress,
   error: executeError,
   onCancel,
@@ -222,6 +224,9 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
             {error && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
+                <AlertTitle>
+                  {i18n.t("promptOrganizer.status.error")}
+                </AlertTitle>
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
@@ -286,9 +291,19 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
                     "text-purple-700 hover:text-purple-800",
                     "transition-all duration-200",
                   )}
+                  disabled={isCanceling}
                 >
-                  <Square className="size-4" fill="url(#lucideGradient)" />
-                  {i18n.t("promptOrganizer.buttons.cancel")}
+                  {isCanceling ? (
+                    <>
+                      <Ban className="size-4" />
+                      {i18n.t("promptOrganizer.buttons.canceling")}
+                    </>
+                  ) : (
+                    <>
+                      <Square className="size-4" fill="url(#lucideGradient)" />
+                      {i18n.t("promptOrganizer.buttons.cancel")}
+                    </>
+                  )}
                 </Button>
               ) : (
                 <Button

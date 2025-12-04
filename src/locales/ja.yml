@@ -311,6 +311,7 @@ promptOrganizer:
   buttons:
     organize: プロンプトの整理と精製を開始
     cancel: この処理をキャンセルする
+    canceling: キャンセル中...
     save: 保存
     discard: 破棄
     saveAndPin: 保存してスター

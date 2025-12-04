@@ -114,6 +114,7 @@ export function usePromptOrganizer({
     [],
   )
   const [isExecuting, setIsExecuting] = useState(false)
+  const [isCanceling, setIsCanceling] = useState(false)
   const [progress, setProgress] = useState<GenerationProgress | null>(null)
   const [error, setError] = useState<OrganizerError | null>(null)
 
@@ -249,12 +250,8 @@ export function usePromptOrganizer({
       ret = true
     } catch (err) {
       const errorMessage = (err as Error).message
-      if (errorMessage.includes("cancelled")) {
-        setError({
-          code: "CANCELLED",
-          message: "Generation cancelled by user",
-        })
-      } else {
+      // Ignore cancellation errors
+      if (!errorMessage.includes("cancelled")) {
         setError({
           code: "API_ERROR",
           message: errorMessage,
@@ -262,6 +259,7 @@ export function usePromptOrganizer({
       }
     } finally {
       setIsExecuting(false)
+      setIsCanceling(false)
       setProgress(null)
     }
 
@@ -273,6 +271,7 @@ export function usePromptOrganizer({
    */
   const cancelGeneration = () => {
     promptOrganizerService.cancel()
+    setIsCanceling(true)
   }
 
   /**
@@ -322,6 +321,7 @@ export function usePromptOrganizer({
     result,
     pendingTemplates,
     isExecuting,
+    isCanceling,
     progress,
     error,
     executeOrganization,
