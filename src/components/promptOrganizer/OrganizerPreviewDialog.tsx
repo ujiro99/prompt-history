@@ -3,7 +3,7 @@
  * Two-column layout for previewing and editing template candidates
  */
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { i18n } from "#imports"
 import {
   Dialog,
@@ -54,6 +54,26 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
   const pendingCount = editedTemplates.filter(
     (t) => t.userAction === "pending",
   ).length
+  const pendingIndexes = editedTemplates.reduce<number[]>((indexes, t, idx) => {
+    if (t.userAction === "pending") {
+      indexes.push(idx)
+    }
+    return indexes
+  }, [])
+
+  const nextPendingIndex = useCallback(
+    (currentIndex: number): number | null => {
+      for (const idx of pendingIndexes) {
+        if (idx > currentIndex) {
+          return idx
+        }
+      }
+      // If no next index, return the first pending index that is not the current index
+      const idxs = pendingIndexes.filter((idx) => idx !== currentIndex)
+      return idxs.length > 0 ? idxs[0] : null
+    },
+    [pendingIndexes],
+  )
 
   /**
    * Update selected template
@@ -72,9 +92,7 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
    */
   const handleDiscard = () => {
     updateTemplate({ userAction: "discard" })
-    setSelectedIndex((prevIndex) =>
-      prevIndex + 1 < editedTemplates.length ? prevIndex + 1 : 0,
-    )
+    setSelectedIndex((prevIndex) => nextPendingIndex(prevIndex) ?? -1)
   }
 
   /**
@@ -82,9 +100,7 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
    */
   const handleSave = () => {
     updateTemplate({ userAction: "save" })
-    setSelectedIndex((prevIndex) =>
-      prevIndex + 1 < editedTemplates.length ? prevIndex + 1 : 0,
-    )
+    setSelectedIndex((prevIndex) => nextPendingIndex(prevIndex) ?? -1)
   }
 
   /**
@@ -92,9 +108,7 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
    */
   const handleSaveAndPin = () => {
     updateTemplate({ userAction: "save_and_pin" })
-    setSelectedIndex((prevIndex) =>
-      prevIndex + 1 < editedTemplates.length ? prevIndex + 1 : 0,
-    )
+    setSelectedIndex((prevIndex) => nextPendingIndex(prevIndex) ?? -1)
   }
 
   /**
@@ -194,13 +208,23 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
           {/* Right Pane: Template Detail */}
           <div className="col-span-2 flex flex-col min-h-0 gap-4">
             {!selectedTemplate ? (
-              <div className="flex items-center justify-center flex-1">
-                <div className="text-center text-muted-foreground">
-                  <p className="text-sm">
-                    {i18n.t("promptOrganizer.preview.emptyState")}
-                  </p>
+              pendingCount > 0 ? (
+                <div className="flex items-center justify-center flex-1">
+                  <div className="text-center">
+                    <p className="text-base">
+                      {i18n.t("promptOrganizer.preview.emptyState")}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="flex items-center justify-center flex-1">
+                  <div className="text-center">
+                    <p className="text-base">
+                      {i18n.t("promptOrganizer.preview.completeReview")}
+                    </p>
+                  </div>
+                </div>
+              )
             ) : (
               <>
                 <ScrollArea className="flex-1 min-h-0">
