@@ -316,7 +316,7 @@ promptOrganizer:
     discard: 破棄
     saveAndPin: 保存してスター
     preview: 他のプロンプトも見る
-    saveAll: この整理内容を保存
+    saveAll: すべての整理内容を保存
     notReviewed: $1件が未確認です
     apply: 選択を反映させる (残り$1件)
     applyAll: 選択を反映させる

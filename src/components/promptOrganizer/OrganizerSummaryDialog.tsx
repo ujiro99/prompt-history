@@ -72,11 +72,26 @@ export const OrganizerSummaryDialog: React.FC<OrganizerSummaryDialogProps> = ({
                   <BookOpenText className="size-5 inline-block mr-1.5 -mt-1" />
                   {i18n.t("promptOrganizer.summary.examplePrompts")}
                 </label>
-                <p className="font-serif text-lg/8">
+                {result && result.templates[0] && (
+                  /* Preview first prompt */
+                  <div className="border rounded-md px-3 py-2 mb-2 bg-neutral-50">
+                    <p className="mb-1 text-base font-semibold text-foreground/80">
+                      <span>{result.templates[0].title}</span>
+                    </p>
+                    <p className="text-sm font-muted-foreground">
+                      <span className="mr-2">
+                        {i18n.t("promptOrganizer.preview.useCase")}:
+                      </span>
+                      <span>{result.templates[0].useCase}</span>
+                    </p>
+                  </div>
+                )}
+                <p className="font-serif text-lg/8 tracking-wide">
                   {result && result.successMessage}
                 </p>
               </div>
-              <div className="flex justify-center tracking-wide">
+              <div className="flex justify-center">
+                {/* Preview button */}
                 <Button
                   variant="outline"
                   onClick={onPreview}
