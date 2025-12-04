@@ -214,7 +214,7 @@ export function usePromptOrganizer({
         },
       )
 
-      if (!successMessageGenerated) {
+      if (!successMessageGenerated && result.templates.length > 0) {
         console.log("Generating success message...")
         abortController.abort() // Cancel if still running
         successMessage =

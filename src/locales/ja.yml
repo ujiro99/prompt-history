@@ -300,6 +300,7 @@ promptOrganizer:
     noTargetPrompts: 対象のプロンプトがありません。絞り込み条件を変更してください。
     progress: 進行状況
     receivingPrompts: 受信中のプロンプト
+    executionFailed: プロンプトの整理に失敗しました。条件を変更したり、時間をおいて再度お試しください。
   estimate:
     title: 推定入力トークン数
     targetPrompts: 対象プロンプト数
@@ -336,7 +337,7 @@ promptOrganizer:
   summary:
     title: プロンプトの整理が完了しました
     summary: $1件のプロンプトを厳選し、$2件に整理しました。
-    noTemplates: テンプレートは整理されませんでした。。
+    noTemplates: プロンプトは精製されませんでした。
     organizationPerformed: 今回行った整理
     examplePrompts: 整理したプロンプトの例
     templateCreated: 「$1」のテンプレートを作成しました。
@@ -353,7 +354,7 @@ promptOrganizer:
     sourcePrompts: ソースプロンプト
     savePromptQuestion: この精製したプロンプトを保存しますか？
   aiTemplates:
-    title: AI推奨テンプレート
+    title: AIにより生成
   pendingTemplates:
     warning: 未確認の精製済みプロンプトが$1件あります
     review: 確認する

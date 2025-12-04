@@ -97,10 +97,20 @@ export const OrganizerSummaryDialog: React.FC<OrganizerSummaryDialogProps> = ({
         </div>
 
         <DialogFooter>
-          <Button variant="secondary" onClick={onSaveAll}>
-            <Save className="size-4" />
-            {i18n.t("promptOrganizer.buttons.saveAll")}
-          </Button>
+          {templateCount === 0 ? (
+            <Button
+              variant="secondary"
+              onClick={() => onOpenChange(false)}
+              className="mr-2"
+            >
+              {i18n.t("common.cancel")}
+            </Button>
+          ) : (
+            <Button variant="secondary" onClick={onSaveAll}>
+              <Save className="size-4" />
+              {i18n.t("promptOrganizer.buttons.saveAll")}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

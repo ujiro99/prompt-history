@@ -30,6 +30,7 @@ import type {
   GenerationProgress,
   TemplateCandidate,
   PromptForOrganization,
+  OrganizerError,
 } from "@/types/promptOrganizer"
 
 type Props = {
@@ -38,6 +39,7 @@ type Props = {
   onExecute: () => Promise<void>
   isExecuting: boolean
   progress: GenerationProgress | null
+  error?: OrganizerError | null
   onCancel: () => void
   pendingTemplates?: TemplateCandidate[]
   onOpenPreview?: () => void
@@ -49,6 +51,7 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
   onExecute,
   isExecuting,
   progress,
+  error: executeError,
   onCancel,
   pendingTemplates,
   onOpenPreview,
@@ -110,6 +113,15 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
     if (!viewport || !progress?.accumulated) return
     viewport.scrollTop = viewport.scrollHeight
   }, [progress?.accumulated])
+
+  useEffect(() => {
+    if (executeError) {
+      setError(
+        executeError.message ||
+          i18n.t("promptOrganizer.execute.executionFailed"),
+      )
+    }
+  }, [executeError])
 
   const handleExecute = async () => {
     if (apiKeyMissing) {
@@ -347,7 +359,9 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
                   {/* Partial JSON Preview */}
                   {progress.accumulated && progress.accumulated.length > 50 && (
                     <div className="space-y-1 pt-1">
-                      <p>{i18n.t("promptOrganizer.execute.receivingPrompts")}</p>
+                      <p>
+                        {i18n.t("promptOrganizer.execute.receivingPrompts")}
+                      </p>
                       <ScrollArea
                         className="h-16 rounded border bg-muted p-2"
                         viewportRef={scrollViewportRef}
