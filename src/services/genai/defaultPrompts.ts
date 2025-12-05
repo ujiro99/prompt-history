@@ -81,13 +81,14 @@ Step 2: For each cluster, generate a reusable template:
    - Use the same language as the original prompt.
    - Maintain line breaks, headings, and emphasis formatting.
 4. **Title**: Provide a clear title (max 20 chars)
-5. **Use Case Definition**: Describe the use case to clarify context and purpose (max 40 chars)
+5. **Use Case Definition**: Describe use cases that clarify context, purpose, and usage (maximum 40 characters)
 6. **Category Assignment**: Select or suggest appropriate categories
 
-Prioritization:
-- Focus on frequently executed prompts
-- Prioritize prompts with clear reusability
-- Exclude one-time or highly specific prompts`
+CRITICAL RULES:
+- Focus on clustering prompts that are frequently used and easily reusable.
+- Avoid clustering one-time or highly specific prompts.
+- Organize output using line breaks, headings, bullets, etc., for better readability.
+`
 
 export const ORGANIZATION_SUMMARY_PROMPT = `You are a UX writing specialist for products designed for users who work with LLMs in their daily workflows.
 Based on the prompt information I will provide, create a short 1–2 sentence success message that instantly helps the user imagine how this prompt will make their work easier.

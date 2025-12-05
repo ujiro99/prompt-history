@@ -58,6 +58,10 @@ export class PromptExportService {
       createdAt: prompt.createdAt.toISOString(),
       updatedAt: prompt.updatedAt.toISOString(),
       variables: prompt.variables ? JSON.stringify(prompt.variables) : "",
+      isAIGenerated: prompt.isAIGenerated ?? false,
+      aiMetadata: prompt.aiMetadata ? JSON.stringify(prompt.aiMetadata) : "",
+      categoryId: prompt.categoryId ?? "",
+      useCase: prompt.useCase ?? "",
     }))
 
     // Use Papa Parse to generate CSV with headers and proper escaping
@@ -73,6 +77,10 @@ export class PromptExportService {
           "createdAt",
           "updatedAt",
           "variables",
+          "isAIGenerated",
+          "aiMetadata",
+          "categoryId",
+          "useCase",
         ],
         data: csvData,
       },

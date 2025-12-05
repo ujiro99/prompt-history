@@ -29,6 +29,10 @@ export interface PromptCSVRow {
   createdAt: string
   updatedAt: string
   variables?: string // JSON string format
+  isAIGenerated?: boolean | string | number // Papa Parse may return various types
+  aiMetadata?: string // JSON string format
+  categoryId?: string
+  useCase?: string
 }
 
 /**

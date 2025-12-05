@@ -2,6 +2,7 @@ import Papa from "papaparse"
 import { PromptServiceFacade } from "@/services/promptServiceFacade"
 import type { ImportResult, PromptCSVRow } from "./types"
 import type { Prompt, VariableConfig } from "@/types/prompt"
+import type { AIGeneratedMetadata } from "@/types/promptOrganizer"
 import { generatePromptId } from "@/utils/idGenerator"
 import { ImportError } from "./ImportError"
 import { i18n } from "#imports"
@@ -110,6 +111,67 @@ export class PromptImportService {
   }
 
   /**
+   * Parse aiMetadata from JSON string with validation
+   */
+  private parseAIMetadata(jsonString: string): AIGeneratedMetadata | undefined {
+    try {
+      const parsed = JSON.parse(jsonString)
+
+      // Validate structure
+      if (typeof parsed !== "object" || parsed === null) {
+        console.warn("Invalid aiMetadata: not an object")
+        return undefined
+      }
+
+      // Validate required fields exist
+      const requiredFields = [
+        "sourcePromptIds",
+        "sourceCount",
+        "confirmed",
+        "showInPinned",
+      ]
+      for (const field of requiredFields) {
+        if (!(field in parsed)) {
+          console.warn(`Invalid aiMetadata: missing field "${field}"`)
+          return undefined
+        }
+      }
+
+      // Validate field types
+      if (!Array.isArray(parsed.sourcePromptIds)) {
+        console.warn("Invalid aiMetadata: sourcePromptIds is not an array")
+        return undefined
+      }
+
+      // Validate all elements in sourcePromptIds are strings
+      if (!parsed.sourcePromptIds.every((id: unknown) => typeof id === "string")) {
+        console.warn("Invalid aiMetadata: sourcePromptIds contains non-string values")
+        return undefined
+      }
+
+      if (typeof parsed.sourceCount !== "number" || parsed.sourceCount < 0) {
+        console.warn("Invalid aiMetadata: sourceCount is not a non-negative number")
+        return undefined
+      }
+
+      if (typeof parsed.confirmed !== "boolean") {
+        console.warn("Invalid aiMetadata: confirmed is not a boolean")
+        return undefined
+      }
+
+      if (typeof parsed.showInPinned !== "boolean") {
+        console.warn("Invalid aiMetadata: showInPinned is not a boolean")
+        return undefined
+      }
+
+      return parsed as AIGeneratedMetadata
+    } catch (error) {
+      console.warn("Failed to parse aiMetadata JSON:", error)
+      return undefined
+    }
+  }
+
+  /**
    * Parse Papa Parse row data to prompt object
    * Note: Uses Record type because Papa Parse may not fully convert types despite dynamicTyping option
    */
@@ -145,6 +207,27 @@ export class PromptImportService {
       }
     }
 
+    // Parse aiMetadata from JSON string if present
+    let aiMetadata: AIGeneratedMetadata | undefined
+    if (row.aiMetadata && typeof row.aiMetadata === "string") {
+      aiMetadata = this.parseAIMetadata(row.aiMetadata)
+    }
+
+    // Parse isAIGenerated
+    let isAIGenerated: boolean | undefined = undefined
+    if (row.isAIGenerated !== undefined && row.isAIGenerated !== "") {
+      // Handle string "true"/"false", boolean, and numeric values
+      const value = String(row.isAIGenerated).toLowerCase()
+      if (value === "true" || value === "1") {
+        isAIGenerated = true
+      }
+      // For false/0/"false", keep as undefined
+    }
+
+    // Parse categoryId and useCase
+    const categoryId = row.categoryId || undefined
+    const useCase = row.useCase || undefined
+
     // Generate a new unique ID for the imported prompt
     const newId = generatePromptId()
 
@@ -159,6 +242,10 @@ export class PromptImportService {
       createdAt: new Date(row.createdAt),
       updatedAt: new Date(row.updatedAt),
       variables,
+      isAIGenerated,
+      aiMetadata,
+      categoryId,
+      useCase,
     }
   }
 
