@@ -26,11 +26,13 @@ describe("TemplateConverter", () => {
     variables: [
       {
         name: "variable1",
-        description: "Test variable 1",
+        type: "text",
+        defaultValue: "",
       },
       {
         name: "variable2",
-        description: "Test variable 2",
+        type: "text",
+        defaultValue: "",
       },
     ],
     ...overrides,
@@ -208,7 +210,6 @@ describe("TemplateConverter", () => {
       const targetPrompts = createTargetPrompts()
       const candidate = templateConverter.convertToCandidate(
         generated,
-        30,
         targetPrompts,
       )
 
@@ -226,29 +227,32 @@ describe("TemplateConverter", () => {
     it("should set aiMetadata correctly", () => {
       const generated = createGeneratedTemplate()
       const targetPrompts = createTargetPrompts()
-      const candidate = templateConverter.convertToCandidate(generated, 30, targetPrompts)
+      const candidate = templateConverter.convertToCandidate(
+        generated,
+        targetPrompts,
+      )
 
       expect(candidate.aiMetadata).toMatchObject({
-        generatedAt: new Date("2025-01-20T10:00:00Z"),
         sourcePromptIds: ["id1", "id2", "id3"],
         sourceCount: 3,
-        sourcePeriodDays: 30,
         confirmed: false,
       })
-      expect(candidate.aiMetadata.extractedVariables).toHaveLength(2)
     })
 
     it("should set showInPinned to true when sourceCount >= 3 and variables >= 2", () => {
       const generated = createGeneratedTemplate({
         sourcePromptIds: ["id1", "id2", "id3"],
         variables: [
-          { name: "var1", description: "Var 1" },
-          { name: "var2", description: "Var 2" },
+          { name: "var1", type: "text", defaultValue: "" },
+          { name: "var2", type: "text", defaultValue: "" },
         ],
       })
 
       const targetPrompts = createTargetPrompts()
-      const candidate = templateConverter.convertToCandidate(generated, 30, targetPrompts)
+      const candidate = templateConverter.convertToCandidate(
+        generated,
+        targetPrompts,
+      )
 
       expect(candidate.aiMetadata.showInPinned).toBe(true)
     })
@@ -257,13 +261,16 @@ describe("TemplateConverter", () => {
       const generated = createGeneratedTemplate({
         sourcePromptIds: ["id1", "id2"],
         variables: [
-          { name: "var1", description: "Var 1" },
-          { name: "var2", description: "Var 2" },
+          { name: "var1", type: "text", defaultValue: "" },
+          { name: "var2", type: "text", defaultValue: "" },
         ],
       })
 
       const targetPrompts = createTargetPrompts()
-      const candidate = templateConverter.convertToCandidate(generated, 30, targetPrompts)
+      const candidate = templateConverter.convertToCandidate(
+        generated,
+        targetPrompts,
+      )
 
       expect(candidate.aiMetadata.showInPinned).toBe(false)
     })
@@ -271,11 +278,14 @@ describe("TemplateConverter", () => {
     it("should set showInPinned to false when variables < 2", () => {
       const generated = createGeneratedTemplate({
         sourcePromptIds: ["id1", "id2", "id3"],
-        variables: [{ name: "var1", description: "Var 1" }],
+        variables: [{ name: "var1", type: "text", defaultValue: "" }],
       })
 
       const targetPrompts = createTargetPrompts()
-      const candidate = templateConverter.convertToCandidate(generated, 30, targetPrompts)
+      const candidate = templateConverter.convertToCandidate(
+        generated,
+        targetPrompts,
+      )
 
       expect(candidate.aiMetadata.showInPinned).toBe(false)
     })
@@ -283,13 +293,16 @@ describe("TemplateConverter", () => {
     it("should convert variables to VariableConfig", () => {
       const generated = createGeneratedTemplate({
         variables: [
-          { name: "testVar", description: "Test description" },
-          { name: "dateVar", description: "Date variable" },
+          { name: "testVar", type: "text", defaultValue: "" },
+          { name: "dateVar", type: "text", defaultValue: "" },
         ],
       })
 
       const targetPrompts = createTargetPrompts()
-      const candidate = templateConverter.convertToCandidate(generated, 30, targetPrompts)
+      const candidate = templateConverter.convertToCandidate(
+        generated,
+        targetPrompts,
+      )
 
       expect(candidate.variables).toHaveLength(2)
       expect(candidate.variables[0]).toMatchObject({
@@ -309,14 +322,17 @@ describe("TemplateConverter", () => {
     it("should infer 'text' for date-related variables", () => {
       const generated = createGeneratedTemplate({
         variables: [
-          { name: "date", description: "Date" },
-          { name: "day", description: "Day" },
-          { name: "startDate", description: "Start date" },
+          { name: "date", type: "text", defaultValue: "" },
+          { name: "day", type: "text", defaultValue: "" },
+          { name: "startDate", type: "text", defaultValue: "" },
         ],
       })
 
       const targetPrompts = createTargetPrompts()
-      const candidate = templateConverter.convertToCandidate(generated, 30, targetPrompts)
+      const candidate = templateConverter.convertToCandidate(
+        generated,
+        targetPrompts,
+      )
 
       expect(candidate.variables[0].type).toBe("text")
       expect(candidate.variables[1].type).toBe("text")
@@ -326,14 +342,17 @@ describe("TemplateConverter", () => {
     it("should infer 'textarea' for multi-line variables (English)", () => {
       const generated = createGeneratedTemplate({
         variables: [
-          { name: "detail", description: "Details" },
-          { name: "content", description: "Content" },
-          { name: "description", description: "Description" },
+          { name: "detail", type: "textarea", defaultValue: "" },
+          { name: "content", type: "textarea", defaultValue: "" },
+          { name: "description", type: "textarea", defaultValue: "" },
         ],
       })
 
       const targetPrompts = createTargetPrompts()
-      const candidate = templateConverter.convertToCandidate(generated, 30, targetPrompts)
+      const candidate = templateConverter.convertToCandidate(
+        generated,
+        targetPrompts,
+      )
 
       expect(candidate.variables[0].type).toBe("textarea")
       expect(candidate.variables[1].type).toBe("textarea")
@@ -343,14 +362,17 @@ describe("TemplateConverter", () => {
     it("should infer 'textarea' for multi-line variables (Japanese)", () => {
       const generated = createGeneratedTemplate({
         variables: [
-          { name: "test1", description: "詳細な説明" },
-          { name: "test2", description: "内容を記載" },
-          { name: "test3", description: "説明文" },
+          { name: "test1", type: "textarea", defaultValue: "" },
+          { name: "test2", type: "textarea", defaultValue: "" },
+          { name: "test3", type: "textarea", defaultValue: "" },
         ],
       })
 
       const targetPrompts = createTargetPrompts()
-      const candidate = templateConverter.convertToCandidate(generated, 30, targetPrompts)
+      const candidate = templateConverter.convertToCandidate(
+        generated,
+        targetPrompts,
+      )
 
       expect(candidate.variables[0].type).toBe("textarea")
       expect(candidate.variables[1].type).toBe("textarea")
@@ -360,13 +382,16 @@ describe("TemplateConverter", () => {
     it("should infer 'text' for other variables", () => {
       const generated = createGeneratedTemplate({
         variables: [
-          { name: "name", description: "Name" },
-          { name: "email", description: "Email address" },
+          { name: "name", type: "text", defaultValue: "" },
+          { name: "email", type: "text", defaultValue: "" },
         ],
       })
 
       const targetPrompts = createTargetPrompts()
-      const candidate = templateConverter.convertToCandidate(generated, 30, targetPrompts)
+      const candidate = templateConverter.convertToCandidate(
+        generated,
+        targetPrompts,
+      )
 
       expect(candidate.variables[0].type).toBe("text")
       expect(candidate.variables[1].type).toBe("text")
@@ -387,11 +412,8 @@ describe("TemplateConverter", () => {
         { name: "var2", type: "textarea", defaultValue: "" },
       ],
       aiMetadata: {
-        generatedAt: new Date("2025-01-20"),
         sourcePromptIds: ["id1", "id2", "id3"],
         sourceCount: 3,
-        sourcePeriodDays: 30,
-        extractedVariables: [],
         confirmed: false,
         showInPinned: true,
       },
@@ -422,11 +444,8 @@ describe("TemplateConverter", () => {
     it("should set confirmed to true in aiMetadata", () => {
       const candidate = createTemplateCandidate({
         aiMetadata: {
-          generatedAt: new Date("2025-01-20"),
           sourcePromptIds: ["id1", "id2"],
           sourceCount: 2,
-          sourcePeriodDays: 30,
-          extractedVariables: [],
           confirmed: false,
           showInPinned: false,
         },
@@ -476,11 +495,8 @@ describe("TemplateConverter", () => {
     it("should preserve all aiMetadata fields", () => {
       const candidate = createTemplateCandidate({
         aiMetadata: {
-          generatedAt: new Date("2025-01-15"),
           sourcePromptIds: ["id1", "id2", "id3", "id4"],
           sourceCount: 4,
-          sourcePeriodDays: 60,
-          extractedVariables: [{ name: "test", description: "test var" }],
           confirmed: false,
           showInPinned: true,
         },
@@ -489,14 +505,11 @@ describe("TemplateConverter", () => {
       const prompt = templateConverter.convertToPrompt(candidate)
 
       expect(prompt.aiMetadata).toMatchObject({
-        generatedAt: new Date("2025-01-15"),
         sourcePromptIds: ["id1", "id2", "id3", "id4"],
         sourceCount: 4,
-        sourcePeriodDays: 60,
         confirmed: true,
         showInPinned: true,
       })
-      expect(prompt.aiMetadata?.extractedVariables).toHaveLength(1)
     })
   })
 })

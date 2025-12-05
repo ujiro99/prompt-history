@@ -140,7 +140,10 @@ describe("VariableSettingsSection", () => {
         <TestWrapper>
           <VariableSettingsSection
             variables={[]}
-            content={content}
+            autoDetectOptions={{
+              promptId: "test-prompt",
+              content: content,
+            }}
             onChange={mockOnChange}
             enableAutoDetection={true}
           />
@@ -169,7 +172,10 @@ describe("VariableSettingsSection", () => {
         <TestWrapper>
           <VariableSettingsSection
             variables={existingVariables}
-            content={content}
+            autoDetectOptions={{
+              promptId: "test-prompt",
+              content: content,
+            }}
             onChange={mockOnChange}
             enableAutoDetection={true}
           />
@@ -201,7 +207,10 @@ describe("VariableSettingsSection", () => {
         <TestWrapper>
           <VariableSettingsSection
             variables={[]}
-            content={initialContent}
+            autoDetectOptions={{
+              promptId: "test-prompt",
+              content: initialContent,
+            }}
             onChange={mockOnChange}
             enableAutoDetection={true}
           />
@@ -217,7 +226,10 @@ describe("VariableSettingsSection", () => {
               { name: "userName", type: "text" },
               { name: "age", type: "text" },
             ]}
-            content={updatedContent}
+            autoDetectOptions={{
+              promptId: "test-prompt",
+              content: updatedContent,
+            }}
             onChange={mockOnChange}
             enableAutoDetection={true}
           />

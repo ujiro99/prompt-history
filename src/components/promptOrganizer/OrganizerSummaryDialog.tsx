@@ -48,7 +48,7 @@ export const OrganizerSummaryDialog: React.FC<OrganizerSummaryDialogProps> = ({
           <DialogTitle>{i18n.t("promptOrganizer.summary.title")}</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-7 py-5">
+        <div className="space-y-9 py-5">
           {templateCount === 0 ? (
             <p>{i18n.t("promptOrganizer.summary.noTemplates")}</p>
           ) : (
@@ -67,14 +67,14 @@ export const OrganizerSummaryDialog: React.FC<OrganizerSummaryDialogProps> = ({
                     ])}
                 </p>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-4">
                 <label className="inline-block font-semibold text-base text-foreground/60">
                   <BookOpenText className="size-5 inline-block mr-1.5 -mt-1" />
                   {i18n.t("promptOrganizer.summary.examplePrompts")}
                 </label>
                 {result && result.templates[0] && (
                   /* Preview first prompt */
-                  <div className="border rounded-md px-3 py-2 mb-2 bg-neutral-50">
+                  <div className="border rounded-md px-3 py-2 bg-neutral-50">
                     <p className="mb-1 text-base font-semibold text-foreground/80">
                       <span>{result.templates[0].title}</span>
                     </p>
@@ -86,7 +86,7 @@ export const OrganizerSummaryDialog: React.FC<OrganizerSummaryDialogProps> = ({
                     </p>
                   </div>
                 )}
-                <p className="font-serif text-lg/8 tracking-wide">
+                <p className="font-serif text-base/8 tracking-wide">
                   {result && result.successMessage}
                 </p>
               </div>

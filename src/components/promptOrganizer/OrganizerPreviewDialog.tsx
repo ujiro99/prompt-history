@@ -78,14 +78,24 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
   /**
    * Update selected template
    */
-  const updateTemplate = (updates: Partial<TemplateCandidate>) => {
-    const updated = [...editedTemplates]
-    updated[selectedIndex] = {
-      ...updated[selectedIndex],
-      ...updates,
-    }
-    setEditedTemplates(updated)
-  }
+  const updateTemplate = useCallback(
+    (updates: Partial<TemplateCandidate>) => {
+      const updated = [...editedTemplates]
+      updated[selectedIndex] = {
+        ...updated[selectedIndex],
+        ...updates,
+      }
+      setEditedTemplates(updated)
+    },
+    [editedTemplates, selectedIndex],
+  )
+
+  const handleVariableChange = useCallback(
+    (vars: TemplateCandidate["variables"]) => {
+      updateTemplate({ variables: vars })
+    },
+    [updateTemplate],
+  )
 
   /**
    * Handle discard action
@@ -217,12 +227,22 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center justify-center flex-1">
-                  <div className="text-center">
-                    <p className="text-base">
-                      {i18n.t("promptOrganizer.preview.completeReview")}
-                    </p>
-                  </div>
+                <div className="flex items-center justify-center flex-1 min-h-100">
+                  <p className="text-base text-center">
+                    {i18n
+                      .t("promptOrganizer.preview.completeReview")
+                      .split("\\n")
+                      .map((part: string, i: number, arr: string[]) => (
+                        <span key={i}>
+                          {part}
+                          {i < arr.length - 1 && (
+                            <>
+                              <br />
+                            </>
+                          )}
+                        </span>
+                      ))}
+                  </p>
                 </div>
               )
             ) : (
@@ -288,9 +308,12 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
                     {/* Variables List */}
                     <VariableSettingsSection
                       variables={selectedTemplate.variables}
-                      content={selectedTemplate.content}
-                      onChange={(vars) => updateTemplate({ variables: vars })}
+                      onChange={handleVariableChange}
                       enableAutoDetection={true}
+                      autoDetectOptions={{
+                        promptId: selectedTemplate.id,
+                        content: selectedTemplate.content,
+                      }}
                       headerText={i18n.t("promptOrganizer.preview.variables")}
                       showHeader={selectedTemplate.variables.length > 0}
                     />

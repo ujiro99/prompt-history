@@ -428,11 +428,8 @@ describe("PromptOrganizerService", () => {
           categoryId: "cat",
           variables: [],
           aiMetadata: {
-            generatedAt: new Date(),
             sourcePromptIds: ["1"],
             sourceCount: 1,
-            sourcePeriodDays: 30,
-            extractedVariables: [],
             confirmed: false,
             showInPinned: false,
           },

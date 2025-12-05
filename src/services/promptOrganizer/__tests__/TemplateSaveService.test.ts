@@ -7,25 +7,27 @@ import type { Prompt } from "@/types/prompt"
 const { mockTemplateConverter, mockPromptsService, mockPinsService } =
   vi.hoisted(() => {
     const mockTemplateConverter = {
-      convertToPrompt: vi.fn((candidate: TemplateCandidate): Prompt => ({
-        id: `prompt-${candidate.id}`,
-        name: candidate.title,
-        content: candidate.content,
-        useCase: candidate.useCase,
-        categoryId: candidate.categoryId,
-        variables: candidate.variables,
-        executionCount: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        lastExecutedAt: new Date(),
-        lastExecutionUrl: "https://example.com",
-        isPinned: candidate.userAction === "save_and_pin",
-        isAIGenerated: true,
-        aiMetadata: {
-          ...candidate.aiMetadata,
-          confirmed: true,
-        },
-      })),
+      convertToPrompt: vi.fn(
+        (candidate: TemplateCandidate): Prompt => ({
+          id: `prompt-${candidate.id}`,
+          name: candidate.title,
+          content: candidate.content,
+          useCase: candidate.useCase,
+          categoryId: candidate.categoryId,
+          variables: candidate.variables,
+          executionCount: 0,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          lastExecutedAt: new Date(),
+          lastExecutionUrl: "https://example.com",
+          isPinned: candidate.userAction === "save_and_pin",
+          isAIGenerated: true,
+          aiMetadata: {
+            ...candidate.aiMetadata,
+            confirmed: true,
+          },
+        }),
+      ),
     }
 
     const mockPromptsService = {
@@ -76,11 +78,8 @@ describe("TemplateSaveService", () => {
     categoryId: "test-category",
     variables: [],
     aiMetadata: {
-      generatedAt: new Date("2025-01-20"),
       sourcePromptIds: ["id1", "id2"],
       sourceCount: 2,
-      sourcePeriodDays: 30,
-      extractedVariables: [],
       confirmed: false,
       showInPinned: false,
     },
@@ -186,13 +185,21 @@ describe("TemplateSaveService", () => {
 
     it("should save templates in order", async () => {
       const candidates: TemplateCandidate[] = [
-        createTemplateCandidate({ id: "1", title: "First", userAction: "save" }),
+        createTemplateCandidate({
+          id: "1",
+          title: "First",
+          userAction: "save",
+        }),
         createTemplateCandidate({
           id: "2",
           title: "Second",
           userAction: "save",
         }),
-        createTemplateCandidate({ id: "3", title: "Third", userAction: "save" }),
+        createTemplateCandidate({
+          id: "3",
+          title: "Third",
+          userAction: "save",
+        }),
       ]
 
       await service.saveTemplates(candidates)

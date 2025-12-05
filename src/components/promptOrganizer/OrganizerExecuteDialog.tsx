@@ -227,7 +227,9 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
                 <AlertTitle>
                   {i18n.t("promptOrganizer.status.error")}
                 </AlertTitle>
-                <AlertDescription>{error}</AlertDescription>
+                <AlertDescription className="text-balance break-all max-h-40 overflow-y-auto">
+                  {error}
+                </AlertDescription>
               </Alert>
             )}
 

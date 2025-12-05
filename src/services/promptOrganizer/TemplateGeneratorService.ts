@@ -135,6 +135,9 @@ export class TemplateGeneratorService {
 
       console.info("Gemini response:", response)
 
+      // Sanitize response with fail-safe
+      this.sanitizeTemplates(response.prompts)
+
       // Notify completion
       options?.onProgress?.({
         chunk: "",
@@ -226,6 +229,32 @@ export class TemplateGeneratorService {
       return "generating"
     } else {
       return "thinking"
+    }
+  }
+
+  /**
+   * Sanitize generated templates with fail-safe defaults
+   * @param templates - Generated templates to sanitize
+   */
+  private sanitizeTemplates(templates: GeneratedTemplate[]): void {
+    for (const template of templates) {
+      for (const variable of template.variables) {
+        if (variable.type === "select") {
+          if (
+            !variable.selectOptions ||
+            !variable.selectOptions.options ||
+            variable.selectOptions.options.length === 0
+          ) {
+            // Set fail-safe default
+            console.warn(
+              `Variable "${variable.name}" in template "${template.title}" has type "select" but missing selectOptions. Setting default empty options.`,
+            )
+            variable.selectOptions = {
+              options: ["Option 1", "Option 2"],
+            }
+          }
+        }
+      }
     }
   }
 

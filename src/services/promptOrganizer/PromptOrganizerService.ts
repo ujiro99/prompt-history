@@ -74,7 +74,6 @@ export class PromptOrganizerService {
         // Use TemplateConverter for conversion with ID correction
         const candidate = templateConverter.convertToCandidate(
           template,
-          settings.filterPeriodDays,
           targetPrompts, // Pass targetPrompts for ID correction
         )
 

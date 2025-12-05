@@ -3,7 +3,14 @@ import type { VariableConfig } from "@/types/prompt"
 import { mergeVariableConfigs } from "@/utils/variables/variableParser"
 import { VariableConfigField } from "@/components/inputMenu/controller/VariableConfigField"
 import { ScrollAreaWithGradient } from "@/components/inputMenu/ScrollAreaWithGradient"
+import usePrev from "@/hooks/usePrev"
 import { i18n } from "#imports"
+
+const variablesEqual = (a: VariableConfig[], b: VariableConfig[]) => {
+  const aStr = JSON.stringify(a)
+  const bStr = JSON.stringify(b)
+  return aStr === bStr
+}
 
 /**
  * Props for variable settings section
@@ -11,12 +18,15 @@ import { i18n } from "#imports"
 interface VariableSettingsSectionProps {
   /** Array of variable configurations */
   variables: VariableConfig[]
-  /** Prompt content for auto-detection (optional) */
-  content?: string
   /** Callback when variables change */
   onChange: (variables: VariableConfig[]) => void
   /** Enable auto-detection from content (default: false) */
   enableAutoDetection?: boolean
+  autoDetectOptions?: {
+    promptId: string
+    /** Content to auto-detect variables from */
+    content: string
+  }
   /** Show section header (default: true) */
   showHeader?: boolean
   /** Custom header text (default: i18n key) */
@@ -56,9 +66,9 @@ export const VariableSettingsSection: React.FC<
   VariableSettingsSectionProps
 > = ({
   variables: externalVariables,
-  content,
   onChange,
   enableAutoDetection = false,
+  autoDetectOptions: { promptId, content } = { promptId: "", content: "" },
   showHeader = true,
   headerText,
   descriptionText,
@@ -72,6 +82,10 @@ export const VariableSettingsSection: React.FC<
   // Use internal or external variables based on enableAutoDetection
   const variables = enableAutoDetection ? internalVariables : externalVariables
 
+  const prevPromptId = usePrev<string>(promptId)
+  const prevContent = usePrev<string>(content)
+  const prevVariables = usePrev<VariableConfig[]>(variables)
+
   // Sync external variables to internal state when they change
   useEffect(() => {
     if (enableAutoDetection) {
@@ -81,12 +95,32 @@ export const VariableSettingsSection: React.FC<
 
   // Auto-detect variables from content when enabled
   useEffect(() => {
-    if (enableAutoDetection && content !== undefined) {
+    if (
+      enableAutoDetection &&
+      content !== undefined &&
+      promptId === prevPromptId
+    ) {
+      if (
+        content === prevContent &&
+        variablesEqual(internalVariables, prevVariables)
+      ) {
+        return
+      }
+
       const detected = mergeVariableConfigs(content, internalVariables)
       setInternalVariables(detected)
       onChange(detected)
     }
-  }, [content, enableAutoDetection])
+  }, [
+    promptId,
+    content,
+    enableAutoDetection,
+    internalVariables,
+    onChange,
+    prevContent,
+    prevPromptId,
+    prevVariables,
+  ])
 
   /**
    * Handle variable configuration change
