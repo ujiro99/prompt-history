@@ -271,7 +271,7 @@ export class TemplateGeneratorService {
   ): string {
     // Build category list
     const categoryList = categories
-      .map((c) => `- ${c.id}: ${c.name}`)
+      .map((c) => `- ID: ${c.id}  Name: ${c.name}`)
       .join("\n")
 
     const promptList = prompts

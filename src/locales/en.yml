@@ -350,6 +350,8 @@ promptOrganizer:
     title_label: Title
     useCase: Use Case
     category: Category
+    explanation: About Refinement by AI
+    explanationDescription: This explains how this prompt was organized.
     content: Prompt Content
     variables: Variables
     sourcePrompts: Source Prompts

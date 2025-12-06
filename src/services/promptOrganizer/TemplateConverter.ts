@@ -87,6 +87,7 @@ class TemplateConverter {
       content: generated.content,
       useCase: generated.useCase,
       categoryId: generated.categoryId,
+      clusterExplanation: generated.clusterExplanation,
       variables: generated.variables,
       aiMetadata: {
         sourcePromptIds: correctedIds, // Use corrected IDs

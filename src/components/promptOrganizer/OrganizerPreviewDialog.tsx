@@ -198,7 +198,7 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
         <div className="grid grid-cols-3 gap-2 py-2 flex-1 min-h-0">
           {/* Left Pane: Template List */}
           <div className="col-span-1 flex flex-col min-h-0 gap-2">
-            <div className="text-sm font-medium">
+            <div className="text-sm font-semibold">
               {i18n.t("promptOrganizer.preview.promptList")}
             </div>
             <ScrollArea className="flex-1 min-h-0">
@@ -249,9 +249,24 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
               <>
                 <ScrollArea className="flex-1 min-h-0">
                   <div className="space-y-4 pl-2 pr-4 pb-2">
+                    {/* Explanation */}
+                    <div className="space-y-1">
+                      <div className="text-sm font-medium">
+                        {i18n.t("promptOrganizer.preview.explanation")}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {i18n.t(
+                          "promptOrganizer.preview.explanationDescription",
+                        )}
+                      </p>
+                      <p className="font-serif text-sm px-4 py-3 border bg-muted/30 rounded-lg">
+                        {selectedTemplate.clusterExplanation}
+                      </p>
+                    </div>
+
                     {/* Title Input */}
                     <div className="space-y-2">
-                      <div className="text-sm font-medium">
+                      <div className="text-sm font-semibold">
                         {i18n.t("promptOrganizer.preview.title_label")}
                       </div>
                       <Input
@@ -259,13 +274,13 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
                         onChange={(e) =>
                           updateTemplate({ title: e.target.value })
                         }
-                        maxLength={20}
+                        maxLength={40}
                       />
                     </div>
 
                     {/* Use Case Input */}
                     <div className="space-y-2">
-                      <div className="text-sm font-medium">
+                      <div className="text-sm font-semibold">
                         {i18n.t("promptOrganizer.preview.useCase")}
                       </div>
                       <Input
@@ -273,13 +288,13 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
                         onChange={(e) =>
                           updateTemplate({ useCase: e.target.value })
                         }
-                        maxLength={40}
+                        maxLength={80}
                       />
                     </div>
 
                     {/* Category Selector */}
                     <div className="space-y-2">
-                      <div className="text-sm font-medium">
+                      <div className="text-sm font-semibold">
                         {i18n.t("promptOrganizer.preview.category")}
                       </div>
                       <CategorySelector
@@ -290,9 +305,9 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
                       />
                     </div>
 
-                    {/* Content Preview */}
+                    {/* Content Editor */}
                     <div className="space-y-2">
-                      <div className="text-sm font-medium">
+                      <div className="text-sm font-semibold">
                         {i18n.t("promptOrganizer.preview.content")}
                       </div>
                       <Textarea
@@ -321,7 +336,7 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
                     {/* Source Prompts */}
                     <section className="space-y-2">
                       <h3>
-                        <span className="text-sm font-medium">
+                        <span className="text-sm font-semibold">
                           {i18n.t("promptOrganizer.preview.sourcePrompts")} (
                           {selectedTemplate.aiMetadata.sourceCount})
                         </span>
@@ -355,9 +370,9 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
                         "group",
                         userAction === "discard"
                           ? [
-                              "ring-2 ring-red-400 bg-red-50 text-red-900",
-                              "hover:bg-red-100/80 hover:text-red-900",
-                            ]
+                            "ring-2 ring-red-400 bg-red-50 text-red-900",
+                            "hover:bg-red-100/80 hover:text-red-900",
+                          ]
                           : "",
                       )}
                     >
@@ -379,9 +394,9 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
                         "group",
                         userAction === "save"
                           ? [
-                              "ring-2 ring-green-400 bg-green-50 text-green-900",
-                              "hover:bg-green-100/80 hover:text-green-900",
-                            ]
+                            "ring-2 ring-green-400 bg-green-50 text-green-900",
+                            "hover:bg-green-100/80 hover:text-green-900",
+                          ]
                           : "",
                       )}
                     >
@@ -403,9 +418,9 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
                         "group",
                         userAction === "save_and_pin"
                           ? [
-                              "ring-2 ring-amber-400 bg-amber-50 text-amber-900",
-                              "hover:bg-amber-100/80 hover:text-amber-900",
-                            ]
+                            "ring-2 ring-amber-400 bg-amber-50 text-amber-900",
+                            "hover:bg-amber-100/80 hover:text-amber-900",
+                          ]
                           : "",
                       )}
                     >

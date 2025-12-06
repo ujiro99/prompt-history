@@ -67,27 +67,131 @@ CRITICAL RULES:
  * This prompt defines HOW the AI should analyze and organize prompts into reusable templates.
  * This CAN be customized by users via Prompt Organizer settings.
  */
-export const DEFAULT_ORGANIZATION_PROMPT = `Analyze and organize the following user prompts using these guidelines:
+export const DEFAULT_ORGANIZATION_PROMPT = `Analyze and organize the following user prompts using these guidelines.
 
-Step 1: Cluster similar prompts
-1. Cluster prompts based on similarity in content, purpose, tasks, and patterns
-2. After clustering, filter only to clusters containing two or more prompts.
+You must think through the task step by step INTERNALLY,
+then summarize ONLY your final decisions and short explanations in the output.
+Do NOT output long intermediate thoughts or step-by-step reasoning as plain text.
 
-Step 2: For each cluster, generate a reusable template:
-1. **Pattern Extraction**: Identify common patterns
-2. **Variable Identification**: Replace variable parts with {{variable_name}} format
-   - Examples: customer_names, dates, numbers, specific content
-3. **Template Creation**: Create concise, reusable templates
-   - Use the same language as the original prompt.
-   - Maintain line breaks, headings, and emphasis formatting.
-4. **Title**: Provide a clear title (max 20 chars)
-5. **Use Case Definition**: Describe use cases that clarify context, purpose, and usage (maximum 40 characters)
-6. **Category Assignment**: Select or suggest appropriate categories
+Language:
+- Use the same main language as the user prompts for:
+  - the title,
+  - the use case description,
+  - the template content,
+  - the cluster explanation.
+- Do NOT switch to another language unless the majority of the input prompts are in that language.
 
-CRITICAL RULES:
-- Focus on clustering prompts that are frequently used and easily reusable.
-- Avoid clustering one-time or highly specific prompts.
-- Organize output using line breaks, headings, bullets, etc., for better readability.
+--------------------------------------------------
+STEP 1: Internal clustering and selection
+--------------------------------------------------
+1. Internally group user prompts by similarity in:
+   - content, purpose, tasks, and structural patterns.
+2. Internally check frequency and reusability:
+   - Focus on prompts that are frequently used and easily reusable.
+   - Avoid one-time or highly specific prompts.
+3. Only keep clusters that:
+   - contain two or more prompts, and
+   - can reasonably share one reusable template.
+
+For each kept cluster, internally decide:
+- why these prompts belong together,
+- what the common “core pattern” is,
+- which prompts should be excluded if they do not really fit.
+
+--------------------------------------------------
+STEP 2: Internal pattern & variable analysis
+--------------------------------------------------
+For each kept cluster:
+
+1. Internally identify common fixed parts across prompts.
+2. Internally detect variable parts such as:
+   - names, dates, numbers, targets, specific topics, etc.
+3. Internally choose:
+   - which parts become variables,
+   - appropriate variable names (e.g. customer_name, topic, deadline),
+   - whether each variable should be:
+     - short free text (single-line),
+     - long free text (multi-line),
+     - or a small set of options (select).
+4. Internally consider:
+   - which variables are truly necessary for reuse,
+   - good default values or example options, if helpful.
+
+Do NOT expose these internal deliberations directly.
+Use them only to create:
+- a clean, reusable template,
+- a short explanation of the cluster (why it exists),
+- clear variable definitions.
+
+--------------------------------------------------
+STEP 3: For each resulting template, output:
+--------------------------------------------------
+For each reusable template you create, output the following information:
+
+1. A short title
+   - Clearly expresses what this template is for.
+   - Prefer concise, recognisable names (up to 40 characters if possible).
+
+2. The template content
+   - A single reusable prompt that represents the cluster.
+   - Common parts remain as fixed text.
+   - Variable parts are replaced with {{variable_name}}.
+
+   - IMPORTANT: Make the content easy to read.
+     - Break the prompt into multiple lines.
+     - Insert blank lines between major sections.
+     - Use headings for sections such as:
+       - problem description
+       - input points
+       - output format or constraints
+     - Use bullet points or numbered lists for multiple conditions or items.
+     - Avoid putting the entire prompt in a single long line.
+
+3. A brief use case description
+   - Write a short, scannable phrase that describes
+     “what this template does” and “for what kind of input”.
+   - Avoid full-sentence explanations like
+     “Use this when you want to …”.
+   - Prefer concise action-style descriptions, for example:
+     - Retrieve standardized names, taxonomy information, and trade names in a table for a list of plant names.
+     - Generate a safe, situation-appropriate apology email to a client.
+     - Extract only TODOs, owners, and deadlines from meeting minutes.
+   - The description should be:
+     - focused on the action and output,
+     - easy to scan in a list view,
+     - short enough to read at a glance.
+
+4. A category ID
+   - Choose ONE category ID from the “Available Categories” list provided in the input.
+   - Do NOT invent new categories or free-form labels.
+   - Select the ID that best matches the main usage of this template.
+
+5. A short cluster explanation (for this template)
+   - A brief explanation of:
+     - why these prompts were grouped together,
+     - what the common pattern is,
+     - how this template should be interpreted or used.
+   - Think of it as a comment for teammates.
+   - Keep it short (a few sentences or less).
+
+6. A list of variables used in {{variable_name}}
+   - For each variable:
+     - Provide:
+       - the variable name,
+       - a short description of what the user should input,
+       - the expected input style:
+         - “short text” (single-line),
+         - “long text” (multi-line),
+         - or “select” (choose from a few options),
+       - optional:
+         - a default value or example,
+         - select options if the type is “select”.
+   - Every {{variable_name}} in the template content should have a corresponding variable definition.
+
+Remember:
+- Think step by step INTERNALLY.
+- Output only the final templates, their short explanations, and variable definitions.
+- Prefer fewer, high-quality templates over many noisy ones.
 `
 
 export const ORGANIZATION_SUMMARY_PROMPT = `You are a UX writing specialist for products designed for users who work with LLMs in their daily workflows.
@@ -103,6 +207,7 @@ You will receive a JSON object containing:
   - title: The prompt name (e.g., "Apology email to a client")
   - content: The prompt text with variables (e.g., {client_name}, {project_name})
   - useCase: A one-sentence "situation + purpose" statement (e.g., "Sending an apology email to a client")
+  - clusterExplanation: A brief explanation of how the AI performed the automatic organization
   - categoryId: Category ID (e.g., "external_communication")
   - sourcePromptIds: Array of IDs for prompts this one was generated from (you may use the count to suggest how frequently similar prompts were used)
   - variables: Array of extracted variables (e.g., [{ name: "client_name" }, { name: "due_date" }])

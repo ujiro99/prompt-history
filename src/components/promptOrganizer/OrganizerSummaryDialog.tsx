@@ -86,7 +86,7 @@ export const OrganizerSummaryDialog: React.FC<OrganizerSummaryDialogProps> = ({
                     </p>
                   </div>
                 )}
-                <p className="font-serif text-base/8 tracking-wide">
+                <p className="font-serif text-base/7 tracking-wide">
                   {result && result.successMessage}
                 </p>
               </div>

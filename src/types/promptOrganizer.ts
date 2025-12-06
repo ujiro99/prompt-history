@@ -46,6 +46,8 @@ export interface GeneratedTemplate {
   content: string
   /** Use case */
   useCase: string
+  /** Cluster explanation */
+  clusterExplanation: string
   /** Category ID */
   categoryId: string
   /** Source prompt IDs list */
@@ -66,6 +68,8 @@ export interface TemplateCandidate {
   content: string
   /** Use case */
   useCase: string
+  /** Cluster explanation */
+  clusterExplanation: string
   /** Category ID */
   categoryId: string
   /** Variable list */

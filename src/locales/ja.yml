@@ -350,6 +350,8 @@ promptOrganizer:
     title_label: タイトル
     useCase: 用途
     category: カテゴリ
+    explanation: 整理結果の解説 by AI
+    explanationDescription: このプロンプトがどのように整理されたかを解説します。
     content: プロンプト内容
     variables: 変数
     sourcePrompts: ソースプロンプト

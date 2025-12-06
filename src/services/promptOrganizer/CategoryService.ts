@@ -5,6 +5,23 @@
 
 import type { Category } from "@/types/promptOrganizer"
 import { categoriesStorage } from "@/services/storage/definitions"
+import { getDefaultCategories } from "@/services/storage/categoryHelper"
+
+/**
+ * Get the category map, initializing with default categories if empty
+ * @returns Category map
+ */
+const getCategoryMap = async (): Promise<Record<string, Category>> => {
+  let categoriesMap = await categoriesStorage.getValue()
+
+  // If no categories exist, initialize with default categories
+  if (Object.keys(categoriesMap).length === 0) {
+    categoriesMap = getDefaultCategories()
+    await categoriesStorage.setValue(categoriesMap)
+  }
+
+  return categoriesMap
+}
 
 /**
  * Service for managing categories
@@ -15,7 +32,7 @@ export class CategoryService {
    * @returns All categories
    */
   public async getAll(): Promise<Category[]> {
-    const categoriesMap = await categoriesStorage.getValue()
+    const categoriesMap = await getCategoryMap()
     return Object.values(categoriesMap)
   }
 
@@ -26,7 +43,7 @@ export class CategoryService {
    * @returns Created category
    */
   public async create(name: string, description?: string): Promise<Category> {
-    const categoriesMap = await categoriesStorage.getValue()
+    const categoriesMap = await getCategoryMap()
 
     const now = new Date()
     const newCategory: Category = {
@@ -54,7 +71,7 @@ export class CategoryService {
     id: string,
     updates: { name?: string; description?: string },
   ): Promise<Category> {
-    const categoriesMap = await categoriesStorage.getValue()
+    const categoriesMap = await getCategoryMap()
     const category = categoriesMap[id]
 
     if (!category) {

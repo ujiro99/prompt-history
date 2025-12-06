@@ -13,7 +13,6 @@ import type {
 } from "@/types/promptOrganizer"
 import type { AiConfigCacheData } from "./aiConfigCache"
 import type { ImprovePromptCacheData } from "./improvePromptCache"
-import { DEFAULT_CATEGORIES } from "../promptOrganizer/defaultCategories"
 import { DEFAULT_ORGANIZATION_PROMPT } from "../genai/defaultPrompts"
 
 /**
@@ -146,7 +145,7 @@ export const DEFAULT_ORGANIZER_SETTINGS: PromptOrganizerSettings = {
 export const categoriesStorage = storage.defineItem<Record<string, Category>>(
   "local:categories",
   {
-    fallback: DEFAULT_CATEGORIES,
+    fallback: {},
     version: 1,
     migrations: {},
   },
