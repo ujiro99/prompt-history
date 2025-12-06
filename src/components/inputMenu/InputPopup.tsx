@@ -171,21 +171,13 @@ export function InputMenu(props: Props): React.ReactElement {
       const prompt = await serviceFacade.getPrompt(promptId)
       if (prompt.isAIGenerated && prompt.aiMetadata) {
         // Update aiMetadata.confirmed to true
-        const saveData: SaveDialogData = {
-          name: prompt.name,
-          content: prompt.content,
-          saveMode: SaveMode.Overwrite,
-          isPinned: prompt.isPinned,
-          variables: prompt.variables,
-          isAIGenerated: true,
+        const updates: Partial<Prompt> = {
           aiMetadata: {
             ...prompt.aiMetadata,
             confirmed: true,
           },
-          categoryId: prompt.categoryId,
-          useCase: prompt.useCase,
         }
-        await serviceFacade.updatePrompt(promptId, saveData)
+        await serviceFacade.updatePrompt(promptId, updates)
       }
     } catch (error) {
       console.error("Template confirmation failed:", error)
@@ -378,6 +370,7 @@ export function InputMenu(props: Props): React.ReactElement {
           initialVariables={saveDialogData.variables}
           initialUseCase={saveDialogData.useCase}
           initialCategoryId={saveDialogData.categoryId}
+          initialExcludeFromOrganizer={saveDialogData.excludeFromOrganizer}
           displayMode={saveDialogData.saveMode}
           onSave={handleEditPrompt}
           isAIGenerated={saveDialogData.isAIGenerated}

@@ -71,6 +71,8 @@ export interface Prompt {
   categoryId?: string | null
   /** Use case description (optional) */
   useCase?: string
+  /** Exclude from prompt organizer flag */
+  excludeFromOrganizer?: boolean
 }
 
 /**
@@ -121,6 +123,7 @@ export interface SaveDialogData
     | "aiMetadata"
     | "categoryId"
     | "useCase"
+    | "excludeFromOrganizer"
   > {
   /** Save mode */
   saveMode: SaveMode

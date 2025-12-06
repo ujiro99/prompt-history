@@ -144,13 +144,19 @@ export class PromptImportService {
       }
 
       // Validate all elements in sourcePromptIds are strings
-      if (!parsed.sourcePromptIds.every((id: unknown) => typeof id === "string")) {
-        console.warn("Invalid aiMetadata: sourcePromptIds contains non-string values")
+      if (
+        !parsed.sourcePromptIds.every((id: unknown) => typeof id === "string")
+      ) {
+        console.warn(
+          "Invalid aiMetadata: sourcePromptIds contains non-string values",
+        )
         return undefined
       }
 
       if (typeof parsed.sourceCount !== "number" || parsed.sourceCount < 0) {
-        console.warn("Invalid aiMetadata: sourceCount is not a non-negative number")
+        console.warn(
+          "Invalid aiMetadata: sourceCount is not a non-negative number",
+        )
         return undefined
       }
 
@@ -228,6 +234,12 @@ export class PromptImportService {
     const categoryId = row.categoryId || undefined
     const useCase = row.useCase || undefined
 
+    // Parse excludeFromOrganizer
+    const excludeFromOrganizer =
+      row.excludeFromOrganizer !== undefined
+        ? Boolean(row.excludeFromOrganizer)
+        : undefined
+
     // Generate a new unique ID for the imported prompt
     const newId = generatePromptId()
 
@@ -246,6 +258,7 @@ export class PromptImportService {
       aiMetadata,
       categoryId,
       useCase,
+      excludeFromOrganizer,
     }
   }
 

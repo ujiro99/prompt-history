@@ -100,6 +100,7 @@ export class PromptOrganizerService {
     return {
       templates: templateCandidates,
       sourceCount: targetPrompts.length,
+      sourcePromptIds: targetPrompts.map((p) => p.id),
       periodDays: settings.filterPeriodDays,
       executedAt: now,
       inputTokens: usage.inputTokens,

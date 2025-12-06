@@ -124,6 +124,8 @@ export interface PromptOrganizerResult {
   templates: TemplateCandidate[]
   /** Source prompt count */
   sourceCount: number
+  /** Source prompt IDs */
+  sourcePromptIds: string[]
   /** Filter period */
   periodDays: number
   /** Executed at */

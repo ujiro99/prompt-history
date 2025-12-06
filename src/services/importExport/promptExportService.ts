@@ -62,6 +62,7 @@ export class PromptExportService {
       aiMetadata: prompt.aiMetadata ? JSON.stringify(prompt.aiMetadata) : "",
       categoryId: prompt.categoryId ?? "",
       useCase: prompt.useCase ?? "",
+      excludeFromOrganizer: prompt.excludeFromOrganizer ?? false,
     }))
 
     // Use Papa Parse to generate CSV with headers and proper escaping
@@ -81,6 +82,7 @@ export class PromptExportService {
           "aiMetadata",
           "categoryId",
           "useCase",
+          "excludeFromOrganizer",
         ],
         data: csvData,
       },

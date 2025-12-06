@@ -20,6 +20,7 @@ import {
 } from "@/services/storage/definitions"
 import { promptOrganizerService } from "@/services/promptOrganizer/PromptOrganizerService"
 import { successMessageGeneratorService } from "@/services/promptOrganizer/SuccessMessageGeneratorService"
+import { promptsService } from "@/services/storage/prompts"
 import type { GeneratedTemplate } from "@/types/promptOrganizer"
 
 interface UsePromptOrganizerOptions {
@@ -246,6 +247,15 @@ export function usePromptOrganizer({
         templates: [...existingTemplates, ...result.templates],
         generatedAt: Date.now(),
       })
+
+      // Update excludeFromOrganizer flag for source prompts
+      if (result.sourcePromptIds && result.sourcePromptIds.length > 0) {
+        for (const promptId of result.sourcePromptIds) {
+          await promptsService.updatePrompt(promptId, {
+            excludeFromOrganizer: true,
+          })
+        }
+      }
 
       ret = true
     } catch (err) {

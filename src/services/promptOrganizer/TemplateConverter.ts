@@ -140,6 +140,7 @@ class TemplateConverter {
       },
       useCase: candidate.useCase,
       categoryId: candidate.categoryId,
+      excludeFromOrganizer: true, // Exclude generated prompts from future organization
     }
   }
 }

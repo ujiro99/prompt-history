@@ -33,6 +33,7 @@ export interface PromptCSVRow {
   aiMetadata?: string // JSON string format
   categoryId?: string
   useCase?: string
+  excludeFromOrganizer?: boolean | string | number // Papa Parse may return various types
 }
 
 /**

@@ -29,8 +29,8 @@ export class PromptFilterService {
     // Filter by period and execution count
     const filtered = prompts
       .filter((p) => {
-        // Exclude AI-generated prompts
-        if (p.isAIGenerated) return false
+        // Exclude prompts marked as excluded from organizer
+        if (p.excludeFromOrganizer) return false
 
         // Check period
         const timeDiff = now.getTime() - p.lastExecutedAt.getTime()

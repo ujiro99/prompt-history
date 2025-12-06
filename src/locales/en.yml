@@ -65,6 +65,8 @@ dialogs:
     useCaseDescription: Describe the use case or purpose of the prompt
     useCasePlaceholder: Optional
     categoryDescription: Set the category of the prompt
+    excludeFromOrganizer: Exclude from prompt organization
+    excludeFromOrganizerHelp: Check to exclude from automatic organization. Prompts that have been organized/refined will be automatically checked.
     variableSettings: Variable Settings
     variableSettingsDescription: Configure variables found in the prompt
     variableExpansionInfo:

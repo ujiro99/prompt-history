@@ -45,12 +45,29 @@ interface EditDialogProps {
   initialCategoryId?: string | null
   /** Initial use case (when editing) */
   initialUseCase?: string
+  /** Initial exclude from organizer flag (when editing) */
+  initialExcludeFromOrganizer?: boolean
   /** Whether the prompt is AI-generated */
   isAIGenerated?: boolean
   /** Dialog display mode */
   displayMode: SaveMode
   /** Callback on save */
-  onSave: (data: SaveDialogData) => Promise<void>
+  onSave: (data: Partial<SaveDialogData>) => Promise<void>
+}
+
+const variableEquals = (
+  x: VariableConfig,
+  y: VariableConfig | undefined,
+): boolean => {
+  if (!y) {
+    return false
+  }
+  return (
+    x.name === y.name &&
+    x.type === y.type &&
+    x.defaultValue === y.defaultValue &&
+    JSON.stringify(x.selectOptions) === JSON.stringify(y.selectOptions)
+  )
 }
 
 /**
@@ -64,6 +81,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
   initialVariables,
   initialCategoryId,
   initialUseCase = "",
+  initialExcludeFromOrganizer = false,
   isAIGenerated,
   displayMode,
   onSave,
@@ -77,6 +95,9 @@ export const EditDialog: React.FC<EditDialogProps> = ({
     initialCategoryId ?? null,
   )
   const [useCase, setUseCase] = useState(initialUseCase)
+  const [excludeFromOrganizer, setExcludeFromOrganizer] = useState(
+    initialExcludeFromOrganizer,
+  )
   const [isLoading, setIsLoading] = useState(false)
   const [isInfoDialogOpen, setIsInfoDialogOpen] = useState(false)
   const isEdit = displayMode === SaveMode.Overwrite
@@ -98,12 +119,14 @@ export const EditDialog: React.FC<EditDialogProps> = ({
     )
     setCategoryId(initialCategoryId ?? null)
     setUseCase(initialUseCase)
+    setExcludeFromOrganizer(initialExcludeFromOrganizer)
   }, [
     initialName,
     initialContent,
     initialVariables,
     initialCategoryId,
     initialUseCase,
+    initialExcludeFromOrganizer,
     variableExpansionEnabled,
   ])
 
@@ -115,6 +138,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
       setVariables(initialVariables || [])
       setCategoryId(initialCategoryId ?? null)
       setUseCase(initialUseCase)
+      setExcludeFromOrganizer(initialExcludeFromOrganizer)
     }
   }, [
     open,
@@ -123,6 +147,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
     initialVariables,
     initialCategoryId,
     initialUseCase,
+    initialExcludeFromOrganizer,
   ])
 
   // Parse and merge variables when content changes (only if variable expansion is enabled)
@@ -147,14 +172,28 @@ export const EditDialog: React.FC<EditDialogProps> = ({
     setIsLoading(true)
 
     try {
-      const saveData: SaveDialogData = {
-        name: name.trim(),
-        content: content.trim(),
+      const updates: Partial<SaveDialogData> = {
         saveMode: saveMode,
-        isPinned: true,
-        variables: variables.length > 0 ? variables : undefined,
-        categoryId: categoryId || null,
-        useCase: useCase.trim() || undefined,
+      }
+      if (name.trim() !== initialName) {
+        updates.name = name.trim()
+      }
+      if (content.trim() !== initialContent) {
+        updates.content = content.trim()
+      }
+      if (
+        !variables.every((v, i) => variableEquals(v, initialVariables?.[i]))
+      ) {
+        updates.variables = variables
+      }
+      if (categoryId !== initialCategoryId) {
+        updates.categoryId = categoryId || null
+      }
+      if (useCase.trim() !== initialUseCase) {
+        updates.useCase = useCase.trim() || undefined
+      }
+      if (excludeFromOrganizer !== initialExcludeFromOrganizer) {
+        updates.excludeFromOrganizer = excludeFromOrganizer
       }
 
       try {
@@ -163,7 +202,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
         // Ignore analytics errors to prevent them from affecting core functionality
         console.warn("Analytics tracking failed:", error)
       }
-      await onSave(saveData)
+      await onSave(updates)
     } finally {
       setIsLoading(false)
       onOpenChange(false)
@@ -257,22 +296,46 @@ export const EditDialog: React.FC<EditDialogProps> = ({
                 </div>
               )}
 
-              {/* Category selector */}
-              <div className="space-y-1">
-                <label
-                  htmlFor="prompt-category"
-                  className="text-sm font-semibold text-foreground inline-block"
-                >
-                  {i18n.t("promptOrganizer.preview.category")}
-                </label>
-                <p className="text-xs text-muted-foreground">
-                  {i18n.t("dialogs.edit.categoryDescription")}
-                </p>
-                <CategorySelector
-                  value={categoryId || ""}
-                  onValueChange={(value) => setCategoryId(value || null)}
-                  className="w-full"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                {/* Category selector */}
+                <div className="space-y-1">
+                  <label
+                    htmlFor="prompt-category"
+                    className="text-sm font-semibold text-foreground inline-block"
+                  >
+                    {i18n.t("promptOrganizer.preview.category")}
+                  </label>
+                  <p className="text-xs text-muted-foreground">
+                    {i18n.t("dialogs.edit.categoryDescription")}
+                  </p>
+                  <CategorySelector
+                    value={categoryId || ""}
+                    onValueChange={(value) => setCategoryId(value || null)}
+                    className="w-full"
+                  />
+                </div>
+                {/* Exclude from organizer checkbox */}
+                <div className="mt-2 flex items-start space-x-2">
+                  <input
+                    type="checkbox"
+                    id="exclude-from-organizer"
+                    checked={excludeFromOrganizer}
+                    onChange={(e) => setExcludeFromOrganizer(e.target.checked)}
+                    disabled={isLoading}
+                    className="mt-0.5"
+                  />
+                  <div className="grid gap-1.5 leading-none">
+                    <label
+                      htmlFor="exclude-from-organizer"
+                      className="text-sm font-semibold text-foreground cursor-pointer select-none"
+                    >
+                      {i18n.t("dialogs.edit.excludeFromOrganizer")}
+                    </label>
+                    <p className="text-xs text-muted-foreground">
+                      {i18n.t("dialogs.edit.excludeFromOrganizerHelp")}
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {/* Prompt content input */}
