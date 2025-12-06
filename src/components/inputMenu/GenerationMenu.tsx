@@ -12,7 +12,7 @@ import { usePromptExecution } from "@/hooks/usePromptExecution"
 import { usePromptOrganizer } from "@/hooks/usePromptOrganizer"
 import { PromptImproveDialog } from "@/components/inputMenu/controller/PromptImproveDialog"
 import { OrganizerExecuteDialog } from "@/components/promptOrganizer/OrganizerExecuteDialog"
-import { OrganizerSummaryDialog } from "@/components/promptOrganizer/OrganizerSummaryDialog"
+import { OrganizerResultDialog } from "@/components/promptOrganizer/OrganizerResultDialog"
 import { OrganizerPreviewDialog } from "@/components/promptOrganizer/OrganizerPreviewDialog"
 import { PromptServiceFacade } from "@/services/promptServiceFacade"
 import { MENU, TestIds } from "@/components/const"
@@ -173,8 +173,8 @@ export function GenerationMenu({
         }}
       />
 
-      {/* Organizer Summary Dialog */}
-      <OrganizerSummaryDialog
+      {/* Organizer Result Dialog */}
+      <OrganizerResultDialog
         open={organizerSummaryOpen}
         onOpenChange={setOrganizerSummaryOpen}
         result={result}

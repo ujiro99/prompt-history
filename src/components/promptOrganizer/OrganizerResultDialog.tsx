@@ -1,5 +1,5 @@
 /**
- * Organizer Summary Dialog Component
+ * Organizer Result Dialog Component
  * Displays organization results summary with statistics
  */
 
@@ -18,7 +18,7 @@ import { stopPropagation } from "@/utils/dom"
 import { cn } from "@/lib/utils"
 import type { PromptOrganizerResult } from "@/types/promptOrganizer"
 
-interface OrganizerSummaryDialogProps {
+interface OrganizerResultDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   result: PromptOrganizerResult | null
@@ -26,7 +26,7 @@ interface OrganizerSummaryDialogProps {
   onSaveAll?: () => void
 }
 
-export const OrganizerSummaryDialog: React.FC<OrganizerSummaryDialogProps> = ({
+export const OrganizerResultDialog: React.FC<OrganizerResultDialogProps> = ({
   open,
   onOpenChange,
   result,
