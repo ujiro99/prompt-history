@@ -380,6 +380,7 @@ export function InputMenu(props: Props): React.ReactElement {
           initialCategoryId={saveDialogData.categoryId}
           displayMode={saveDialogData.saveMode}
           onSave={handleEditPrompt}
+          isAIGenerated={saveDialogData.isAIGenerated}
         />
       )}
 

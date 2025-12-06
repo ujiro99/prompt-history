@@ -45,6 +45,8 @@ interface EditDialogProps {
   initialCategoryId?: string | null
   /** Initial use case (when editing) */
   initialUseCase?: string
+  /** Whether the prompt is AI-generated */
+  isAIGenerated?: boolean
   /** Dialog display mode */
   displayMode: SaveMode
   /** Callback on save */
@@ -62,6 +64,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
   initialVariables,
   initialCategoryId,
   initialUseCase = "",
+  isAIGenerated,
   displayMode,
   onSave,
 }) => {
@@ -204,8 +207,11 @@ export const EditDialog: React.FC<EditDialogProps> = ({
             </DialogTitle>
           </DialogHeader>
 
-          <ScrollAreaWithGradient className="flex-1 max-h-[70vh] pl-2 pr-4">
-            <div className="space-y-4 pb-4">
+          <ScrollAreaWithGradient
+            className="flex-1 max-h-[70vh] pl-2 pr-4"
+            indicatorVisible={false}
+          >
+            <div className="space-y-4 py-2">
               {/* Prompt name input */}
               <div className="space-y-1">
                 <label
@@ -229,25 +235,27 @@ export const EditDialog: React.FC<EditDialogProps> = ({
               </div>
 
               {/* Use case input */}
-              <div className="space-y-1">
-                <label
-                  htmlFor="prompt-usecase"
-                  className="text-sm font-semibold text-foreground inline-block"
-                >
-                  {i18n.t("promptOrganizer.preview.useCase")}
-                </label>
-                <p className="text-xs text-muted-foreground">
-                  {i18n.t("dialogs.edit.useCaseDescription")}
-                </p>
-                <Input
-                  id="prompt-usecase"
-                  type="text"
-                  value={useCase}
-                  onChange={(e) => setUseCase(e.target.value)}
-                  placeholder={i18n.t("dialogs.edit.useCasePlaceholder")}
-                  disabled={isLoading}
-                />
-              </div>
+              {isAIGenerated && (
+                <div className="space-y-1">
+                  <label
+                    htmlFor="prompt-usecase"
+                    className="text-sm font-semibold text-foreground inline-block"
+                  >
+                    {i18n.t("promptOrganizer.preview.useCase")}
+                  </label>
+                  <p className="text-xs text-muted-foreground">
+                    {i18n.t("dialogs.edit.useCaseDescription")}
+                  </p>
+                  <Input
+                    id="prompt-usecase"
+                    type="text"
+                    value={useCase}
+                    onChange={(e) => setUseCase(e.target.value)}
+                    placeholder={i18n.t("dialogs.edit.useCasePlaceholder")}
+                    disabled={isLoading}
+                  />
+                </div>
+              )}
 
               {/* Category selector */}
               <div className="space-y-1">

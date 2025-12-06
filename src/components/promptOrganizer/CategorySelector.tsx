@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import type { Category } from "@/types/promptOrganizer"
+import { useContainer } from "@/hooks/useContainer.ts"
 import { categoryService } from "@/services/promptOrganizer/CategoryService"
 
 interface CategorySelectorProps {
@@ -27,6 +28,7 @@ export const CategorySelector = ({
   className,
 }: CategorySelectorProps) => {
   const [categories, setCategories] = useState<Category[]>([])
+  const { container } = useContainer()
 
   useEffect(() => {
     // Load categories
@@ -53,7 +55,7 @@ export const CategorySelector = ({
           placeholder={i18n.t("organizer.category.selectCategory")}
         />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent container={container}>
         {/* Default categories */}
         {defaultCategories.length > 0 && (
           <>

@@ -8,9 +8,12 @@ import {
 import { ScrollAreaWithGradient } from "./ScrollAreaWithGradient"
 import { BridgeArea } from "../BridgeArea"
 import type { Prompt } from "@/types/prompt"
+import type { Category } from "@/types/promptOrganizer"
 import { i18n } from "#imports"
 import { TestIds } from "@/components/const"
 import { stopPropagation } from "@/utils/dom"
+import { categoryService } from "@/services/promptOrganizer/CategoryService"
+import { cn } from "@/lib/utils"
 
 interface PromptDetailProps {
   open: boolean
@@ -44,24 +47,6 @@ export const PromptPreview = ({
     }
   }, [open, anchorElm])
 
-  /**
-   * Display relative time
-   */
-  const formatRelativeTime = (date: Date): string => {
-    if (!date) return i18n.t("time.unknown")
-    const now = new Date()
-    const diff = now.getTime() - date.getTime()
-    const minutes = Math.floor(diff / 60000)
-    const hours = Math.floor(minutes / 60)
-    const days = Math.floor(hours / 24)
-
-    if (minutes < 1) return i18n.t("time.justNow")
-    if (minutes < 60) return i18n.t("time.minutesAgo", [`${minutes}`])
-    if (hours < 24) return i18n.t("time.hoursAgo", [`${hours}`])
-    if (days < 7) return i18n.t("time.daysAgo", [`${days}`])
-    return date.toLocaleDateString()
-  }
-
   return (
     <Popover open={open}>
       <PopoverAnchor virtualRef={{ current: anchorElm }} />
@@ -87,13 +72,7 @@ export const PromptPreview = ({
                 </p>
               </ScrollAreaWithGradient>
               <hr />
-              <div className="flex items-center justify-end gap-1.5 text-xs pr-2">
-                <span>
-                  {i18n.t("preview.usedTimes", [`${prompt.executionCount}`])}
-                </span>
-                <span>•</span>
-                <span>{formatRelativeTime(prompt.lastExecutedAt)}</span>
-              </div>
+              <PromptMetadata prompt={prompt} />
             </div>
             {content && (
               <BridgeArea
@@ -110,3 +89,89 @@ export const PromptPreview = ({
   )
 }
 PromptPreview.displayName = "PromptPreview"
+
+const PromptMetadata = ({ prompt }: { prompt: Prompt }) => {
+  const [categories, setCategories] = useState<Category[]>([])
+
+  const isAigenerated = prompt.isAIGenerated ?? false
+
+  useEffect(() => {
+    // Load categories
+    categoryService.getAll().then(setCategories)
+  }, [])
+
+  /**
+   * Display relative time
+   */
+  const formatRelativeTime = (date: Date): string => {
+    if (!date) return i18n.t("time.unknown")
+    const now = new Date()
+    const diff = now.getTime() - date.getTime()
+    const minutes = Math.floor(diff / 60000)
+    const hours = Math.floor(minutes / 60)
+    const days = Math.floor(hours / 24)
+
+    if (minutes < 1) return i18n.t("time.justNow")
+    if (minutes < 60) return i18n.t("time.minutesAgo", [`${minutes}`])
+    if (hours < 24) return i18n.t("time.hoursAgo", [`${hours}`])
+    if (days < 7) return i18n.t("time.daysAgo", [`${days}`])
+    return date.toLocaleDateString()
+  }
+
+  /**
+   * Get category name (with i18n for default categories)
+   */
+  const getCategoryName = (categoryId: string): string | null => {
+    const category = categories.find((c) => c.id === categoryId)
+    if (!category) return null
+
+    if (category.isDefault) {
+      const i18nKey = `organizer.category.${category.id}`
+      return i18n.t(i18nKey)
+    }
+    return category.name
+  }
+
+  return (
+    <div className="flex justify-between">
+      {prompt.categoryId || prompt.useCase ? (
+        <div className="space-y-1 text-xs pr-2">
+          {prompt.categoryId && (
+            <div className="flex items-start gap-1.5">
+              <span className="text-muted-foreground text-nowrap">
+                {i18n.t("promptOrganizer.preview.category")}:
+              </span>
+              <span className="text-foreground">
+                {getCategoryName(prompt.categoryId) || prompt.categoryId}
+              </span>
+            </div>
+          )}
+          {prompt.useCase && (
+            <div className="flex items-start gap-1.5">
+              <span className="text-muted-foreground text-nowrap">
+                {i18n.t("promptOrganizer.preview.useCase")}:
+              </span>
+              <span className="text-foreground">{prompt.useCase}</span>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div></div>
+      )}
+      <div
+        className={cn(
+          "flex items-end justify-end gap-1.5 text-xs pr-2",
+          isAigenerated && "flex-col gap-1",
+        )}
+      >
+        <span className="text-nowrap">
+          {i18n.t("preview.usedTimes", [`${prompt.executionCount}`])}
+        </span>
+        {!isAigenerated && <span>•</span>}
+        <span className="text-nowrap">
+          {formatRelativeTime(prompt.lastExecutedAt)}
+        </span>
+      </div>
+    </div>
+  )
+}
