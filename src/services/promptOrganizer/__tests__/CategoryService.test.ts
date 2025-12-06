@@ -21,6 +21,28 @@ vi.mock("@/services/storage/definitions", () => ({
   categoriesStorage: mockStorage,
 }))
 
+// Mock categoryHelper to avoid i18n dependency
+vi.mock("@/services/storage/categoryHelper", () => ({
+  getDefaultCategories: vi.fn(() => ({
+    externalCommunication: {
+      id: "externalCommunication",
+      name: "External Communication",
+      description: "Communication with clients and customers",
+      isDefault: true,
+      createdAt: new Date("2025-01-01"),
+      updatedAt: new Date("2025-01-01"),
+    },
+    internalCommunication: {
+      id: "internalCommunication",
+      name: "Internal Communication",
+      description: "Team communication and internal reports",
+      isDefault: true,
+      createdAt: new Date("2025-01-01"),
+      updatedAt: new Date("2025-01-01"),
+    },
+  })),
+}))
+
 describe("CategoryService", () => {
   let service: CategoryService
 
@@ -71,14 +93,27 @@ describe("CategoryService", () => {
       )
     })
 
-    it("should return empty array when no categories exist", async () => {
+    it("should return default categories when no categories exist", async () => {
       Object.keys(mockCategoriesMap).forEach(
         (key) => delete mockCategoriesMap[key],
       )
 
       const categories = await service.getAll()
 
-      expect(categories).toEqual([])
+      // When no categories exist, it should initialize with default categories
+      expect(categories).toHaveLength(2)
+      expect(categories).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: "externalCommunication",
+            name: "External Communication",
+          }),
+          expect.objectContaining({
+            id: "internalCommunication",
+            name: "Internal Communication",
+          }),
+        ]),
+      )
     })
   })
 

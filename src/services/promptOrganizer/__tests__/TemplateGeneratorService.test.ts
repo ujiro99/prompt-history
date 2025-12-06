@@ -122,8 +122,8 @@ describe("TemplateGeneratorService", () => {
       )
 
       expect(prompt).toContain("Available Categories:")
-      expect(prompt).toContain("- cat1: Category 1")
-      expect(prompt).toContain("- cat2: Category 2")
+      expect(prompt).toContain("- ID: cat1  Name: Category 1")
+      expect(prompt).toContain("- ID: cat2  Name: Category 2")
     })
 
     it("should format prompts with numbering", () => {

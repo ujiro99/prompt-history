@@ -59,10 +59,10 @@ describe("PromptFilterService", () => {
         }),
         createPrompt({
           id: "5",
-          name: "AI Generated",
+          name: "Excluded from organizer",
           executionCount: 10,
           lastExecutedAt: new Date("2025-01-19"),
-          isAIGenerated: true,
+          excludeFromOrganizer: true,
         }),
       ]
 
@@ -84,19 +84,19 @@ describe("PromptFilterService", () => {
       vi.useRealTimers()
     })
 
-    it("should exclude AI-generated prompts", () => {
+    it("should exclude prompts marked as excludeFromOrganizer", () => {
       const now = new Date("2025-01-20")
       vi.setSystemTime(now)
 
       const prompts: Prompt[] = [
         createPrompt({
           id: "1",
-          isAIGenerated: false,
+          excludeFromOrganizer: false,
           lastExecutedAt: new Date("2025-01-19"),
         }),
         createPrompt({
           id: "2",
-          isAIGenerated: true,
+          excludeFromOrganizer: true,
           lastExecutedAt: new Date("2025-01-19"),
         }),
       ]

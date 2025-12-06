@@ -220,7 +220,6 @@ describe("PromptOrganizerService", () => {
       expect(candidate.aiMetadata).toMatchObject({
         sourcePromptIds: ["1", "2", "3"],
         sourceCount: 3,
-        sourcePeriodDays: 30,
         confirmed: false,
         showInPinned: true,
       })

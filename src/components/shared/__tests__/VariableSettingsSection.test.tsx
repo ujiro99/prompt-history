@@ -134,15 +134,33 @@ describe("VariableSettingsSection", () => {
 
   describe("Auto-detection Mode", () => {
     it("should auto-detect variables from content when enabled", () => {
-      const content = "Hello {{userName}}, you are {{age}} years old."
+      const initialContent = "Hello"
+      const updatedContent = "Hello {{userName}}, you are {{age}} years old."
 
-      render(
+      const { rerender } = render(
         <TestWrapper>
           <VariableSettingsSection
             variables={[]}
             autoDetectOptions={{
               promptId: "test-prompt",
-              content: content,
+              content: initialContent,
+            }}
+            onChange={mockOnChange}
+            enableAutoDetection={true}
+          />
+        </TestWrapper>,
+      )
+
+      mockOnChange.mockClear()
+
+      // Change content to trigger auto-detection
+      rerender(
+        <TestWrapper>
+          <VariableSettingsSection
+            variables={[]}
+            autoDetectOptions={{
+              promptId: "test-prompt",
+              content: updatedContent,
             }}
             onChange={mockOnChange}
             enableAutoDetection={true}
@@ -159,7 +177,8 @@ describe("VariableSettingsSection", () => {
     })
 
     it("should preserve existing variable configurations when auto-detecting", () => {
-      const content = "Hello {{userName}}, you are {{age}} years old."
+      const initialContent = "Hello {{userName}}."
+      const updatedContent = "Hello {{userName}}, you are {{age}} years old."
       const existingVariables: VariableConfig[] = [
         {
           name: "userName",
@@ -168,13 +187,30 @@ describe("VariableSettingsSection", () => {
         },
       ]
 
-      render(
+      const { rerender } = render(
         <TestWrapper>
           <VariableSettingsSection
             variables={existingVariables}
             autoDetectOptions={{
               promptId: "test-prompt",
-              content: content,
+              content: initialContent,
+            }}
+            onChange={mockOnChange}
+            enableAutoDetection={true}
+          />
+        </TestWrapper>,
+      )
+
+      mockOnChange.mockClear()
+
+      // Change content to add new variable
+      rerender(
+        <TestWrapper>
+          <VariableSettingsSection
+            variables={existingVariables}
+            autoDetectOptions={{
+              promptId: "test-prompt",
+              content: updatedContent,
             }}
             onChange={mockOnChange}
             enableAutoDetection={true}
