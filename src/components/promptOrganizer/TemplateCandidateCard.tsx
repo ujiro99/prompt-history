@@ -3,6 +3,7 @@
  * Card component for displaying template candidates in list
  */
 
+import { forwardRef } from "react"
 import { i18n } from "#imports"
 import { Star } from "lucide-react"
 import type { TemplateCandidate } from "@/types/promptOrganizer"
@@ -15,12 +16,10 @@ interface TemplateCandidateCardProps {
   className?: string
 }
 
-export const TemplateCandidateCard = ({
-  candidate,
-  isSelected = false,
-  onClick,
-  className,
-}: TemplateCandidateCardProps) => {
+export const TemplateCandidateCard = forwardRef<
+  HTMLDivElement,
+  TemplateCandidateCardProps
+>(({ candidate, isSelected = false, onClick, className }, ref) => {
   // Get category name (with i18n for default categories)
   const getCategoryLabel = (categoryId: string): string => {
     // Try i18n key first for default categories
@@ -72,9 +71,10 @@ export const TemplateCandidateCard = ({
 
   return (
     <div
+      ref={ref}
       className={cn(
         "px-4 pt-2 pb-3 cursor-pointer transition-colors hover:bg-gray-50 border rounded-lg",
-        isSelected ? "ring-2 ring-neutral-300" : "",
+        isSelected ? "ring-2 ring-blue-300" : "",
         className,
       )}
       onClick={onClick}
@@ -105,4 +105,6 @@ export const TemplateCandidateCard = ({
       </div>
     </div>
   )
-}
+})
+
+TemplateCandidateCard.displayName = "TemplateCandidateCard"

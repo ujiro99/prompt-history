@@ -3,7 +3,7 @@
  * Two-column layout for previewing and editing template candidates
  */
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { i18n } from "#imports"
 import {
   Dialog,
@@ -60,6 +60,10 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
     }
     return indexes
   }, [])
+
+  // For autoscroll
+  const listItemRef = useRef<HTMLDivElement | null>(null)
+  const contentRef = useRef<HTMLDivElement | null>(null)
 
   const nextPendingIndex = useCallback(
     (currentIndex: number): number | null => {
@@ -141,6 +145,20 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
     setSelectedIndex(0)
   }, [templates])
 
+  useEffect(() => {
+    // Auto-scroll to selected item in the list
+    if (listItemRef.current) {
+      listItemRef.current.scrollIntoView({
+        block: "nearest",
+        behavior: "smooth",
+      })
+    }
+    // Auto-scroll content to top
+    if (contentRef.current) {
+      contentRef.current.scrollTo({ top: 0 })
+    }
+  }, [selectedIndex])
+
   /**
    * Load source prompt names when selected template changes
    */
@@ -207,8 +225,10 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
                   <TemplateCandidateCard
                     key={template.id}
                     candidate={template}
-                    isSelected={index === selectedIndex}
                     onClick={() => setSelectedIndex(index)}
+                    isSelected={index === selectedIndex}
+                    ref={index === selectedIndex ? listItemRef : null}
+                    className="scroll-my-2"
                   />
                 ))}
               </div>
@@ -247,7 +267,7 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
               )
             ) : (
               <>
-                <ScrollArea className="flex-1 min-h-0">
+                <ScrollArea className="flex-1 min-h-0" viewportRef={contentRef}>
                   <div className="space-y-4 pl-2 pr-4 pb-2">
                     {/* Explanation */}
                     <div className="space-y-1">
