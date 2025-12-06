@@ -5,6 +5,8 @@ import type { SaveDialogData, VariableConfig } from "@/types/prompt"
 import { mergeVariableConfigs } from "@/utils/variables/variableParser"
 import { VariableExpansionInfoDialog } from "./VariableExpansionInfoDialog"
 import { VariableSettingsSection } from "@/components/shared"
+import { CategorySelector } from "@/components/promptOrganizer/CategorySelector"
+import { ScrollAreaWithGradient } from "@/components/inputMenu/ScrollAreaWithGradient"
 import {
   Dialog,
   DialogTitle,
@@ -39,6 +41,10 @@ interface EditDialogProps {
   initialContent: string
   /** Initial variable configurations (when editing) */
   initialVariables?: VariableConfig[]
+  /** Initial category ID (when editing) */
+  initialCategoryId?: string | null
+  /** Initial use case (when editing) */
+  initialUseCase?: string
   /** Dialog display mode */
   displayMode: SaveMode
   /** Callback on save */
@@ -54,6 +60,8 @@ export const EditDialog: React.FC<EditDialogProps> = ({
   initialName = "",
   initialContent,
   initialVariables,
+  initialCategoryId,
+  initialUseCase = "",
   displayMode,
   onSave,
 }) => {
@@ -62,6 +70,10 @@ export const EditDialog: React.FC<EditDialogProps> = ({
   const [variables, setVariables] = useState<VariableConfig[]>(
     initialVariables || [],
   )
+  const [categoryId, setCategoryId] = useState<string | null>(
+    initialCategoryId ?? null,
+  )
+  const [useCase, setUseCase] = useState(initialUseCase)
   const [isLoading, setIsLoading] = useState(false)
   const [isInfoDialogOpen, setIsInfoDialogOpen] = useState(false)
   const isEdit = displayMode === SaveMode.Overwrite
@@ -81,7 +93,16 @@ export const EditDialog: React.FC<EditDialogProps> = ({
         ? initialVariables || mergeVariableConfigs(initialContent)
         : [],
     )
-  }, [initialName, initialContent, initialVariables, variableExpansionEnabled])
+    setCategoryId(initialCategoryId ?? null)
+    setUseCase(initialUseCase)
+  }, [
+    initialName,
+    initialContent,
+    initialVariables,
+    initialCategoryId,
+    initialUseCase,
+    variableExpansionEnabled,
+  ])
 
   // Clear values on close
   useEffect(() => {
@@ -89,8 +110,17 @@ export const EditDialog: React.FC<EditDialogProps> = ({
       setName(initialName)
       setContent(initialContent)
       setVariables(initialVariables || [])
+      setCategoryId(initialCategoryId ?? null)
+      setUseCase(initialUseCase)
     }
-  }, [open, initialName, initialContent, initialVariables])
+  }, [
+    open,
+    initialName,
+    initialContent,
+    initialVariables,
+    initialCategoryId,
+    initialUseCase,
+  ])
 
   // Parse and merge variables when content changes (only if variable expansion is enabled)
   useEffect(() => {
@@ -120,6 +150,8 @@ export const EditDialog: React.FC<EditDialogProps> = ({
         saveMode: saveMode,
         isPinned: true,
         variables: variables.length > 0 ? variables : undefined,
+        categoryId: categoryId || null,
+        useCase: useCase.trim() || undefined,
       }
 
       try {
@@ -158,7 +190,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
           container={container}
-          className="w-xl sm:max-w-xl max-h-9/10"
+          className="w-2xl sm:max-w-2xl max-h-9/10 flex flex-col pr-4"
           onKeyDown={handleKeyDown}
           {...stopPropagation()}
         >
@@ -172,72 +204,114 @@ export const EditDialog: React.FC<EditDialogProps> = ({
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-4">
-            {/* Prompt name input */}
-            <div className="space-y-2">
-              <label
-                htmlFor="prompt-name"
-                className="text-sm font-semibold text-foreground"
-              >
-                {i18n.t("common.name")}
-              </label>
-              <p className="text-xs text-muted-foreground">
-                {i18n.t("common.nameDescription")}
-              </p>
-              <Input
-                id="prompt-name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder={i18n.t("placeholders.enterPromptName")}
-                disabled={isLoading}
-                autoFocus
-              />
-            </div>
-
-            {/* Prompt content input */}
-            <div className="space-y-2">
-              <label
-                htmlFor="prompt-content"
-                className="text-sm font-semibold text-foreground"
-              >
-                {i18n.t("common.prompt")}
-              </label>
-              <div className="flex items-center justify-between gap-2">
-                <p className="text-xs text-muted-foreground">
-                  {i18n.t("common.promptDescription")}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setIsInfoDialogOpen(true)}
-                  className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors whitespace-nowrap cursor-pointer"
-                  aria-label={i18n.t("dialogs.edit.variableExpansionInfo.link")}
+          <ScrollAreaWithGradient className="flex-1 max-h-[70vh] pl-2 pr-4">
+            <div className="space-y-4 pb-4">
+              {/* Prompt name input */}
+              <div className="space-y-1">
+                <label
+                  htmlFor="prompt-name"
+                  className="text-sm font-semibold text-foreground inline-block"
                 >
-                  <HelpCircle className="size-3.5" />
-                  <span>
-                    {i18n.t("dialogs.edit.variableExpansionInfo.link")}
-                  </span>
-                </button>
+                  {i18n.t("common.name")}
+                </label>
+                <p className="text-xs text-muted-foreground">
+                  {i18n.t("common.nameDescription")}
+                </p>
+                <Input
+                  id="prompt-name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder={i18n.t("placeholders.enterPromptName")}
+                  disabled={isLoading}
+                  autoFocus
+                />
               </div>
-              <Textarea
-                id="prompt-content"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder={i18n.t("placeholders.enterPromptContent")}
-                disabled={isLoading}
-                className="max-h-60"
-                rows={6}
+
+              {/* Use case input */}
+              <div className="space-y-1">
+                <label
+                  htmlFor="prompt-usecase"
+                  className="text-sm font-semibold text-foreground inline-block"
+                >
+                  {i18n.t("promptOrganizer.preview.useCase")}
+                </label>
+                <p className="text-xs text-muted-foreground">
+                  {i18n.t("dialogs.edit.useCaseDescription")}
+                </p>
+                <Input
+                  id="prompt-usecase"
+                  type="text"
+                  value={useCase}
+                  onChange={(e) => setUseCase(e.target.value)}
+                  placeholder={i18n.t("dialogs.edit.useCasePlaceholder")}
+                  disabled={isLoading}
+                />
+              </div>
+
+              {/* Category selector */}
+              <div className="space-y-1">
+                <label
+                  htmlFor="prompt-category"
+                  className="text-sm font-semibold text-foreground inline-block"
+                >
+                  {i18n.t("promptOrganizer.preview.category")}
+                </label>
+                <p className="text-xs text-muted-foreground">
+                  {i18n.t("dialogs.edit.categoryDescription")}
+                </p>
+                <CategorySelector
+                  value={categoryId || ""}
+                  onValueChange={(value) => setCategoryId(value || null)}
+                  className="w-full"
+                />
+              </div>
+
+              {/* Prompt content input */}
+              <div className="space-y-1">
+                <label
+                  htmlFor="prompt-content"
+                  className="text-sm font-semibold text-foreground inline-block"
+                >
+                  {i18n.t("common.prompt")}
+                </label>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs text-muted-foreground">
+                    {i18n.t("common.promptDescription")}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setIsInfoDialogOpen(true)}
+                    className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors whitespace-nowrap cursor-pointer"
+                    aria-label={i18n.t(
+                      "dialogs.edit.variableExpansionInfo.link",
+                    )}
+                  >
+                    <HelpCircle className="size-3.5" />
+                    <span>
+                      {i18n.t("dialogs.edit.variableExpansionInfo.link")}
+                    </span>
+                  </button>
+                </div>
+                <Textarea
+                  id="prompt-content"
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder={i18n.t("placeholders.enterPromptContent")}
+                  disabled={isLoading}
+                  className="max-h-60"
+                  rows={6}
+                />
+              </div>
+
+              {/* Variable configuration section */}
+              <VariableSettingsSection
+                variables={variables}
+                onChange={setVariables}
+                enableAutoDetection={false}
               />
             </div>
-
-            {/* Variable configuration section */}
-            <VariableSettingsSection
-              variables={variables}
-              onChange={setVariables}
-              enableAutoDetection={false}
-              scrollAreaClassName="max-h-60"
-            />
-          </div>
+          </ScrollAreaWithGradient>
 
           <DialogFooter className="mt-3">
             <Button

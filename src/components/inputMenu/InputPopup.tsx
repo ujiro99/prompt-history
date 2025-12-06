@@ -203,11 +203,8 @@ export function InputMenu(props: Props): React.ReactElement {
   const openEditDialog = async (promptId: string) => {
     const prompt = await serviceFacade.getPrompt(promptId)
     setSaveDialogData({
-      name: prompt.name,
-      content: prompt.content,
+      ...prompt,
       saveMode: SaveMode.Overwrite,
-      isPinned: prompt.isPinned,
-      variables: prompt.variables,
     })
     setEditId(promptId)
   }
@@ -218,11 +215,9 @@ export function InputMenu(props: Props): React.ReactElement {
   const openCopyDialog = async (promptId: string) => {
     const prompt = await serviceFacade.getPrompt(promptId)
     setSaveDialogData({
+      ...prompt,
       name: `${i18n.t("messages.copyPrefix")} ${prompt.name}`,
-      content: prompt.content,
       saveMode: SaveMode.Copy,
-      isPinned: prompt.isPinned,
-      variables: prompt.variables,
     })
     setEditId("")
   }
@@ -381,6 +376,8 @@ export function InputMenu(props: Props): React.ReactElement {
           initialName={saveDialogData.name}
           initialContent={saveDialogData.content}
           initialVariables={saveDialogData.variables}
+          initialUseCase={saveDialogData.useCase}
+          initialCategoryId={saveDialogData.categoryId}
           displayMode={saveDialogData.saveMode}
           onSave={handleEditPrompt}
         />

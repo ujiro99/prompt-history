@@ -21,6 +21,7 @@ describe("TemplateConverter", () => {
     title: "Test Template",
     content: "Test content with {{variable1}} and {{variable2}}",
     useCase: "Test use case",
+    clusterExplanation: "Test cluster explanation",
     categoryId: "test-category",
     sourcePromptIds: ["id1", "id2", "id3"],
     variables: [
@@ -406,6 +407,7 @@ describe("TemplateConverter", () => {
       title: "Test Template",
       content: "Test content",
       useCase: "Test use case",
+      clusterExplanation: "Test cluster explanation",
       categoryId: "test-category",
       variables: [
         { name: "var1", type: "text", defaultValue: "" },

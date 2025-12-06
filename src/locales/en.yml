@@ -62,6 +62,9 @@ placeholders:
 dialogs:
   edit:
     title: Edit Prompt
+    useCaseDescription: Describe the use case or purpose of the prompt
+    useCasePlaceholder: Optional
+    categoryDescription: Set the category of the prompt
     variableSettings: Variable Settings
     variableSettingsDescription: Configure variables found in the prompt
     variableExpansionInfo:

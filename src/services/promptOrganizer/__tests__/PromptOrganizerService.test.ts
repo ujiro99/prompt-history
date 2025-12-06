@@ -425,6 +425,7 @@ describe("PromptOrganizerService", () => {
           title: "Test",
           content: "Content",
           useCase: "Use case",
+          clusterExplanation: "Test explanation",
           categoryId: "cat",
           variables: [],
           aiMetadata: {

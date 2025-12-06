@@ -110,25 +110,20 @@ export enum SaveMode {
 /**
  * Prompt save data
  */
-export interface SaveDialogData {
-  /** Prompt name */
-  name: string
-  /** Prompt content */
-  content: string
+export interface SaveDialogData
+  extends Pick<
+    Prompt,
+    | "name"
+    | "content"
+    | "isPinned"
+    | "variables"
+    | "isAIGenerated"
+    | "aiMetadata"
+    | "categoryId"
+    | "useCase"
+  > {
   /** Save mode */
   saveMode: SaveMode
-  /** Pin flag */
-  isPinned: boolean
-  /** Variable configurations */
-  variables?: VariableConfig[]
-  /** AI-generated flag */
-  isAIGenerated?: boolean
-  /** AI generation metadata (only for AI-generated prompts) */
-  aiMetadata?: AIGeneratedMetadata
-  /** Category ID (null for uncategorized) */
-  categoryId?: string | null
-  /** Use case description */
-  useCase?: string
 }
 
 /**

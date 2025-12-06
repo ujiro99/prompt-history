@@ -75,6 +75,7 @@ describe("TemplateSaveService", () => {
     title: "Test Template",
     content: "Test content",
     useCase: "Test use case",
+    clusterExplanation: "Test cluster explanation",
     categoryId: "test-category",
     variables: [],
     aiMetadata: {

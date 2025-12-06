@@ -62,6 +62,9 @@ placeholders:
 dialogs:
   edit:
     title: プロンプトを編集
+    useCaseDescription: プロンプトの使用例や目的を説明します
+    useCasePlaceholder: 任意入力
+    categoryDescription: プロンプトのカテゴリを設定します
     variableSettings: 変数設定
     variableSettingsDescription: プロンプト内で見つかった変数を設定します
     variableExpansionInfo:
