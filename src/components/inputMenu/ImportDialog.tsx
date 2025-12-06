@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { ScrollAreaWithGradient } from "@/components/inputMenu/ScrollAreaWithGradient"
 import { useContainer } from "@/hooks/useContainer"
 import { promptImportService } from "@/services/importExport"
 import type { ImportResult } from "@/services/importExport/types"
@@ -189,6 +190,7 @@ export function ImportDialog({
         className="sm:max-w-md"
         data-testid={TestIds.import.dialog}
         container={container}
+        onWheel={(e) => e.stopPropagation()}
       >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -394,12 +396,14 @@ export function ImportDialog({
               <h4 className="font-medium text-red-700 mb-2">
                 {i18n.t("importDialog.status.errorTitle")}
               </h4>
-              <p
-                className="text-sm text-red-700 whitespace-pre-line"
-                data-testid={TestIds.import.ui.errors}
-              >
-                {error}
-              </p>
+              <ScrollAreaWithGradient className="max-h-100">
+                <p
+                  className="text-sm text-red-700 whitespace-pre-line"
+                  data-testid={TestIds.import.ui.errors}
+                >
+                  {error}
+                </p>
+              </ScrollAreaWithGradient>
             </div>
           )}
         </div>

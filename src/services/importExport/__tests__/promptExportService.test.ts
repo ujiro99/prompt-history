@@ -87,6 +87,10 @@ describe("PromptExportService", () => {
     createdAt: new Date("2024-01-01T10:00:00.000Z"),
     updatedAt: new Date("2024-01-01T10:00:00.000Z"),
     variables: undefined,
+    isAIGenerated: undefined,
+    aiMetadata: undefined,
+    categoryId: undefined,
+    useCase: undefined,
     ...overrides,
   })
 
@@ -95,7 +99,7 @@ describe("PromptExportService", () => {
       const result = (service as any).convertToCSV([])
 
       expect(result).toContain(
-        `"name","content","executionCount","lastExecutedAt","isPinned","lastExecutionUrl","createdAt","updatedAt","variables"`,
+        `"name","content","executionCount","lastExecutedAt","isPinned","lastExecutionUrl","createdAt","updatedAt","variables","isAIGenerated","aiMetadata","categoryId","useCase"`,
       )
       expect(result.split("\n")).toHaveLength(2) // Header + empty line
     })
@@ -349,6 +353,147 @@ describe("PromptExportService", () => {
       expect(result).toContain("Test Prompt")
       // Empty array should be serialized as "[]"
       expect(result).toContain("[]")
+    })
+  })
+
+  describe("convertToCSV with AI metadata and organization fields", () => {
+    it("should export prompt with all AI metadata fields", () => {
+      const prompt = createMockPrompt({
+        isAIGenerated: true,
+        aiMetadata: {
+          sourcePromptIds: ["id1", "id2", "id3"],
+          sourceCount: 3,
+          confirmed: true,
+          showInPinned: true,
+        },
+        categoryId: "cat-123",
+        useCase: "Code review automation",
+      })
+      const result = (service as any).convertToCSV([prompt])
+
+      expect(result).toContain("Test Prompt")
+
+      // Parse CSV to verify fields
+      const parsed = Papa.parse<{
+        isAIGenerated: string
+        aiMetadata: string
+        categoryId: string
+        useCase: string
+      }>(result, { header: true })
+      const row = parsed.data[0]
+
+      expect(row.isAIGenerated).toBe("true")
+      expect(row.categoryId).toBe("cat-123")
+      expect(row.useCase).toBe("Code review automation")
+
+      const aiMetadata = JSON.parse(row.aiMetadata)
+      expect(aiMetadata.sourcePromptIds).toEqual(["id1", "id2", "id3"])
+      expect(aiMetadata.sourceCount).toBe(3)
+      expect(aiMetadata.confirmed).toBe(true)
+      expect(aiMetadata.showInPinned).toBe(true)
+    })
+
+    it("should export prompt with AI metadata undefined", () => {
+      const prompt = createMockPrompt({
+        isAIGenerated: undefined,
+        aiMetadata: undefined,
+      })
+      const result = (service as any).convertToCSV([prompt])
+
+      expect(result).toContain("Test Prompt")
+
+      // Parse CSV to verify fields
+      const parsed = Papa.parse<{
+        isAIGenerated: string
+        aiMetadata: string
+      }>(result, { header: true })
+      const row = parsed.data[0]
+
+      expect(row.isAIGenerated).toBe("false")
+      expect(row.aiMetadata).toBe("")
+    })
+
+    it("should export prompt with null categoryId", () => {
+      const prompt = createMockPrompt({
+        categoryId: null,
+      })
+      const result = (service as any).convertToCSV([prompt])
+
+      expect(result).toContain("Test Prompt")
+
+      // Parse CSV to verify fields
+      const parsed = Papa.parse<{
+        categoryId: string
+      }>(result, { header: true })
+      const row = parsed.data[0]
+
+      expect(row.categoryId).toBe("")
+    })
+
+    it("should export prompt with empty sourcePromptIds array", () => {
+      const prompt = createMockPrompt({
+        isAIGenerated: true,
+        aiMetadata: {
+          sourcePromptIds: [],
+          sourceCount: 0,
+          confirmed: true,
+          showInPinned: false,
+        },
+      })
+      const result = (service as any).convertToCSV([prompt])
+
+      expect(result).toContain("Test Prompt")
+
+      // Parse CSV to verify fields
+      const parsed = Papa.parse<{
+        aiMetadata: string
+      }>(result, { header: true })
+      const row = parsed.data[0]
+
+      const aiMetadata = JSON.parse(row.aiMetadata)
+      expect(aiMetadata.sourcePromptIds).toEqual([])
+      expect(aiMetadata.sourceCount).toBe(0)
+    })
+
+    it("should handle special characters in useCase", () => {
+      const prompt = createMockPrompt({
+        useCase: 'Testing with "quotes", newlines\nand, commas',
+      })
+      const result = (service as any).convertToCSV([prompt])
+
+      // Parse CSV to verify proper escaping
+      const parsed = Papa.parse<{
+        useCase: string
+      }>(result, { header: true })
+      const row = parsed.data[0]
+
+      expect(row.useCase).toBe('Testing with "quotes", newlines\nand, commas')
+    })
+
+    it("should export prompt with only categoryId set", () => {
+      const prompt = createMockPrompt({
+        categoryId: "tech-category",
+        isAIGenerated: false,
+        aiMetadata: undefined,
+        useCase: undefined,
+      })
+      const result = (service as any).convertToCSV([prompt])
+
+      expect(result).toContain("Test Prompt")
+
+      // Parse CSV to verify fields
+      const parsed = Papa.parse<{
+        categoryId: string
+        isAIGenerated: string
+        aiMetadata: string
+        useCase: string
+      }>(result, { header: true })
+      const row = parsed.data[0]
+
+      expect(row.categoryId).toBe("tech-category")
+      expect(row.isAIGenerated).toBe("false")
+      expect(row.aiMetadata).toBe("")
+      expect(row.useCase).toBe("")
     })
   })
 })

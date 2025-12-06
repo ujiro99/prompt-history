@@ -19,6 +19,7 @@ import type { VariableConfig, VariableValues } from "@/types/prompt"
 import { TestIds } from "@/components/const"
 import { isMac } from "@/utils/platform"
 import { expandPrompt } from "@/utils/variables/variableFormatter"
+import { stopPropagation } from "@/utils/dom"
 
 /**
  * Props for variable input dialog
@@ -113,11 +114,8 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
         container={container}
         className="w-xl sm:max-w-xl max-h-9/10"
         onKeyDown={handleKeyDown}
-        onKeyPress={(e) => e.stopPropagation()} // For chatgpt
-        onKeyUp={(e) => e.stopPropagation()}
         onEscapeKeyDown={onDismiss}
-        onWheel={(e) => e.stopPropagation()}
-        onTouchMove={(e) => e.stopPropagation()}
+        {...stopPropagation()}
       >
         <DialogHeader>
           <DialogTitle>{i18n.t("dialogs.variables.title")}</DialogTitle>

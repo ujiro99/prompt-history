@@ -169,13 +169,13 @@ export class PromptServiceFacade {
 
   async updatePrompt(
     promptId: string,
-    saveData: SaveDialogData,
+    updates: Partial<Omit<Prompt, "id" | "createdAt">>,
   ): Promise<void> {
     this.ensureInitialized()
 
     return this.storageHelper.updatePrompt(
       promptId,
-      saveData,
+      updates,
       async (prompt) => {
         this.notify({
           id: uuid(),
@@ -484,7 +484,7 @@ export class PromptServiceFacade {
         null,
       )
     }
-    return () => {}
+    return () => { }
   }
 
   /**
@@ -500,7 +500,7 @@ export class PromptServiceFacade {
         null,
       )
     }
-    return () => {}
+    return () => { }
   }
 
   // ===================

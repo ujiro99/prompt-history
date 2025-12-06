@@ -20,6 +20,9 @@ type MenuItemProps = {
   onRemove: (promptId: string) => void
   onCopy: (promptId: string) => void
   onTogglePin: (promptId: string, isPinned: boolean) => void
+  isAIGenerated?: boolean
+  isUnconfirmed?: boolean
+  onConfirm?: (promptId: string) => void
 }
 
 const BUTTON_SIZE = 16
@@ -31,6 +34,10 @@ export const MenuItem = (props: MenuItemProps) => {
 
   const handleClick = () => {
     if (promptId) {
+      // If unconfirmed AI template, mark as confirmed
+      if (props.isUnconfirmed && props.onConfirm) {
+        props.onConfirm(promptId)
+      }
       props.onClick(promptId)
     } else {
       console.warn("MenuItem clicked but no data-value found")
@@ -60,11 +67,30 @@ export const MenuItem = (props: MenuItemProps) => {
       className={cn(
         "hover:bg-accent focus:bg-accent focus:text-accent-foreground cursor-default items-center gap-2 rounded-sm text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg:not([class*='size-'])]:size-4",
         "relative flex justify-between px-2 pr-1 py-1 text-sm font-normal font-sans text-foreground cursor-pointer outline-neutral-300",
+        props.isUnconfirmed &&
+          "bg-gradient-to-r from-blue-50 to-purple-50 animate-shimmer",
       )}
       style={{ outlineColor: "#d1d5db" }}
       data-testid={props.testId}
     >
       <div className="max-w-50 truncate">{props.children}</div>
+      {props.isAIGenerated && (
+        <p className="absolute right-16 rounded-sm top-1/2 -translate-y-1/2 select-none px-1 py-[1px] flex">
+          <span
+            className="absolute inset-0 rounded-sm bg-gradient-to-r from-purple-300 to-blue-300"
+            style={{
+              padding: "1px",
+              WebkitMask:
+                "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+              WebkitMaskComposite: "xor",
+              maskComposite: "exclude",
+            }}
+          />
+          <span className="relative bg-gradient-to-r from-purple-300 to-blue-300 bg-clip-text text-[10px] font-bold text-transparent">
+            AI
+          </span>
+        </p>
+      )}
       <div className={cn("flex items-center")}>
         <PinButton
           onClick={() => props.onTogglePin(promptId, !props.isPinned)}

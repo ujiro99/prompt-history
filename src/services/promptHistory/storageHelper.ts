@@ -19,7 +19,7 @@ export class StorageHelper {
   constructor(
     private storage: StorageService,
     private sessionManager: SessionManager,
-  ) {}
+  ) { }
 
   /**
    * Get single prompt by ID

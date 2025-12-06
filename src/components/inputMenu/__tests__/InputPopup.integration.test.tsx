@@ -43,6 +43,14 @@ vi.mock("@/hooks/useCaretNode", () => ({
   useCaretNode: mockUseCaretNode,
 }))
 
+vi.mock("@/hooks/useAiModel", () => ({
+  useAiModel: () => ({
+    genaiApiKey: "test-api-key",
+    getApiKey: vi.fn().mockResolvedValue("test-api-key"),
+    setApiKey: vi.fn().mockResolvedValue(undefined),
+  }),
+}))
+
 // Mock storage service for SettingsProvider
 vi.mock("@/services/storage", () => ({
   StorageService: {
@@ -320,8 +328,10 @@ describe("InputPopup Integration Tests", () => {
         </TestWrapper>,
       )
 
+      // Verify that the improve trigger button itself is enabled
+      // (the menu items inside will be disabled, not the trigger)
       const improveButton = screen.getByTestId(TestIds.inputPopup.improveTrigger)
-      expect(improveButton).toBeDisabled()
+      expect(improveButton).not.toBeDisabled()
 
       // Verify that Settings button is enabled
       const settingsButton = screen.getByTestId(

@@ -67,6 +67,9 @@ describe("useSettings Hook", () => {
     })
 
     it("should handle settings loading errors gracefully", async () => {
+      const consoleErrorSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {})
       mockStorageService.getSettings.mockRejectedValue(new Error("Load failed"))
 
       const { result } = renderHook(() => useSettings(), {
@@ -82,6 +85,8 @@ describe("useSettings Hook", () => {
       expect(result.current.isLoaded).toBe(false)
       expect(result.current.settings).toEqual({})
       expect(mockStorageService.getSettings).toHaveBeenCalledTimes(1)
+
+      consoleErrorSpy.mockRestore()
     })
   })
 
@@ -161,9 +166,14 @@ describe("useSettings Hook", () => {
   })
 
   describe("Settings Persistence Tests - Real-time Sync", () => {
-    it("should watch for settings changes", () => {
+    it("should watch for settings changes", async () => {
       renderHook(() => useSettings(), {
         wrapper: createWrapper(),
+      })
+
+      // Wait for initial async state updates to complete
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 0))
       })
 
       expect(mockStorageService.watchSettings).toHaveBeenCalledTimes(1)

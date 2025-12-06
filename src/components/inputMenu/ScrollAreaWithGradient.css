@@ -30,6 +30,10 @@
   }
 }
 
+.scroll-gradient-container {
+  --ph-gradient-background: white;
+}
+
 /* Base styles for gradient covers - positioned within viewport */
 .scroll-gradient-top,
 .scroll-gradient-bottom {
@@ -45,12 +49,16 @@
 
 .scroll-gradient-top {
   top: 0;
-  background: linear-gradient(to bottom, white, transparent);
+  background: linear-gradient(to bottom,
+      var(--ph-gradient-background),
+      transparent);
 }
 
 .scroll-gradient-bottom {
   bottom: 0;
-  background: linear-gradient(to top, white, transparent);
+  background: linear-gradient(to top,
+      var(--ph-gradient-background),
+      transparent);
 }
 
 /* Create named scroll-timeline on the viewport */

@@ -98,6 +98,11 @@ describe("PromptImportService", () => {
     lastExecutionUrl: "https://example.com",
     createdAt: "2024-01-01T10:00:00.000Z",
     updatedAt: "2024-01-01T10:00:00.000Z",
+    variables: undefined,
+    isAIGenerated: undefined,
+    aiMetadata: undefined,
+    categoryId: undefined,
+    useCase: undefined,
     ...overrides,
   })
 
@@ -112,6 +117,10 @@ describe("PromptImportService", () => {
     createdAt: new Date("2024-01-01T10:00:00.000Z"),
     updatedAt: new Date("2024-01-01T10:00:00.000Z"),
     variables: undefined,
+    isAIGenerated: undefined,
+    aiMetadata: undefined,
+    categoryId: undefined,
+    useCase: undefined,
     ...overrides,
   })
 
@@ -448,6 +457,185 @@ newline and, comma",1,2024-01-10T10:00:00.000Z,false,https://example.com,2024-01
       expect(result[0].variables).toBeDefined()
       expect(result[0].variables).toHaveLength(1)
       expect(result[0].variables[0].name).toBe("name")
+    })
+  })
+
+  describe("parseRowData with AI metadata and organization fields", () => {
+    it("should parse valid aiMetadata JSON string", () => {
+      const rowData = createMockCSVRowData({
+        isAIGenerated: true,
+        aiMetadata: JSON.stringify({
+          sourcePromptIds: ["id1", "id2", "id3"],
+          sourceCount: 3,
+          confirmed: true,
+          showInPinned: true,
+        }),
+        categoryId: "cat-123",
+        useCase: "Code review automation",
+      })
+
+      const result = (service as any).parseRowData(rowData)
+
+      expect(result.isAIGenerated).toBe(true)
+      expect(result.categoryId).toBe("cat-123")
+      expect(result.useCase).toBe("Code review automation")
+      expect(result.aiMetadata).toBeDefined()
+      expect(result.aiMetadata.sourcePromptIds).toEqual(["id1", "id2", "id3"])
+      expect(result.aiMetadata.sourceCount).toBe(3)
+      expect(result.aiMetadata.confirmed).toBe(true)
+      expect(result.aiMetadata.showInPinned).toBe(true)
+    })
+
+    it("should handle missing new fields (backward compatibility)", () => {
+      const rowData = createMockCSVRowData({
+        // New fields are undefined (not present in CSV)
+      })
+
+      const result = (service as any).parseRowData(rowData)
+
+      expect(result.isAIGenerated).toBeUndefined()
+      expect(result.aiMetadata).toBeUndefined()
+      expect(result.categoryId).toBeUndefined()
+      expect(result.useCase).toBeUndefined()
+    })
+
+    it("should handle empty string values", () => {
+      const rowData = createMockCSVRowData({
+        isAIGenerated: "",
+        aiMetadata: "",
+        categoryId: "",
+        useCase: "",
+      })
+
+      const result = (service as any).parseRowData(rowData)
+
+      expect(result.isAIGenerated).toBeUndefined()
+      expect(result.aiMetadata).toBeUndefined()
+      expect(result.categoryId).toBeUndefined()
+      expect(result.useCase).toBeUndefined()
+    })
+
+    it("should handle invalid aiMetadata JSON gracefully", () => {
+      const rowData = createMockCSVRowData({
+        aiMetadata: "invalid json",
+      })
+
+      const result = (service as any).parseRowData(rowData)
+
+      // Should not throw, aiMetadata should be undefined
+      expect(result.aiMetadata).toBeUndefined()
+    })
+
+    it("should handle incomplete aiMetadata object", () => {
+      const rowData = createMockCSVRowData({
+        aiMetadata: JSON.stringify({
+          sourcePromptIds: ["id1"],
+          // Missing sourceCount, confirmed, showInPinned
+        }),
+      })
+
+      const result = (service as any).parseRowData(rowData)
+
+      // Should not throw, aiMetadata should be undefined due to validation failure
+      expect(result.aiMetadata).toBeUndefined()
+    })
+
+    it("should handle aiMetadata with wrong types", () => {
+      const rowData = createMockCSVRowData({
+        aiMetadata: JSON.stringify({
+          sourcePromptIds: "not-an-array",
+          sourceCount: 3,
+          confirmed: true,
+          showInPinned: true,
+        }),
+      })
+
+      const result = (service as any).parseRowData(rowData)
+
+      // Should not throw, aiMetadata should be undefined due to validation failure
+      expect(result.aiMetadata).toBeUndefined()
+    })
+
+    it("should handle negative sourceCount", () => {
+      const rowData = createMockCSVRowData({
+        aiMetadata: JSON.stringify({
+          sourcePromptIds: ["id1"],
+          sourceCount: -1,
+          confirmed: true,
+          showInPinned: true,
+        }),
+      })
+
+      const result = (service as any).parseRowData(rowData)
+
+      // Should not throw, aiMetadata should be undefined due to validation failure
+      expect(result.aiMetadata).toBeUndefined()
+    })
+
+    it("should handle non-string elements in sourcePromptIds", () => {
+      const rowData = createMockCSVRowData({
+        aiMetadata: JSON.stringify({
+          sourcePromptIds: ["id1", 123, "id3"],
+          sourceCount: 3,
+          confirmed: true,
+          showInPinned: true,
+        }),
+      })
+
+      const result = (service as any).parseRowData(rowData)
+
+      // Should not throw, aiMetadata should be undefined due to validation failure
+      expect(result.aiMetadata).toBeUndefined()
+    })
+
+    it("should handle string isAIGenerated conversion", () => {
+      const rowData1 = createMockCSVRowData({
+        isAIGenerated: "true",
+      })
+
+      const result1 = (service as any).parseRowData(rowData1)
+      expect(result1.isAIGenerated).toBe(true)
+
+      const rowData2 = createMockCSVRowData({
+        isAIGenerated: "false",
+      })
+
+      const result2 = (service as any).parseRowData(rowData2)
+      // Empty/false-y values are converted to undefined
+      expect(result2.isAIGenerated).toBeUndefined()
+    })
+
+    it("should handle numeric isAIGenerated conversion", () => {
+      const rowData1 = createMockCSVRowData({
+        isAIGenerated: 1,
+      })
+
+      const result1 = (service as any).parseRowData(rowData1)
+      expect(result1.isAIGenerated).toBe(true)
+
+      const rowData2 = createMockCSVRowData({
+        isAIGenerated: 0,
+      })
+
+      const result2 = (service as any).parseRowData(rowData2)
+      expect(result2.isAIGenerated).toBeUndefined()
+    })
+
+    it("should handle empty sourcePromptIds array", () => {
+      const rowData = createMockCSVRowData({
+        aiMetadata: JSON.stringify({
+          sourcePromptIds: [],
+          sourceCount: 0,
+          confirmed: true,
+          showInPinned: false,
+        }),
+      })
+
+      const result = (service as any).parseRowData(rowData)
+
+      expect(result.aiMetadata).toBeDefined()
+      expect(result.aiMetadata.sourcePromptIds).toEqual([])
+      expect(result.aiMetadata.sourceCount).toBe(0)
     })
   })
 })
