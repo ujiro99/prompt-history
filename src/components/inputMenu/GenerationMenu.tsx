@@ -81,6 +81,7 @@ export function GenerationMenu({
    */
   const openOrganizerExecuteDialog = useCallback(() => {
     setOrganizerExecuteOpen(true)
+    // setOrganizerSummaryOpen(true) // For testing
   }, [])
 
   /**
@@ -179,7 +180,12 @@ export function GenerationMenu({
         onOpenChange={setOrganizerSummaryOpen}
         result={result}
         // result={{
-        //   templates: [{}, {}],
+        //   templates: [
+        //     {
+        //       title: "多言語翻訳テンプレート",
+        //       useCase: "テキストを任意の言語に翻訳",
+        //     },
+        //   ],
         //   sourceCount: 10,
         //   successMessage:
         //     "以前よく使われていた「テキストを任意の言語に翻訳」する作業を、必要な情報を埋めるだけで、よりスムーズに行えるようになりました。",

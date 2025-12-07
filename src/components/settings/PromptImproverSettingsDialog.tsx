@@ -26,7 +26,7 @@ import {
   FieldTitle,
 } from "@/components/ui/field"
 import { Separator } from "@/components/ui/separator"
-import { ApiKeyWarningBanner } from "@/components/common/ApiKeyWarningBanner"
+import { ApiKeyWarningBanner } from "@/components/shared/ApiKeyWarningBanner"
 import { useContainer } from "@/hooks/useContainer"
 import { useAiModel } from "@/hooks/useAiModel"
 import { useLazyStorage } from "@/hooks/useLazyStorage"

@@ -52,7 +52,7 @@ interface EditDialogProps {
   /** Dialog display mode */
   displayMode: SaveMode
   /** Callback on save */
-  onSave: (data: Partial<SaveDialogData>) => Promise<void>
+  onSave: (data: Partial<SaveDialogData> & { saveMode: SaveMode }) => Promise<void>
 }
 
 const variableEquals = (
@@ -172,7 +172,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
     setIsLoading(true)
 
     try {
-      const updates: Partial<SaveDialogData> = {
+      const updates: Partial<SaveDialogData> & { saveMode: SaveMode } = {
         saveMode: saveMode,
       }
       if (name.trim() !== initialName) {

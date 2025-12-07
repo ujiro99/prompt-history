@@ -19,7 +19,7 @@ import { promptOrganizerService } from "@/services/promptOrganizer/PromptOrganiz
 import { useContainer } from "@/hooks/useContainer"
 import { useAiModel } from "@/hooks/useAiModel"
 import { stopPropagation } from "@/utils/dom"
-import { ApiKeyWarningBanner } from "@/components/common/ApiKeyWarningBanner"
+import { ApiKeyWarningBanner } from "@/components/shared/ApiKeyWarningBanner"
 import { ModelSettingsDialog } from "@/components/settings/ModelSettingsDialog"
 import { OrganizerSettingsDialog } from "@/components/promptOrganizer/OrganizerSettingsDialog"
 import { EstimationDisplay } from "@/components/promptOrganizer/EstimationDisplay"
@@ -72,6 +72,12 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
   const apiKeyMissing = !genaiApiKey
   const scrollViewportRef = useRef<HTMLDivElement>(null)
   const targetExists = targetPrompts && targetPrompts.length > 0
+  const [currentMessageIndex, setCurrentMessageIndex] = useState(0)
+
+  const messages = [
+    i18n.t("promptOrganizer.execute.executeMessage1"),
+    i18n.t("promptOrganizer.execute.executeMessage2"),
+  ]
 
   useEffect(() => {
     // Check API key (using hook value)
@@ -125,6 +131,16 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
     }
   }, [executeError])
 
+  // Rotate messages every 5 seconds
+  useEffect(() => {
+    if (!open) return
+    const interval = setInterval(() => {
+      setCurrentMessageIndex((prev) => (prev + 1) % messages.length)
+    }, 3000)
+
+    return () => clearInterval(interval)
+  }, [messages.length, open])
+
   const handleExecute = async () => {
     if (apiKeyMissing) {
       return
@@ -165,7 +181,7 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
-          className="sm:max-w-[500px]"
+          className="sm:max-w-[600px] gap-6"
           container={container}
           onInteractOutside={(e) => {
             // Prevent closing the dialog while executing
@@ -181,6 +197,8 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
               </DialogTitle>
               <DialogDescription>
                 {i18n.t("promptOrganizer.execute.description")}
+                <br />
+                {i18n.t("promptOrganizer.execute.description2")}
               </DialogDescription>
             </DialogHeader>
             <Button
@@ -308,23 +326,35 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
                   )}
                 </Button>
               ) : (
-                <Button
-                  onClick={handleExecute}
-                  disabled={
-                    isExecuting || apiKeyMissing || !estimate || !targetExists
-                  }
-                  variant="outline"
-                  className={cn(
-                    "bg-gradient-to-r from-purple-50 to-blue-50",
-                    "border-purple-200 hover:border-purple-300",
-                    "hover:from-purple-100 hover:to-blue-100",
-                    "text-purple-700 hover:text-purple-800",
-                    "transition-all duration-200",
-                  )}
-                >
-                  <Play className="size-4" fill="url(#lucideGradient)" />
-                  {i18n.t("promptOrganizer.buttons.organize")}
-                </Button>
+                <div className="flex flex-col w-full items-center gap-1 pb-4">
+                  <Button
+                    onClick={handleExecute}
+                    disabled={
+                      isExecuting || apiKeyMissing || !estimate || !targetExists
+                    }
+                    variant="outline"
+                    className={cn(
+                      "bg-gradient-to-r from-purple-50 to-blue-50",
+                      "border-purple-200 hover:border-purple-300",
+                      "hover:from-purple-100 hover:to-blue-100",
+                      "text-purple-700 hover:text-purple-800",
+                      "transition-all duration-200",
+                    )}
+                  >
+                    <Play className="size-4" fill="url(#lucideGradient)" />
+                    {i18n.t("promptOrganizer.buttons.organize", [
+                      targetPrompts?.length ?? 0,
+                    ])}
+                  </Button>
+                  <div className="relative h-6 w-full overflow-hidden flex items-center justify-center">
+                    <p
+                      key={currentMessageIndex}
+                      className="text-xs text-center text-foreground/90 absolute w-full animate-slide-in-out"
+                    >
+                      {messages[currentMessageIndex]}
+                    </p>
+                  </div>
+                </div>
               )}
             </section>
 
@@ -398,7 +428,7 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
             {/* Close button */}
             {isExecuting ? null : (
               <Button variant="secondary" onClick={handleClose}>
-                {i18n.t("buttons.close")}
+                {i18n.t("buttons.cancel")}
               </Button>
             )}
           </DialogFooter>

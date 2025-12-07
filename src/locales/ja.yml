@@ -300,12 +300,15 @@ promptOrganizer:
     organizationPrompt: 整理用プロンプト
   execute:
     title: プロンプトの整理と精製
-    description: AIがプロンプトを分析し、汎用的に再利用しやすい形へ整えます。
+    description: AIがプロンプトを分析し、使い回しやすいテンプレートを作ります。
+    description2: 対象のプロンプトを確認してから整理を開始してください。
     targetPrompts: 整理するプロンプト
     noTargetPrompts: 対象のプロンプトがありません。絞り込み条件を変更してください。
     progress: 進行状況
     receivingPrompts: 受信中のプロンプト
     executionFailed: プロンプトの整理に失敗しました。条件を変更したり、時間をおいて再度お試しください。
+    executeMessage1: 対象プロンプトをAIへ送信し、整理を開始します。
+    executeMessage2: 処理後も元のプロンプトは変更されません。
   estimate:
     title: 推定入力トークン数
     targetPrompts: 対象プロンプト数
@@ -314,7 +317,7 @@ promptOrganizer:
     outputTokens: 出力トークン数
     contextUsage: コンテキスト使用率
   buttons:
-    organize: プロンプトの整理と精製を開始
+    organize: $1件のプロンプトを整理する
     cancel: この処理をキャンセルする
     canceling: キャンセル中...
     save: 保存

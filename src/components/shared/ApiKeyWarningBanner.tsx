@@ -20,15 +20,15 @@ export const ApiKeyWarningBanner: React.FC<ApiKeyWarningBannerProps> = ({
   const colorClasses =
     variant === "warning"
       ? {
-        bg: "bg-warning",
-        border: "border-warning-foreground/20",
-        text: "text-warning-foreground",
-      }
+          bg: "bg-warning",
+          border: "border-warning-foreground/20",
+          text: "text-warning-foreground",
+        }
       : {
-        bg: "bg-destructive-foreground",
-        border: "border-destructive/40",
-        text: "text-destructive",
-      }
+          bg: "bg-destructive-foreground",
+          border: "border-destructive/40",
+          text: "text-destructive",
+        }
 
   return (
     <div

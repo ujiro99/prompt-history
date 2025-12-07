@@ -10,7 +10,7 @@ import { PromptPreview } from "./PromptPreview"
 import { RemoveDialog } from "@/components/inputMenu/controller/RemoveDialog"
 import { EditDialog } from "@/components/inputMenu/controller/EditDialog"
 import { VariableInputDialog } from "@/components/inputMenu/controller/VariableInputDialog"
-import { BridgeArea } from "@/components/BridgeArea"
+import { BridgeArea } from "@/components/inputMenu/BridgeArea"
 import { PromptServiceFacade } from "@/services/promptServiceFacade"
 import { SaveMode } from "@/types/prompt"
 import { MENU, TestIds } from "@/components/const"
@@ -217,16 +217,23 @@ export function InputMenu(props: Props): React.ReactElement {
   /**
    * Update prompt & pin it.
    */
-  const handleEditPrompt = async (saveData: SaveDialogData) => {
+  const handleEditPrompt = async (
+    updates: Partial<SaveDialogData> & { saveMode: SaveMode },
+  ) => {
     try {
       if (
         isEmpty(editId) ||
-        saveData.saveMode === SaveMode.New ||
-        saveData.saveMode === SaveMode.Copy
+        updates.saveMode === SaveMode.New ||
+        updates.saveMode === SaveMode.Copy
       ) {
-        await serviceFacade.savePromptManually(saveData)
+        // For new saves and copies, merge with existing saveDialogData
+        const completeData: SaveDialogData = {
+          ...saveDialogData!,
+          ...updates,
+        }
+        await serviceFacade.savePromptManually(completeData)
       } else {
-        await serviceFacade.updatePrompt(editId!, saveData)
+        await serviceFacade.updatePrompt(editId!, updates)
       }
     } catch (error) {
       console.error("Save failed:", error)

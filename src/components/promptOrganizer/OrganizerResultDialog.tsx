@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { FadeInText } from "@/components/promptOrganizer/FadeInText"
 import { useContainer } from "@/hooks/useContainer"
 import { stopPropagation } from "@/utils/dom"
 import { cn } from "@/lib/utils"
@@ -26,6 +27,16 @@ interface OrganizerResultDialogProps {
   onSaveAll?: () => void
 }
 
+/**
+ * Calculate the duration of a FadeInText animation
+ * @param text - The text to be animated
+ * @param stepMs - Delay between each character in milliseconds
+ * @returns Total animation duration in milliseconds
+ */
+const calculateFadeInDuration = (text: string, stepMs: number = 20): number => {
+  return text.length * stepMs + 200 // 200ms is the animation duration from CSS
+}
+
 export const OrganizerResultDialog: React.FC<OrganizerResultDialogProps> = ({
   open,
   onOpenChange,
@@ -36,6 +47,17 @@ export const OrganizerResultDialog: React.FC<OrganizerResultDialogProps> = ({
   const { container } = useContainer()
 
   const templateCount = result?.templates?.length ?? 0
+
+  // Calculate the delay for the preview of prompt and second FadeInText based on the first text's duration
+  const firstText =
+    result && templateCount > 0
+      ? i18n.t("promptOrganizer.summary.summary", [
+          result.sourceCount,
+          result.templates.length,
+        ])
+      : ""
+
+  const firstFadeinDuration = calculateFadeInDuration(firstText)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -59,12 +81,9 @@ export const OrganizerResultDialog: React.FC<OrganizerResultDialogProps> = ({
                   {i18n.t("promptOrganizer.summary.organizationPerformed")}
                 </label>
                 <p className="font-serif text-lg tracking-wide">
-                  {result &&
-                    result.successMessageGenerated &&
-                    i18n.t("promptOrganizer.summary.summary", [
-                      result.sourceCount,
-                      result.templates.length,
-                    ])}
+                  {result && result.successMessageGenerated && (
+                    <FadeInText text={firstText} />
+                  )}
                 </p>
               </div>
               <div className="space-y-4">
@@ -73,8 +92,14 @@ export const OrganizerResultDialog: React.FC<OrganizerResultDialogProps> = ({
                   {i18n.t("promptOrganizer.summary.examplePrompts")}
                 </label>
                 {result && result.templates[0] && (
-                  /* Preview first prompt */
-                  <div className="border rounded-md px-3 py-2 bg-neutral-50">
+                  /* Preview the first prompt */
+                  <div
+                    className="border rounded-md px-3 py-2 bg-neutral-50 opacity-0 animate-fade-in-char"
+                    style={{
+                      animationDelay: `${firstFadeinDuration}ms`,
+                      animationDuration: "500ms",
+                    }}
+                  >
                     <p className="mb-1 text-base font-semibold text-foreground/80">
                       <span>{result.templates[0].title}</span>
                     </p>
@@ -87,7 +112,12 @@ export const OrganizerResultDialog: React.FC<OrganizerResultDialogProps> = ({
                   </div>
                 )}
                 <p className="font-serif text-base/7 tracking-wide">
-                  {result && result.successMessage}
+                  {result && result.successMessage && (
+                    <FadeInText
+                      text={result.successMessage}
+                      delay={firstFadeinDuration + 600} // FadeInText animation + Prompt preview animation delay + extra 100ms.
+                    />
+                  )}
                 </p>
               </div>
               <div className="flex justify-center">

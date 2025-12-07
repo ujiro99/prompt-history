@@ -23,6 +23,17 @@ interface EstimationDisplayProps {
 const MAX_TOKENS = 1000000 // Gemini 1.5 Flash context window
 
 /**
+ * Format token count with K suffix for thousands
+ */
+const formatTokenCount = (tokens: number | undefined): string => {
+  if (!tokens) return "0"
+  if (tokens >= 1000) {
+    return `${(tokens / 1000).toFixed(1)}K`
+  }
+  return tokens.toString()
+}
+
+/**
  * Calculate context usage percentage
  */
 const calculateContextUsagePercentage = (
@@ -46,10 +57,10 @@ export const EstimationDisplay: React.FC<EstimationDisplayProps> = ({
         <Collapsible className="flex flex-col items-end">
           <CollapsibleTrigger className="flex items-center gap-2 hover:bg-muted transition rounded-md px-2 py-1.5">
             <h3 className="text-sm cursor-pointer">
-              {i18n.t("promptOrganizer.estimate.title")}
+              {i18n.t("promptOrganizer.estimate.inputTokens")}
             </h3>
             <span className="text-xs text-foreground/70 font-mono">
-              {estimate?.estimatedInputTokens} tokens
+              {formatTokenCount(estimate?.estimatedInputTokens)} tokens
             </span>
             <ChevronsUpDown size={16} />
           </CollapsibleTrigger>

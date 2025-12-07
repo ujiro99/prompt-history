@@ -128,3 +128,61 @@
     @apply bg-background text-foreground;
   }
 }
+
+@theme {
+  --animate-fade-in-char: fade-in-char 0.2s ease-out forwards;
+
+  @keyframes fade-in-char {
+    from {
+      opacity: 0;
+      transform: translateY(2px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+@theme {
+  --animate-shimmer: shimmer 2s ease-in-out infinite;
+
+  @keyframes shimmer {
+
+    0%,
+    100% {
+      backgroundposition: "0% 50%";
+    }
+
+    50% {
+      backgroundposition: "100% 50%";
+    }
+  }
+}
+
+@theme {
+  --animate-slide-in-out: slide-in-out 3s ease-in-out infinite;
+
+  @keyframes slide-in-out {
+    0% {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+
+    15% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    85% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    100% {
+      transform: translateY(-100%);
+      opacity: 0;
+    }
+  }
+}

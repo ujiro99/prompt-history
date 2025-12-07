@@ -23,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { ApiKeyWarningBanner } from "@/components/common/ApiKeyWarningBanner"
+import { ApiKeyWarningBanner } from "@/components/shared/ApiKeyWarningBanner"
 import { EstimationDisplay } from "@/components/promptOrganizer/EstimationDisplay"
 import { promptOrganizerSettingsStorage } from "@/services/storage/definitions"
 import { useContainer } from "@/hooks/useContainer"

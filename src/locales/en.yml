@@ -300,12 +300,15 @@ promptOrganizer:
     organizationPrompt: Organization Prompt
   execute:
     title: Prompt Organization and Refinement
-    description: AI will analyze and refine prompts into a more general and reusable format.
+    description: The AI analyzes your prompt and creates an easy-to-reuse template.
+    description2: Check the target prompt and get started organizing.
     targetPrompts: Prompts for Organization
     noTargetPrompts: There are no target prompts. Please change the filter conditions.
     progress: Progress
     receivingPrompts: Receiving prompts
     executionFailedEng: Failed to organize prompts. Please try changing the conditions or try again later.
+    executeMessage1: Send target prompts to AI and start organizing.
+    executeMessage2: Original prompts will not be modified after processing.
   estimate:
     title: Estimated Input Token Count
     targetPrompts: Number of Target Prompts
@@ -314,7 +317,7 @@ promptOrganizer:
     outputTokens: Output Tokens
     contextUsage: Context Usage
   buttons:
-    organize: Start Prompt Organization and Refinement
+    organize: Organize $1 Prompts
     cancel: Cancel this process
     canceling: Canceling...
     save: Save

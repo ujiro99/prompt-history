@@ -5,7 +5,7 @@ import type { VariableConfig } from "@/types/prompt"
 import { VariableExpansionInfoDialog } from "./VariableExpansionInfoDialog"
 import { PromptImproverSettingsDialog } from "@/components/settings/PromptImproverSettingsDialog"
 import { ModelSettingsDialog } from "@/components/settings/ModelSettingsDialog"
-import { ApiKeyWarningBanner } from "@/components/common/ApiKeyWarningBanner"
+import { ApiKeyWarningBanner } from "@/components/shared/ApiKeyWarningBanner"
 import {
   Dialog,
   DialogTitle,

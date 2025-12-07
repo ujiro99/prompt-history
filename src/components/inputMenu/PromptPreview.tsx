@@ -6,7 +6,7 @@ import {
   PopoverPortal,
 } from "@/components/ui/popover"
 import { ScrollAreaWithGradient } from "./ScrollAreaWithGradient"
-import { BridgeArea } from "../BridgeArea"
+import { BridgeArea } from "./BridgeArea"
 import type { Prompt } from "@/types/prompt"
 import type { Category } from "@/types/promptOrganizer"
 import { i18n } from "#imports"
