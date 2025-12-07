@@ -20,6 +20,8 @@ import { costEstimatorService } from "./CostEstimatorService"
 import { templateSaveService } from "./TemplateSaveService"
 import { promptsService } from "@/services/storage/prompts"
 
+const ESTIMATED_OUTPUT_TOKEN_RATIO = 0.5 // Output tokens are typically 50% of input
+
 /**
  * Main service for prompt organization
  */
@@ -92,7 +94,7 @@ export class PromptOrganizerService {
     // 4. Calculate estimated cost and actual cost
     const estimatedCost = costEstimatorService.calculateCost({
       inputTokens: usage.inputTokens,
-      outputTokens: usage.inputTokens * 0.5,
+      outputTokens: usage.inputTokens * ESTIMATED_OUTPUT_TOKEN_RATIO,
       thoughtsTokens: usage.inputTokens,
     })
     const actualCost = costEstimatorService.calculateCost(usage)
