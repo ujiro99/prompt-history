@@ -4,7 +4,6 @@
  */
 
 import { GeminiClient } from "@/services/genai/GeminiClient"
-import { getGenaiApiKey } from "@/services/storage/genaiApiKey"
 import type { GeneratedTemplate } from "@/types/promptOrganizer"
 import { ORGANIZATION_SUMMARY_PROMPT } from "@/services/genai/defaultPrompts"
 
@@ -19,19 +18,6 @@ export class SuccessMessageGeneratorService {
   }
 
   /**
-   * Load API key from storage
-   */
-  private async loadApiKey(): Promise<void> {
-    const apiKey = await getGenaiApiKey()
-
-    if (apiKey) {
-      this.geminiClient.initialize(apiKey)
-    } else {
-      console.warn("API key not configured")
-    }
-  }
-
-  /**
    * Generate a user-friendly success message for a template
    * @param template - Generated template
    * @param signal - Optional abort signal for cancellation
@@ -42,14 +28,11 @@ export class SuccessMessageGeneratorService {
     template: GeneratedTemplate,
     signal?: AbortSignal,
   ): Promise<string> {
-    // Initialize client if not already initialized
+    // API key initialization is handled by AiModelContext
     if (!this.geminiClient.isInitialized()) {
-      await this.loadApiKey()
-    }
-
-    // Check if initialization succeeded
-    if (!this.geminiClient.isInitialized()) {
-      throw new Error("API key not configured")
+      throw new Error(
+        "API key not configured. Please set your API key in settings.",
+      )
     }
 
     // Build prompt with template data

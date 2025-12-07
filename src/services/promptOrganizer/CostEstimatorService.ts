@@ -14,7 +14,6 @@ import { TemplateGeneratorService } from "./TemplateGeneratorService"
 import { categoryService } from "./CategoryService"
 import { promptsService } from "@/services/storage/prompts"
 import { GEMINI_PRICING, GEMINI_CONTEXT_LIMIT } from "./pricing"
-import { getGenaiApiKey } from "@/services/storage/genaiApiKey"
 
 /**
  * Cost Estimator Service
@@ -24,11 +23,6 @@ export class CostEstimatorService {
 
   constructor() {
     this.geminiClient = GeminiClient.getInstance()
-  }
-
-  private async loadApiKey(): Promise<void> {
-    const apiKey = await getGenaiApiKey()
-    this.geminiClient.initialize(apiKey)
   }
 
   /**
@@ -56,8 +50,11 @@ export class CostEstimatorService {
   async estimateExecution(
     settings: PromptOrganizerSettings,
   ): Promise<OrganizerExecutionEstimate> {
+    // API key initialization is handled by AiModelContext
     if (!this.geminiClient.isInitialized()) {
-      await this.loadApiKey()
+      throw new Error(
+        "API key not configured. Please set your API key in settings.",
+      )
     }
 
     // 1. Get all prompts

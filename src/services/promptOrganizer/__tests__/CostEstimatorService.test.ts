@@ -246,20 +246,20 @@ describe("CostEstimatorService", () => {
       vi.useRealTimers()
     })
 
-    it("should initialize GeminiClient if not initialized", async () => {
+    it("should throw error if GeminiClient is not initialized", async () => {
       mockGeminiClient.isInitialized.mockReturnValueOnce(false)
 
-      await service.estimateExecution(defaultSettings)
-
-      expect(mockGenaiApiKeyStorage.getValue).toHaveBeenCalledOnce()
-      expect(mockGeminiClient.initialize).toHaveBeenCalledWith("test-api-key")
+      await expect(service.estimateExecution(defaultSettings)).rejects.toThrow(
+        "API key not configured. Please set your API key in settings.",
+      )
     })
 
-    it("should not reinitialize if already initialized", async () => {
+    it("should work when GeminiClient is already initialized", async () => {
       mockGeminiClient.isInitialized.mockReturnValue(true)
 
       await service.estimateExecution(defaultSettings)
 
+      // Should not attempt to initialize - that's handled by AiModelContext
       expect(mockGenaiApiKeyStorage.getValue).not.toHaveBeenCalled()
       expect(mockGeminiClient.initialize).not.toHaveBeenCalled()
     })

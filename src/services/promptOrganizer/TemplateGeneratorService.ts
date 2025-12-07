@@ -5,7 +5,6 @@
 
 import { GeminiClient } from "@/services/genai/GeminiClient"
 import { GeminiErrorType } from "@/services/genai/types"
-import { getGenaiApiKey } from "@/services/storage/genaiApiKey"
 import type {
   PromptForOrganization,
   OrganizePromptsResponse,
@@ -30,20 +29,6 @@ export class TemplateGeneratorService {
   }
 
   /**
-   * Load API key from storage or environment variable (dev mode only)
-   */
-  private async loadApiKey(): Promise<void> {
-    const apiKey = await getGenaiApiKey()
-
-    if (apiKey) {
-      this.geminiClient.initialize(apiKey)
-    } else {
-      // API key not configured - will throw error in generateTemplates
-      console.warn("API key not configured")
-    }
-  }
-
-  /**
    * Generate templates from filtered prompts with streaming support
    * @param prompts - Filtered prompts for organization
    * @param settings - Organizer settings
@@ -62,12 +47,7 @@ export class TemplateGeneratorService {
     // Create new AbortController for this request
     this.abortController = new AbortController()
 
-    // Initialize client if not already initialized
-    if (!this.geminiClient.isInitialized()) {
-      await this.loadApiKey()
-    }
-
-    // Check if initialization succeeded
+    // API key initialization is handled by AiModelContext
     if (!this.geminiClient.isInitialized()) {
       throw new Error(
         "API key not configured. Please set your API key in settings.",

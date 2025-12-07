@@ -246,37 +246,8 @@ describe("TemplateGeneratorService", () => {
       })
     })
 
-    it("should initialize GeminiClient if not initialized", async () => {
+    it("should throw error if GeminiClient is not initialized", async () => {
       mockGeminiClient.isInitialized.mockReturnValueOnce(false)
-
-      await service.generateTemplates(
-        defaultPrompts,
-        defaultSettings,
-        defaultCategories,
-      )
-
-      expect(mockGenaiApiKeyStorage.getValue).toHaveBeenCalledOnce()
-      expect(mockGeminiClient.initialize).toHaveBeenCalledWith("test-api-key")
-    })
-
-    it("should not reinitialize if already initialized", async () => {
-      mockGeminiClient.isInitialized.mockReturnValue(true)
-
-      await service.generateTemplates(
-        defaultPrompts,
-        defaultSettings,
-        defaultCategories,
-      )
-
-      expect(mockGenaiApiKeyStorage.getValue).not.toHaveBeenCalled()
-      expect(mockGeminiClient.initialize).not.toHaveBeenCalled()
-    })
-
-    it("should throw error if API key not configured", async () => {
-      mockGeminiClient.isInitialized
-        .mockReturnValueOnce(false)
-        .mockReturnValueOnce(false)
-      mockGenaiApiKeyStorage.getValue.mockResolvedValueOnce("")
 
       await expect(
         service.generateTemplates(
@@ -287,6 +258,20 @@ describe("TemplateGeneratorService", () => {
       ).rejects.toThrow(
         "API key not configured. Please set your API key in settings.",
       )
+    })
+
+    it("should work when GeminiClient is already initialized", async () => {
+      mockGeminiClient.isInitialized.mockReturnValue(true)
+
+      await service.generateTemplates(
+        defaultPrompts,
+        defaultSettings,
+        defaultCategories,
+      )
+
+      // Should not attempt to initialize - that's handled by AiModelContext
+      expect(mockGenaiApiKeyStorage.getValue).not.toHaveBeenCalled()
+      expect(mockGeminiClient.initialize).not.toHaveBeenCalled()
     })
 
     it("should handle multiple prompts in response", async () => {

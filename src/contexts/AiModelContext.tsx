@@ -1,6 +1,7 @@
 import React, { createContext, useEffect, useState } from "react"
 import { getGenaiApiKey } from "@/services/storage/genaiApiKey"
 import { genaiApiKeyStorage } from "@/services/storage/definitions"
+import { GeminiClient } from "@/services/genai/GeminiClient"
 
 interface ContextType {
   genaiApiKey: string | null
@@ -20,6 +21,13 @@ export const AiModelContextProvider: React.FC<Props> = ({ children }) => {
       const apiKey = await getGenaiApiKey()
       setGenaiApiKey(apiKey)
       console.log("GenAI API Key:", apiKey)
+
+      // Initialize GeminiClient with the API key
+      if (apiKey) {
+        const geminiClient = GeminiClient.getInstance()
+        geminiClient.initialize(apiKey)
+        console.log("GeminiClient initialized")
+      }
     }
     fetchApiKey()
 
@@ -27,6 +35,13 @@ export const AiModelContextProvider: React.FC<Props> = ({ children }) => {
     return genaiApiKeyStorage.watch((newApiKey) => {
       setGenaiApiKey(newApiKey || null)
       console.log("GenAI API Key updated:", newApiKey)
+
+      // Re-initialize GeminiClient when API key changes
+      if (newApiKey) {
+        const geminiClient = GeminiClient.getInstance()
+        geminiClient.initialize(newApiKey)
+        console.log("GeminiClient re-initialized")
+      }
     })
   }, [])
 

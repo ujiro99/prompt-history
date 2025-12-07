@@ -8,7 +8,6 @@ import type { ImproveOptions } from "./types"
 import { GeminiError, GeminiErrorType } from "./types"
 import { improvePromptCacheService } from "../storage/improvePromptCache"
 import { improvePromptSettingsStorage } from "../storage/definitions"
-import { getGenaiApiKey } from "../storage/genaiApiKey"
 import {
   SYSTEM_INSTRUCTION,
   DEFAULT_IMPROVEMENT_PROMPT,
@@ -38,31 +37,14 @@ export class PromptImprover {
   }
 
   /**
-   * Load settings from storage (API key and improvement prompt)
-   * Supports both user settings and environment variable fallbacks
+   * Load settings from storage (improvement prompt)
+   * Note: API key initialization is handled by AiModelContext
    */
   public async loadSettings(): Promise<void> {
     console.log("Loading Prompt Improver settings...")
 
-    // Load API key
-    await this.loadApiKey()
-
     // Load improvement prompt with priority logic
     await this.loadImprovementPromptWithPriority()
-  }
-
-  /**
-   * Load API key from storage or environment variable (dev mode only)
-   */
-  private async loadApiKey(): Promise<void> {
-    const apiKey = await getGenaiApiKey()
-
-    if (apiKey) {
-      this.client.initialize(apiKey)
-    } else {
-      // API key not configured - will show warning in UI
-      console.warn("API key not configured")
-    }
   }
 
   /**
