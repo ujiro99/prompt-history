@@ -364,7 +364,7 @@ promptOrganizer:
     content: プロンプト内容
     variables: 変数
     sourcePrompts: ソースプロンプト
-    savePromptQuestion: この精製したプロンプトを保存しますか？
+    savePromptQuestion: このプロンプトを保存しますか？
     completeReview: 確認が完了しました🎉\n右下のボタンから選択を反映させてください。
   aiTemplates:
     title: AIにより生成

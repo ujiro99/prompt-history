@@ -126,7 +126,7 @@ export const OrganizerSettingsDialog: React.FC<
                     <SelectTrigger className="min-w-24 w-full">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent container={container}>
                       {PERIOD_OPTIONS.map((option) => (
                         <SelectItem key={option.value} value={option.value}>
                           {option.label}

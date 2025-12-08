@@ -60,7 +60,7 @@ export const TemplateCandidateCard = forwardRef<
         )
       case "pending":
         return (
-          <span className="ml-2 px-2 py-1 text-xs rounded bg-yellow-100 text-yellow-800">
+          <span className="ml-2 px-2 py-1 text-xs rounded bg-neutral-300 text-neutral-900">
             {i18n.t("promptOrganizer.status.pending")}
           </span>
         )
