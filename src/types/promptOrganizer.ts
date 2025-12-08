@@ -56,6 +56,8 @@ export interface GeneratedTemplate {
   variables: VariableConfig[]
 }
 
+export type UserAction = "pending" | "save" | "save_and_pin" | "discard"
+
 /**
  * Template candidate (displayed in preview screen)
  */
@@ -77,7 +79,7 @@ export interface TemplateCandidate {
   /** AI metadata */
   aiMetadata: AIGeneratedMetadata
   /** User action */
-  userAction: "pending" | "save" | "save_and_pin" | "discard"
+  userAction: UserAction
 }
 
 /**

@@ -17,7 +17,7 @@ import { OrganizerPreviewDialog } from "@/components/promptOrganizer/OrganizerPr
 import { PromptServiceFacade } from "@/services/promptServiceFacade"
 import { MENU, TestIds } from "@/components/const"
 import type { ImprovePromptData } from "@/types/prompt"
-import type { TemplateCandidate } from "@/types/promptOrganizer"
+import type { TemplateCandidate, UserAction } from "@/types/promptOrganizer"
 import { i18n } from "#imports"
 
 const serviceFacade = PromptServiceFacade.getInstance()
@@ -108,7 +108,12 @@ export function GenerationMenu({
    */
   const handleSaveAllTemplates = useCallback(async () => {
     if (!result) return
-    await saveTemplates(result.templates)
+    // Update userAction before saving
+    const templates = result.templates.map((template) => ({
+      ...template,
+      userAction: "save" as UserAction,
+    }))
+    await saveTemplates(templates)
     if (!error) {
       setOrganizerSummaryOpen(false)
     }
