@@ -178,7 +178,7 @@ describe("usePromptOrganizer", () => {
     })
 
     it("should recalculate estimate when settings change and enableEstimate is true", async () => {
-      const { result, rerender } = renderHook(() =>
+      const { result } = renderHook(() =>
         usePromptOrganizer({ enableEstimate: true }),
       )
 
