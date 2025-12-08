@@ -30,6 +30,15 @@ interface UsePromptOrganizerOptions {
 
 /**
  * Extract the first complete template from partial JSON
+ *
+ * This function is used during streaming to detect when the first template
+ * is complete so we can start generating a success message in parallel.
+ *
+ * Technical approach:
+ * - We can't use JSON.parse() on partial JSON as it will throw
+ * - We manually parse by counting braces to find the first complete object
+ * - Once found, we try to parse just that object
+ *
  * @param accumulated - Accumulated JSON string
  * @returns First complete template or null
  */
@@ -156,6 +165,8 @@ export function usePromptOrganizer({
    */
   const executeOrganization = async (): Promise<boolean> => {
     if (!settings) return false
+    if (isExecuting) return false
+
     let ret = false
 
     setIsExecuting(true)
