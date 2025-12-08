@@ -45,6 +45,10 @@ export const TestIds = {
   variableInputDialog: {
     submit: "variable-input-submit",
   },
+  organizerPreviewDialog: {
+    list: "template-list",
+    detail: "template-detail",
+  },
 } as const
 
 export enum MENU {

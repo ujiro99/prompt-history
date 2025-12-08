@@ -354,7 +354,8 @@ promptOrganizer:
     title: 精製結果をプレビュー
     description: 精製されたプロンプトを確認・編集
     promptList: プロンプト一覧
-    emptyState: リストからプロンプトを選択してください。
+    noTemplates: 表示するプロンプトがありません。
+    selectionRequired: リストからプロンプトを選択してください。
     title_label: タイトル
     useCase: 用途
     category: カテゴリ

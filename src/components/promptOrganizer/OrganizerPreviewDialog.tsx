@@ -26,6 +26,9 @@ import { VariableSettingsSection } from "@/components/shared"
 import { cn } from "@/lib/utils"
 import type { TemplateCandidate } from "@/types/promptOrganizer"
 import { StorageService } from "@/services/storage"
+import { TestIds } from "@/components/const"
+
+const TestId = TestIds.organizerPreviewDialog
 
 interface OrganizerPreviewDialogProps {
   open: boolean
@@ -215,7 +218,10 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
         {/* Two Column Layout */}
         <div className="grid grid-cols-3 gap-2 py-2 flex-1 min-h-0">
           {/* Left Pane: Template List */}
-          <div className="col-span-1 flex flex-col min-h-0 gap-2">
+          <div
+            className="col-span-1 flex flex-col min-h-0 gap-2"
+            data-testid={TestId.list}
+          >
             <div className="text-sm font-semibold">
               {i18n.t("promptOrganizer.preview.promptList")}
             </div>
@@ -236,13 +242,22 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
           </div>
 
           {/* Right Pane: Template Detail */}
-          <div className="col-span-2 flex flex-col min-h-0 gap-4">
+          <div
+            className="col-span-2 flex flex-col min-h-0 gap-4"
+            data-testid={TestId.detail}
+          >
             {!selectedTemplate ? (
-              pendingCount > 0 ? (
+              editedTemplates.length === 0 ? (
+                <div className="flex items-center justify-center flex-1 min-h-100">
+                  <p className="text-base text-center">
+                    {i18n.t("promptOrganizer.preview.noTemplates")}
+                  </p>
+                </div>
+              ) : pendingCount > 0 ? (
                 <div className="flex items-center justify-center flex-1">
                   <div className="text-center">
                     <p className="text-base">
-                      {i18n.t("promptOrganizer.preview.emptyState")}
+                      {i18n.t("promptOrganizer.preview.selectionRequired")}
                     </p>
                   </div>
                 </div>
@@ -390,9 +405,9 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
                         "group",
                         userAction === "discard"
                           ? [
-                            "ring-2 ring-red-400 bg-red-50 text-red-900",
-                            "hover:bg-red-100/80 hover:text-red-900",
-                          ]
+                              "ring-2 ring-red-400 bg-red-50 text-red-900",
+                              "hover:bg-red-100/80 hover:text-red-900",
+                            ]
                           : "",
                       )}
                     >
@@ -414,9 +429,9 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
                         "group",
                         userAction === "save"
                           ? [
-                            "ring-2 ring-green-400 bg-green-50 text-green-900",
-                            "hover:bg-green-100/80 hover:text-green-900",
-                          ]
+                              "ring-2 ring-green-400 bg-green-50 text-green-900",
+                              "hover:bg-green-100/80 hover:text-green-900",
+                            ]
                           : "",
                       )}
                     >
@@ -438,9 +453,9 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
                         "group",
                         userAction === "save_and_pin"
                           ? [
-                            "ring-2 ring-amber-400 bg-amber-50 text-amber-900",
-                            "hover:bg-amber-100/80 hover:text-amber-900",
-                          ]
+                              "ring-2 ring-amber-400 bg-amber-50 text-amber-900",
+                              "hover:bg-amber-100/80 hover:text-amber-900",
+                            ]
                           : "",
                       )}
                     >

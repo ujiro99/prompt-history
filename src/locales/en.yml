@@ -354,7 +354,8 @@ promptOrganizer:
     title: Preview Refined Results
     description: Review and edit refined prompts
     promptList: Prompt List
-    emptyState: Please select a prompt from the list.
+    noTemplates: No prompts to display.
+    selectionRequired: Please select prompts from the list.
     title_label: Title
     useCase: Use Case
     category: Category
