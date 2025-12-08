@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from "react"
-import { Sparkles, Loader2, AlertCircle } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { Sparkles, Loader2, Settings } from "lucide-react"
 import type { VariableConfig } from "@/types/prompt"
-import { mergeVariableConfigs } from "@/utils/variables/variableParser"
 import { VariableExpansionInfoDialog } from "./VariableExpansionInfoDialog"
 import { PromptImproverSettingsDialog } from "@/components/settings/PromptImproverSettingsDialog"
+import { ModelSettingsDialog } from "@/components/settings/ModelSettingsDialog"
+import { ApiKeyWarningBanner } from "@/components/shared/ApiKeyWarningBanner"
 import {
   Dialog,
   DialogTitle,
@@ -17,9 +19,13 @@ import { ButtonGroup } from "@/components/ui/button-group"
 import { Textarea } from "@/components/ui/textarea"
 import { useContainer } from "@/hooks/useContainer"
 import { useSettings } from "@/hooks/useSettings"
+import { useAiModel } from "@/hooks/useAiModel"
 import { analytics } from "#imports"
 import { ImprovePromptData } from "@/types/prompt"
 import { PromptImprover } from "@/services/genai/PromptImprover"
+import { stopPropagation } from "@/utils/dom"
+import { mergeVariableConfigs } from "@/utils/variables/variableParser"
+import { improvePromptSettingsStorage } from "@/services/storage/definitions"
 
 /**
  * Props for prompt edit dialog
@@ -53,13 +59,16 @@ export const PromptImproveDialog: React.FC<PromptImproveDialogProps> = ({
   const { container } = useContainer()
   const { settings } = useSettings()
 
+  const { genaiApiKey } = useAiModel()
+  const isApiKeyConfigured = Boolean(genaiApiKey)
+
   // Prompt improvement states
   const [improvedContent, setImprovedContent] = useState("")
   const [isImproving, setIsImproving] = useState(false)
   const [improvementError, setImprovementError] = useState<string | null>(null)
   const promptImproverRef = useRef<PromptImprover | null>(null)
-  const [isApiKeyConfigured, setIsApiKeyConfigured] = useState(false)
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false)
+  const [modelSettingsDialogOpen, setModelSettingsDialogOpen] = useState(false)
 
   // Check if variable expansion is enabled (default: true)
   const variableExpansionEnabled = settings?.variableExpansionEnabled ?? true
@@ -75,19 +84,15 @@ export const PromptImproveDialog: React.FC<PromptImproveDialogProps> = ({
   useEffect(() => {
     if (!promptImproverRef.current) {
       promptImproverRef.current = new PromptImprover()
-    }
+      promptImproverRef.current.loadSettings()
 
-    // Check API key configuration
-    const checkApiKeyConfig = async () => {
-      if (promptImproverRef.current) {
-        await promptImproverRef.current.loadSettings()
-        setIsApiKeyConfigured(promptImproverRef.current.isApiKeyConfigured())
-      }
+      // Watch for settings changes
+      return improvePromptSettingsStorage.watch(() => {
+        promptImproverRef.current?.loadSettings().catch((error) => {
+          console.error("Failed to load prompt improver settings:", error)
+        })
+      })
     }
-
-    checkApiKeyConfig().catch((error) => {
-      console.error("Failed to check API key configuration:", error)
-    })
   }, [])
 
   // Update initial values
@@ -130,29 +135,6 @@ export const PromptImproveDialog: React.FC<PromptImproveDialogProps> = ({
       setVariables([])
     }
   }, [content, variableExpansionEnabled])
-
-  // Reload settings when settings dialog closes
-  useEffect(() => {
-    let isMounted = true
-    if (!settingsDialogOpen && open && promptImproverRef.current) {
-      // Settings dialog was closed, reload settings
-      promptImproverRef.current
-        .loadSettings()
-        .then(() => {
-          if (isMounted && promptImproverRef.current) {
-            setIsApiKeyConfigured(
-              promptImproverRef.current.isApiKeyConfigured(),
-            )
-          }
-        })
-        .catch((error) => {
-          console.error("Failed to reload settings:", error)
-        })
-    }
-    return () => {
-      isMounted = false
-    }
-  }, [settingsDialogOpen, open])
 
   /**
    * Improve prompt using Gemini AI
@@ -207,10 +189,10 @@ export const PromptImproveDialog: React.FC<PromptImproveDialogProps> = ({
   }
 
   /**
-   * Open settings dialog
+   * Open model settings dialog
    */
-  const handleOpenSettings = () => {
-    setSettingsDialogOpen(true)
+  const handleOpenModelSettings = () => {
+    setModelSettingsDialogOpen(true)
   }
 
   /**
@@ -266,37 +248,31 @@ export const PromptImproveDialog: React.FC<PromptImproveDialogProps> = ({
           container={container}
           className="w-xl sm:max-w-xl max-h-9/10"
           onKeyDown={handleKeyDown}
-          onKeyPress={(e) => e.stopPropagation()} // For chatgpt
-          onKeyUp={(e) => e.stopPropagation()}
-          onWheel={(e) => e.stopPropagation()}
-          onTouchMove={(e) => e.stopPropagation()}
+          {...stopPropagation()}
         >
-          <DialogHeader>
-            <DialogTitle>{i18n.t("dialogs.promptImprove.title")}</DialogTitle>
-            <DialogDescription>
-              {i18n.t("dialogs.promptImprove.message")}
-            </DialogDescription>
-          </DialogHeader>
+          <div className="flex items-center gap-2">
+            <DialogHeader className="flex-1">
+              <DialogTitle>{i18n.t("dialogs.promptImprove.title")}</DialogTitle>
+              <DialogDescription>
+                {i18n.t("dialogs.promptImprove.message")}
+              </DialogDescription>
+            </DialogHeader>
+            <Button
+              onClick={() => setSettingsDialogOpen(true)}
+              variant="ghost"
+              size="sm"
+              className="group mr-1"
+            >
+              <Settings className="size-5 stroke-neutral-600 group-hover:stroke-neutral-800" />
+            </Button>
+          </div>
 
-          {/* API Key Not Configured Warning Banner */}
+          {/* API Key Warning */}
           {!isApiKeyConfigured && (
-            <div className="p-3 mb-4 bg-warning/10 border border-warning/20 rounded-md">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <AlertCircle className="size-4 text-warning" />
-                  <span className="text-sm text-warning">
-                    {i18n.t("dialogs.promptImprove.apiKeyNotConfigured")}
-                  </span>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleOpenSettings}
-                >
-                  {i18n.t("dialogs.promptImprove.openSettings")}
-                </Button>
-              </div>
-            </div>
+            <ApiKeyWarningBanner
+              variant="destructive"
+              onOpenSettings={handleOpenModelSettings}
+            />
           )}
 
           <div className="space-y-4">
@@ -350,8 +326,15 @@ export const PromptImproveDialog: React.FC<PromptImproveDialogProps> = ({
                         <Button
                           type="button"
                           variant="outline"
-                          size="sm"
                           onClick={handleImprove}
+                          className={cn(
+                            "flex items-center",
+                            "bg-gradient-to-r from-purple-50 to-blue-50",
+                            "border-purple-200 hover:border-purple-300",
+                            "hover:from-purple-100 hover:to-blue-100",
+                            "text-purple-700 hover:text-purple-800",
+                            "transition-all duration-200",
+                          )}
                           disabled={
                             isImproving ||
                             isLoading ||
@@ -359,7 +342,10 @@ export const PromptImproveDialog: React.FC<PromptImproveDialogProps> = ({
                             !isApiKeyConfigured
                           }
                         >
-                          <Sparkles className="mr-0.5 size-4 fill-yellow-300 stroke-yellow-400" />
+                          <Sparkles
+                            className="mr-0.5 size-4"
+                            fill="url(#lucideGradient)"
+                          />
                           {i18n.t("dialogs.promptImprove.improveButton")}
                         </Button>
                       </div>
@@ -411,9 +397,17 @@ export const PromptImproveDialog: React.FC<PromptImproveDialogProps> = ({
         open={isInfoDialogOpen}
         onOpenChange={setIsInfoDialogOpen}
       />
+      <ModelSettingsDialog
+        open={modelSettingsDialogOpen}
+        onOpenChange={setModelSettingsDialogOpen}
+      />
       <PromptImproverSettingsDialog
         open={settingsDialogOpen}
         onOpenChange={setSettingsDialogOpen}
+        onClickModelSettings={() => {
+          setSettingsDialogOpen(false)
+          setModelSettingsDialogOpen(true)
+        }}
       />
     </>
   )

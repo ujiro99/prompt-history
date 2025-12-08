@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Eye, EyeOff, AlertCircle, Info } from "lucide-react"
+import { AlertCircle, Info, RefreshCw } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -17,16 +17,26 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from "@/components/ui/tooltip"
-import { useContainer } from "@/hooks/useContainer"
 import {
-  genaiApiKeyStorage,
-  improvePromptSettingsStorage,
-} from "@/services/storage/definitions"
+  Field,
+  FieldContent,
+  FieldGroup,
+  FieldLabel,
+  FieldSet,
+  FieldTitle,
+} from "@/components/ui/field"
+import { Separator } from "@/components/ui/separator"
+import { ApiKeyWarningBanner } from "@/components/shared/ApiKeyWarningBanner"
+import { useContainer } from "@/hooks/useContainer"
+import { useAiModel } from "@/hooks/useAiModel"
+import { useLazyStorage } from "@/hooks/useLazyStorage"
+import { improvePromptSettingsStorage } from "@/services/storage/definitions"
 import { improvePromptCacheService } from "@/services/storage/improvePromptCache"
-import type { ImprovePromptSettings } from "@/types/prompt"
 import { ImprovePromptInputMethod } from "@/types/prompt"
 import { i18n } from "#imports"
 import { sleep } from "@/lib/utils"
+import { stopPropagation } from "@/utils/dom"
+import type { ImprovePromptSettings } from "@/types/prompt"
 
 /**
  * Props for PromptImproverSettingsDialog
@@ -34,6 +44,7 @@ import { sleep } from "@/lib/utils"
 interface PromptImproverSettingsDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  onClickModelSettings: () => void
 }
 
 // Default URL from environment variable
@@ -44,19 +55,18 @@ const DefaultUrl = import.meta.env.WXT_IMPROVE_PROMPT_URL || ""
  */
 export const PromptImproverSettingsDialog: React.FC<
   PromptImproverSettingsDialogProps
-> = ({ open, onOpenChange }) => {
+> = ({ open, onOpenChange, onClickModelSettings }) => {
   const { container } = useContainer()
+  const { genaiApiKey } = useAiModel()
 
-  // API Key settings
-  const [apiKey, setApiKey] = useState("")
-  const [showApiKey, setShowApiKey] = useState(false)
-
-  // Improvement prompt settings (improvement guidelines only, system role is fixed)
-  const [settings, setSettings] = useState<ImprovePromptSettings>({
-    mode: ImprovePromptInputMethod.URL,
-    textContent: "",
-    urlContent: "",
-    lastModified: 0,
+  const {
+    value: settings,
+    setValue: _setSettings,
+    isLoading,
+    isSaving,
+  } = useLazyStorage(improvePromptSettingsStorage, {
+    debounceDelay: 400,
+    artificialSetDelay: 600,
   })
 
   // Preview and fetch states
@@ -65,49 +75,72 @@ export const PromptImproverSettingsDialog: React.FC<
   const [fetchError, setFetchError] = useState<string | null>(null)
 
   // Validation states
-  const [apiKeyError, setApiKeyError] = useState<string | null>(null)
   const [urlError, setUrlError] = useState<string | null>(null)
 
+  // API key state
+  const hasApiKey = !!genaiApiKey
+
   /**
-   * Load settings from storage
+   * Initialize settings on load
    */
   useEffect(() => {
-    if (open) {
-      /**
-       * Load settings from storage
-       */
-      const loadSettings = async () => {
+    if (isLoading) {
+      const initSettings = async () => {
         try {
-          const storedApiKey = await genaiApiKeyStorage.getValue()
-          setApiKey(storedApiKey || "")
-
-          const storedSettings = await improvePromptSettingsStorage.getValue()
-
-          // Use default URL if urlContent is empty
-          if (!storedSettings.urlContent && DefaultUrl) {
-            storedSettings.urlContent = DefaultUrl
-          }
-
-          setSettings(storedSettings)
-
+          if (!settings) return
           // Load preview based on mode
-          if (storedSettings.mode === "text" && storedSettings.textContent) {
-            setPreviewPrompt(storedSettings.textContent)
-          } else if (
-            storedSettings.mode === "url" &&
-            storedSettings.urlContent
-          ) {
+          if (settings.mode === "text" && settings.textContent) {
+            setPreviewPrompt(settings.textContent)
+          } else if (settings.mode === "url" && settings.urlContent) {
             // Try to fetch from URL for preview
-            await fetchPromptFromUrl(storedSettings.urlContent, true)
+            await fetchPromptFromUrl(settings.urlContent, true)
           }
         } catch (error) {
           console.error("Failed to load settings:", error)
         }
       }
-
-      loadSettings()
+      initSettings()
     }
-  }, [open])
+  }, [isLoading, settings])
+
+  /**
+   * Validate inputs
+   */
+  const validate = (newSettings: ImprovePromptSettings): boolean => {
+    let isValid = true
+    if (!newSettings) return false
+    // Validate based on mode
+    if (newSettings.mode === "url") {
+      if (!newSettings.urlContent.trim()) {
+        setUrlError(i18n.t("errors.urlRequired"))
+        isValid = false
+      } else {
+        try {
+          new URL(newSettings.urlContent)
+          setUrlError(null)
+        } catch {
+          setUrlError(i18n.t("errors.invalidUrl"))
+          isValid = false
+        }
+      }
+    } else if (newSettings.mode === "text") {
+      // Text mode validation is handled by checking if textContent is not empty
+      // when saving, but we don't block save if empty (user might want to clear)
+    }
+
+    return isValid
+  }
+
+  const setSettings = (
+    updater: (prev: ImprovePromptSettings) => ImprovePromptSettings,
+  ) => {
+    _setSettings((prevVal: ImprovePromptSettings | null) => {
+      if (!prevVal) return prevVal
+      const newVal = updater(prevVal)
+      validate(newVal)
+      return newVal
+    })
+  }
 
   /**
    * Handle mode change
@@ -119,9 +152,9 @@ export const PromptImproverSettingsDialog: React.FC<
     }))
 
     // Update preview when mode changes
-    if (mode === "text" && settings.textContent) {
+    if (mode === "text" && settings?.textContent) {
       setPreviewPrompt(settings.textContent)
-    } else if (mode === "url" && settings.urlContent) {
+    } else if (mode === "url" && settings?.urlContent) {
       // Preview will be updated when user clicks fetch
       setPreviewPrompt("")
     } else {
@@ -148,26 +181,24 @@ export const PromptImproverSettingsDialog: React.FC<
       ...prev,
       urlContent: value,
     }))
-    setUrlError(null)
   }
 
   /**
    * Set default URL
    */
   const handleSetDefaultUrl = () => {
-    if (DefaultUrl) {
-      setSettings((prev) => ({
-        ...prev,
-        urlContent: DefaultUrl,
-      }))
-      setUrlError(null)
-    }
+    setSettings((prev) => ({
+      ...prev,
+      urlContent: DefaultUrl,
+    }))
+    setUrlError(null)
   }
 
   /**
    * Fetch prompt from URL
    */
   const handleFetchPrompt = async () => {
+    if (!settings) return
     await fetchPromptFromUrl(settings.urlContent, false)
   }
 
@@ -231,67 +262,6 @@ export const PromptImproverSettingsDialog: React.FC<
   }
 
   /**
-   * Validate inputs
-   */
-  const validate = (): boolean => {
-    let isValid = true
-
-    // Validate API key
-    if (!apiKey.trim()) {
-      setApiKeyError(i18n.t("errors.apiKeyRequired"))
-      isValid = false
-    } else {
-      setApiKeyError(null)
-    }
-
-    // Validate based on mode
-    if (settings.mode === "url") {
-      if (!settings.urlContent.trim()) {
-        setUrlError(i18n.t("errors.urlRequired"))
-        isValid = false
-      } else {
-        try {
-          new URL(settings.urlContent)
-          setUrlError(null)
-        } catch {
-          setUrlError(i18n.t("errors.invalidUrl"))
-          isValid = false
-        }
-      }
-    } else if (settings.mode === "text") {
-      // Text mode validation is handled by checking if textContent is not empty
-      // when saving, but we don't block save if empty (user might want to clear)
-    }
-
-    return isValid
-  }
-
-  /**
-   * Save settings
-   */
-  const handleSave = async () => {
-    if (!validate()) {
-      return
-    }
-
-    try {
-      // Save API key
-      await genaiApiKeyStorage.setValue(apiKey)
-
-      // Save system prompt settings
-      await improvePromptSettingsStorage.setValue(settings)
-
-      // Close dialog
-      onOpenChange(false)
-    } catch (error) {
-      console.error("Failed to save settings:", error)
-      setFetchError(
-        `Failed to save settings: ${error instanceof Error ? error.message : "Unknown error"}`,
-      )
-    }
-  }
-
-  /**
    * Cancel and close
    */
   const handleCancel = () => {
@@ -311,16 +281,16 @@ export const PromptImproverSettingsDialog: React.FC<
     event.nativeEvent.stopImmediatePropagation()
   }
 
+  // Don't render until settings are loaded
+  if (isLoading || !settings) return null
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         container={container}
         className="w-xl sm:max-w-2xl"
         onKeyDown={handleKeyDown}
-        onKeyPress={(e) => e.stopPropagation()} // For chatgpt
-        onKeyUp={(e) => e.stopPropagation()}
-        onWheel={(e) => e.stopPropagation()}
-        onTouchMove={(e) => e.stopPropagation()}
+        {...stopPropagation()}
       >
         <DialogHeader>
           <DialogTitle>{i18n.t("settings.promptImproverSettings")}</DialogTitle>
@@ -330,124 +300,60 @@ export const PromptImproverSettingsDialog: React.FC<
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* API Key Settings */}
-          <div className="space-y-3">
-            <label className="text-base font-semibold">
-              {i18n.t("settings.promptImprover.apiKeySettings")}
-            </label>
-
-            <div className="space-y-2">
-              <label htmlFor="api-key" className="text-sm font-medium">
-                {i18n.t("settings.promptImprover.geminiApiKey")}
-              </label>
-              <div className="flex gap-2">
-                <Input
-                  id="api-key"
-                  type={showApiKey ? "text" : "password"}
-                  value={apiKey}
-                  onChange={(e) => {
-                    setApiKey(e.target.value)
-                    setApiKeyError(null)
-                  }}
-                  placeholder={i18n.t("settings.promptImprover.enterApiKey")}
-                  className={apiKeyError ? "border-destructive" : ""}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setShowApiKey(!showApiKey)}
-                >
-                  {showApiKey ? (
-                    <EyeOff className="size-4" />
-                  ) : (
-                    <Eye className="size-4" />
-                  )}
-                </Button>
-              </div>
-              {apiKeyError && (
-                <p className="text-sm text-destructive">{apiKeyError}</p>
-              )}
-
-              <div className="space-y-1 text-sm">
-                <p className="flex items-start gap-1.5 text-muted-foreground">
-                  <span>ℹ️</span>
-                  <span>
-                    {i18n.t("settings.promptImprover.getApiKeyInfo")}{" "}
-                    <a
-                      href="https://ai.google.dev/gemini-api/docs/api-key"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary underline hover:no-underline"
-                    >
-                      https://ai.google.dev/gemini-api/docs/api-key
-                    </a>
-                  </span>
-                </p>
-                <p className="flex items-start gap-1.5 text-muted-foreground">
-                  <span>⚠️</span>
-                  <span>
-                    {i18n.t("settings.promptImprover.freeApiWarning")}{" "}
-                    <a
-                      href="https://ai.google.dev/gemini-api/terms"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary underline hover:no-underline"
-                    >
-                      {i18n.t("settings.promptImprover.learnMore")}
-                    </a>
-                  </span>
-                </p>
-              </div>
-            </div>
-          </div>
-
           {/* Improvement Prompt Settings */}
-          <div className="space-y-3">
-            <label className="text-base font-semibold inline-block">
-              {i18n.t("settings.promptImprover.improvementPromptSettings")}
-            </label>
+          <div className="space-y-4">
+            <FieldSet>
+              <FieldGroup>
+                <FieldLabel>
+                  {i18n.t("settings.promptImprover.improvementPromptSettings")}
+                </FieldLabel>
+                <RadioGroup
+                  value={settings.mode}
+                  onValueChange={(value: ImprovePromptInputMethod) =>
+                    handleModeChange(value)
+                  }
+                  className="gap-2 flex flex-row"
+                >
+                  <FieldLabel htmlFor="mode-url" className="transition">
+                    <Field orientation="horizontal">
+                      <RadioGroupItem
+                        value={ImprovePromptInputMethod.URL}
+                        id="mode-url"
+                      />
+                      <FieldContent>
+                        <FieldTitle>
+                          {i18n.t("settings.promptImprover.modeUrl")}
+                        </FieldTitle>
+                      </FieldContent>
+                    </Field>
+                  </FieldLabel>
 
-            <RadioGroup
-              value={settings.mode}
-              onValueChange={(value: ImprovePromptInputMethod) =>
-                handleModeChange(value)
-              }
-              className="gap-2"
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value={ImprovePromptInputMethod.URL}
-                  id="mode-url"
-                />
-                <label
-                  htmlFor="mode-url"
-                  className="text-sm font-normal cursor-pointer"
-                >
-                  {i18n.t("settings.promptImprover.modeUrl")}
-                </label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value={ImprovePromptInputMethod.Text}
-                  id="mode-text"
-                />
-                <label
-                  htmlFor="mode-text"
-                  className="text-sm font-normal cursor-pointer"
-                >
-                  {i18n.t("settings.promptImprover.modeText")}
-                </label>
-              </div>
-            </RadioGroup>
+                  <FieldLabel htmlFor="mode-text" className="transition">
+                    <Field orientation="horizontal">
+                      <RadioGroupItem
+                        value={ImprovePromptInputMethod.Text}
+                        id="mode-text"
+                      />
+                      <FieldContent>
+                        <FieldTitle>
+                          {i18n.t("settings.promptImprover.modeText")}
+                        </FieldTitle>
+                      </FieldContent>
+                    </Field>
+                  </FieldLabel>
+                </RadioGroup>
+              </FieldGroup>
+            </FieldSet>
+
+            <Separator />
 
             {/* Conditional display area */}
-            <div className="space-y-2">
+            <FieldSet className="min-h-45 gap-4">
               {settings.mode === "text" ? (
-                <div className="space-y-2">
-                  <label htmlFor="text-content" className="text-sm font-medium">
+                <Field>
+                  <FieldLabel htmlFor="text-content">
                     {i18n.t("settings.promptImprover.improvementPromptText")}
-                  </label>
+                  </FieldLabel>
                   <Textarea
                     id="text-content"
                     value={settings.textContent}
@@ -456,38 +362,48 @@ export const PromptImproverSettingsDialog: React.FC<
                       "settings.promptImprover.enterImprovementPrompt",
                     )}
                     rows={6}
-                    className="max-h-60"
+                    className="min-h-30 max-h-60 font-mono"
                   />
-                </div>
+                </Field>
               ) : (
-                <div className="space-y-1">
+                <div className="space-y-3">
                   <div className="flex items-center gap-1">
-                    <label
-                      htmlFor="url-content"
-                      className="text-sm font-medium"
-                    >
+                    <FieldLabel htmlFor="url-content">
                       {i18n.t("settings.promptImprover.promptUrl")}
-                    </label>
+                    </FieldLabel>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Info className="size-4 stroke-neutral-500" />
                       </TooltipTrigger>
-                      <TooltipContent>
+                      <TooltipContent side="top">
                         {i18n.t("tooltips.urlModeDescription")}
                       </TooltipContent>
                     </Tooltip>
                   </div>
                   <div className="flex gap-2">
-                    <Input
-                      id="url-content"
-                      type="url"
-                      value={settings.urlContent}
-                      onChange={(e) => handleUrlContentChange(e.target.value)}
-                      placeholder={i18n.t(
-                        "settings.promptImprover.enterPromptUrl",
+                    <div className="relative flex-1">
+                      <Input
+                        id="url-content"
+                        type="url"
+                        value={settings.urlContent}
+                        onChange={(e) => handleUrlContentChange(e.target.value)}
+                        placeholder={i18n.t(
+                          "settings.promptImprover.enterPromptUrl",
+                        )}
+                        className={urlError ? "border-destructive" : ""}
+                      />
+                      {DefaultUrl && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleSetDefaultUrl}
+                          className="w-auto text-xs h-auto px-2 py-1.5 absolute -right-1 -top-8"
+                        >
+                          {i18n.t("settings.promptImprover.setDefault")}
+                        </Button>
                       )}
-                      className={urlError ? "border-destructive" : ""}
-                    />
+                    </div>
                     <Button
                       type="button"
                       variant="outline"
@@ -502,40 +418,28 @@ export const PromptImproverSettingsDialog: React.FC<
                   {urlError && (
                     <p className="text-sm text-destructive">{urlError}</p>
                   )}
-                  <div className="flex items-center justify-between">
-                    {DefaultUrl && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleSetDefaultUrl}
-                        className="ml-auto text-xs h-auto py-1"
-                      >
-                        {i18n.t("settings.promptImprover.setDefault")}
-                      </Button>
-                    )}
-                  </div>
                 </div>
               )}
 
               {/* Preview (URL mode only) */}
               {settings.mode === "url" && (
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">
+                <div className="space-y-3">
+                  <FieldLabel htmlFor="preview-improvement-prompt">
                     {i18n.t("settings.promptImprover.preview")}
-                  </label>
+                  </FieldLabel>
                   <Textarea
+                    id="preview-improvement-prompt"
                     value={previewPrompt}
                     readOnly
                     placeholder={i18n.t(
                       "settings.promptImprover.previewPlaceholder",
                     )}
                     rows={6}
-                    className="bg-muted/50 font-mono md:text-xs max-h-60"
+                    className="bg-muted/50 font-mono text-xs md:text-xs max-h-60"
                   />
                 </div>
               )}
-            </div>
+            </FieldSet>
 
             {/* Fetch error display */}
             {fetchError && (
@@ -545,13 +449,31 @@ export const PromptImproverSettingsDialog: React.FC<
               </div>
             )}
           </div>
+
+          {/* API Key Warning */}
+          {!hasApiKey && (
+            <ApiKeyWarningBanner
+              variant="warning"
+              onOpenSettings={onClickModelSettings}
+            />
+          )}
         </div>
 
         <DialogFooter>
-          <Button variant="secondary" onClick={handleCancel}>
-            {i18n.t("common.cancel")}
+          <Button
+            onClick={handleCancel}
+            disabled={isSaving || !!urlError}
+            className="min-w-24"
+          >
+            {isSaving ? (
+              <>
+                <RefreshCw className="size-4 animate-spin mr-2" />{" "}
+                <span>{i18n.t("status.saving")}</span>
+              </>
+            ) : (
+              i18n.t("buttons.complete")
+            )}
           </Button>
-          <Button onClick={handleSave}>{i18n.t("common.save")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

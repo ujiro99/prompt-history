@@ -18,6 +18,14 @@ vi.mock("@/hooks/useSettings", () => ({
 }))
 import { useSettings } from "@/hooks/useSettings"
 
+vi.mock("@/hooks/useAiModel", () => ({
+  useAiModel: () => ({
+    genaiApiKey: "test-api-key",
+    getApiKey: vi.fn().mockResolvedValue("test-api-key"),
+    setApiKey: vi.fn().mockResolvedValue(undefined),
+  }),
+}))
+
 vi.mock("@/services/importExport", () => ({
   promptExportService: {
     exportToCSV: vi.fn(),
@@ -41,7 +49,10 @@ const MockMenubar = ({ onMouseEnter }: MockMenubarProps) => {
   return (
     <ContainerProvider container={document.body}>
       <Menubar value={value} onValueChange={(v) => setValue(v as MENU)}>
-        <SettingsMenu onMouseEnter={handleMouseEnter} />
+        <SettingsMenu
+          onMouseEnter={handleMouseEnter}
+          onInteractOutside={() => {}}
+        />
       </Menubar>
     </ContainerProvider>
   )

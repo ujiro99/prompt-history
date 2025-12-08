@@ -24,6 +24,8 @@ common:
   defaultValue: デフォルト値
   options: 選択肢
   commaSeparatedValues: カンマ区切りで入力
+  apiKeyNotConfigured: APIキーが設定されていません。設定からAPIキーを設定してください。
+  openSettings: 設定を開く
 
 # Buttons
 buttons:
@@ -36,6 +38,8 @@ buttons:
   unpin: スター解除
   saveAsNew: 新規として保存
   saveAsCopy: 複製する
+  complete: 完了
+  close: 閉じる
 
 # Status messages
 status:
@@ -58,6 +62,11 @@ placeholders:
 dialogs:
   edit:
     title: プロンプトを編集
+    useCaseDescription: プロンプトの使用例や目的を説明します
+    useCasePlaceholder: 任意入力
+    categoryDescription: プロンプトのカテゴリを設定します
+    excludeFromOrganizer: プロンプト整理の対象外
+    excludeFromOrganizerHelp: チェックすると、自動整理の対象から除外します。整理・精製されたプロンプトは、自動的にチェックが入ります。
     variableSettings: 変数設定
     variableSettingsDescription: プロンプト内で見つかった変数を設定します
     variableExpansionInfo:
@@ -84,8 +93,6 @@ dialogs:
     improving: 改善中...
     previewTitle: 改善されたプロンプト
     error: プロンプトの改善に失敗しました
-    apiKeyNotConfigured: Gemini APIキーが設定されていません。設定からAPIキーを設定してください。
-    openSettings: 設定を開く
 
 # Tabs
 tabs:
@@ -183,7 +190,7 @@ settings:
     feature: 機能のON・OFF
     autocompleteTarget: 入力補完の対象
     importExport: インポート・エクスポート
-    promptImprover: プロンプト改善
+    promptGeneration: プロンプト生成
   autoSave: プロンプト自動保存
   autoComplete: 入力補完
   notifications: ステータス通知
@@ -193,15 +200,18 @@ settings:
     pinned: スター付きのみ
   export: プロンプトをエクスポート
   import: プロンプトをインポート
-  promptImproverSettings: プロンプト改善の設定
-  promptImprover:
+  modelSettings:
+    title: モデル設定
+    description: 使用するAIモデルを設定します。
     apiKeySettings: APIキー設定
     geminiApiKey: Gemini APIキー
     enterApiKey: Gemini APIキーを入力してください
     getApiKeyInfo: APIキーの取得方法：
     freeApiWarning: 重要：無料のAPIキーはモデルのトレーニングに使用される可能性があります。
     learnMore: 詳細を見る
-    improvementPromptSettings: 改善用プロンプト設定
+  promptImproverSettings: プロンプト改善の設定
+  promptImprover:
+    improvementPromptSettings: 改善用プロンプトの設定方法
     modeUrl: URL (GitHub Gist など)
     modeText: 直接入力
     improvementPromptText: 改善用プロンプト
@@ -214,6 +224,7 @@ settings:
     previewPlaceholder: 改善用プロンプトがここに表示されます...
     enterImprovementPrompt: 改善用プロンプトを入力してください...
     description: プロンプトの改善方法を設定します。
+  promptOrganizerSettings: プロンプト整理の設定
 
 # Import Dialog
 importDialog:
@@ -224,7 +235,7 @@ importDialog:
   selectAnotherFile: 別のファイルを選択
   execute: インポートを実行
   executeLabel: CSVファイルからプロンプトをインポート
-  close: 終了
+  close: 閉じる
   cancel: キャンセル
   status:
     idle: CSVファイルを選択してください
@@ -272,3 +283,103 @@ errors:
   notTextContent: "テキストではないコンテンツです: $1"
   unknownError: 不明なエラーが発生しました
   fetchPromptFailed: "URLからプロンプトの取得に失敗しました: $1"
+
+# Prompt Organizer
+promptOrganizer:
+  title: プロンプトの整理
+  description: プロンプトの整理方法を設定します。
+  settings:
+    filterConditions: 整理対象プロンプトの絞り込み条件
+    filterPeriod: 最終実行日
+    filterPeriodDays: "$1 日前"
+    filterPeriodWeek: "$1 週間前"
+    filterPeriodMonth: "$1 ヶ月前"
+    filterPeriodYear: "$1 年前"
+    minExecutionCount: 最小実行回数
+    maxPrompts: 最大プロンプト数
+    organizationPrompt: 整理用プロンプト
+  execute:
+    title: プロンプトの整理と精製
+    description: AIがプロンプトを分析し、使い回しやすいテンプレートを作ります。
+    description2: 対象のプロンプトを確認してから整理を開始してください。
+    targetPrompts: 整理するプロンプト
+    noTargetPrompts: 対象のプロンプトがありません。絞り込み条件を変更してください。
+    progress: 進行状況
+    receivingPrompts: 受信中のプロンプト
+    executionFailed: プロンプトの整理に失敗しました。条件を変更したり、時間をおいて再度お試しください。
+    executeMessage1: 対象プロンプトをAIへ送信し、整理を開始します。
+    executeMessage2: 処理後も元のプロンプトは変更されません。
+  estimate:
+    title: 推定入力トークン数
+    targetPrompts: 対象プロンプト数
+    inputTokens: 入力トークン数
+    thoughtsTokens: 思考トークン数
+    outputTokens: 出力トークン数
+    contextUsage: コンテキスト使用率
+  buttons:
+    organize: $1件のプロンプトを整理する
+    cancel: この処理をキャンセルする
+    canceling: キャンセル中...
+    save: 保存
+    discard: 破棄
+    saveAndPin: 保存してスター
+    preview: 他のプロンプトも見る
+    saveAll: すべての整理内容を保存
+    notReviewed: $1件が未確認です
+    apply: 選択を反映させる (残り$1件)
+    applyAll: 選択を反映させる
+  status:
+    sending: 対象プロンプトを送信中
+    thinking0: 対象プロンプトを分類中
+    thinking1: パターンを抽出中
+    thinking2: プロンプトを精製中
+    generating: 精製結果を受信中
+    complete: 完了しました
+    error: エラーが発生しました
+    save: 保存
+    pin: スター
+    discard: 破棄
+    pending: 保留
+  result:
+    sourceCount: "$1件のプロンプトに基づいています"
+    actualCost: 確定コスト
+  summary:
+    title: プロンプトの整理が完了しました
+    summary: $1件のプロンプトを厳選し、$2件に整理しました。
+    noTemplates: プロンプトは精製されませんでした。
+    organizationPerformed: 今回行った整理
+    examplePrompts: 整理したプロンプトの例
+    templateCreated: 「$1」のテンプレートを作成しました。
+  preview:
+    title: 精製結果をプレビュー
+    description: 精製されたプロンプトを確認・編集
+    promptList: プロンプト一覧
+    noTemplates: 表示するプロンプトがありません。
+    selectionRequired: リストからプロンプトを選択してください。
+    title_label: タイトル
+    useCase: 用途
+    category: カテゴリ
+    explanation: 整理結果の解説 by AI
+    explanationDescription: このプロンプトがどのように整理されたかを解説します。
+    content: プロンプト内容
+    variables: 変数
+    sourcePrompts: ソースプロンプト
+    savePromptQuestion: このプロンプトを保存しますか？
+    completeReview: 確認が完了しました🎉\n右下のボタンから選択を反映させてください。
+  aiTemplates:
+    title: AIにより生成
+  pendingTemplates:
+    warning: 未確認の精製済みプロンプトが$1件あります
+    review: 確認する
+  errors:
+    noApiKey: Gemini APIキーが必要です。設定でAPIキーを設定してください。
+
+# Organizer Categories
+organizer:
+  category:
+    selectCategory: カテゴリを選択
+    externalCommunication: 対外コミュニケーション
+    internalCommunication: 社内コミュニケーション
+    documentCreation: ドキュメント作成
+    development: 開発・技術
+    other: その他

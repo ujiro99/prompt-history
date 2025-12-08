@@ -24,6 +24,8 @@ common:
   defaultValue: Default Value
   options: Options
   commaSeparatedValues: Comma-separated values
+  apiKeyNotConfigured: API key is not configured. Please set your API key in settings.
+  openSettings: Open Settings
 
 # Buttons
 buttons:
@@ -36,6 +38,8 @@ buttons:
   unpin: Unstar
   saveAsNew: Save as new
   saveAsCopy: Duplicate
+  complete: Complete
+  close: Close
 
 # Status messages
 status:
@@ -58,6 +62,11 @@ placeholders:
 dialogs:
   edit:
     title: Edit Prompt
+    useCaseDescription: Describe the use case or purpose of the prompt
+    useCasePlaceholder: Optional
+    categoryDescription: Set the category of the prompt
+    excludeFromOrganizer: Exclude from prompt organization
+    excludeFromOrganizerHelp: Check to exclude from automatic organization. Prompts that have been organized/refined will be automatically checked.
     variableSettings: Variable Settings
     variableSettingsDescription: Configure variables found in the prompt
     variableExpansionInfo:
@@ -84,8 +93,6 @@ dialogs:
     improving: Improving...
     previewTitle: Improved Prompt
     error: Failed to improve prompt
-    apiKeyNotConfigured: Gemini API key is not configured. Please set your API key in settings.
-    openSettings: Open Settings
 
 # Tabs
 tabs:
@@ -183,7 +190,7 @@ settings:
     feature: Features ON/OFF
     autocompleteTarget: Autocomplete target
     importExport: Import/Export
-    promptImprover: Prompt Improver
+    promptGeneration: Prompt Generation
   autoSave: Auto-save prompts
   autoComplete: Auto-complete
   notifications: Status notifications
@@ -193,14 +200,17 @@ settings:
     pinned: Starred only
   export: Export prompts
   import: Import prompts
-  promptImproverSettings: Prompt Improver Settings
-  promptImprover:
+  modelSettings:
+    title: Model Settings
+    description: Configure the AI model to use.
     apiKeySettings: API Key Settings
     geminiApiKey: Gemini API Key
     enterApiKey: Enter your Gemini API key
     getApiKeyInfo: "Get your API key:"
     freeApiWarning: "Important: Free API keys may be used for model training."
     learnMore: Learn more
+  promptImproverSettings: Prompt Improver Settings
+  promptImprover:
     improvementPromptSettings: Improvement Prompt Settings
     modeUrl: URL (GitHub Gist, etc.)
     modeText: Direct Input
@@ -214,6 +224,7 @@ settings:
     previewPlaceholder: Improvement prompt will appear here...
     enterImprovementPrompt: Enter improvement prompt...
     description: Configure how to improve prompts.
+  promptOrganizerSettings: Prompt Organizer Settings
 
 # Import Dialog
 importDialog:
@@ -272,3 +283,103 @@ errors:
   notTextContent: "Not a text content: $1"
   unknownError: Unknown error occurred
   fetchPromptFailed: "Failed to fetch prompt from URL: $1"
+
+# Prompt Organizer
+promptOrganizer:
+  title: Organize Prompts
+  description: Configure how to organize prompts.
+  settings:
+    filterConditions: Filter Conditions for Organization Target Prompts
+    filterPeriod: Filter Period
+    filterPeriodDays: "$1 days ago"
+    filterPeriodWeek: "$1 week ago"
+    filterPeriodMonth: "$1 month ago"
+    filterPeriodYear: "$1 year ago"
+    minExecutionCount: Minimum Execution Count
+    maxPrompts: Maximum Prompts
+    organizationPrompt: Organization Prompt
+  execute:
+    title: Prompt Organization and Refinement
+    description: The AI analyzes your prompt and creates an easy-to-reuse template.
+    description2: Check the target prompt and get started organizing.
+    targetPrompts: Prompts for Organization
+    noTargetPrompts: There are no target prompts. Please change the filter conditions.
+    progress: Progress
+    receivingPrompts: Receiving prompts
+    executionFailedEng: Failed to organize prompts. Please try changing the conditions or try again later.
+    executeMessage1: Send target prompts to AI and start organizing.
+    executeMessage2: Original prompts will not be modified after processing.
+  estimate:
+    title: Estimated Input Token Count
+    targetPrompts: Number of Target Prompts
+    inputTokens: Input Tokens
+    thoughtsTokens: Thoughts Tokens
+    outputTokens: Output Tokens
+    contextUsage: Context Usage
+  buttons:
+    organize: Organize $1 Prompts
+    cancel: Cancel this process
+    canceling: Canceling...
+    save: Save
+    discard: Discard
+    saveAndPin: Save & Star
+    preview: Review Others
+    saveAll: Save all organized results
+    notReviewed: $1 items pending review
+    apply: Apply selections (remaining $1)
+    applyAll: Apply all selections
+  status:
+    sending: Sending target prompts
+    thinking0: Classifying target prompts
+    thinking1: Extracting patterns
+    thinking2: Refining prompts
+    generating: Receiving refined results
+    complete: Completed!
+    error: Error occurred
+    save: Save
+    pin: Star
+    discard: Discard
+    pending: Pending
+  result:
+    sourceCount: "Based on $1 prompts"
+    actualCost: Actual Cost
+  summary:
+    title: Organization Complete
+    summary: We've selected $1 prompt and organized it into $2.
+    noTemplates: No templates were refined.
+    organizationPerformed: Organization Performed
+    examplePrompts: Example Organized Prompts
+    templateCreated: Created "$1" template.
+  preview:
+    title: Preview Refined Results
+    description: Review and edit refined prompts
+    promptList: Prompt List
+    noTemplates: No prompts to display.
+    selectionRequired: Please select prompts from the list.
+    title_label: Title
+    useCase: Use Case
+    category: Category
+    explanation: About Refinement by AI
+    explanationDescription: This explains how this prompt was organized.
+    content: Prompt Content
+    variables: Variables
+    sourcePrompts: Source Prompts
+    savePromptQuestion: Would you like to save this prompt?
+    completeReview: Review completed🎉\nPlease apply your selections using the button at the bottom right.
+  aiTemplates:
+    title: Generated by AI
+  pendingTemplates:
+    warning: $1 refined prompts are pending
+    review: Review
+  errors:
+    noApiKey: Gemini API key is required. Please set it in settings.
+
+# Organizer Categories
+organizer:
+  category:
+    selectCategory: Select Category
+    externalCommunication: External Communication
+    internalCommunication: Internal Communication
+    documentCreation: Document Creation
+    development: Development & Tech
+    other: Other

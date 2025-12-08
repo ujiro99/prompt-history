@@ -21,6 +21,14 @@ vi.mock("@/hooks/useSettings", () => ({
   useSettings: () => ({ settings: { variableExpansionEnabled: true } }),
 }))
 
+vi.mock("@/hooks/useAiModel", () => ({
+  useAiModel: () => ({
+    genaiApiKey: "test-api-key",
+    getApiKey: vi.fn().mockResolvedValue("test-api-key"),
+    setApiKey: vi.fn().mockResolvedValue(undefined),
+  }),
+}))
+
 // Mock PromptImprover class using vi.hoisted
 const { MockPromptImprover } = vi.hoisted(() => {
   class MockPromptImprover {

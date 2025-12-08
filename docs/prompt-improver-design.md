@@ -845,8 +845,6 @@ WXT_GENAI_API_KEY=<開発用 API Key>
 
 # 改善ガイドラインURL: 全ユーザーのデフォルトフォールバック（役割定義は含まない）
 WXT_IMPROVE_PROMPT_URL=https://gist.githubusercontent.com/ujiro99/.../improve-prompt-default.md
-
-WXT_E2E=false
 ```
 
 **本番環境** (.env):
@@ -856,8 +854,6 @@ WXT_E2E=false
 
 # 改善ガイドラインURL: 全ユーザーのデフォルトフォールバック（役割定義は含まない）
 WXT_IMPROVE_PROMPT_URL=https://gist.githubusercontent.com/ujiro99/.../improve-prompt-default.md
-
-WXT_E2E=true
 ```
 
 ### ストレージ定義 ★拡張
@@ -1291,12 +1287,12 @@ string // APIキー文字列（プレーンテキスト）
 
 - `WXT_IMPROVE_PROMPT_URL`: 全ユーザーのデフォルトフォールバックとして使用（改善ガイドラインのみ、役割定義は含まない）
 
-**開発環境** (WXT_E2E === 'false'):
+**開発環境** (import.meta.env.MODE !== 'production'):
 
 - `WXT_GENAI_API_KEY`: 開発時のフォールバックとして使用可能（ユーザー設定優先）
 - デバッグ用途でAPIキーの設定なしでも動作可能
 
-**本番環境** (WXT_E2E === 'true'):
+**本番環境** (import.meta.env.MODE === 'production'):
 
 - `WXT_GENAI_API_KEY`: 環境変数は無視、ユーザー設定のみ有効
 - 初回起動時は必ずAPIキーの設定が必要

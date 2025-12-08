@@ -1,5 +1,7 @@
 // Type definitions for prompt management functionality
 
+import type { AIGeneratedMetadata } from "./promptOrganizer"
+
 /**
  * Variable type
  */
@@ -61,32 +63,29 @@ export interface Prompt {
   updatedAt: Date
   /** Variable configurations */
   variables?: VariableConfig[]
+  /** AI-generated flag */
+  isAIGenerated?: boolean
+  /** AI generation metadata (only for AI-generated prompts) */
+  aiMetadata?: AIGeneratedMetadata
+  /** Category ID (null for uncategorized) */
+  categoryId?: string | null
+  /** Use case description (optional) */
+  useCase?: string
+  /** Exclude from prompt organizer flag */
+  excludeFromOrganizer?: boolean
 }
 
 /**
  * Prompt data for storage (date fields are ISO strings)
  */
-export interface StoredPrompt {
-  /** Unique identifier for prompt (UUID) */
-  id: string
-  /** Prompt name */
-  name: string
-  /** Prompt content */
-  content: string
-  /** Execution count */
-  executionCount: number
+export interface StoredPrompt
+  extends Omit<Prompt, "lastExecutedAt" | "createdAt" | "updatedAt"> {
   /** Latest execution date */
   lastExecutedAt: string
-  /** Pin flag */
-  isPinned: boolean
-  /** Last execution URL */
-  lastExecutionUrl: string
   /** Creation date */
   createdAt: string
   /** Update date */
   updatedAt: string
-  /** Variable configurations */
-  variables?: VariableConfig[]
 }
 
 /**
@@ -113,17 +112,21 @@ export enum SaveMode {
 /**
  * Prompt save data
  */
-export interface SaveDialogData {
-  /** Prompt name */
-  name: string
-  /** Prompt content */
-  content: string
+export interface SaveDialogData
+  extends Pick<
+    Prompt,
+    | "name"
+    | "content"
+    | "isPinned"
+    | "variables"
+    | "isAIGenerated"
+    | "aiMetadata"
+    | "categoryId"
+    | "useCase"
+    | "excludeFromOrganizer"
+  > {
   /** Save mode */
   saveMode: SaveMode
-  /** Pin flag */
-  isPinned: boolean
-  /** Variable configurations */
-  variables?: VariableConfig[]
 }
 
 /**
@@ -168,6 +171,8 @@ export interface StorageData {
   pinnedOrder: string[]
   /** Application settings */
   settings: AppSettings
+  /** Categories */
+  categories?: Record<string, import("./promptOrganizer").Category>
 }
 
 /**

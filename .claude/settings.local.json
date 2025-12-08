@@ -16,7 +16,15 @@
       "WebFetch(domain:ai.google.dev)",
       "Bash(cat:*)",
       "WebFetch(domain:gist.githubusercontent.com)",
-      "Bash(pnpm lint:*)"
+      "Bash(pnpm lint:*)",
+      "mcp__serena__get_symbols_overview",
+      "mcp__serena__find_file",
+      "mcp__serena__think_about_collected_information",
+      "mcp__serena__think_about_whether_you_are_done",
+      "Bash(grep:*)",
+      "mcp__serena__insert_after_symbol",
+      "Bash(pnpm test:run:*)",
+      "mcp__chrome-devtools__list_pages"
     ],
     "deny": [],
     "ask": []

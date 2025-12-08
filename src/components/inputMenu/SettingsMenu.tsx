@@ -1,8 +1,14 @@
 import React, { useCallback, useState } from "react"
-import { EllipsisVertical, Download, Upload, Settings } from "lucide-react"
+import {
+  EllipsisVertical,
+  Download,
+  Upload,
+  Brain,
+  NotebookPen,
+  WandSparkles,
+} from "lucide-react"
 import {
   MenubarMenu,
-  MenubarTrigger,
   MenubarContent,
   MenubarItem,
   MenubarSeparator,
@@ -11,12 +17,14 @@ import {
   MenubarRadioItem,
   MenubarLabel,
 } from "@/components/ui/menubar"
-import { cn } from "@/lib/utils"
+import { MenuTrigger } from "./MenuTrigger"
 import { useSettings } from "@/hooks/useSettings"
 import { useContainer } from "@/hooks/useContainer"
 import { promptExportService } from "@/services/importExport"
 import { ImportDialog } from "./ImportDialog"
+import { ModelSettingsDialog } from "@/components/settings/ModelSettingsDialog"
 import { PromptImproverSettingsDialog } from "@/components/settings/PromptImproverSettingsDialog"
+import { OrganizerSettingsDialog } from "@/components/promptOrganizer/OrganizerSettingsDialog"
 import { MENU, TestIds } from "@/components/const"
 import type { AppSettings } from "@/types/prompt"
 import type { ImportResult } from "@/services/importExport/types"
@@ -24,30 +32,20 @@ import { i18n } from "#imports"
 
 type Props = {
   onMouseEnter: () => void
+  onInteractOutside: () => void
 }
 
-type MenuTriggerProps = React.ComponentProps<typeof MenubarTrigger>
-
-function MenuTrigger(props: MenuTriggerProps): React.ReactElement {
-  return (
-    <MenubarTrigger
-      className={cn(
-        "p-1.5 text-xs gap-0.5 font-normal font-sans text-foreground cursor-pointer",
-        props.disabled && "opacity-50 pointer-events-none",
-      )}
-      {...props}
-    >
-      {props.children}
-    </MenubarTrigger>
-  )
-}
-
-export function SettingsMenu({ onMouseEnter }: Props): React.ReactElement {
+export function SettingsMenu({
+  onMouseEnter,
+  onInteractOutside,
+}: Props): React.ReactElement {
   const { settings, update } = useSettings()
   const { container } = useContainer()
   const [importDialogOpen, setImportDialogOpen] = useState(false)
+  const [modelSettingsOpen, setModelSettingsOpen] = useState(false)
   const [promptImproverSettingsOpen, setPromptImproverSettingsOpen] =
     useState(false)
+  const [organizerSettingsOpen, setOrganizerSettingsOpen] = useState(false)
 
   /**
    * Handle settings change
@@ -107,6 +105,13 @@ export function SettingsMenu({ onMouseEnter }: Props): React.ReactElement {
     setPromptImproverSettingsOpen(true)
   }, [])
 
+  /**
+   * Handle open prompt organizer settings
+   */
+  const handleOpenPromptOrganizer = useCallback(() => {
+    setOrganizerSettingsOpen(true)
+  }, [])
+
   return (
     <MenubarMenu value={MENU.Settings}>
       <MenuTrigger
@@ -120,6 +125,7 @@ export function SettingsMenu({ onMouseEnter }: Props): React.ReactElement {
         className="max-w-64"
         data-testid={TestIds.inputPopup.settingsContent}
         container={container}
+        onInteractOutside={onInteractOutside}
       >
         {settings && (
           <>
@@ -211,13 +217,21 @@ export function SettingsMenu({ onMouseEnter }: Props): React.ReactElement {
 
             <MenubarSeparator />
 
-            {/* Prompt Improver Group */}
+            {/* Prompt Generation Group */}
             <MenubarLabel className="text-xs font-medium text-muted-foreground">
-              {i18n.t("settings.groups.promptImprover")}
+              {i18n.t("settings.groups.promptGeneration")}
             </MenubarLabel>
+            <MenubarItem onClick={() => setModelSettingsOpen(true)}>
+              <Brain size={16} />
+              {i18n.t("settings.modelSettings.title")}
+            </MenubarItem>
             <MenubarItem onClick={handleOpenPromptImproverSettings}>
-              <Settings size={16} />
+              <WandSparkles size={16} />
               {i18n.t("settings.promptImproverSettings")}
+            </MenubarItem>
+            <MenubarItem onClick={handleOpenPromptOrganizer}>
+              <NotebookPen size={16} />
+              {i18n.t("settings.promptOrganizerSettings")}
             </MenubarItem>
           </>
         )}
@@ -230,10 +244,30 @@ export function SettingsMenu({ onMouseEnter }: Props): React.ReactElement {
         onImportComplete={handleImportComplete}
       />
 
+      {/* Model Settings Dialog */}
+      <ModelSettingsDialog
+        open={modelSettingsOpen}
+        onOpenChange={setModelSettingsOpen}
+      />
+
       {/* Prompt Improver Settings Dialog */}
       <PromptImproverSettingsDialog
         open={promptImproverSettingsOpen}
         onOpenChange={setPromptImproverSettingsOpen}
+        onClickModelSettings={() => {
+          setPromptImproverSettingsOpen(false)
+          setModelSettingsOpen(true)
+        }}
+      />
+
+      {/* Organizer Settings Dialog */}
+      <OrganizerSettingsDialog
+        open={organizerSettingsOpen}
+        onOpenChange={setOrganizerSettingsOpen}
+        onClickModelSettings={() => {
+          setOrganizerSettingsOpen(false)
+          setModelSettingsOpen(true)
+        }}
       />
     </MenubarMenu>
   )

@@ -1,33 +1,24 @@
 import React, { useState, useCallback, useMemo, useEffect } from "react"
-import { History, Star, Sparkles } from "lucide-react"
+import { History, Star } from "lucide-react"
 import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/popover"
-import {
-  Menubar,
-  MenubarContent,
-  MenubarMenu,
-  MenubarTrigger,
-} from "@/components/ui/menubar"
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-} from "@/components/ui/tooltip"
+import { Menubar, MenubarContent, MenubarMenu } from "@/components/ui/menubar"
+import { MenuTrigger } from "./MenuTrigger"
 import { useCaretNode } from "@/hooks/useCaretNode"
 import { useContainer } from "@/hooks/useContainer"
 import { usePromptExecution } from "@/hooks/usePromptExecution"
 import { PromptPreview } from "./PromptPreview"
 import { RemoveDialog } from "@/components/inputMenu/controller/RemoveDialog"
 import { EditDialog } from "@/components/inputMenu/controller/EditDialog"
-import { PromptImproveDialog } from "@/components/inputMenu/controller/PromptImproveDialog"
 import { VariableInputDialog } from "@/components/inputMenu/controller/VariableInputDialog"
-import { BridgeArea } from "@/components/BridgeArea"
+import { BridgeArea } from "@/components/inputMenu/BridgeArea"
 import { PromptServiceFacade } from "@/services/promptServiceFacade"
 import { SaveMode } from "@/types/prompt"
 import { MENU, TestIds } from "@/components/const"
 import { PromptList } from "@/components/inputMenu/PromptList"
+import { GenerationMenu } from "./GenerationMenu"
 import { SettingsMenu } from "./SettingsMenu"
-import { cn, isEmpty } from "@/lib/utils"
-import type { Prompt, SaveDialogData, ImprovePromptData } from "@/types/prompt"
+import { isEmpty } from "@/lib/utils"
+import type { Prompt, SaveDialogData } from "@/types/prompt"
 import { i18n } from "#imports"
 
 const serviceFacade = PromptServiceFacade.getInstance()
@@ -79,8 +70,6 @@ export function InputMenu(props: Props): React.ReactElement {
   const [saveDialogData, setSaveDialogData] = useState<SaveDialogData | null>(
     null,
   )
-  const [improvePromptData, setImprovePromptData] =
-    useState<ImprovePromptData | null>(null)
   const [historySideFlipped, setHistorySideFlipped] = useState(false)
   const [pinnedSideFlipped, setPinnedSideFlipped] = useState(false)
 
@@ -102,7 +91,6 @@ export function InputMenu(props: Props): React.ReactElement {
   const {
     variableInputData,
     insertPrompt,
-    setPrompt,
     handleVariableSubmit,
     clearVariableInputData,
   } = usePromptExecution({ nodeAtCaret })
@@ -161,17 +149,6 @@ export function InputMenu(props: Props): React.ReactElement {
   }
 
   /**
-   * Input improved prompt process
-   */
-  const handleInputPrompt = async (data: ImprovePromptData) => {
-    try {
-      await setPrompt(data.content)
-    } catch (error) {
-      console.error("Input improved prompt failed:", error)
-    }
-  }
-
-  /**
    * Toggle pin process
    */
   const handleTogglePin = async (promptId: string, isPinned: boolean) => {
@@ -186,21 +163,31 @@ export function InputMenu(props: Props): React.ReactElement {
     }
   }
 
+  /**
+   * Confirm AI-generated template
+   */
+  const handleConfirmTemplate = useCallback(async (promptId: string) => {
+    try {
+      const prompt = await serviceFacade.getPrompt(promptId)
+      if (prompt.isAIGenerated && prompt.aiMetadata) {
+        // Update aiMetadata.confirmed to true
+        const updates: Partial<Prompt> = {
+          aiMetadata: {
+            ...prompt.aiMetadata,
+            confirmed: true,
+          },
+        }
+        await serviceFacade.updatePrompt(promptId, updates)
+      }
+    } catch (error) {
+      console.error("Template confirmation failed:", error)
+    }
+  }, [])
+
   const handleInteractOutside = useCallback(() => {
     setSelectedMenu(MENU.None)
     setListLocked(false)
   }, [])
-
-  /**
-   * Open prompt-improve dialog
-   */
-  const openImproveDialog = async () => {
-    if (!props.saveEnabled) return
-    const content = serviceFacade.extractPromptContent()
-    setImprovePromptData({
-      content: content ?? "",
-    })
-  }
 
   /**
    * Open save dialog
@@ -208,11 +195,8 @@ export function InputMenu(props: Props): React.ReactElement {
   const openEditDialog = async (promptId: string) => {
     const prompt = await serviceFacade.getPrompt(promptId)
     setSaveDialogData({
-      name: prompt.name,
-      content: prompt.content,
+      ...prompt,
       saveMode: SaveMode.Overwrite,
-      isPinned: prompt.isPinned,
-      variables: prompt.variables,
     })
     setEditId(promptId)
   }
@@ -223,11 +207,9 @@ export function InputMenu(props: Props): React.ReactElement {
   const openCopyDialog = async (promptId: string) => {
     const prompt = await serviceFacade.getPrompt(promptId)
     setSaveDialogData({
+      ...prompt,
       name: `${i18n.t("messages.copyPrefix")} ${prompt.name}`,
-      content: prompt.content,
       saveMode: SaveMode.Copy,
-      isPinned: prompt.isPinned,
-      variables: prompt.variables,
     })
     setEditId("")
   }
@@ -235,16 +217,23 @@ export function InputMenu(props: Props): React.ReactElement {
   /**
    * Update prompt & pin it.
    */
-  const handleEditPrompt = async (saveData: SaveDialogData) => {
+  const handleEditPrompt = async (
+    updates: Partial<SaveDialogData> & { saveMode: SaveMode },
+  ) => {
     try {
       if (
         isEmpty(editId) ||
-        saveData.saveMode === SaveMode.New ||
-        saveData.saveMode === SaveMode.Copy
+        updates.saveMode === SaveMode.New ||
+        updates.saveMode === SaveMode.Copy
       ) {
-        await serviceFacade.savePromptManually(saveData)
+        // For new saves and copies, merge with existing saveDialogData
+        const completeData: SaveDialogData = {
+          ...saveDialogData!,
+          ...updates,
+        }
+        await serviceFacade.savePromptManually(completeData)
       } else {
-        await serviceFacade.updatePrompt(editId!, saveData)
+        await serviceFacade.updatePrompt(editId!, updates)
       }
     } catch (error) {
       console.error("Save failed:", error)
@@ -300,6 +289,7 @@ export function InputMenu(props: Props): React.ReactElement {
               onCopy={openCopyDialog}
               onTogglePin={handleTogglePin}
               onLockChange={setListLocked}
+              onConfirmTemplate={handleConfirmTemplate}
             />
             {historyAnchorElm && historyContentElm && (
               <BridgeArea
@@ -341,6 +331,7 @@ export function InputMenu(props: Props): React.ReactElement {
               onCopy={openCopyDialog}
               onTogglePin={handleTogglePin}
               onLockChange={setListLocked}
+              onConfirmTemplate={handleConfirmTemplate}
             />
             {pinnedAnchorElm && pinnedContentElm && (
               <BridgeArea
@@ -352,35 +343,18 @@ export function InputMenu(props: Props): React.ReactElement {
           </MenubarContent>
         </MenubarMenu>
 
-        {/* Improve Menu */}
-        <MenubarMenu value={MENU.Improve}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <MenuTrigger
-                disabled={!props.saveEnabled}
-                onClick={openImproveDialog}
-                data-testid={TestIds.inputPopup.improveTrigger}
-              >
-                <Sparkles
-                  size={16}
-                  strokeWidth={1.75}
-                  className="stroke-neutral-600"
-                />
-              </MenuTrigger>
-            </TooltipTrigger>
-            <TooltipContent
-              className="bg-white dark:bg-neutral-800 text-xs text-foreground shadow-md py-2 border border-neutral-200 dark:border-neutral-700"
-              sideOffset={10}
-              align="start"
-              noArrow={true}
-            >
-              {i18n.t("tooltips.improveMenu")}
-            </TooltipContent>
-          </Tooltip>
-        </MenubarMenu>
+        {/* Prompt Generation Menu */}
+        <GenerationMenu
+          onMouseEnter={() => handleMenuEnter(MENU.Improve)}
+          saveEnabled={props.saveEnabled}
+          onInteractOutside={handleInteractOutside}
+        />
 
         {/* Settings Menu */}
-        <SettingsMenu onMouseEnter={() => handleMenuEnter(MENU.Settings)} />
+        <SettingsMenu
+          onMouseEnter={() => handleMenuEnter(MENU.Settings)}
+          onInteractOutside={handleInteractOutside}
+        />
       </Menubar>
 
       {/* PromptPreview */}
@@ -401,8 +375,12 @@ export function InputMenu(props: Props): React.ReactElement {
           initialName={saveDialogData.name}
           initialContent={saveDialogData.content}
           initialVariables={saveDialogData.variables}
+          initialUseCase={saveDialogData.useCase}
+          initialCategoryId={saveDialogData.categoryId}
+          initialExcludeFromOrganizer={saveDialogData.excludeFromOrganizer}
           displayMode={saveDialogData.saveMode}
           onSave={handleEditPrompt}
+          isAIGenerated={saveDialogData.isAIGenerated}
         />
       )}
 
@@ -415,16 +393,6 @@ export function InputMenu(props: Props): React.ReactElement {
       >
         <span className="text-base break-all">{removePrompt?.name}</span>
       </RemoveDialog>
-
-      {/* Prompt Improve Dialog */}
-      {improvePromptData && (
-        <PromptImproveDialog
-          open={improvePromptData !== null}
-          onOpenChange={() => setImprovePromptData(null)}
-          initialData={improvePromptData}
-          onInput={handleInputPrompt}
-        />
-      )}
 
       {/* Variable Input Dialog */}
       {variableInputData && (
@@ -439,22 +407,6 @@ export function InputMenu(props: Props): React.ReactElement {
         />
       )}
     </div>
-  )
-}
-
-function MenuTrigger(
-  props: React.ComponentProps<typeof MenubarTrigger>,
-): React.ReactElement {
-  return (
-    <MenubarTrigger
-      className={cn(
-        "p-1.5 text-xs gap-0.5 font-normal font-sans text-foreground cursor-pointer",
-        props.disabled && "opacity-50",
-      )}
-      {...props}
-    >
-      {props.children}
-    </MenubarTrigger>
   )
 }
 

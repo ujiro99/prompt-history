@@ -6,8 +6,14 @@ import type {
   AppSettings,
   ImprovePromptSettings,
 } from "@/types/prompt"
+import type {
+  Category,
+  PromptOrganizerSettings,
+  PendingOrganizerTemplates,
+} from "@/types/promptOrganizer"
 import type { AiConfigCacheData } from "./aiConfigCache"
 import type { ImprovePromptCacheData } from "./improvePromptCache"
+import { DEFAULT_ORGANIZATION_PROMPT } from "../genai/defaultPrompts"
 
 /**
  * Default settings values
@@ -116,9 +122,55 @@ export const improvePromptSettingsStorage =
     fallback: {
       mode: ImprovePromptInputMethod.URL,
       textContent: "",
-      urlContent: "",
+      urlContent: import.meta.env.WXT_IMPROVE_PROMPT_URL || "",
       lastModified: 0,
     },
     version: 1,
     migrations: {},
   })
+
+/**
+ * Default Prompt Organizer Settings
+ */
+export const DEFAULT_ORGANIZER_SETTINGS: PromptOrganizerSettings = {
+  filterPeriodDays: 7,
+  filterMinExecutionCount: 2,
+  filterMaxPrompts: 100,
+  organizationPrompt: DEFAULT_ORGANIZATION_PROMPT,
+}
+
+/**
+ * Categories storage definition
+ */
+export const categoriesStorage = storage.defineItem<Record<string, Category>>(
+  "local:categories",
+  {
+    fallback: {},
+    version: 1,
+    migrations: {},
+  },
+)
+
+/**
+ * Prompt Organizer Settings storage definition
+ */
+export const promptOrganizerSettingsStorage =
+  storage.defineItem<PromptOrganizerSettings>("local:promptOrganizerSettings", {
+    fallback: DEFAULT_ORGANIZER_SETTINGS,
+    version: 1,
+    migrations: {},
+  })
+
+/**
+ * Pending Organizer Templates storage definition
+ * Stores template candidates that are pending user action (save/discard)
+ */
+export const pendingOrganizerTemplatesStorage =
+  storage.defineItem<PendingOrganizerTemplates | null>(
+    "local:pendingOrganizerTemplates",
+    {
+      fallback: null,
+      version: 1,
+      migrations: {},
+    },
+  )

@@ -1,0 +1,100 @@
+/**
+ * Cost Estimator Service
+ * Token usage and cost calculation
+ */
+
+import type {
+  TokenUsage,
+  OrganizerExecutionEstimate,
+  PromptOrganizerSettings,
+} from "@/types/promptOrganizer"
+import { GeminiClient } from "@/services/genai/GeminiClient"
+import { promptFilterService } from "./PromptFilterService"
+import { TemplateGeneratorService } from "./TemplateGeneratorService"
+import { categoryService } from "./CategoryService"
+import { promptsService } from "@/services/storage/prompts"
+import { GEMINI_PRICING, GEMINI_CONTEXT_LIMIT } from "./pricing"
+
+/**
+ * Cost Estimator Service
+ */
+export class CostEstimatorService {
+  private geminiClient: GeminiClient
+
+  constructor() {
+    this.geminiClient = GeminiClient.getInstance()
+  }
+
+  /**
+   * Calculate cost from token usage
+   *
+   * @param usage Token usage
+   * @returns Cost in JPY
+   */
+  calculateCost(usage: TokenUsage): number {
+    const inputCost =
+      (usage.inputTokens / 1_000_000) * GEMINI_PRICING.inputTokenPer1M
+    const outputCost =
+      ((usage.outputTokens + usage.thoughtsTokens) / 1_000_000) *
+      GEMINI_PRICING.outputTokenPer1M
+    const totalUsd = inputCost + outputCost
+    return totalUsd * GEMINI_PRICING.usdToJpy
+  }
+
+  /**
+   * Estimate execution cost before execution
+   *
+   * @param settings Organizer settings
+   * @returns Execution estimate
+   */
+  async estimateExecution(
+    settings: PromptOrganizerSettings,
+  ): Promise<OrganizerExecutionEstimate> {
+    // API key initialization is handled by AiModelContext
+    if (!this.geminiClient.isInitialized()) {
+      throw new Error(
+        "API key not configured. Please set your API key in settings.",
+      )
+    }
+
+    // 1. Get all prompts
+    const allPrompts = await promptsService.getAllPrompts()
+
+    // 2. Filter target prompts
+    const targetPrompts = promptFilterService.filterPrompts(
+      allPrompts,
+      settings,
+    )
+
+    // 3. Build prompt text
+    const generator = new TemplateGeneratorService()
+    const promptText = generator.buildPrompt(
+      targetPrompts,
+      settings.organizationPrompt,
+      await categoryService.getAll(),
+    )
+
+    // 4. Estimate token count
+    const inputTokens = await this.geminiClient.estimateTokens(promptText)
+    console.log("Estimated input tokens:", inputTokens)
+
+    // 5. Calculate cost (estimate output tokens as 0.5 x input tokens)
+    const estimatedCost = this.calculateCost({
+      inputTokens,
+      outputTokens: inputTokens * 0.5,
+      thoughtsTokens: inputTokens,
+    })
+
+    return {
+      targetPromptCount: targetPrompts.length,
+      estimatedInputTokens: inputTokens,
+      estimatedOutputTokens: inputTokens * 1.5, // including thoughts tokens
+      contextUsageRate: inputTokens / GEMINI_CONTEXT_LIMIT,
+      estimatedCost,
+      model: "gemini-2.5-flash",
+      contextLimit: GEMINI_CONTEXT_LIMIT,
+    }
+  }
+}
+
+export const costEstimatorService = new CostEstimatorService()

@@ -6,10 +6,14 @@ import {
   PopoverPortal,
 } from "@/components/ui/popover"
 import { ScrollAreaWithGradient } from "./ScrollAreaWithGradient"
-import { BridgeArea } from "../BridgeArea"
+import { BridgeArea } from "./BridgeArea"
 import type { Prompt } from "@/types/prompt"
+import type { Category } from "@/types/promptOrganizer"
 import { i18n } from "#imports"
 import { TestIds } from "@/components/const"
+import { stopPropagation } from "@/utils/dom"
+import { categoryService } from "@/services/promptOrganizer/CategoryService"
+import { cn } from "@/lib/utils"
 
 interface PromptDetailProps {
   open: boolean
@@ -43,6 +47,59 @@ export const PromptPreview = ({
     }
   }, [open, anchorElm])
 
+  return (
+    <Popover open={open}>
+      <PopoverAnchor virtualRef={{ current: anchorElm }} />
+      <PopoverPortal container={anchorElm}>
+        {shouldRender && (
+          <PopoverContent
+            ref={setContent}
+            className="relative pt-4 pb-3 pl-4 pr-2 max-w-lg"
+            side={"right"}
+            align={"end"}
+            sideOffset={8}
+            onOpenAutoFocus={noFocus}
+            data-testid={TestIds.inputPopup.promptPreview}
+            {...stopPropagation()}
+          >
+            <div className="space-y-2 text-foreground">
+              <ScrollAreaWithGradient
+                className="max-h-100"
+                gradientHeight={"3.5rem"}
+              >
+                <p className="font-mono break-all text-sm whitespace-pre-line text-foreground/80 pr-3">
+                  {prompt.content}
+                </p>
+              </ScrollAreaWithGradient>
+              <hr />
+              <PromptMetadata prompt={prompt} />
+            </div>
+            {content && (
+              <BridgeArea
+                fromElm={anchorElm}
+                toElm={content}
+                isHorizontal={true}
+                className="size-auto" // workaround for MenuItem's css
+              />
+            )}
+          </PopoverContent>
+        )}
+      </PopoverPortal>
+    </Popover>
+  )
+}
+PromptPreview.displayName = "PromptPreview"
+
+const PromptMetadata = ({ prompt }: { prompt: Prompt }) => {
+  const [categories, setCategories] = useState<Category[]>([])
+
+  const isAigenerated = prompt.isAIGenerated ?? false
+
+  useEffect(() => {
+    // Load categories
+    categoryService.getAll().then(setCategories)
+  }, [])
+
   /**
    * Display relative time
    */
@@ -61,51 +118,60 @@ export const PromptPreview = ({
     return date.toLocaleDateString()
   }
 
+  /**
+   * Get category name (with i18n for default categories)
+   */
+  const getCategoryName = (categoryId: string): string | null => {
+    const category = categories.find((c) => c.id === categoryId)
+    if (!category) return null
+
+    if (category.isDefault) {
+      const i18nKey = `organizer.category.${category.id}`
+      return i18n.t(i18nKey)
+    }
+    return category.name
+  }
+
   return (
-    <Popover open={open}>
-      <PopoverAnchor virtualRef={{ current: anchorElm }} />
-      <PopoverPortal container={anchorElm}>
-        {shouldRender && (
-          <PopoverContent
-            ref={setContent}
-            className="relative pt-4 pb-3 pl-4 pr-2 max-w-lg"
-            side={"right"}
-            align={"end"}
-            sideOffset={8}
-            onOpenAutoFocus={noFocus}
-            onWheel={(e) => e.stopPropagation()}
-            data-testid={TestIds.inputPopup.promptPreview}
-          >
-            <div className="space-y-2 text-foreground">
-              <ScrollAreaWithGradient
-                className="max-h-100"
-                gradientHeight={"3.5rem"}
-              >
-                <p className="font-mono break-all text-sm whitespace-pre-line text-foreground/80 pr-3">
-                  {prompt.content}
-                </p>
-              </ScrollAreaWithGradient>
-              <hr />
-              <div className="flex items-center justify-end gap-1.5 text-xs pr-2">
-                <span>
-                  {i18n.t("preview.usedTimes", [`${prompt.executionCount}`])}
-                </span>
-                <span>•</span>
-                <span>{formatRelativeTime(prompt.lastExecutedAt)}</span>
-              </div>
+    <div className="flex justify-between">
+      {prompt.categoryId || prompt.useCase ? (
+        <div className="space-y-1 text-xs pr-2">
+          {prompt.categoryId && (
+            <div className="flex items-start gap-1.5">
+              <span className="text-muted-foreground text-nowrap">
+                {i18n.t("promptOrganizer.preview.category")}:
+              </span>
+              <span className="text-foreground">
+                {getCategoryName(prompt.categoryId) || prompt.categoryId}
+              </span>
             </div>
-            {content && (
-              <BridgeArea
-                fromElm={anchorElm}
-                toElm={content}
-                isHorizontal={true}
-                className="size-auto" // workaround for MenuItem's css
-              />
-            )}
-          </PopoverContent>
+          )}
+          {prompt.useCase && (
+            <div className="flex items-start gap-1.5">
+              <span className="text-muted-foreground text-nowrap">
+                {i18n.t("promptOrganizer.preview.useCase")}:
+              </span>
+              <span className="text-foreground">{prompt.useCase}</span>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div></div>
+      )}
+      <div
+        className={cn(
+          "flex items-end justify-end gap-1.5 text-xs pr-2",
+          isAigenerated && "flex-col gap-1",
         )}
-      </PopoverPortal>
-    </Popover>
+      >
+        <span className="text-nowrap">
+          {i18n.t("preview.usedTimes", [`${prompt.executionCount}`])}
+        </span>
+        {!isAigenerated && <span>•</span>}
+        <span className="text-nowrap">
+          {formatRelativeTime(prompt.lastExecutedAt)}
+        </span>
+      </div>
+    </div>
   )
 }
-PromptPreview.displayName = "PromptPreview"

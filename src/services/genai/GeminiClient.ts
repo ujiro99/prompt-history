@@ -4,7 +4,7 @@
  */
 
 import { GoogleGenAI } from "@google/genai"
-import type { GeminiConfig, StreamChunk } from "./types"
+import type { GeminiConfig, StreamChunk, Usage } from "./types"
 import { GeminiError, GeminiErrorType } from "./types"
 
 /**
@@ -114,33 +114,141 @@ export class GeminiClient {
         }
       }
     } catch (error) {
-      // Handle different error types
-      if (error instanceof Error) {
-        if (error.message.includes("network")) {
-          throw new GeminiError(
-            "Network error. Please check your connection.",
-            GeminiErrorType.NETWORK_ERROR,
-            error,
-          )
-        } else if (error.message.includes("API key")) {
-          throw new GeminiError(
-            "Invalid API key.",
-            GeminiErrorType.API_KEY_MISSING,
-            error,
-          )
-        } else {
-          throw new GeminiError(
-            `API error: ${error.message}`,
-            GeminiErrorType.API_ERROR,
-            error,
-          )
-        }
-      }
+      this.errorHandler(error)
+    }
+  }
+
+  /**
+   * Generate structured JSON content stream from Gemini API
+   * Combines structured output with streaming for real-time progress
+   * @param prompt - Input prompt
+   * @param schema - JSON schema for structured output
+   * @param config - Optional configuration overrides
+   * @param options - Streaming options (abort signal, progress callback)
+   * @returns Promise resolving to parsed JSON response
+   */
+  public async generateStructuredContentStream<T = unknown>(
+    prompt: string,
+    schema: Record<string, unknown>,
+    config?: Partial<GeminiConfig>,
+    options?: {
+      signal?: AbortSignal
+      onProgress?: (
+        chunk: string | null,
+        accumulated: string,
+        tokenUsage: Usage,
+      ) => void
+    },
+  ): Promise<T> {
+    if (!this.ai || !this.config) {
       throw new GeminiError(
-        "Unknown error occurred",
-        GeminiErrorType.API_ERROR,
-        error,
+        "Client not initialized. Call initialize() first.",
+        GeminiErrorType.API_KEY_MISSING,
       )
+    }
+
+    const mergedConfig = {
+      ...this.config,
+      ...config,
+    }
+
+    let accumulated = ""
+
+    try {
+      // Check if already cancelled before starting
+      if (options?.signal?.aborted) {
+        throw new GeminiError(
+          "Request cancelled before start",
+          GeminiErrorType.CANCELLED,
+        )
+      }
+
+      // Start streaming with structured output
+      const responseStream = await this.ai.models.generateContentStream({
+        model: mergedConfig.model,
+        contents: [prompt],
+        config: {
+          systemInstruction: mergedConfig.systemInstruction,
+          responseMimeType: "application/json",
+          responseSchema: schema,
+          ...mergedConfig.generateContentConfig,
+        },
+      })
+
+      // Process stream chunks
+      for await (const chunk of responseStream) {
+        // Check cancellation on each chunk
+        if (options?.signal?.aborted) {
+          throw new GeminiError("Request cancelled", GeminiErrorType.CANCELLED)
+        }
+
+        if (chunk.text) {
+          accumulated += chunk.text
+        }
+
+        // Notify progress with partial JSON
+        options?.onProgress?.(chunk.text ?? null, accumulated, {
+          prompt: chunk.usageMetadata?.promptTokenCount || 0,
+          thoughts: chunk.usageMetadata?.thoughtsTokenCount || 0,
+          candidates: chunk.usageMetadata?.candidatesTokenCount || 0,
+        })
+      }
+
+      // Parse final complete JSON
+      if (!accumulated) {
+        throw new GeminiError("No response from API", GeminiErrorType.API_ERROR)
+      }
+
+      return JSON.parse(accumulated) as T
+    } catch (error) {
+      // Handle cancellation explicitly
+      if (
+        options?.signal?.aborted ||
+        (error instanceof GeminiError &&
+          error.type === GeminiErrorType.CANCELLED)
+      ) {
+        throw new GeminiError(
+          "Request cancelled by user",
+          GeminiErrorType.CANCELLED,
+        )
+      }
+      this.errorHandler(error)
+    }
+  }
+
+  /**
+   * Estimate token usage for a given prompt
+   * @param prompt - Input prompt
+   * @param config - Optional configuration overrides
+   * @returns Estimated token count
+   */
+  public async estimateTokens(
+    prompt: string,
+    config?: Partial<GeminiConfig>,
+  ): Promise<number> {
+    if (!this.ai || !this.config) {
+      throw new GeminiError(
+        "Client not initialized. Call initialize() first.",
+        GeminiErrorType.API_KEY_MISSING,
+      )
+    }
+
+    const mergedConfig = {
+      ...this.config,
+      ...config,
+    }
+
+    try {
+      // Simple token count without schema
+      // Gemini API does not currently support schema-based token estimation
+      const res = await this.ai.models.countTokens({
+        model: mergedConfig.model,
+        contents: [prompt],
+        config: mergedConfig,
+      })
+      return res.totalTokens || 0
+    } catch (error) {
+      this.errorHandler(error)
     }
   }
 
@@ -150,5 +258,43 @@ export class GeminiClient {
   public reset(): void {
     this.ai = null
     this.config = null
+  }
+
+  /**
+   * Handle errors from Gemini API
+   *  * @param error - Original error
+   *  * @throws GeminiError with appropriate type and message
+   */
+  private errorHandler(error: unknown): never {
+    if (error instanceof GeminiError) {
+      throw error
+    }
+    // Handle different error types
+    if (error instanceof Error) {
+      if (error.message.includes("network")) {
+        throw new GeminiError(
+          "Network error. Please check your connection.",
+          GeminiErrorType.NETWORK_ERROR,
+          error,
+        )
+      } else if (error.message.includes("API key")) {
+        throw new GeminiError(
+          "Invalid API key.",
+          GeminiErrorType.API_KEY_MISSING,
+          error,
+        )
+      } else {
+        throw new GeminiError(
+          `API error: ${error.message}`,
+          GeminiErrorType.API_ERROR,
+          error,
+        )
+      }
+    }
+    throw new GeminiError(
+      "Unknown error occurred",
+      GeminiErrorType.API_ERROR,
+      error,
+    )
   }
 }

@@ -3,8 +3,10 @@ import { ChevronDown, HelpCircle } from "lucide-react"
 import { SaveMode } from "@/types/prompt"
 import type { SaveDialogData, VariableConfig } from "@/types/prompt"
 import { mergeVariableConfigs } from "@/utils/variables/variableParser"
-import { VariableConfigField } from "./VariableConfigField"
 import { VariableExpansionInfoDialog } from "./VariableExpansionInfoDialog"
+import { VariableSettingsSection } from "@/components/shared"
+import { CategorySelector } from "@/components/promptOrganizer/CategorySelector"
+import { ScrollAreaWithGradient } from "@/components/inputMenu/ScrollAreaWithGradient"
 import {
   Dialog,
   DialogTitle,
@@ -22,9 +24,9 @@ import { Button } from "@/components/ui/button"
 import { ButtonGroup } from "@/components/ui/button-group"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { ScrollAreaWithGradient } from "@/components/inputMenu/ScrollAreaWithGradient"
 import { useContainer } from "@/hooks/useContainer"
 import { useSettings } from "@/hooks/useSettings"
+import { stopPropagation } from "@/utils/dom"
 import { analytics } from "#imports"
 
 /**
@@ -39,10 +41,33 @@ interface EditDialogProps {
   initialContent: string
   /** Initial variable configurations (when editing) */
   initialVariables?: VariableConfig[]
+  /** Initial category ID (when editing) */
+  initialCategoryId?: string | null
+  /** Initial use case (when editing) */
+  initialUseCase?: string
+  /** Initial exclude from organizer flag (when editing) */
+  initialExcludeFromOrganizer?: boolean
+  /** Whether the prompt is AI-generated */
+  isAIGenerated?: boolean
   /** Dialog display mode */
   displayMode: SaveMode
   /** Callback on save */
-  onSave: (data: SaveDialogData) => Promise<void>
+  onSave: (data: Partial<SaveDialogData> & { saveMode: SaveMode }) => Promise<void>
+}
+
+const variableEquals = (
+  x: VariableConfig,
+  y: VariableConfig | undefined,
+): boolean => {
+  if (!y) {
+    return false
+  }
+  return (
+    x.name === y.name &&
+    x.type === y.type &&
+    x.defaultValue === y.defaultValue &&
+    JSON.stringify(x.selectOptions) === JSON.stringify(y.selectOptions)
+  )
 }
 
 /**
@@ -54,6 +79,10 @@ export const EditDialog: React.FC<EditDialogProps> = ({
   initialName = "",
   initialContent,
   initialVariables,
+  initialCategoryId,
+  initialUseCase = "",
+  initialExcludeFromOrganizer = false,
+  isAIGenerated,
   displayMode,
   onSave,
 }) => {
@@ -61,6 +90,13 @@ export const EditDialog: React.FC<EditDialogProps> = ({
   const [content, setContent] = useState(initialContent)
   const [variables, setVariables] = useState<VariableConfig[]>(
     initialVariables || [],
+  )
+  const [categoryId, setCategoryId] = useState<string | null>(
+    initialCategoryId ?? null,
+  )
+  const [useCase, setUseCase] = useState(initialUseCase)
+  const [excludeFromOrganizer, setExcludeFromOrganizer] = useState(
+    initialExcludeFromOrganizer,
   )
   const [isLoading, setIsLoading] = useState(false)
   const [isInfoDialogOpen, setIsInfoDialogOpen] = useState(false)
@@ -81,7 +117,18 @@ export const EditDialog: React.FC<EditDialogProps> = ({
         ? initialVariables || mergeVariableConfigs(initialContent)
         : [],
     )
-  }, [initialName, initialContent, initialVariables, variableExpansionEnabled])
+    setCategoryId(initialCategoryId ?? null)
+    setUseCase(initialUseCase)
+    setExcludeFromOrganizer(initialExcludeFromOrganizer)
+  }, [
+    initialName,
+    initialContent,
+    initialVariables,
+    initialCategoryId,
+    initialUseCase,
+    initialExcludeFromOrganizer,
+    variableExpansionEnabled,
+  ])
 
   // Clear values on close
   useEffect(() => {
@@ -89,8 +136,19 @@ export const EditDialog: React.FC<EditDialogProps> = ({
       setName(initialName)
       setContent(initialContent)
       setVariables(initialVariables || [])
+      setCategoryId(initialCategoryId ?? null)
+      setUseCase(initialUseCase)
+      setExcludeFromOrganizer(initialExcludeFromOrganizer)
     }
-  }, [open, initialName, initialContent, initialVariables])
+  }, [
+    open,
+    initialName,
+    initialContent,
+    initialVariables,
+    initialCategoryId,
+    initialUseCase,
+    initialExcludeFromOrganizer,
+  ])
 
   // Parse and merge variables when content changes (only if variable expansion is enabled)
   useEffect(() => {
@@ -104,15 +162,6 @@ export const EditDialog: React.FC<EditDialogProps> = ({
   }, [content, variableExpansionEnabled])
 
   /**
-   * Handle variable configuration change
-   */
-  const handleVariableChange = (index: number, config: VariableConfig) => {
-    const updatedVariables = [...variables]
-    updatedVariables[index] = config
-    setVariables(updatedVariables)
-  }
-
-  /**
    * Save processing
    */
   const handleSave = async (saveMode: SaveMode) => {
@@ -123,12 +172,28 @@ export const EditDialog: React.FC<EditDialogProps> = ({
     setIsLoading(true)
 
     try {
-      const saveData: SaveDialogData = {
-        name: name.trim(),
-        content: content.trim(),
+      const updates: Partial<SaveDialogData> & { saveMode: SaveMode } = {
         saveMode: saveMode,
-        isPinned: true,
-        variables: variables.length > 0 ? variables : undefined,
+      }
+      if (name.trim() !== initialName) {
+        updates.name = name.trim()
+      }
+      if (content.trim() !== initialContent) {
+        updates.content = content.trim()
+      }
+      if (
+        !variables.every((v, i) => variableEquals(v, initialVariables?.[i]))
+      ) {
+        updates.variables = variables
+      }
+      if (categoryId !== initialCategoryId) {
+        updates.categoryId = categoryId || null
+      }
+      if (useCase.trim() !== initialUseCase) {
+        updates.useCase = useCase.trim() || undefined
+      }
+      if (excludeFromOrganizer !== initialExcludeFromOrganizer) {
+        updates.excludeFromOrganizer = excludeFromOrganizer
       }
 
       try {
@@ -137,7 +202,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
         // Ignore analytics errors to prevent them from affecting core functionality
         console.warn("Analytics tracking failed:", error)
       }
-      await onSave(saveData)
+      await onSave(updates)
     } finally {
       setIsLoading(false)
       onOpenChange(false)
@@ -167,12 +232,9 @@ export const EditDialog: React.FC<EditDialogProps> = ({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
           container={container}
-          className="w-xl sm:max-w-xl max-h-9/10"
+          className="w-2xl sm:max-w-2xl max-h-9/10 flex flex-col pr-4"
           onKeyDown={handleKeyDown}
-          onKeyPress={(e) => e.stopPropagation()} // For chatgpt
-          onKeyUp={(e) => e.stopPropagation()}
-          onWheel={(e) => e.stopPropagation()}
-          onTouchMove={(e) => e.stopPropagation()}
+          {...stopPropagation()}
         >
           <DialogHeader>
             <DialogTitle>
@@ -184,91 +246,143 @@ export const EditDialog: React.FC<EditDialogProps> = ({
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-4">
-            {/* Prompt name input */}
-            <div className="space-y-2">
-              <label
-                htmlFor="prompt-name"
-                className="text-sm font-semibold text-foreground"
-              >
-                {i18n.t("common.name")}
-              </label>
-              <p className="text-xs text-muted-foreground">
-                {i18n.t("common.nameDescription")}
-              </p>
-              <Input
-                id="prompt-name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder={i18n.t("placeholders.enterPromptName")}
-                disabled={isLoading}
-                autoFocus
-              />
-            </div>
-
-            {/* Prompt content input */}
-            <div className="space-y-2">
-              <label
-                htmlFor="prompt-content"
-                className="text-sm font-semibold text-foreground"
-              >
-                {i18n.t("common.prompt")}
-              </label>
-              <div className="flex items-center justify-between gap-2">
+          <ScrollAreaWithGradient
+            className="flex-1 max-h-[70vh] pl-2 pr-4"
+            indicatorVisible={false}
+          >
+            <div className="space-y-4 py-2">
+              {/* Prompt name input */}
+              <div className="space-y-1">
+                <label
+                  htmlFor="prompt-name"
+                  className="text-sm font-semibold text-foreground inline-block"
+                >
+                  {i18n.t("common.name")}
+                </label>
                 <p className="text-xs text-muted-foreground">
-                  {i18n.t("common.promptDescription")}
+                  {i18n.t("common.nameDescription")}
                 </p>
-                <button
-                  type="button"
-                  onClick={() => setIsInfoDialogOpen(true)}
-                  className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors whitespace-nowrap cursor-pointer"
-                  aria-label={i18n.t("dialogs.edit.variableExpansionInfo.link")}
-                >
-                  <HelpCircle className="size-3.5" />
-                  <span>
-                    {i18n.t("dialogs.edit.variableExpansionInfo.link")}
-                  </span>
-                </button>
+                <Input
+                  id="prompt-name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder={i18n.t("placeholders.enterPromptName")}
+                  disabled={isLoading}
+                  autoFocus
+                />
               </div>
-              <Textarea
-                id="prompt-content"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder={i18n.t("placeholders.enterPromptContent")}
-                disabled={isLoading}
-                className="max-h-60"
-                rows={6}
+
+              {/* Use case input */}
+              {isAIGenerated && (
+                <div className="space-y-1">
+                  <label
+                    htmlFor="prompt-usecase"
+                    className="text-sm font-semibold text-foreground inline-block"
+                  >
+                    {i18n.t("promptOrganizer.preview.useCase")}
+                  </label>
+                  <p className="text-xs text-muted-foreground">
+                    {i18n.t("dialogs.edit.useCaseDescription")}
+                  </p>
+                  <Input
+                    id="prompt-usecase"
+                    type="text"
+                    value={useCase}
+                    onChange={(e) => setUseCase(e.target.value)}
+                    placeholder={i18n.t("dialogs.edit.useCasePlaceholder")}
+                    disabled={isLoading}
+                  />
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4">
+                {/* Category selector */}
+                <div className="space-y-1">
+                  <label
+                    htmlFor="prompt-category"
+                    className="text-sm font-semibold text-foreground inline-block"
+                  >
+                    {i18n.t("promptOrganizer.preview.category")}
+                  </label>
+                  <p className="text-xs text-muted-foreground">
+                    {i18n.t("dialogs.edit.categoryDescription")}
+                  </p>
+                  <CategorySelector
+                    value={categoryId || ""}
+                    onValueChange={(value) => setCategoryId(value || null)}
+                    className="w-full"
+                  />
+                </div>
+                {/* Exclude from organizer checkbox */}
+                <div className="mt-2 flex items-start space-x-2">
+                  <input
+                    type="checkbox"
+                    id="exclude-from-organizer"
+                    checked={excludeFromOrganizer}
+                    onChange={(e) => setExcludeFromOrganizer(e.target.checked)}
+                    disabled={isLoading}
+                    className="mt-0.5"
+                  />
+                  <div className="grid gap-1.5 leading-none">
+                    <label
+                      htmlFor="exclude-from-organizer"
+                      className="text-sm font-semibold text-foreground cursor-pointer select-none"
+                    >
+                      {i18n.t("dialogs.edit.excludeFromOrganizer")}
+                    </label>
+                    <p className="text-xs text-muted-foreground">
+                      {i18n.t("dialogs.edit.excludeFromOrganizerHelp")}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Prompt content input */}
+              <div className="space-y-1">
+                <label
+                  htmlFor="prompt-content"
+                  className="text-sm font-semibold text-foreground inline-block"
+                >
+                  {i18n.t("common.prompt")}
+                </label>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs text-muted-foreground">
+                    {i18n.t("common.promptDescription")}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setIsInfoDialogOpen(true)}
+                    className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors whitespace-nowrap cursor-pointer"
+                    aria-label={i18n.t(
+                      "dialogs.edit.variableExpansionInfo.link",
+                    )}
+                  >
+                    <HelpCircle className="size-3.5" />
+                    <span>
+                      {i18n.t("dialogs.edit.variableExpansionInfo.link")}
+                    </span>
+                  </button>
+                </div>
+                <Textarea
+                  id="prompt-content"
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder={i18n.t("placeholders.enterPromptContent")}
+                  disabled={isLoading}
+                  className="max-h-60"
+                  rows={6}
+                />
+              </div>
+
+              {/* Variable configuration section */}
+              <VariableSettingsSection
+                variables={variables}
+                onChange={setVariables}
+                enableAutoDetection={false}
               />
             </div>
-
-            {/* Variable configuration section */}
-            {variables.length > 0 && (
-              <div className="space-y-2">
-                <div>
-                  <label className="text-sm font-semibold text-foreground">
-                    {i18n.t("dialogs.edit.variableSettings")}
-                  </label>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {i18n.t("dialogs.edit.variableSettingsDescription")}
-                  </p>
-                </div>
-                <ScrollAreaWithGradient
-                  className="max-h-60 border-t-1"
-                  gradientHeight={25}
-                >
-                  {variables.map((variable, index) => (
-                    <VariableConfigField
-                      key={variable.name}
-                      variable={variable}
-                      initialVariable={initialVariables?.[index]}
-                      onChange={(config) => handleVariableChange(index, config)}
-                    />
-                  ))}
-                </ScrollAreaWithGradient>
-              </div>
-            )}
-          </div>
+          </ScrollAreaWithGradient>
 
           <DialogFooter className="mt-3">
             <Button

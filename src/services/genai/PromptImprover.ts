@@ -7,10 +7,7 @@ import { GeminiClient } from "./GeminiClient"
 import type { ImproveOptions } from "./types"
 import { GeminiError, GeminiErrorType } from "./types"
 import { improvePromptCacheService } from "../storage/improvePromptCache"
-import {
-  genaiApiKeyStorage,
-  improvePromptSettingsStorage,
-} from "../storage/definitions"
+import { improvePromptSettingsStorage } from "../storage/definitions"
 import {
   SYSTEM_INSTRUCTION,
   DEFAULT_IMPROVEMENT_PROMPT,
@@ -40,70 +37,14 @@ export class PromptImprover {
   }
 
   /**
-   * Load settings from storage (API key and improvement prompt)
-   * Supports both user settings and environment variable fallbacks
+   * Load settings from storage (improvement prompt)
+   * Note: API key initialization is handled by AiModelContext
    */
   public async loadSettings(): Promise<void> {
-    // Load API key
-    await this.loadApiKey()
+    console.log("Loading Prompt Improver settings...")
 
     // Load improvement prompt with priority logic
     await this.loadImprovementPromptWithPriority()
-  }
-
-  /**
-   * Load API key from storage or environment variable (dev mode only)
-   */
-  private async loadApiKey(): Promise<void> {
-    // Try loading from storage first
-    const storedApiKey = await genaiApiKeyStorage.getValue()
-
-    if (storedApiKey && storedApiKey.trim() !== "") {
-      this.client.initialize(storedApiKey)
-      return
-    }
-
-    // In development mode, fallback to environment variable
-    const isDevelopmentMode = import.meta.env.WXT_E2E === "false"
-    if (isDevelopmentMode) {
-      const envApiKey = import.meta.env.WXT_GENAI_API_KEY
-      if (envApiKey) {
-        this.client.initialize(envApiKey)
-        return
-      }
-    }
-
-    // API key not configured - will show warning in UI
-    console.warn("API key not configured")
-  }
-
-  /**
-   * Check if API key is configured
-   */
-  public isApiKeyConfigured(): boolean {
-    return this.client.isInitialized()
-  }
-
-  /**
-   * Initialize with API key from environment (deprecated, kept for compatibility)
-   * @deprecated Use loadSettings() instead
-   */
-  public initializeFromEnv(): void {
-    const apiKey = import.meta.env.WXT_GENAI_API_KEY
-    if (!apiKey) {
-      throw new GeminiError(
-        "API key not found in environment variables",
-        GeminiErrorType.API_KEY_MISSING,
-      )
-    }
-    this.client.initialize(apiKey)
-  }
-
-  /**
-   * Check if the service is ready
-   */
-  public isReady(): boolean {
-    return this.client.isInitialized()
   }
 
   /**
@@ -124,7 +65,7 @@ export class PromptImprover {
     }
 
     // Check if API key is configured
-    if (!this.isApiKeyConfigured()) {
+    if (!this.client.isInitialized()) {
       const error = new GeminiError(
         "API key not configured. Please set your API key in settings.",
         GeminiErrorType.API_KEY_MISSING,
