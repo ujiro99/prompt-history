@@ -32,6 +32,7 @@ import type {
   PromptForOrganization,
   OrganizerError,
 } from "@/types/promptOrganizer"
+import { GeminiError } from "@/services/genai/types"
 
 type Props = {
   open: boolean
@@ -101,11 +102,16 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
         setTargetPrompts(targets)
       } catch (err) {
         console.error("Failed to load settings:", err)
+        if (err instanceof GeminiError) {
+          setError(err.message)
+          return
+        }
         setError(i18n.t("errors.unknownError"))
       }
     }
 
     if (open) {
+      setError(null)
       promptOrganizerSettingsStorage
         .getValue()
         .then((loadedSettings) => updateSettings(loadedSettings))
