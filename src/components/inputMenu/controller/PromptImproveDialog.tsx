@@ -20,7 +20,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useContainer } from "@/hooks/useContainer"
 import { useSettings } from "@/hooks/useSettings"
 import { useAiModel } from "@/hooks/useAiModel"
-import { analytics } from "#imports"
+import { analyticsService, ANALYTICS_EVENTS } from "@/services/analytics"
 import { ImprovePromptData } from "@/types/prompt"
 import { PromptImprover } from "@/services/genai/PromptImprover"
 import { stopPropagation } from "@/utils/dom"
@@ -165,11 +165,7 @@ export const PromptImproveDialog: React.FC<PromptImproveDialogProps> = ({
         },
       })
 
-      try {
-        await analytics.track("improve_prompt")
-      } catch (error) {
-        console.warn("Analytics tracking failed:", error)
-      }
+      await analyticsService.track(ANALYTICS_EVENTS.IMPROVE_PROMPT)
     } catch (error) {
       setIsImproving(false)
       setImprovementError(
@@ -210,12 +206,7 @@ export const PromptImproveDialog: React.FC<PromptImproveDialogProps> = ({
         variables: variables,
       }
 
-      try {
-        await analytics.track("input_prompt")
-      } catch (error) {
-        // Ignore analytics errors to prevent them from affecting core functionality
-        console.warn("Analytics tracking failed:", error)
-      }
+      await analyticsService.track(ANALYTICS_EVENTS.INPUT_PROMPT)
       await onInput(improvedData)
     } finally {
       setIsLoading(false)

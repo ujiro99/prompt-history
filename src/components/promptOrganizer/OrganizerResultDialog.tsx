@@ -24,7 +24,7 @@ interface OrganizerResultDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   result: PromptOrganizerResult | null
-  onPreview?: () => void
+  onPreview?: (count: number) => void
   onSaveAll?: () => void
 }
 
@@ -128,7 +128,7 @@ export const OrganizerResultDialog: React.FC<OrganizerResultDialogProps> = ({
                 {/* Preview button */}
                 <Button
                   variant="outline"
-                  onClick={onPreview}
+                  onClick={() => onPreview?.(templateCount)}
                   className="group"
                   size="lg"
                 >

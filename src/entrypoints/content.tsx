@@ -2,7 +2,7 @@ import ReactDOM from "react-dom/client"
 import App from "./content/App.tsx"
 import "./content/App.css"
 import { supportHosts } from "@/services/aiService"
-import { analytics } from "#imports"
+import { analyticsService } from "@/services/analytics"
 import { DebugInterface } from "@/services/debug/debugInterface"
 
 let _supportHosts = [...supportHosts]
@@ -40,7 +40,7 @@ export default defineContentScript({
       position: "inline",
       anchor: "body",
       onMount: (container) => {
-        analytics.autoTrack(container)
+        analyticsService.autoTrack(container)
         const app = document.createElement("div")
         container.append(app)
         const root = ReactDOM.createRoot(app)

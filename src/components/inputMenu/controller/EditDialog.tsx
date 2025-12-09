@@ -28,7 +28,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useContainer } from "@/hooks/useContainer"
 import { useSettings } from "@/hooks/useSettings"
 import { stopPropagation } from "@/utils/dom"
-import { analytics } from "#imports"
+import { analyticsService, ANALYTICS_EVENTS } from "@/services/analytics"
 
 /**
  * Props for prompt edit dialog
@@ -199,12 +199,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
         updates.excludeFromOrganizer = excludeFromOrganizer
       }
 
-      try {
-        await analytics.track("edit-save")
-      } catch (error) {
-        // Ignore analytics errors to prevent them from affecting core functionality
-        console.warn("Analytics tracking failed:", error)
-      }
+      await analyticsService.track(ANALYTICS_EVENTS.EDIT_SAVE)
       await onSave(updates)
     } finally {
       setIsLoading(false)
