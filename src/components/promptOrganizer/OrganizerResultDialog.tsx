@@ -11,6 +11,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { FadeInText } from "@/components/promptOrganizer/FadeInText"
@@ -68,6 +69,9 @@ export const OrganizerResultDialog: React.FC<OrganizerResultDialogProps> = ({
       >
         <DialogHeader>
           <DialogTitle>{i18n.t("promptOrganizer.summary.title")}</DialogTitle>
+          <DialogDescription className="sr-only">
+            {i18n.t("promptOrganizer.summary.description")}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-9 py-5">

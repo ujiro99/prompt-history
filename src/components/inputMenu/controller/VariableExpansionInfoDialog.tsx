@@ -2,8 +2,9 @@ import { useState, useEffect } from "react"
 import { i18n } from "#imports"
 import {
   Dialog,
-  DialogTitle,
   DialogHeader,
+  DialogTitle,
+  DialogDescription,
   DialogContent,
   DialogFooter,
   DialogClose,
@@ -85,6 +86,9 @@ export const VariableExpansionInfoDialog: React.FC<
           <DialogTitle>
             {i18n.t("dialogs.edit.variableExpansionInfo.title")}
           </DialogTitle>
+          <DialogDescription>
+            {i18n.t("dialogs.edit.variableExpansionInfo.description")}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">

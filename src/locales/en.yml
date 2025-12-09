@@ -62,9 +62,10 @@ placeholders:
 dialogs:
   edit:
     title: Edit Prompt
-    useCaseDescription: Describe the use case or purpose of the prompt
+    description: Edit the details of the prompt.
+    useCaseDescription: Describe the use case or purpose
     useCasePlaceholder: Optional
-    categoryDescription: Set the category of the prompt
+    categoryDescription: Set category for classification
     excludeFromOrganizer: Exclude from prompt organization
     excludeFromOrganizerHelp: Check to exclude from automatic organization. Prompts that have been organized/refined will be automatically checked.
     variableSettings: Variable Settings
@@ -72,6 +73,7 @@ dialogs:
     variableExpansionInfo:
       link: About Variable Expansion
       title: About Variable Expansion
+      description: Explains how to configure and use the "Variable Expansion" feature.
       description1: Text enclosed in {{variable_name}} is treated as a variable.
       description2: Prompts with variables show a "Variable Input Dialog" at runtime. Values entered here are embedded into and sent with the prompt.
       description3: Variable type, default value, and options can be set in the edit dialog.
@@ -84,6 +86,7 @@ dialogs:
     title: Duplicate Prompt
   variables:
     title: Variable Input
+    description: Please enter values for the variables.
     preview: Preview
   promptImprove:
     title: Improve Prompt
@@ -345,6 +348,7 @@ promptOrganizer:
     actualCost: Actual Cost
   summary:
     title: Organization Complete
+    description: Summary of prompt organization results
     summary: We've selected $1 prompt and organized it into $2.
     noTemplates: No templates were refined.
     organizationPerformed: Organization Performed

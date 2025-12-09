@@ -4,6 +4,7 @@ import { i18n } from "#imports"
 import {
   Dialog,
   DialogTitle,
+  DialogDescription,
   DialogHeader,
   DialogContent,
   DialogFooter,
@@ -119,6 +120,9 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
       >
         <DialogHeader>
           <DialogTitle>{i18n.t("dialogs.variables.title")}</DialogTitle>
+          <DialogDescription>
+            {i18n.t("dialogs.variables.description")}
+          </DialogDescription>
         </DialogHeader>
 
         {/* Preview Section */}
