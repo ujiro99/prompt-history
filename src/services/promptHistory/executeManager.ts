@@ -5,7 +5,7 @@ import { SessionManager } from "./sessionManager"
 import { replaceTextAtCaret, setElementText } from "@/services/dom/inputUtils"
 import type { AutoCompleteMatch } from "@/services/autoComplete/types"
 import { expandPrompt } from "@/utils/variables/variableFormatter"
-import { analytics } from "#imports"
+import { analyticsService, ANALYTICS_EVENTS } from "@/services/analytics"
 
 /**
  * Class responsible for prompt execution and UI support processing (Storage read operations)
@@ -104,12 +104,7 @@ export class ExecuteManager {
       }
 
       onSuccess?.(updatedPrompt)
-      try {
-        await analytics.track("insert-prompt")
-      } catch (error) {
-        // Ignore analytics errors to prevent them from affecting core functionality
-        console.warn("Analytics tracking failed:", error)
-      }
+      await analyticsService.track(ANALYTICS_EVENTS.INSERT_PROMPT)
     } catch (error) {
       const err = error instanceof Error ? error : new Error("Insert failed")
       onError?.(err)
@@ -117,7 +112,7 @@ export class ExecuteManager {
   }
 
   /**
-   * Set prompt text directly into text input (without tracking)
+   * Set prompt text directly into text input
    */
   async setPrompt(
     content: string,
@@ -149,12 +144,7 @@ export class ExecuteManager {
       }
 
       onSuccess?.()
-      try {
-        await analytics.track("set-prompt")
-      } catch (error) {
-        // Ignore analytics errors to prevent them from affecting core functionality
-        console.warn("Analytics tracking failed:", error)
-      }
+      await analyticsService.track(ANALYTICS_EVENTS.SET_PROMPT)
     } catch (error) {
       const err =
         error instanceof Error ? error : new Error("Set prompt failed")

@@ -39,8 +39,8 @@ export const RemoveDialog = (props: RemoveDialogProps) => {
       >
         <DialogHeader>
           <DialogTitle>{i18n.t("dialogs.delete.title")}</DialogTitle>
+          <DialogDescription>{props.description}</DialogDescription>
         </DialogHeader>
-        <DialogDescription>{props.description}</DialogDescription>
         <div className="flex items-center justify-center">{props.children}</div>
         <DialogFooter className="mt-2">
           <DialogClose asChild>

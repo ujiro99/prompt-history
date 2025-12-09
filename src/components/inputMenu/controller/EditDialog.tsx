@@ -10,6 +10,7 @@ import { ScrollAreaWithGradient } from "@/components/inputMenu/ScrollAreaWithGra
 import {
   Dialog,
   DialogTitle,
+  DialogDescription,
   DialogHeader,
   DialogContent,
   DialogFooter,
@@ -27,7 +28,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useContainer } from "@/hooks/useContainer"
 import { useSettings } from "@/hooks/useSettings"
 import { stopPropagation } from "@/utils/dom"
-import { analytics } from "#imports"
+import { analyticsService, ANALYTICS_EVENTS } from "@/services/analytics"
 
 /**
  * Props for prompt edit dialog
@@ -52,7 +53,9 @@ interface EditDialogProps {
   /** Dialog display mode */
   displayMode: SaveMode
   /** Callback on save */
-  onSave: (data: Partial<SaveDialogData> & { saveMode: SaveMode }) => Promise<void>
+  onSave: (
+    data: Partial<SaveDialogData> & { saveMode: SaveMode },
+  ) => Promise<void>
 }
 
 const variableEquals = (
@@ -196,12 +199,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
         updates.excludeFromOrganizer = excludeFromOrganizer
       }
 
-      try {
-        await analytics.track("edit-save")
-      } catch (error) {
-        // Ignore analytics errors to prevent them from affecting core functionality
-        console.warn("Analytics tracking failed:", error)
-      }
+      await analyticsService.track(ANALYTICS_EVENTS.EDIT_SAVE)
       await onSave(updates)
     } finally {
       setIsLoading(false)
@@ -244,24 +242,29 @@ export const EditDialog: React.FC<EditDialogProps> = ({
                   ? i18n.t("dialogs.copy.title")
                   : i18n.t("dialogs.save.title")}
             </DialogTitle>
+            <DialogDescription className="sr-only">
+              {i18n.t("dialogs.edit.description")}
+            </DialogDescription>
           </DialogHeader>
 
           <ScrollAreaWithGradient
             className="flex-1 max-h-[70vh] pl-2 pr-4"
             indicatorVisible={false}
           >
-            <div className="space-y-4 py-2">
+            <div className="space-y-4 pt-1 pb-2">
               {/* Prompt name input */}
-              <div className="space-y-1">
-                <label
-                  htmlFor="prompt-name"
-                  className="text-sm font-semibold text-foreground inline-block"
-                >
-                  {i18n.t("common.name")}
-                </label>
-                <p className="text-xs text-muted-foreground">
-                  {i18n.t("common.nameDescription")}
-                </p>
+              <div className="flex flex-row items-center gap-1">
+                <div className="w-48">
+                  <label
+                    htmlFor="prompt-name"
+                    className="text-sm font-semibold text-foreground inline-block"
+                  >
+                    {i18n.t("common.name")}
+                  </label>
+                  <p className="text-xs text-muted-foreground">
+                    {i18n.t("common.nameDescription")}
+                  </p>
+                </div>
                 <Input
                   id="prompt-name"
                   type="text"
@@ -270,21 +273,24 @@ export const EditDialog: React.FC<EditDialogProps> = ({
                   placeholder={i18n.t("placeholders.enterPromptName")}
                   disabled={isLoading}
                   autoFocus
+                  className="flex-1"
                 />
               </div>
 
               {/* Use case input */}
               {isAIGenerated && (
-                <div className="space-y-1">
-                  <label
-                    htmlFor="prompt-usecase"
-                    className="text-sm font-semibold text-foreground inline-block"
-                  >
-                    {i18n.t("promptOrganizer.preview.useCase")}
-                  </label>
-                  <p className="text-xs text-muted-foreground">
-                    {i18n.t("dialogs.edit.useCaseDescription")}
-                  </p>
+                <div className="flex flex-row items-center gap-1">
+                  <div className="w-48">
+                    <label
+                      htmlFor="prompt-usecase"
+                      className="text-sm font-semibold text-foreground inline-block"
+                    >
+                      {i18n.t("promptOrganizer.preview.useCase")}
+                    </label>
+                    <p className="text-xs text-muted-foreground">
+                      {i18n.t("dialogs.edit.useCaseDescription")}
+                    </p>
+                  </div>
                   <Input
                     id="prompt-usecase"
                     type="text"
@@ -292,13 +298,14 @@ export const EditDialog: React.FC<EditDialogProps> = ({
                     onChange={(e) => setUseCase(e.target.value)}
                     placeholder={i18n.t("dialogs.edit.useCasePlaceholder")}
                     disabled={isLoading}
+                    className="flex-1"
                   />
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-row items-center gap-1">
                 {/* Category selector */}
-                <div className="space-y-1">
+                <div className="w-48">
                   <label
                     htmlFor="prompt-category"
                     className="text-sm font-semibold text-foreground inline-block"
@@ -308,34 +315,12 @@ export const EditDialog: React.FC<EditDialogProps> = ({
                   <p className="text-xs text-muted-foreground">
                     {i18n.t("dialogs.edit.categoryDescription")}
                   </p>
-                  <CategorySelector
-                    value={categoryId || ""}
-                    onValueChange={(value) => setCategoryId(value || null)}
-                    className="w-full"
-                  />
                 </div>
-                {/* Exclude from organizer checkbox */}
-                <div className="mt-2 flex items-start space-x-2">
-                  <input
-                    type="checkbox"
-                    id="exclude-from-organizer"
-                    checked={excludeFromOrganizer}
-                    onChange={(e) => setExcludeFromOrganizer(e.target.checked)}
-                    disabled={isLoading}
-                    className="mt-0.5"
-                  />
-                  <div className="grid gap-1.5 leading-none">
-                    <label
-                      htmlFor="exclude-from-organizer"
-                      className="text-sm font-semibold text-foreground cursor-pointer select-none"
-                    >
-                      {i18n.t("dialogs.edit.excludeFromOrganizer")}
-                    </label>
-                    <p className="text-xs text-muted-foreground">
-                      {i18n.t("dialogs.edit.excludeFromOrganizerHelp")}
-                    </p>
-                  </div>
-                </div>
+                <CategorySelector
+                  value={categoryId || ""}
+                  onValueChange={(value) => setCategoryId(value || null)}
+                  className="flex-1"
+                />
               </div>
 
               {/* Prompt content input */}
@@ -381,6 +366,29 @@ export const EditDialog: React.FC<EditDialogProps> = ({
                 onChange={setVariables}
                 enableAutoDetection={false}
               />
+
+              {/* Exclude from organizer checkbox */}
+              <div className="flex flex-row gap-3 items-start">
+                <input
+                  type="checkbox"
+                  id="exclude-from-organizer"
+                  checked={excludeFromOrganizer}
+                  onChange={(e) => setExcludeFromOrganizer(e.target.checked)}
+                  disabled={isLoading}
+                  className="mt-1"
+                />
+                <div className="grid gap-1.5 leading-none">
+                  <label
+                    htmlFor="exclude-from-organizer"
+                    className="text-sm font-semibold text-foreground cursor-pointer select-none"
+                  >
+                    {i18n.t("dialogs.edit.excludeFromOrganizer")}
+                  </label>
+                  <p className="text-xs text-muted-foreground">
+                    {i18n.t("dialogs.edit.excludeFromOrganizerHelp")}
+                  </p>
+                </div>
+              </div>
             </div>
           </ScrollAreaWithGradient>
 

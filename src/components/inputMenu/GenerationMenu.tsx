@@ -17,7 +17,8 @@ import { OrganizerPreviewDialog } from "@/components/promptOrganizer/OrganizerPr
 import { PromptServiceFacade } from "@/services/promptServiceFacade"
 import { MENU, TestIds } from "@/components/const"
 import type { ImprovePromptData } from "@/types/prompt"
-import type { TemplateCandidate } from "@/types/promptOrganizer"
+import type { TemplateCandidate, UserAction } from "@/types/promptOrganizer"
+import { analyticsService, ANALYTICS_EVENTS } from "@/services/analytics"
 import { i18n } from "#imports"
 
 const serviceFacade = PromptServiceFacade.getInstance()
@@ -87,20 +88,29 @@ export function GenerationMenu({
   /**
    * Execute prompt organization
    */
-  const handleExecuteOrganization = useCallback(async () => {
-    const ret = await executeOrganization()
-    if (ret) {
-      setOrganizerExecuteOpen(false)
-      setOrganizerSummaryOpen(true)
-    }
-  }, [executeOrganization])
+  const handleExecuteOrganization = useCallback(
+    async (count: number) => {
+      analyticsService.track(ANALYTICS_EVENTS.ORGANIZER_RUN, {
+        value: count,
+      })
+      const ret = await executeOrganization()
+      if (ret) {
+        setOrganizerExecuteOpen(false)
+        setOrganizerSummaryOpen(true)
+      }
+    },
+    [executeOrganization],
+  )
 
   /**
    * Preview templates
    */
-  const handlePreviewTemplates = useCallback(() => {
+  const handlePreviewTemplates = useCallback((count: number) => {
     setOrganizerSummaryOpen(false)
     setOrganizerPreviewOpen(true)
+    analyticsService.track(ANALYTICS_EVENTS.ORGANIZER_REVIEW, {
+      value: count,
+    })
   }, [])
 
   /**
@@ -108,9 +118,17 @@ export function GenerationMenu({
    */
   const handleSaveAllTemplates = useCallback(async () => {
     if (!result) return
-    await saveTemplates(result.templates)
+    // Update userAction before saving
+    const templates = result.templates.map((template) => ({
+      ...template,
+      userAction: "save" as UserAction,
+    }))
+    await saveTemplates(templates)
     if (!error) {
       setOrganizerSummaryOpen(false)
+      analyticsService.track(ANALYTICS_EVENTS.ORGANIZER_SAVED, {
+        value: templates.length,
+      })
     }
   }, [result, saveTemplates, error])
 
@@ -120,6 +138,14 @@ export function GenerationMenu({
   const handleSaveTemplatesFromPreview = useCallback(
     async (templates: TemplateCandidate[]) => {
       await saveTemplates(templates)
+      const savedCount = templates.filter(
+        (t) => t.userAction === "save" || t.userAction === "save_and_pin",
+      ).length
+      if (savedCount > 0) {
+        analyticsService.track(ANALYTICS_EVENTS.ORGANIZER_SAVED, {
+          value: savedCount,
+        })
+      }
     },
     [saveTemplates],
   )

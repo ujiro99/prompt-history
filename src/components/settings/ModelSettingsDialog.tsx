@@ -21,6 +21,7 @@ import {
 import { useContainer } from "@/hooks/useContainer"
 import { useAiModel } from "@/hooks/useAiModel"
 import { genaiApiKeyStorage } from "@/services/storage/definitions"
+import { analyticsService, ANALYTICS_EVENTS } from "@/services/analytics"
 import { i18n } from "#imports"
 import { stopPropagation } from "@/utils/dom"
 
@@ -86,6 +87,9 @@ export const ModelSettingsDialog: React.FC<ModelSettingsDialogProps> = ({
     try {
       // Save API key
       await genaiApiKeyStorage.setValue(apiKey)
+
+      // Track API key setup
+      await analyticsService.track(ANALYTICS_EVENTS.SET_API_KEY)
 
       // Close dialog
       onOpenChange(false)

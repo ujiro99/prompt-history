@@ -4,7 +4,7 @@
  */
 
 import { GeminiClient } from "@/services/genai/GeminiClient"
-import { GeminiErrorType } from "@/services/genai/types"
+import { GeminiError, GeminiErrorType } from "@/services/genai/types"
 import type {
   PromptForOrganization,
   OrganizePromptsResponse,
@@ -138,7 +138,8 @@ export class TemplateGeneratorService {
         const errorMessage = error.message
         if (
           errorMessage.includes("cancelled") ||
-          (error as any).type === GeminiErrorType.CANCELLED
+          (error instanceof GeminiError &&
+            error.type === GeminiErrorType.CANCELLED)
         ) {
           console.warn(error)
           throw new Error("Generation cancelled by user")

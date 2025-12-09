@@ -32,11 +32,12 @@ import type {
   PromptForOrganization,
   OrganizerError,
 } from "@/types/promptOrganizer"
+import { GeminiError } from "@/services/genai/types"
 
 type Props = {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onExecute: () => Promise<void>
+  onExecute: (count: number) => Promise<void>
   isExecuting: boolean
   isCanceling: boolean
   progress: GenerationProgress | null
@@ -101,11 +102,16 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
         setTargetPrompts(targets)
       } catch (err) {
         console.error("Failed to load settings:", err)
+        if (err instanceof GeminiError) {
+          setError(err.message)
+          return
+        }
         setError(i18n.t("errors.unknownError"))
       }
     }
 
     if (open) {
+      setError(null)
       promptOrganizerSettingsStorage
         .getValue()
         .then((loadedSettings) => updateSettings(loadedSettings))
@@ -131,7 +137,7 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
     }
   }, [executeError])
 
-  // Rotate messages every 5 seconds
+  // Rotate messages every 3 seconds
   useEffect(() => {
     if (!open) return
     const interval = setInterval(() => {
@@ -145,11 +151,11 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
     if (apiKeyMissing) {
       return
     }
-
+    // Clear previous error
     setError(null)
 
     try {
-      await onExecute()
+      await onExecute(targetPrompts ? targetPrompts.length : 0)
     } catch (err) {
       console.error("Execution failed:", err)
       setError(
