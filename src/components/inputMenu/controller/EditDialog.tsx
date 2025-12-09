@@ -254,7 +254,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
             <div className="space-y-4 pt-1 pb-2">
               {/* Prompt name input */}
               <div className="flex flex-row items-center gap-1">
-                <div className="w-50">
+                <div className="w-48">
                   <label
                     htmlFor="prompt-name"
                     className="text-sm font-semibold text-foreground inline-block"
@@ -280,7 +280,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
               {/* Use case input */}
               {isAIGenerated && (
                 <div className="flex flex-row items-center gap-1">
-                  <div className="w-50">
+                  <div className="w-48">
                     <label
                       htmlFor="prompt-usecase"
                       className="text-sm font-semibold text-foreground inline-block"
@@ -305,7 +305,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
 
               <div className="flex flex-row items-center gap-1">
                 {/* Category selector */}
-                <div className="w-50">
+                <div className="w-48">
                   <label
                     htmlFor="prompt-category"
                     className="text-sm font-semibold text-foreground inline-block"

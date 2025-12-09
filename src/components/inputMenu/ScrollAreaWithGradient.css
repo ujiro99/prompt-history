@@ -3,30 +3,30 @@
 /* Top gradient animation - fade in when scrolled down */
 @keyframes fade-top-gradient {
   0% {
-    opacity: 0;
+    visibility: hidden;
   }
 
   1% {
-    opacity: 1;
+    visibility: visible;
   }
 
   100% {
-    opacity: 1;
+    visibility: visible;
   }
 }
 
 /* Bottom gradient animation - fade out when at the very bottom */
 @keyframes fade-bottom-gradient {
   0% {
-    opacity: 1;
+    visibility: visible;
   }
 
   99% {
-    opacity: 1;
+    visibility: visible;
   }
 
   100% {
-    opacity: 0;
+    visibility: hidden;
   }
 }
 
@@ -48,17 +48,23 @@
 }
 
 .scroll-gradient-top {
-  top: 0;
-  background: linear-gradient(to bottom,
-      var(--ph-gradient-background),
-      transparent);
+  top: -1px;
+  /* Slightly overlap to avoid gap */
+  background: linear-gradient(
+    to bottom,
+    var(--ph-gradient-background),
+    transparent
+  );
 }
 
 .scroll-gradient-bottom {
-  bottom: 0;
-  background: linear-gradient(to top,
-      var(--ph-gradient-background),
-      transparent);
+  bottom: -1px;
+  /* Slightly overlap to avoid gap */
+  background: linear-gradient(
+    to top,
+    var(--ph-gradient-background),
+    transparent
+  );
 }
 
 /* Create named scroll-timeline on the viewport */
@@ -72,14 +78,14 @@
   animation: fade-top-gradient linear;
   animation-timeline: --viewport-scroll;
   /* Initial state - hidden */
-  opacity: 0;
+  visibility: hidden;
 }
 
 .scroll-gradient-container[data-scrollable="true"] .scroll-gradient-bottom {
   animation: fade-bottom-gradient linear;
   animation-timeline: --viewport-scroll;
   /* Initial state - visible */
-  opacity: 1;
+  visibility: visible;
 }
 
 .scroll-gradient-container[data-scrollable="false"] .scroll-gradient-top,

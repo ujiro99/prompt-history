@@ -6,19 +6,28 @@ export const ANALYTICS_EVENTS = {
   EDIT_SAVE: "edit-save",
   /** When user improves a prompt using AI */
   IMPROVE_PROMPT: "improve-prompt",
-  /** When user inputs an improved prompt */
-  INPUT_PROMPT: "input-improved-prompt",
+  /** When user sets an improved prompt */
+  SET_INPROVED_PROMPT: "set-improved-prompt",
   /** When user inserts a prompt at cursor position */
   INSERT_PROMPT: "insert-prompt",
   /** When user sets entire prompt text */
   SET_PROMPT: "set-prompt",
   /** When user sets API key in settings */
   SET_API_KEY: "set-api-key",
-  /** When user executes organizer */
+  /**
+   * When user executes organizer
+   * @param value Number of target prompts
+   */
   ORGANIZER_RUN: "organizer-start-run",
-  /** When user previews organizer templates */
+  /**
+   * When user reviews organizer templates
+   * @param value Number of generated templates
+   */
   ORGANIZER_REVIEW: "organizer-start-review",
-  /** When user saves organizer templates */
+  /**
+   * When user saves organizer templates
+   * @param value Number of saved templates
+   */
   ORGANIZER_SAVED: "organizer-saved",
 } as const
 
