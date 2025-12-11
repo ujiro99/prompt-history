@@ -2,6 +2,7 @@ import { storage } from "wxt/utils/storage"
 import { ImprovePromptInputMethod } from "@/types/prompt"
 import type {
   StoredPrompt,
+  StoredVariablePreset,
   Session,
   AppSettings,
   ImprovePromptSettings,
@@ -174,3 +175,14 @@ export const pendingOrganizerTemplatesStorage =
       migrations: {},
     },
   )
+
+/**
+ * Variable Presets storage definition
+ */
+export const variablePresetsStorage = storage.defineItem<
+  Record<string, StoredVariablePreset>
+>("local:variablePresets", {
+  fallback: {},
+  version: 1,
+  migrations: {},
+})

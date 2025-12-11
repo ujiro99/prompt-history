@@ -153,6 +153,7 @@ The extension uses a simplified, configuration-driven architecture for supportin
 ## About Design Documents
 
 - Store design and technical documents in the `docs/` directory
+- Write design documents in Japanese
 - A design document should include:
   - Feature concepts and requirements
   - UI flows

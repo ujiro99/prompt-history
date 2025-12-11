@@ -6,6 +6,7 @@ import {
   Brain,
   NotebookPen,
   WandSparkles,
+  Sliders,
 } from "lucide-react"
 import {
   MenubarMenu,
@@ -25,6 +26,7 @@ import { ImportDialog } from "./ImportDialog"
 import { ModelSettingsDialog } from "@/components/settings/ModelSettingsDialog"
 import { PromptImproverSettingsDialog } from "@/components/settings/PromptImproverSettingsDialog"
 import { OrganizerSettingsDialog } from "@/components/promptOrganizer/OrganizerSettingsDialog"
+import { VariablePresetDialog } from "@/components/settings/variablePresets/VariablePresetDialog"
 import { MENU, TestIds } from "@/components/const"
 import type { AppSettings } from "@/types/prompt"
 import type { ImportResult } from "@/services/importExport/types"
@@ -46,6 +48,7 @@ export function SettingsMenu({
   const [promptImproverSettingsOpen, setPromptImproverSettingsOpen] =
     useState(false)
   const [organizerSettingsOpen, setOrganizerSettingsOpen] = useState(false)
+  const [variablePresetsOpen, setVariablePresetsOpen] = useState(false)
 
   /**
    * Handle settings change
@@ -197,8 +200,14 @@ export function SettingsMenu({
 
             {/* Action Settings Group */}
             <MenubarLabel className="text-xs font-medium text-muted-foreground">
-              {i18n.t("settings.groups.importExport")}
+              {i18n.t("settings.groups.promptManagement")}
             </MenubarLabel>
+
+            <MenubarItem onClick={() => setVariablePresetsOpen(true)}>
+              <Sliders size={16} />
+              {i18n.t("settings.variablePresetsSettings")}
+            </MenubarItem>
+
             <MenubarItem
               onClick={handleExport}
               data-testid={TestIds.settingsMenu.export}
@@ -268,6 +277,12 @@ export function SettingsMenu({
           setOrganizerSettingsOpen(false)
           setModelSettingsOpen(true)
         }}
+      />
+
+      {/* Variable Presets Dialog */}
+      <VariablePresetDialog
+        open={variablePresetsOpen}
+        onOpenChange={setVariablePresetsOpen}
       />
     </MenubarMenu>
   )

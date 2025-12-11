@@ -69,6 +69,7 @@ const variableEquals = (
     x.name === y.name &&
     x.type === y.type &&
     x.defaultValue === y.defaultValue &&
+    x.presetId === y.presetId &&
     JSON.stringify(x.selectOptions) === JSON.stringify(y.selectOptions)
   )
 }
@@ -250,6 +251,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
           <ScrollAreaWithGradient
             className="flex-1 max-h-[70vh] pl-2 pr-4"
             indicatorVisible={false}
+            gradientHeight={"2rem"}
           >
             <div className="space-y-4 pt-1 pb-2">
               {/* Prompt name input */}

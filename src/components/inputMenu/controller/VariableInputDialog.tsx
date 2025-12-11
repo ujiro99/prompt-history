@@ -16,11 +16,17 @@ import { Key } from "@/components/Key"
 import { SelectField } from "@/components/inputMenu/controller/SelectField"
 import { useContainer } from "@/hooks/useContainer"
 import { useDebounce } from "@/hooks/useDebounce"
-import type { VariableConfig, VariableValues } from "@/types/prompt"
+import type {
+  VariableConfig,
+  VariableValues,
+  VariablePreset,
+  DictionaryItem,
+} from "@/types/prompt"
 import { TestIds } from "@/components/const"
 import { isMac } from "@/utils/platform"
 import { expandPrompt } from "@/utils/variables/variableFormatter"
 import { stopPropagation } from "@/utils/dom"
+import { getVariablePresets } from "@/services/storage/variablePresetStorage"
 
 /**
  * Props for variable input dialog
@@ -47,6 +53,10 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
   onDismiss,
 }) => {
   const [values, setValues] = useState<VariableValues>({})
+  const [presets, setPresets] = useState<Map<string, VariablePreset>>(new Map())
+  const [selectedDictItems, setSelectedDictItems] = useState<
+    Map<string, DictionaryItem | null>
+  >(new Map())
   const { container } = useContainer()
 
   // Debounce values for preview
@@ -57,16 +67,69 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
     return expandPrompt(content, debouncedValues)
   }, [content, debouncedValues])
 
-  // Initialize values from variable configs
+  // Load presets for preset-type variables
+  useEffect(() => {
+    const loadPresets = async () => {
+      try {
+        const allPresets = await getVariablePresets()
+        const presetMap = new Map<string, VariablePreset>()
+
+        for (const variable of variables) {
+          if (variable.type === "preset" && variable.presetId) {
+            const preset = allPresets.find((p) => p.id === variable.presetId)
+            if (preset) {
+              presetMap.set(variable.name, preset)
+            }
+          }
+        }
+
+        setPresets(presetMap)
+      } catch (error) {
+        console.error("Failed to load presets:", error)
+      }
+    }
+
+    if (open) {
+      loadPresets()
+    }
+  }, [open, variables])
+
+  // Initialize values from variable configs and presets
   useEffect(() => {
     const initialValues: VariableValues = {}
+    const dictItems = new Map<string, DictionaryItem | null>()
+
     for (const variable of variables) {
-      if (variable.type !== "exclude") {
+      if (variable.type === "exclude") {
+        continue
+      }
+
+      if (variable.type === "preset") {
+        const preset = presets.get(variable.name)
+        if (preset) {
+          if (preset.type === "textarea") {
+            initialValues[variable.name] = preset.textContent || ""
+          } else if (preset.type === "select" && preset.selectOptions) {
+            initialValues[variable.name] = preset.selectOptions[0] || ""
+          } else if (preset.type === "dictionary" && preset.dictionaryItems) {
+            // Dictionary type: use first item's name as initial value
+            const firstItem = preset.dictionaryItems[0]
+            if (firstItem) {
+              initialValues[variable.name] = firstItem.name
+              dictItems.set(variable.name, firstItem)
+            }
+          }
+        } else {
+          initialValues[variable.name] = ""
+        }
+      } else {
         initialValues[variable.name] = variable.defaultValue || ""
       }
     }
+
     setValues(initialValues)
-  }, [variables])
+    setSelectedDictItems(dictItems)
+  }, [variables, presets])
 
   /**
    * Handle value change for a variable
@@ -76,6 +139,30 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
       ...prev,
       [name]: value,
     }))
+  }
+
+  /**
+   * Handle dictionary item selection
+   */
+  const handleDictionaryItemChange = (
+    variableName: string,
+    itemName: string,
+  ) => {
+    const preset = presets.get(variableName)
+    if (!preset || preset.type !== "dictionary" || !preset.dictionaryItems) {
+      return
+    }
+
+    const item = preset.dictionaryItems.find((i) => i.name === itemName)
+    if (item) {
+      setSelectedDictItems((prev) => {
+        const updated = new Map(prev)
+        updated.set(variableName, item)
+        return updated
+      })
+      // For dictionary type, we store the item content as the value
+      handleValueChange(variableName, item.content)
+    }
   }
 
   /**
@@ -184,6 +271,81 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
                   onValueChange={handleValueChange}
                 />
               )}
+
+              {variable.type === "preset" &&
+                (() => {
+                  const preset = presets.get(variable.name)
+                  if (!preset) {
+                    return (
+                      <div className="text-sm text-muted-foreground">
+                        {i18n.t("variablePresets.importWarning.missingPresets")}
+                      </div>
+                    )
+                  }
+
+                  // Textarea preset type
+                  if (preset.type === "textarea") {
+                    return (
+                      <Textarea
+                        id={`var-${variable.name}`}
+                        value={values[variable.name] || ""}
+                        onChange={(e) =>
+                          handleValueChange(variable.name, e.target.value)
+                        }
+                        placeholder={i18n.t("placeholders.enterValue")}
+                        rows={4}
+                        className="max-h-60 break-all"
+                      />
+                    )
+                  }
+
+                  // Select preset type
+                  if (preset.type === "select" && preset.selectOptions) {
+                    return (
+                      <SelectField
+                        options={preset.selectOptions.map((opt) => ({
+                          label: opt,
+                          value: opt,
+                        }))}
+                        name={variable.name}
+                        value={values[variable.name]}
+                        onValueChange={handleValueChange}
+                      />
+                    )
+                  }
+
+                  // Dictionary preset type
+                  if (preset.type === "dictionary" && preset.dictionaryItems) {
+                    const selectedItem = selectedDictItems.get(variable.name)
+                    return (
+                      <div className="space-y-2">
+                        <SelectField
+                          options={preset.dictionaryItems.map((item) => ({
+                            label: item.name,
+                            value: item.name,
+                          }))}
+                          name={variable.name}
+                          value={selectedItem?.name || ""}
+                          onValueChange={(_, itemName) =>
+                            handleDictionaryItemChange(variable.name, itemName)
+                          }
+                        />
+                        {selectedItem && (
+                          <div className="bg-neutral-50 border border-neutral-200 rounded-md p-3 max-h-32 overflow-y-auto">
+                            <div className="text-xs font-medium text-muted-foreground mb-1">
+                              {i18n.t("dialogs.variables.preview")}:
+                            </div>
+                            <pre className="text-xs text-neutral-800 whitespace-pre-wrap break-all">
+                              {selectedItem.content}
+                            </pre>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  }
+
+                  return null
+                })()}
             </div>
           ))}
         </div>

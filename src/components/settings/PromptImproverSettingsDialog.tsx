@@ -366,7 +366,7 @@ export const PromptImproverSettingsDialog: React.FC<
                   />
                 </Field>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <div className="flex items-center gap-1">
                     <FieldLabel htmlFor="url-content">
                       {i18n.t("settings.promptImprover.promptUrl")}
@@ -423,7 +423,7 @@ export const PromptImproverSettingsDialog: React.FC<
 
               {/* Preview (URL mode only) */}
               {settings.mode === "url" && (
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <FieldLabel htmlFor="preview-improvement-prompt">
                     {i18n.t("settings.promptImprover.preview")}
                   </FieldLabel>

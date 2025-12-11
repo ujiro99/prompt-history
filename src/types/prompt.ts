@@ -5,7 +5,12 @@ import type { AIGeneratedMetadata } from "./promptOrganizer"
 /**
  * Variable type
  */
-export type VariableType = "text" | "textarea" | "select" | "exclude"
+export type VariableType = "text" | "textarea" | "select" | "exclude" | "preset"
+
+/**
+ * Variable preset type
+ */
+export type PresetVariableType = "textarea" | "select" | "dictionary"
 
 /**
  * Select options configuration (for extensibility)
@@ -16,6 +21,51 @@ export interface SelectOptions {
   // Future extension fields (examples)
   // allowCustomInput?: boolean  // Allow custom input
   // multiSelect?: boolean        // Allow multiple selection
+}
+
+/**
+ * Dictionary item for dictionary-type presets
+ */
+export interface DictionaryItem {
+  /** Item ID (UUID, for internal management) */
+  id: string
+  /** Item name (displayed in dropdown) */
+  name: string
+  /** Item content (multi-line string, expanded when selected) */
+  content: string
+}
+
+/**
+ * Variable preset definition
+ */
+export interface VariablePreset {
+  /** Preset ID (UUID) */
+  id: string
+  /** Preset name (displayed in UI) */
+  name: string
+  /** Preset type */
+  type: PresetVariableType
+  /** Usage description (optional) */
+  description?: string
+  /** [Text type only] Text content */
+  textContent?: string
+  /** [Select type only] Option list */
+  selectOptions?: string[]
+  /** [Dictionary type only] Dictionary items */
+  dictionaryItems?: DictionaryItem[]
+  /** Creation date */
+  createdAt: Date
+  /** Update date */
+  updatedAt: Date
+}
+
+/**
+ * Variable preset for storage (dates as ISO strings)
+ */
+export interface StoredVariablePreset
+  extends Omit<VariablePreset, "createdAt" | "updatedAt"> {
+  createdAt: string
+  updatedAt: string
 }
 
 /**
@@ -30,6 +80,8 @@ export interface VariableConfig {
   defaultValue?: string
   /** Select options (when type='select') */
   selectOptions?: SelectOptions
+  /** Preset ID (when type='preset') */
+  presetId?: string
 }
 
 /**
@@ -173,6 +225,8 @@ export interface StorageData {
   settings: AppSettings
   /** Categories */
   categories?: Record<string, import("./promptOrganizer").Category>
+  /** Variable presets */
+  variablePresets?: Record<string, VariablePreset>
 }
 
 /**

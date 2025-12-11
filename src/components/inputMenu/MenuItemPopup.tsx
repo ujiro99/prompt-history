@@ -59,7 +59,7 @@ export const MenuItemPopup = ({
       </PopoverTrigger>
       <PopoverPortal container={container}>
         <PopoverContent
-          className="relative p-1 text-foreground"
+          className="relative p-1 text-foreground min-w-24"
           side={"top"}
           align={"center"}
           sideOffset={-1}

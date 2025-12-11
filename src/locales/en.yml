@@ -192,7 +192,7 @@ settings:
   groups:
     feature: Features ON/OFF
     autocompleteTarget: Autocomplete target
-    importExport: Import/Export
+    promptManagement: Prompt Management
     promptGeneration: Prompt Generation
   autoSave: Auto-save prompts
   autoComplete: Auto-complete
@@ -228,6 +228,46 @@ settings:
     enterImprovementPrompt: Enter improvement prompt...
     description: Configure how to improve prompts.
   promptOrganizerSettings: Prompt Organizer Settings
+  variablePresetsSettings: Variable Preset Settings
+
+# Variable Presets
+variablePresets:
+  title: Variable Presets
+  description: Manage reusable variable definitions.
+  addVariable: Add Variable
+  duplicate: Duplicate
+  delete: Delete
+  name: Variable Name
+  type: Variable Type
+  description_label: Description
+  description_description: Describe the use case or purpose of the variable (optional)
+  textContent: Text Content
+  textContentDescription: Enter the text to be inserted into the prompt
+  selectOptions: Select Options
+  dictionaryItems: Dictionary Items
+  addItem: Add Item
+  itemName: Item Name
+  itemContent: Item Content
+  noPresets: No presets available
+  selectPreset: Select a preset
+  enterName: Enter preset name
+  enterDescription: Enter description (optional)
+  enterTextContent: Enter text content
+  enterSelectOptions: Enter options separated by commas
+  enterItemName: Enter item name
+  enterItemContent: Enter item content
+  presetTypeDescription: Select the preset type
+  deleteConfirm:
+    title: Delete Preset
+    message: Are you sure you want to delete this preset?
+    affectedPrompts: This preset is used by $1 prompt(s). Deleting it will convert those variables to text type.
+    affectedPromptsList: Affected prompts
+    cancel: Cancel
+    deleteAndConvert: Delete and Convert
+  importWarning:
+    title: Preset Reference Warning
+    missingPresets: The following presets were not found
+    convertedToText: These variables have been converted to text type.
 
 # Import Dialog
 importDialog:
@@ -276,6 +316,8 @@ variableTypes:
   textarea: Multi-line Text
   select: Select
   exclude: Exclude
+  preset: Preset
+  dictionary: Dictionary
 
 # Error messages
 errors:
