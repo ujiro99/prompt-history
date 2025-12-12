@@ -26,6 +26,7 @@ common:
   commaSeparatedValues: Comma-separated values
   apiKeyNotConfigured: API key is not configured. Please set your API key in settings.
   openSettings: Open Settings
+  characterCount: "Left: $1"
 
 # Buttons
 buttons:
@@ -238,6 +239,7 @@ variablePresets:
   duplicate: Duplicate
   delete: Delete
   name: Variable Name
+  nameDescription: The name used to reference this preset
   type: Variable Type
   description_label: Description
   description_description: Describe the use case or purpose of the variable (optional)
@@ -250,7 +252,7 @@ variablePresets:
   itemContent: Item Content
   noPresets: No presets available
   selectPreset: Select a preset
-  enterName: Enter preset name
+  enterName: Enter name (max 40 characters)
   enterDescription: Enter description (optional)
   enterTextContent: Enter text content
   enterSelectOptions: Enter options separated by commas

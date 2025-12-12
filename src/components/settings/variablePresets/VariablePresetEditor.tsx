@@ -17,6 +17,7 @@ import type {
   PresetVariableType,
   DictionaryItem,
 } from "@/types/prompt"
+import { useContainer } from "@/hooks/useContainer"
 import { i18n } from "#imports"
 
 /**
@@ -40,6 +41,7 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
   onDelete,
 }) => {
   const [localPreset, setLocalPreset] = useState<VariablePreset | null>(preset)
+  const { container } = useContainer()
 
   // Update local state when preset prop changes
   useEffect(() => {
@@ -155,42 +157,29 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
       <ScrollArea className="overflow-hidden">
         <div className="space-y-4 pl-1 pr-6 py-1">
           {/* Preset Name */}
-          <Field>
+          <Field className="flex-1">
             <FieldLabel htmlFor="preset-name">
               {i18n.t("variablePresets.name")}
             </FieldLabel>
-            <Input
-              id="preset-name"
-              value={localPreset.name}
-              onChange={(e) => handleFieldChange("name", e.target.value)}
-              placeholder={i18n.t("variablePresets.enterName")}
-            />
-          </Field>
-
-          {/* Preset Type */}
-          <Field>
-            <FieldLabel htmlFor="preset-type">
-              {i18n.t("variablePresets.type")}
-            </FieldLabel>
             <FieldDescription>
-              {i18n.t("variablePresets.presetTypeDescription")}
+              {i18n.t("variablePresets.nameDescription")}
             </FieldDescription>
-            <Select value={localPreset.type} onValueChange={handleTypeChange}>
-              <SelectTrigger id="preset-type">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="textarea">
-                  {i18n.t("variableTypes.textarea")}
-                </SelectItem>
-                <SelectItem value="select">
-                  {i18n.t("variableTypes.select")}
-                </SelectItem>
-                <SelectItem value="dictionary">
-                  {i18n.t("variableTypes.dictionary")}
-                </SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="relative">
+              <Input
+                id="preset-name"
+                value={localPreset.name}
+                onChange={(e) => handleFieldChange("name", e.target.value)}
+                placeholder={i18n.t("variablePresets.enterName")}
+                maxLength={40}
+                minLength={1}
+                required
+              />
+              <span className="absolute text-xs text-muted-foreground right-3 bottom-2.5">
+                {i18n.t("common.characterCount", [
+                  40 - localPreset.name.length,
+                ])}
+              </span>
+            </div>
           </Field>
 
           {/* Description */}
@@ -207,6 +196,32 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
               onChange={(e) => handleFieldChange("description", e.target.value)}
               placeholder={i18n.t("variablePresets.enterDescription")}
             />
+          </Field>
+
+          {/* Preset Type */}
+          <Field className="w-48">
+            <FieldLabel htmlFor="preset-type">
+              {i18n.t("variablePresets.type")}
+            </FieldLabel>
+            <FieldDescription>
+              {i18n.t("variablePresets.presetTypeDescription")}
+            </FieldDescription>
+            <Select value={localPreset.type} onValueChange={handleTypeChange}>
+              <SelectTrigger id="preset-type">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent container={container}>
+                <SelectItem value="textarea">
+                  {i18n.t("variableTypes.textarea")}
+                </SelectItem>
+                <SelectItem value="select">
+                  {i18n.t("variableTypes.select")}
+                </SelectItem>
+                <SelectItem value="dictionary">
+                  {i18n.t("variableTypes.dictionary")}
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </Field>
 
           {/* Type-specific fields */}

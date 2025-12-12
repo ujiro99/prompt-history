@@ -26,6 +26,7 @@ common:
   commaSeparatedValues: カンマ区切りで入力
   apiKeyNotConfigured: APIキーが設定されていません。設定からAPIキーを設定してください。
   openSettings: 設定を開く
+  characterCount: "残り: $1"
 
 # Buttons
 buttons:
@@ -238,6 +239,7 @@ variablePresets:
   duplicate: 複製
   delete: 削除
   name: 変数名
+  nameDescription: プリセットを選択する際に表示される名前です
   type: 変数型
   description_label: 用途
   description_description: 変数の使用例や目的を説明します (任意)
@@ -250,7 +252,7 @@ variablePresets:
   itemContent: 項目内容
   noPresets: プリセットがありません
   selectPreset: プリセットを選択
-  enterName: プリセット名を入力してください
+  enterName: 変数名を入力してください(最大40文字)
   enterDescription: 用途を入力してください (任意)
   enterTextContent: テキストコンテンツを入力してください
   enterSelectOptions: 選択肢をカンマ区切りで入力してください

@@ -180,7 +180,7 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
           container={container}
-          className="w-full sm:max-w-6xl h-[80vh] flex flex-col"
+          className="w-full sm:max-w-4xl h-[80vh] flex flex-col"
           onKeyDown={handleKeyDown}
           {...stopPropagation()}
         >
