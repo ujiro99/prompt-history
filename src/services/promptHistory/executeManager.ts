@@ -80,6 +80,7 @@ export class ExecuteManager {
               matchEnd: content.length,
               newlineCount: 0,
               searchTerm: "",
+              matchType: "prompt" as const,
             }
 
         // Execute text replacement at caret

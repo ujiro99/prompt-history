@@ -133,6 +133,7 @@ export const createMockAutoCompleteMatch = (overrides = {}) => ({
   newlineCount: 0,
   searchTerm: "Test",
   isPinned: false,
+  matchType: "prompt" as const,
   ...overrides,
 })
 

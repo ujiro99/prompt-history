@@ -1,3 +1,10 @@
+import type { PresetVariableType } from "@/types/prompt"
+
+/**
+ * Type of autocomplete match
+ */
+export type AutoCompleteMatchType = "prompt" | "preset" | "preset-item"
+
 export interface AutoCompleteMatch {
   // Prompt id
   id: string
@@ -13,6 +20,12 @@ export interface AutoCompleteMatch {
   newlineCount: number
   // The term that was matched
   searchTerm: string
+  /** Type of match */
+  matchType: AutoCompleteMatchType
+  /** Preset type (only for matchType "preset" or "preset-item") */
+  presetType?: PresetVariableType
+  /** Parent preset ID (only for matchType "preset-item") */
+  parentPresetId?: string
 }
 
 export interface AutoCompleteOptions {

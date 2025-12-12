@@ -3,13 +3,18 @@ import {
   getCaretCoordinates,
   CaretPositionInfo,
 } from "../dom"
-import type { Prompt } from "../../types/prompt"
+import type { Prompt, VariablePreset } from "../../types/prompt"
 import type {
   AutoCompleteMatch,
   AutoCompleteOptions,
   AutoCompletePosition,
   AutoCompleteCallbacks,
 } from "./types"
+import {
+  matchPresets,
+  matchPresetItems,
+  parseDotNotation,
+} from "./presetMatcher"
 
 const NO_SELECTED_INDEX = -1
 const MAX_WORD_COUNT = 3
@@ -18,6 +23,7 @@ const MIN_WORD_COUNT = 1
 export class AutoCompleteManager {
   private element: Element | null = null
   private prompts: Prompt[] = []
+  private presets: VariablePreset[] = []
   private options: AutoCompleteOptions
   private callbacks: AutoCompleteCallbacks = {} as AutoCompleteCallbacks
   private debounceTimeout: number | null = null
@@ -56,6 +62,13 @@ export class AutoCompleteManager {
   }
 
   /**
+   * Set available variable presets for autocomplete
+   */
+  setPresets(presets: VariablePreset[]): void {
+    this.presets = presets
+  }
+
+  /**
    * Handle content change in the input element
    */
   handleContentChange(content: string): void {
@@ -91,8 +104,9 @@ export class AutoCompleteManager {
   }
 
   /**
-   * Find matching prompts based on input and caret position
+   * Find matching prompts and presets based on input and caret position
    * Supports matching 1-3 words, prioritizing longer matches
+   * Also supports dot notation for preset items (e.g., "role.customer")
    */
   private findMatches(
     input: string,
@@ -100,8 +114,36 @@ export class AutoCompleteManager {
   ): AutoCompleteMatch[] {
     const textBeforeCaret = input.substring(0, caret.position)
 
-    // Collect matches from all word counts
-    const allMatches: (AutoCompleteMatch & { wordCount: number })[] = []
+    // Extract the search term (last word or phrase before caret)
+    const wordMatch = textBeforeCaret.match(/(\S+)$/)
+    if (!wordMatch) {
+      return []
+    }
+
+    const searchTerm = wordMatch[1]
+
+    // Check if search term contains dot notation
+    const dotNotation = parseDotNotation(searchTerm)
+    if (dotNotation) {
+      // Match preset items using dot notation
+      const presetItemMatches = matchPresetItems(
+        searchTerm,
+        this.presets,
+        this.options.maxMatches,
+      )
+
+      // Update match positions
+      const inputMatchStart = caret.position - searchTerm.length
+      return presetItemMatches.map((match) => ({
+        ...match,
+        matchStart: inputMatchStart,
+        matchEnd: caret.position,
+        newlineCount: caret.newlineCount,
+      }))
+    }
+
+    // Collect matches from prompts (all word counts)
+    const allPromptMatches: (AutoCompleteMatch & { wordCount: number })[] = []
 
     // Search for matches with all word counts (3, 2, 1)
     for (
@@ -117,12 +159,12 @@ export class AutoCompleteManager {
 
       // Add word count information for prioritization
       matches.forEach((match) => {
-        allMatches.push({ ...match, wordCount })
+        allPromptMatches.push({ ...match, wordCount })
       })
     }
 
     // Sort by word count (descending)
-    allMatches.sort((a, b) => {
+    allPromptMatches.sort((a, b) => {
       if (a.wordCount !== b.wordCount) {
         return b.wordCount - a.wordCount // Higher word count first
       }
@@ -131,7 +173,7 @@ export class AutoCompleteManager {
 
     // Remove duplicates (same prompt matched by different word counts)
     const seenPromptIds = new Set<string>()
-    const uniqueMatches = allMatches.filter((match) => {
+    const uniquePromptMatches = allPromptMatches.filter((match) => {
       if (seenPromptIds.has(match.id)) {
         return false
       }
@@ -139,13 +181,31 @@ export class AutoCompleteManager {
       return true
     })
 
-    // Apply max matches limit and remove wordCount property
-    return (
-      uniqueMatches
-        .slice(0, this.options.maxMatches)
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        .map(({ wordCount, ...match }) => match)
+    // Match variable presets
+    const presetMatches = matchPresets(
+      searchTerm,
+      this.presets,
+      this.options.maxMatches,
     )
+
+    // Update match positions for preset matches
+    const inputMatchStart = caret.position - searchTerm.length
+    const updatedPresetMatches = presetMatches.map((match) => ({
+      ...match,
+      matchStart: inputMatchStart,
+      matchEnd: caret.position,
+      newlineCount: caret.newlineCount,
+    }))
+
+    // Combine matches: prompts first, then presets
+    const combinedMatches = [
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      ...uniquePromptMatches.map(({ wordCount, ...match }) => match),
+      ...updatedPresetMatches,
+    ]
+
+    // Apply max matches limit
+    return combinedMatches.slice(0, this.options.maxMatches)
   }
 
   /**
@@ -192,6 +252,7 @@ export class AutoCompleteManager {
           matchEnd: caret.position,
           newlineCount: caret.newlineCount,
           searchTerm,
+          matchType: "prompt" as const,
         }
       })
   }
@@ -345,6 +406,7 @@ export class AutoCompleteManager {
     this.callbacks = {} as AutoCompleteCallbacks
     this.element = null
     this.prompts = []
+    this.presets = []
     this.currentMatches = []
   }
 }

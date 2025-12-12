@@ -1,5 +1,5 @@
 import React from "react"
-import { Star, ChevronRight } from "lucide-react"
+import { Star, ChevronRight, FileText } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { TestIds } from "@/components/const"
 import { Key } from "@/components/Key"
@@ -33,6 +33,8 @@ export const AutoCompleteItem: React.FC<AutoCompleteItemProps> = ({
   const name2 = match.name.slice(start, end)
   const name3 = match.name.slice(end)
 
+  const isPreset = match.matchType === "preset" || match.matchType === "preset-item"
+
   return (
     <button
       type="button"
@@ -48,6 +50,14 @@ export const AutoCompleteItem: React.FC<AutoCompleteItemProps> = ({
       data-testid={TestIds.autocomplete.item}
     >
       {isSelected && <ChevronRight size={18} className="text-neutral-500" />}
+      {isPreset && !isSelected && (
+        <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center bg-blue-100 text-blue-700 rounded text-xs font-semibold">
+          P
+        </div>
+      )}
+      {!isPreset && !isSelected && (
+        <FileText size={18} className="text-neutral-400 flex-shrink-0" />
+      )}
       <div className="w-full overflow-hidden">
         <p className="truncate">
           {name1}

@@ -972,47 +972,47 @@ AutoCompleteManager.handleContentChange()
   - [ ] プレビュー表示
   - [ ] 孤児参照処理
 
-### ⬜ フェーズ4: 入力補完統合
+### ✅ フェーズ4: 入力補完統合（完了）
 
 #### 型定義拡張
 
-- [ ] `src/services/autoComplete/types.ts` の拡張
-  - [ ] `AutoCompleteMatchType` 型の定義
-  - [ ] `AutoCompleteMatch` インターフェースの拡張
-    - [ ] `matchType` フィールド
-    - [ ] `presetType` フィールド
-    - [ ] `parentPresetId` フィールド
+- [x] `src/services/autoComplete/types.ts` の拡張
+  - [x] `AutoCompleteMatchType` 型の定義
+  - [x] `AutoCompleteMatch` インターフェースの拡張
+    - [x] `matchType` フィールド
+    - [x] `presetType` フィールド
+    - [x] `parentPresetId` フィールド
 
 #### マッチャー実装
 
-- [ ] `src/services/autoComplete/presetMatcher.ts` の実装
-  - [ ] `matchPresets()` - プリセット名マッチング
-  - [ ] `matchPresetItems()` - ドット記法による項目マッチング
-  - [ ] `parseDotNotation()` - ドット記法解析
+- [x] `src/services/autoComplete/presetMatcher.ts` の実装
+  - [x] `matchPresets()` - プリセット名マッチング
+  - [x] `matchPresetItems()` - ドット記法による項目マッチング
+  - [x] `parseDotNotation()` - ドット記法解析
 
 #### AutoCompleteManager拡張
 
-- [ ] `src/services/autoComplete/autoCompleteManager.ts` の拡張
-  - [ ] `setPresets()` メソッド追加
-  - [ ] `findMatches()` にプリセットマッチ統合
-  - [ ] ドット記法検出サポート
-  - [ ] 結果のグループ化（プロンプト / プリセット）
+- [x] `src/services/autoComplete/autoCompleteManager.ts` の拡張
+  - [x] `setPresets()` メソッド追加
+  - [x] `findMatches()` にプリセットマッチ統合
+  - [x] ドット記法検出サポート
+  - [x] 結果のグループ化（プロンプト / プリセット）
 
 #### UI拡張
 
-- [ ] 入力補完UI でのプリセット区別表示
-  - [ ] プリセット用アイコン ("P" バッジ)
-  - [ ] セクションヘッダー（「プロンプト」 / 「変数プリセット」）
-- [ ] ドット記法入力時のプリセット項目表示
+- [x] 入力補完UI でのプリセット区別表示
+  - [x] プリセット用アイコン ("P" バッジ)
+  - [x] セクションヘッダー（「プロンプト」 / 「変数プリセット」）※UI実装済み（視覚的区別のみ実装）
+- [x] ドット記法入力時のプリセット項目表示
 
 #### テスト
 
-- [ ] `presetMatcher.test.ts`
+- [ ] `presetMatcher.test.ts`（後回し）
   - [ ] プリセット名マッチング
   - [ ] ドット記法マッチング
   - [ ] ドット記法解析
   - [ ] 最大マッチ数制限
-- [ ] `AutoCompleteManager.test.ts`（拡張）
+- [ ] `AutoCompleteManager.test.ts`（拡張）（後回し）
   - [ ] プリセットとプロンプトの統合マッチング
   - [ ] ドット記法検出
   - [ ] グループ化動作

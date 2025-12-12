@@ -10,8 +10,9 @@ import { Key } from "@/components/Key"
 import { isWindows } from "@/utils/platform"
 import { setCaretPosition } from "@/services/dom/caretUtils"
 import { i18n } from "#imports"
-import type { Prompt, VariableValues } from "@/types/prompt"
+import type { Prompt, VariableValues, VariablePreset } from "@/types/prompt"
 import { VariableInputDialog } from "@/components/inputMenu/controller/VariableInputDialog"
+import { getVariablePresets } from "@/services/storage/variablePresetStorage"
 
 const serviceFacade = PromptServiceFacade.getInstance()
 
@@ -48,6 +49,13 @@ interface AutoCompletePopupInnerProps {
 const AutoCompletePopupInner: React.FC<AutoCompletePopupInnerProps> = ({
   prompts,
 }) => {
+  const [presets, setPresets] = useState<VariablePreset[]>([])
+
+  // Load variable presets
+  useEffect(() => {
+    getVariablePresets().then(setPresets)
+  }, [])
+
   const {
     isVisible,
     matches,
@@ -61,7 +69,7 @@ const AutoCompletePopupInner: React.FC<AutoCompletePopupInnerProps> = ({
     variableInputData,
     clearVariableInputData,
     handleVariableSubmit,
-  } = useAutoComplete({ prompts })
+  } = useAutoComplete({ prompts, presets })
   const inputRef = useRef<HTMLElement>(null)
   const popupRef = useRef<HTMLDivElement>(null)
   const anchorRef = useRef<HTMLDivElement>(null)
