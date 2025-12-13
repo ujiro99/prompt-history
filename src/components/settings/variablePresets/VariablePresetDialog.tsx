@@ -149,7 +149,7 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
     const newPreset: VariablePreset = {
       id: generatePromptId(),
       name: "",
-      type: "textarea",
+      type: "text",
       description: "",
       textContent: "",
       createdAt: new Date(),

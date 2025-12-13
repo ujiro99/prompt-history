@@ -27,7 +27,7 @@ describe("variablePresetStorage", () => {
   const mockPreset: VariablePreset = {
     id: "preset-1",
     name: "Test Preset",
-    type: "textarea",
+    type: "text",
     description: "Test description",
     textContent: "Test content",
     createdAt: new Date("2024-01-01"),

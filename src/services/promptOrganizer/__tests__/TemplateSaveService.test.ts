@@ -229,7 +229,7 @@ describe("TemplateSaveService", () => {
         userAction: "save_and_pin",
         variables: [
           { name: "var1", type: "text", defaultValue: "" },
-          { name: "var2", type: "textarea", defaultValue: "" },
+          { name: "var2", type: "text", defaultValue: "" },
         ],
       })
 

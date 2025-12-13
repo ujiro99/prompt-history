@@ -10,7 +10,6 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Key } from "@/components/Key"
 import { SelectField } from "@/components/inputMenu/controller/SelectField"
@@ -107,7 +106,7 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
       if (variable.type === "preset") {
         const preset = presets.get(variable.name)
         if (preset) {
-          if (preset.type === "textarea") {
+          if (preset.type === "text") {
             initialValues[variable.name] = preset.textContent || ""
           } else if (preset.type === "select" && preset.selectOptions) {
             initialValues[variable.name] = preset.selectOptions[0] || ""
@@ -236,18 +235,6 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
               </label>
 
               {variable.type === "text" && (
-                <Input
-                  id={`var-${variable.name}`}
-                  type="text"
-                  value={values[variable.name] || ""}
-                  onChange={(e) =>
-                    handleValueChange(variable.name, e.target.value)
-                  }
-                  placeholder={i18n.t("placeholders.enterValue")}
-                />
-              )}
-
-              {variable.type === "textarea" && (
                 <Textarea
                   id={`var-${variable.name}`}
                   value={values[variable.name] || ""}
@@ -283,8 +270,8 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
                     )
                   }
 
-                  // Textarea preset type
-                  if (preset.type === "textarea") {
+                  // Text preset type
+                  if (preset.type === "text") {
                     return (
                       <Textarea
                         id={`var-${variable.name}`}

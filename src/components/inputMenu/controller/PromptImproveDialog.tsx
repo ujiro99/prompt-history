@@ -206,7 +206,7 @@ export const PromptImproveDialog: React.FC<PromptImproveDialogProps> = ({
         variables: variables,
       }
 
-      await analyticsService.track(ANALYTICS_EVENTS.INPUT_PROMPT)
+      await analyticsService.track(ANALYTICS_EVENTS.SET_INPROVED_PROMPT)
       await onInput(improvedData)
     } finally {
       setIsLoading(false)

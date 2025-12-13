@@ -99,6 +99,7 @@ export async function deleteVariablePreset(id: string): Promise<string[]> {
       const updatedVariables = storedPrompt.variables.map((variable) => {
         if (variable.type === "preset" && variable.presetId === id) {
           // Convert to text type
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { presetId, ...rest } = variable
           return {
             ...rest,

@@ -232,8 +232,8 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent container={container}>
-                <SelectItem value="textarea">
-                  {i18n.t("variableTypes.textarea")}
+                <SelectItem value="text">
+                  {i18n.t("variableTypes.text")}
                 </SelectItem>
                 <SelectItem value="select">
                   {i18n.t("variableTypes.select")}
@@ -246,7 +246,7 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
           </Field>
 
           {/* Type-specific fields */}
-          {localPreset.type === "textarea" && (
+          {localPreset.type === "text" && (
             <Field>
               <FieldLabel htmlFor="text-content">
                 {i18n.t("variablePresets.textContent")}

@@ -5,12 +5,12 @@ import type { AIGeneratedMetadata } from "./promptOrganizer"
 /**
  * Variable type
  */
-export type VariableType = "text" | "textarea" | "select" | "exclude" | "preset"
+export type VariableType = "text" | "select" | "exclude" | "preset"
 
 /**
  * Variable preset type
  */
-export type PresetVariableType = "textarea" | "select" | "dictionary"
+export type PresetVariableType = "text" | "select" | "dictionary"
 
 /**
  * Select options configuration (for extensibility)

@@ -340,12 +340,12 @@ describe("TemplateConverter", () => {
       expect(candidate.variables[2].type).toBe("text")
     })
 
-    it("should infer 'textarea' for multi-line variables (English)", () => {
+    it("should infer 'text' for multi-line variables (English)", () => {
       const generated = createGeneratedTemplate({
         variables: [
-          { name: "detail", type: "textarea", defaultValue: "" },
-          { name: "content", type: "textarea", defaultValue: "" },
-          { name: "description", type: "textarea", defaultValue: "" },
+          { name: "detail", type: "text", defaultValue: "" },
+          { name: "content", type: "text", defaultValue: "" },
+          { name: "description", type: "text", defaultValue: "" },
         ],
       })
 
@@ -355,17 +355,17 @@ describe("TemplateConverter", () => {
         targetPrompts,
       )
 
-      expect(candidate.variables[0].type).toBe("textarea")
-      expect(candidate.variables[1].type).toBe("textarea")
-      expect(candidate.variables[2].type).toBe("textarea")
+      expect(candidate.variables[0].type).toBe("text")
+      expect(candidate.variables[1].type).toBe("text")
+      expect(candidate.variables[2].type).toBe("text")
     })
 
-    it("should infer 'textarea' for multi-line variables (Japanese)", () => {
+    it("should infer 'text' for multi-line variables (Japanese)", () => {
       const generated = createGeneratedTemplate({
         variables: [
-          { name: "test1", type: "textarea", defaultValue: "" },
-          { name: "test2", type: "textarea", defaultValue: "" },
-          { name: "test3", type: "textarea", defaultValue: "" },
+          { name: "test1", type: "text", defaultValue: "" },
+          { name: "test2", type: "text", defaultValue: "" },
+          { name: "test3", type: "text", defaultValue: "" },
         ],
       })
 
@@ -375,9 +375,9 @@ describe("TemplateConverter", () => {
         targetPrompts,
       )
 
-      expect(candidate.variables[0].type).toBe("textarea")
-      expect(candidate.variables[1].type).toBe("textarea")
-      expect(candidate.variables[2].type).toBe("textarea")
+      expect(candidate.variables[0].type).toBe("text")
+      expect(candidate.variables[1].type).toBe("text")
+      expect(candidate.variables[2].type).toBe("text")
     })
 
     it("should infer 'text' for other variables", () => {
@@ -411,7 +411,7 @@ describe("TemplateConverter", () => {
       categoryId: "test-category",
       variables: [
         { name: "var1", type: "text", defaultValue: "" },
-        { name: "var2", type: "textarea", defaultValue: "" },
+        { name: "var2", type: "text", defaultValue: "" },
       ],
       aiMetadata: {
         sourcePromptIds: ["id1", "id2", "id3"],

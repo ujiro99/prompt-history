@@ -45,7 +45,7 @@ export const schema = {
                 name: { type: "string" },
                 type: {
                   type: "string",
-                  enum: ["text", "textarea", "select"],
+                  enum: ["text", "select"],
                 },
                 defaultValue: { type: "string" },
                 description: {

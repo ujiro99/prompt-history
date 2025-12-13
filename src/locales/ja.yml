@@ -316,8 +316,7 @@ accessibility:
 # Variable types
 variableTypes:
   type: "$1型"
-  text: 一行文字列
-  textarea: 複数行文字列
+  text: 文字列
   select: 選択肢
   exclude: 対象外
   preset: プリセット

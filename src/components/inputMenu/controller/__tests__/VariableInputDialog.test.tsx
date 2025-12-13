@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest"
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { VariableInputDialog } from "../VariableInputDialog"
 import { ContainerProvider } from "@/contexts/ContainerContext"
 import { TestIds } from "@/components/const"
@@ -42,32 +43,7 @@ describe("VariableInputDialog", () => {
       )
 
       expect(screen.getByText("name:")).toBeInTheDocument()
-      const input = screen.getByDisplayValue("John")
-      expect(input).toBeInTheDocument()
-      expect(input.tagName).toBe("INPUT")
-    })
-
-    it("should render textarea for textarea type variable", () => {
-      const variables: VariableConfig[] = [
-        {
-          name: "description",
-          type: "textarea",
-          defaultValue: "Default description",
-        },
-      ]
-
-      renderWithContainer(
-        <VariableInputDialog
-          open={true}
-          onOpenChange={mockOnOpenChange}
-          variables={variables}
-          content={testContent}
-          onSubmit={mockOnSubmit}
-        />,
-      )
-
-      expect(screen.getByText("description:")).toBeInTheDocument()
-      const textarea = screen.getByDisplayValue("Default description")
+      const textarea = screen.getByDisplayValue("John")
       expect(textarea).toBeInTheDocument()
       expect(textarea.tagName).toBe("TEXTAREA")
     })
@@ -131,7 +107,7 @@ describe("VariableInputDialog", () => {
       const variables: VariableConfig[] = [
         { name: "name", type: "text" },
         { name: "age", type: "text" },
-        { name: "bio", type: "textarea" },
+        { name: "bio", type: "text" },
       ]
 
       renderWithContainer(
@@ -192,9 +168,9 @@ describe("VariableInputDialog", () => {
       expect(input).toHaveValue("Bob")
     })
 
-    it("should update value when user types in textarea", () => {
+    it("should update value when user types in text field", () => {
       const variables: VariableConfig[] = [
-        { name: "bio", type: "textarea", defaultValue: "" },
+        { name: "bio", type: "text", defaultValue: "" },
       ]
 
       renderWithContainer(
@@ -361,6 +337,7 @@ describe("VariableInputDialog", () => {
     })
 
     it("should update preview when user changes input values", async () => {
+      const user = userEvent.setup()
       const variables: VariableConfig[] = [
         { name: "name", type: "text", defaultValue: "John" },
       ]
@@ -376,10 +353,16 @@ describe("VariableInputDialog", () => {
         />,
       )
 
-      const input = screen.getByRole("textbox")
-      fireEvent.change(input, { target: { value: "Alice" } })
+      // Initial wait for debounce
+      await new Promise((resolve) => setTimeout(resolve, 10))
 
-      // Wait for debounce
+      const input = screen.getByRole("textbox")
+
+      // Clear existing value and type new value
+      await user.clear(input)
+      await user.type(input, "Alice")
+
+      // Wait for debounce (200ms) and check that preview has updated
       await waitFor(
         () => {
           const preview = screen.getByText((content) => {

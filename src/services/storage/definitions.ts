@@ -36,10 +36,29 @@ export const promptsStorage = storage.defineItem<Record<string, StoredPrompt>>(
   "local:prompts",
   {
     fallback: {},
-    version: 1,
+    version: 2,
     migrations: {
-      // Reserved for future migrations
-      // Example: 2: (oldData: any) => { /* migration logic */ }
+      2: (oldData: Record<string, StoredPrompt>) => {
+        // Migrate all variables with type "textarea" to "text"
+        const migratedData: Record<string, StoredPrompt> = {}
+
+        for (const [id, prompt] of Object.entries(oldData)) {
+          if (prompt.variables) {
+            const migratedVariables = prompt.variables.map((variable) => {
+              // Type assertion needed for migration from old "textarea" type
+              if ((variable.type as any) === "textarea") {
+                return { ...variable, type: "text" as const }
+              }
+              return variable
+            })
+            migratedData[id] = { ...prompt, variables: migratedVariables }
+          } else {
+            migratedData[id] = prompt
+          }
+        }
+
+        return migratedData
+      },
     },
   },
 )

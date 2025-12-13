@@ -53,7 +53,7 @@ export function matchPresets(
       // Determine content based on preset type
       let content = ""
       switch (preset.type) {
-        case "textarea":
+        case "text":
           content = preset.textContent || ""
           break
         case "select":
@@ -158,6 +158,6 @@ export function matchPresetItems(
     return matches
   }
 
-  // For textarea type, no items to match
+  // For text type, no items to match
   return []
 }

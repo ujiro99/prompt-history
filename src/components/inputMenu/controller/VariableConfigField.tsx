@@ -6,12 +6,12 @@ import type {
   VariableType,
   VariablePreset,
 } from "@/types/prompt"
+import { Textarea } from "@/components/ui/textarea"
 import { getVariablePresets } from "@/services/storage/variablePresetStorage"
 import { i18n } from "#imports"
 
 const VariableTypeOptions: { label: string; value: VariableType }[] = [
   { label: i18n.t("variableTypes.text"), value: "text" },
-  { label: i18n.t("variableTypes.textarea"), value: "textarea" },
   { label: i18n.t("variableTypes.select"), value: "select" },
   { label: i18n.t("variableTypes.exclude"), value: "exclude" },
   { label: i18n.t("variableTypes.preset"), value: "preset" },
@@ -201,13 +201,13 @@ export const VariableConfigField: React.FC<VariableConfigFieldProps> = ({
             >
               {i18n.t("common.defaultValue")}
             </label>
-            <Input
+            <Textarea
               id={`var-default-${variable.name}`}
-              type="text"
               value={variable.defaultValue || ""}
               onChange={(e) => handleDefaultValueChange(e.target.value)}
               placeholder={i18n.t("placeholders.enterValue")}
-              className="bg-white"
+              rows={1}
+              className="py-1 min-h-9 max-h-60 break-all bg-white"
             />
           </div>
         )}

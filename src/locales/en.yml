@@ -316,8 +316,7 @@ accessibility:
 # Variable types
 variableTypes:
   type: $1 Type
-  text: Single-line Text
-  textarea: Multi-line Text
+  text: Text
   select: Select
   exclude: Exclude
   preset: Preset

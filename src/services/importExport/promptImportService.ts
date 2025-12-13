@@ -205,7 +205,13 @@ export class PromptImportService {
       try {
         const parsed = JSON.parse(row.variables)
         if (Array.isArray(parsed)) {
-          variables = parsed
+          variables = parsed.map((item) => {
+            if (item.type === "textarea") {
+              // Migrate old "textarea" type to "text"
+              return { ...item, type: "text" as const }
+            }
+            return item
+          })
         }
       } catch (error) {
         // Ignore parse errors for backwards compatibility
