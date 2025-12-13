@@ -63,6 +63,7 @@ export const VariableConfigField: React.FC<VariableConfigFieldProps> = ({
     }
     loadPresets()
   }, [variable.presetId])
+
   /**
    * Handle variable type change
    */
@@ -93,6 +94,11 @@ export const VariableConfigField: React.FC<VariableConfigFieldProps> = ({
       if (initialVariable?.type === "preset" && initialVariable.presetId) {
         updatedConfig.presetId = initialVariable.presetId
       }
+    }
+
+    // Clear selected preset if type is not 'preset'
+    if (type !== "preset") {
+      setSelectedPreset(null)
     }
 
     onChange(updatedConfig)
@@ -187,7 +193,7 @@ export const VariableConfigField: React.FC<VariableConfigFieldProps> = ({
         </div>
 
         {/* Default value input (only for text, textarea) */}
-        {!["select", "exclude"].includes(variable.type) && (
+        {!["select", "exclude", "preset"].includes(variable.type) && (
           <div className="space-y-1 flex-1">
             <label
               htmlFor={`var-default-${variable.name}`}
@@ -243,13 +249,15 @@ export const VariableConfigField: React.FC<VariableConfigFieldProps> = ({
               name="preset-select"
               value={variable.presetId || ""}
               onValueChange={(_, v) => handlePresetChange(v)}
-              className="bg-white"
+              className="bg-white h-auto! py-[0.4rem] whitespace-normal wrap-break-word text-left"
             />
             {selectedPreset && (
-              <p className="text-xs text-muted-foreground">
-                {i18n.t(`variableTypes.${selectedPreset.type}`)}
+              <p className="ml-2 text-xs text-muted-foreground">
+                {i18n.t("variableTypes.type", [
+                  i18n.t(`variableTypes.${selectedPreset.type}`),
+                ])}
                 {selectedPreset.description &&
-                  ` • ${selectedPreset.description}`}
+                  ` - ${selectedPreset.description}`}
               </p>
             )}
           </div>

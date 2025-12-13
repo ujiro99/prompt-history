@@ -246,14 +246,15 @@ variablePresets:
   textContent: Text Content
   textContentDescription: Enter the text to be inserted into the prompt
   selectOptions: Select Options
+  selectOptionsDescription: Enter options separated by commas
   dictionaryItems: Dictionary Items
   addItem: Add Item
   itemName: Item Name
   itemContent: Item Content
   noPresets: No presets available
-  selectPreset: Select a preset
+  selectPreset: Select or add a preset.
   enterName: Enter name (max 40 characters)
-  enterDescription: Enter description (optional)
+  enterDescription: Enter description (max 80 characters)
   enterTextContent: Enter text content
   enterSelectOptions: Enter options separated by commas
   enterItemName: Enter item name
@@ -314,6 +315,7 @@ accessibility:
 
 # Variable types
 variableTypes:
+  type: $1 Type
   text: Single-line Text
   textarea: Multi-line Text
   select: Select

@@ -1,11 +1,14 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
+import { RefreshCw } from "lucide-react"
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
 import { useContainer } from "@/hooks/useContainer"
 import { VariablePresetList } from "./VariablePresetList"
 import { VariablePresetEditor } from "./VariablePresetEditor"
@@ -43,6 +46,11 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
     null,
   )
 
+  // For saving state control
+  const [isSaving, setIsSaving] = useState(false)
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const delayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   /**
    * Load all presets from storage
    */
@@ -65,6 +73,69 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
   }, [open, loadPresets])
 
   /**
+   * Cleanup debounce timer on unmount
+   */
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current)
+      }
+    }
+  }, [])
+
+  const startSaving = useCallback(() => {
+    // Clear any pending debounced saves
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+      debounceTimerRef.current = null
+    }
+    setIsSaving(true)
+  }, [])
+
+  const stopSaving = useCallback(() => {
+    if (delayTimerRef.current) {
+      clearTimeout(delayTimerRef.current)
+      delayTimerRef.current = null
+    }
+    // Artificial delay to avoid flicker
+    delayTimerRef.current = setTimeout(() => {
+      setIsSaving(false)
+    }, 600)
+  }, [])
+
+  /**
+   * Common save preset logic
+   */
+  const savePresetInternal = useCallback(
+    async (preset: VariablePreset) => {
+      try {
+        await saveVariablePreset(preset)
+        await loadPresets()
+        setSelectedPreset(preset)
+      } catch (error) {
+        console.error("Failed to save preset:", error)
+        throw error
+      }
+    },
+    [loadPresets],
+  )
+
+  /**
+   * Save preset immediately (without debounce)
+   */
+  const savePresetImmediate = useCallback(
+    async (preset: VariablePreset) => {
+      startSaving()
+      try {
+        await savePresetInternal(preset)
+      } finally {
+        stopSaving()
+      }
+    },
+    [savePresetInternal, startSaving, stopSaving],
+  )
+
+  /**
    * Handle preset selection
    */
   const handleSelectPreset = useCallback((preset: VariablePreset) => {
@@ -85,29 +156,37 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
       updatedAt: new Date(),
     }
 
-    try {
-      await saveVariablePreset(newPreset)
-      await loadPresets()
-      setSelectedPreset(newPreset)
-    } catch (error) {
-      console.error("Failed to add preset:", error)
-    }
-  }, [loadPresets])
+    await savePresetImmediate(newPreset)
+  }, [savePresetImmediate])
 
   /**
    * Handle preset change (auto-save with debounce)
    */
   const handlePresetChange = useCallback(
-    async (updatedPreset: VariablePreset) => {
-      try {
-        await saveVariablePreset(updatedPreset)
-        await loadPresets()
-        setSelectedPreset(updatedPreset)
-      } catch (error) {
-        console.error("Failed to save preset:", error)
+    (updatedPreset: VariablePreset) => {
+      // Update local state immediately for responsive UI
+      setSelectedPreset(updatedPreset)
+
+      // Clear existing timer
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current)
+        debounceTimerRef.current = null
       }
+
+      // Set new timer for debounced save
+      debounceTimerRef.current = setTimeout(async () => {
+        setIsSaving(true) // debounced
+        try {
+          await savePresetInternal(updatedPreset)
+        } catch (error) {
+          console.error("Failed to save preset:", error)
+        } finally {
+          stopSaving()
+          debounceTimerRef.current = null
+        }
+      }, 400)
     },
-    [loadPresets],
+    [savePresetInternal, stopSaving],
   )
 
   /**
@@ -115,6 +194,7 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
    */
   const handleDuplicatePreset = useCallback(async () => {
     if (!selectedPreset) return
+    startSaving()
 
     try {
       const duplicated = await duplicateVariablePreset(selectedPreset.id)
@@ -122,8 +202,10 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
       setSelectedPreset(duplicated)
     } catch (error) {
       console.error("Failed to duplicate preset:", error)
+    } finally {
+      stopSaving()
     }
-  }, [selectedPreset, loadPresets])
+  }, [selectedPreset, loadPresets, startSaving, stopSaving])
 
   /**
    * Handle delete preset
@@ -154,6 +236,7 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
         return
       }
 
+      startSaving()
       // Delete preset (this will also convert affected prompts to text type)
       await deleteVariablePreset(selectedPreset.id)
 
@@ -162,8 +245,10 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
       setSelectedPreset(null)
     } catch (error) {
       console.error("Failed to delete preset:", error)
+    } finally {
+      stopSaving()
     }
-  }, [selectedPreset, loadPresets])
+  }, [selectedPreset, loadPresets, startSaving, stopSaving])
 
   /**
    * Keyboard event handling
@@ -213,6 +298,23 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
               />
             </div>
           </div>
+
+          <DialogFooter>
+            <Button
+              onClick={() => onOpenChange(false)}
+              disabled={isSaving}
+              className="min-w-24"
+            >
+              {isSaving ? (
+                <>
+                  <RefreshCw className="size-4 animate-spin mr-2" />{" "}
+                  <span>{i18n.t("status.saving")}</span>
+                </>
+              ) : (
+                i18n.t("buttons.complete")
+              )}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>

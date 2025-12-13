@@ -73,14 +73,19 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
   }
 
   /**
-   * Handle select options change
+   * Handle options change (for select type)
    */
   const handleSelectOptionsChange = (value: string) => {
+    // Parse comma-separated options
     const options = value
       .split(",")
       .map((opt) => opt.trim())
-      .filter(Boolean)
-    handleFieldChange("selectOptions", options)
+      .filter((opt) => opt.length > 0)
+
+    // Unique options
+    const uniqueOptions = Array.from(new Set(options))
+
+    handleFieldChange("selectOptions", uniqueOptions)
   }
 
   /**
@@ -174,7 +179,7 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
                 minLength={1}
                 required
               />
-              <span className="absolute text-xs text-muted-foreground right-3 bottom-2.5">
+              <span className="absolute text-xs text-muted-foreground right-3 -top-5">
                 {i18n.t("common.characterCount", [
                   40 - localPreset.name.length,
                 ])}
@@ -190,12 +195,22 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
             <FieldDescription>
               {i18n.t("variablePresets.description_description")}
             </FieldDescription>
-            <Input
-              id="preset-description"
-              value={localPreset.description || ""}
-              onChange={(e) => handleFieldChange("description", e.target.value)}
-              placeholder={i18n.t("variablePresets.enterDescription")}
-            />
+            <div className="relative">
+              <Input
+                id="preset-description"
+                value={localPreset.description || ""}
+                onChange={(e) =>
+                  handleFieldChange("description", e.target.value)
+                }
+                placeholder={i18n.t("variablePresets.enterDescription")}
+                maxLength={80}
+              />
+              <span className="absolute text-xs text-muted-foreground right-3 -top-5">
+                {i18n.t("common.characterCount", [
+                  80 - (localPreset.description?.length ?? 0),
+                ])}
+              </span>
+            </div>
           </Field>
 
           {/* Preset Type */}
@@ -250,15 +265,15 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
               <FieldLabel htmlFor="select-options">
                 {i18n.t("variablePresets.selectOptions")}
               </FieldLabel>
+              <FieldDescription>
+                {i18n.t("variablePresets.selectOptionsDescription")}
+              </FieldDescription>
               <Input
                 id="select-options"
-                value={localPreset.selectOptions?.join(", ") || ""}
-                onChange={(e) => handleSelectOptionsChange(e.target.value)}
+                defaultValue={localPreset.selectOptions?.join(", ") || ""}
+                onBlur={(e) => handleSelectOptionsChange(e.target.value)}
                 placeholder={i18n.t("variablePresets.enterSelectOptions")}
               />
-              <FieldDescription>
-                {i18n.t("common.commaSeparatedValues")}
-              </FieldDescription>
             </Field>
           )}
 

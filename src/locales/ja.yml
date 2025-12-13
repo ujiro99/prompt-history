@@ -246,16 +246,17 @@ variablePresets:
   textContent: テキストコンテンツ
   textContentDescription: プロンプトへ挿入されるテキストを入力してください
   selectOptions: 選択肢
+  selectOptionsDescription: 選択肢をカンマ(,)区切りで入力してください
   dictionaryItems: 辞書項目
   addItem: 項目を追加
   itemName: 項目名
   itemContent: 項目内容
   noPresets: プリセットがありません
-  selectPreset: プリセットを選択
-  enterName: 変数名を入力してください(最大40文字)
-  enterDescription: 用途を入力してください (任意)
+  selectPreset: プリセットを選択、または追加してください。
+  enterName: 変数名を入力してください (最大40文字)
+  enterDescription: 用途を入力してください (最大80文字)
   enterTextContent: テキストコンテンツを入力してください
-  enterSelectOptions: 選択肢をカンマ区切りで入力してください
+  enterSelectOptions: 選択肢をカンマ(,)区切りで入力してください
   enterItemName: 項目名を入力してください
   enterItemContent: 項目内容を入力してください
   presetTypeDescription: プリセットの型を選択してください
@@ -314,6 +315,7 @@ accessibility:
 
 # Variable types
 variableTypes:
+  type: "$1型"
   text: 一行文字列
   textarea: 複数行文字列
   select: 選択肢

@@ -56,15 +56,13 @@ export async function getVariablePresets(): Promise<VariablePreset[]> {
 export async function saveVariablePreset(
   preset: VariablePreset,
 ): Promise<void> {
-  const currentPresets = await variablePresetsStorage.getValue()
-
-  const now = new Date()
   const updatedPreset: VariablePreset = {
     ...preset,
-    updatedAt: now,
+    updatedAt: new Date(),
   }
-
   const storedPreset = toStoredPreset(updatedPreset)
+
+  const currentPresets = await variablePresetsStorage.getValue()
   const updatedPresets = {
     ...currentPresets,
     [preset.id]: storedPreset,
@@ -192,14 +190,6 @@ export async function findPromptsByPresetId(
   }
 
   return matchingPrompts
-}
-
-/**
- * Find prompt IDs that use a specific preset (internal helper)
- */
-async function findPromptIdsByPresetId(presetId: string): Promise<string[]> {
-  const prompts = await findPromptsByPresetId(presetId)
-  return prompts.map((p) => p.id)
 }
 
 /**
