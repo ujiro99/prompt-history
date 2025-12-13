@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useCallback, useRef } from "react"
 import { Copy, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -42,10 +42,16 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
 }) => {
   const [localPreset, setLocalPreset] = useState<VariablePreset | null>(preset)
   const { container } = useContainer()
+  const selectOptionsRef = useRef<HTMLInputElement>(null)
 
   // Update local state when preset prop changes
   useEffect(() => {
     setLocalPreset(preset)
+    if (selectOptionsRef.current && preset?.type === "select") {
+      selectOptionsRef.current.value = preset.selectOptions
+        ? preset.selectOptions.join(", ")
+        : ""
+    }
   }, [preset])
 
   /**
@@ -273,6 +279,7 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
                 defaultValue={localPreset.selectOptions?.join(", ") || ""}
                 onBlur={(e) => handleSelectOptionsChange(e.target.value)}
                 placeholder={i18n.t("variablePresets.enterSelectOptions")}
+                ref={selectOptionsRef}
               />
             </Field>
           )}
