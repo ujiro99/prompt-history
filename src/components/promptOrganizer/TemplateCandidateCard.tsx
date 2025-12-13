@@ -74,7 +74,7 @@ export const TemplateCandidateCard = forwardRef<
       ref={ref}
       className={cn(
         "px-4 pt-2 pb-3 cursor-pointer transition-colors hover:bg-gray-50 border rounded-lg",
-        isSelected ? "ring-2 ring-blue-300" : "",
+        isSelected ? "ring-2 ring-blue-300 bg-accent" : "",
         className,
       )}
       onClick={onClick}

@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 
 type ScrollAreaWithGradientProps = {
   className?: string
+  rootClassName?: string
   children: React.ReactNode
   indicatorVisible?: boolean
   gradientHeight?: number | string
@@ -15,6 +16,7 @@ type ScrollAreaWithGradientProps = {
 
 export function ScrollAreaWithGradient({
   className,
+  rootClassName,
   children,
   indicatorVisible = true,
   gradientHeight,
@@ -62,7 +64,7 @@ export function ScrollAreaWithGradient({
 
   return (
     <ScrollArea
-      className="scroll-gradient-container"
+      className={cn("scroll-gradient-container", rootClassName)}
       scrollbarClassName="scrollbar"
       viewportRef={scrollViewportRef}
       viewportClassName={cn("scroll-viewport-timeline", className)}
