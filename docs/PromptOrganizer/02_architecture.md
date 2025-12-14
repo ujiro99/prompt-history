@@ -583,7 +583,7 @@ organizer:
 **変数型推論ルール**:
 
 - 日付系（date, day含む）→ `text`
-- 複数行（detail, content, description, 詳細, 内容, 説明）→ `textarea`
+- 複数行（detail, content, description, 詳細, 内容, 説明）→ `text`
 - その他 → `text`
 
 **showInPinned 判定基準**:

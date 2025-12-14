@@ -149,7 +149,7 @@ AutoCompleteManager.analyzeInput()
 /**
  * 変数プリセットの型
  */
-export type PresetVariableType = "textarea" | "select" | "dictionary"
+export type PresetVariableType = "text" | "select" | "dictionary"
 
 /**
  * 辞書型プリセットの項目
@@ -201,7 +201,7 @@ export interface StoredVariablePreset
 
 ```typescript
 // VariableType に preset を追加（dictionary は追加しない）
-export type VariableType = "text" | "textarea" | "select" | "exclude" | "preset"
+export type VariableType = "text" | "select" | "exclude" | "preset"
 
 // VariableConfig は前述の通り拡張
 ```
@@ -674,7 +674,7 @@ AutoCompleteManager.handleContentChange()
 
 **変数型**:
 
-- `variableType.textarea` (変数プリセットの文字列型として表示)
+- `variableType.text` (変数プリセットの文字列型として表示)
 - `variableType.select`
 - `variableType.dictionary`
 - `variableType.preset`
@@ -685,7 +685,6 @@ AutoCompleteManager.handleContentChange()
 - `variablePresets.deleteConfirm.message`
 - `variablePresets.deleteConfirm.affectedPrompts`
 - `variablePresets.deleteConfirm.cancel`
-- `variablePresets.deleteConfirm.deleteAndConvert`
 
 **インポート警告**:
 
@@ -833,7 +832,7 @@ AutoCompleteManager.handleContentChange()
 - 新しい "preset" 型は `VariableType` に追加的に追加される
 - "dictionary" 型は `VariableType` には追加されず、プリセット内でのみ使用される
 - ストレージ形式は後方互換性あり
-- 既存の変数設定（text, textarea, select, exclude）はそのまま動作
+- 既存の変数設定（text, select, exclude）はそのまま動作
 
 ### パフォーマンス考慮事項
 
@@ -882,7 +881,7 @@ AutoCompleteManager.handleContentChange()
 - [x] `VariablePresetEditor.tsx` の実装
   - [x] プリセットプロパティ編集フォーム
   - [x] 型に応じた動的フィールド表示
-    - [x] 文字列型（textarea）: `textContent` 入力欄
+    - [x] 文字列型（text）: `textContent` 入力欄
     - [x] 選択肢型（select）: `selectOptions` 入力欄（カンマ区切り）
     - [x] 辞書型（dictionary）: `dictionaryItems` リスト編集
   - [x] 複製・削除ボタン
@@ -952,7 +951,7 @@ AutoCompleteManager.handleContentChange()
 #### データ処理
 
 - [x] プリセット参照による変数解決ロジック
-  - [x] 各プリセット型（textarea, select, dictionary）の初期値設定
+  - [x] 各プリセット型（text, select, dictionary）の初期値設定
   - [x] 辞書型の項目選択時に内容を値として設定
 - [x] プリセット削除時の変数変換処理
   - [x] 影響を受けるプロンプトの検出
@@ -1017,32 +1016,32 @@ AutoCompleteManager.handleContentChange()
   - [ ] ドット記法検出
   - [ ] グループ化動作
 
-### ⬜ フェーズ5: インポート/エクスポート & 仕上げ
+### ✅ フェーズ5: インポート/エクスポート & 仕上げ（完了）
 
 #### インポート/エクスポート機能
 
-- [ ] 変数プリセットのエクスポート機能
-  - [ ] UI実装（選択したプリセットをエクスポート）
-  - [ ] JSON形式でのファイル出力
-- [ ] 変数プリセットのインポート機能
-  - [ ] UI実装（JSONファイルからインポート）
-  - [ ] マージ / 置換モード選択
-  - [ ] 重複ID処理
-- [ ] プロンプトインポート時のプリセット参照チェック
-  - [ ] 存在しないプリセット参照の検出
-  - [ ] 警告ダイアログ表示
-  - [ ] text型へのフォールバック変換
+- [x] 変数プリセットのエクスポート機能
+  - [x] UI実装（エクスポートボタンをダイアログヘッダーに追加）
+  - [x] JSON形式でのファイル出力（全プリセットをエクスポート）
+- [x] 変数プリセットのインポート機能
+  - [x] UI実装（インポートボタンとファイル選択）
+  - [x] マージ / 置換モード選択（confirm ダイアログで選択）
+  - [x] 重複ID処理（マージモードでは既存を保持、置換モードでは上書き）
+- [x] プロンプトインポート時のプリセット参照チェック
+  - [x] 存在しないプリセット参照の検出（parseCSV 内で実装）
+  - [x] 警告ダイアログ表示（ImportDialog に警告表示を追加）
+  - [x] text型へのフォールバック変換（presetId が見つからない場合に自動変換）
 
 #### i18n完成
 
-- [ ] すべての翻訳キーの追加・確認
-  - [ ] インポート/エクスポート関連
-  - [ ] 警告メッセージ
-  - [ ] エラーメッセージ
+- [x] すべての翻訳キーの追加・確認
+  - [x] インポート/エクスポート関連（en.yml, ja.yml に追加）
+  - [x] 警告メッセージ（variablePresets.importWarning）
+  - [x] エラーメッセージ（exportDialog.error, importDialog.error）
 
 #### E2Eテスト
 
-- [ ] `e2e/tests/variablePresets.spec.ts` の作成
+- [ ] `e2e/tests/variablePresets.spec.ts` の作成（後回し）
   - [ ] 変数プリセット作成フロー（辞書型）
   - [ ] プリセット参照付きプロンプト作成
   - [ ] プロンプト実行と変数入力
@@ -1052,9 +1051,9 @@ AutoCompleteManager.handleContentChange()
 
 #### ドキュメント
 
-- [ ] README 更新
-  - [ ] 変数プリセット機能の説明追加
-- [ ] ユーザーガイド作成（必要に応じて）
+- [x] README 更新
+  - [x] 変数プリセット機能の説明追加（Features セクションに追加）
+- [x] ユーザーガイド作成（README の Features セクションで対応）
 
 ### 実装順序の推奨
 

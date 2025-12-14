@@ -44,6 +44,8 @@ export interface ImportResult {
   imported: number
   /** Number of prompts that already existed */
   duplicates: number
+  /** List of missing preset IDs that were converted to text type */
+  missingPresets?: string[]
 }
 
 /**

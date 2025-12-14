@@ -251,28 +251,54 @@ variablePresets:
   selectOptions: 選択肢
   selectOptionsDescription: 選択肢をカンマ(,)区切りで入力してください
   dictionaryItems: 辞書項目
+  dictionaryItemsDescription: 実行時の選択肢となる項目名と、入力される項目内容を設定します
   addItem: 項目を追加
   itemName: 項目名
   itemContent: 項目内容
-  noPresets: プリセットがありません
-  selectPreset: プリセットを選択、または追加してください。
+  noPresets: 変数がありません
+  selectPreset: 変数を選択、または追加してください。
   enterName: 変数名を入力してください (最大40文字)
   enterDescription: 用途を入力してください (最大80文字)
   enterTextContent: テキストコンテンツを入力してください
   enterSelectOptions: 選択肢をカンマ(,)区切りで入力してください
   enterItemName: 項目名を入力してください
   enterItemContent: 項目内容を入力してください
-  presetTypeDescription: プリセットの型を選択してください
+  presetTypeDescription: 変数の型を選択してください
   deleteConfirm:
-    title: プリセットを削除
+    title: 変数を削除
     message: この変数を削除しますか？この操作は元に戻すことができません。
-    affectedPrompts: このプリセットは以下の$1件のプロンプトで使用されています。削除すると、それらの変数は文字列型に変換されます。
+    affectedPrompts: この変数は以下の$1件のプロンプトで使用されています。削除すると、それらの変数は文字列型に変換されます。
     affectedPromptsList: 影響を受けるプロンプト
     cancel: キャンセル
-    deleteAndConvert: 削除して変換
+  dictionalyItem:
+    deleteConfirm:
+      title: 辞書項目を削除
+      message: この項目を削除しますか？この操作は元に戻すことができません。
+  export: エクスポート
+  import: インポート
+  exportDialog:
+    title: 変数プリセットをエクスポート
+    description: 変数プリセットをJSON形式でエクスポートします。
+    exportAll: すべてエクスポート
+    exportSelected: 選択したものをエクスポート
+    fileName: ファイル名
+    exported: $1 個の変数プリセットをエクスポートしました
+    error: エクスポートに失敗しました
+  importDialog:
+    title: 変数プリセットをインポート
+    description: JSON形式の変数プリセットをインポートします。
+    selectFile: ファイルを選択
+    mode: インポートモード
+    merge: マージ
+    replace: すべて置換
+    mergeDescription: 既存のプリセットを保持したまま新しいプリセットを追加します
+    replaceDescription: 既存のプリセットをすべて削除してから新しいプリセットをインポートします
+    imported: $1 個の変数プリセットをインポートしました
+    error: インポートに失敗しました。ファイル形式を確認してください。
+    invalidFile: 無効なファイル形式です
   importWarning:
-    title: プリセット参照の警告
-    missingPresets: 以下のプリセットが見つかりませんでした
+    title: 変数プリセット参照の警告
+    missingPresets: 以下の変数プリセットが見つかりませんでした
     convertedToText: これらの変数はテキスト型に変換されました。
 
 # Import Dialog

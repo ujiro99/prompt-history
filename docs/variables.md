@@ -175,7 +175,7 @@ interface Prompt {
 /**
  * 変数の型
  */
-export type VariableType = "text" | "textarea" | "select" | "exclude"
+export type VariableType = "text" | "select" | "exclude"
 
 /**
  * 選択肢の設定情報（拡張性を考慮）

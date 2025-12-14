@@ -5,6 +5,7 @@ import type { Prompt, VariableConfig } from "@/types/prompt"
 import type { AIGeneratedMetadata } from "@/types/promptOrganizer"
 import { generatePromptId } from "@/utils/idGenerator"
 import { ImportError } from "./ImportError"
+import { getVariablePresets } from "@/services/storage/variablePresetStorage"
 import { i18n } from "#imports"
 
 /**
@@ -12,6 +13,7 @@ import { i18n } from "#imports"
  */
 export class PromptImportService {
   private serviceFacade = PromptServiceFacade.getInstance()
+  private missingPresetIds = new Set<string>()
 
   /**
    * Check CSV file for duplicates without importing
@@ -19,8 +21,13 @@ export class PromptImportService {
   async checkCSVFile(file: File): Promise<ImportResult> {
     this.validateFile(file)
     const csvText = await this.readFileAsText(file)
-    const prompts = this.parseCSV(csvText)
-    return await this.serviceFacade.checkBulkSaving(prompts)
+    const prompts = await this.parseCSV(csvText)
+    const result = await this.serviceFacade.checkBulkSaving(prompts)
+    // Add missing presets info to result
+    if (this.missingPresetIds.size > 0) {
+      result.missingPresets = Array.from(this.missingPresetIds)
+    }
+    return result
   }
 
   /**
@@ -29,7 +36,7 @@ export class PromptImportService {
   async processFile(file: File): Promise<ImportResult> {
     this.validateFile(file)
     const csvText = await this.readFileAsText(file)
-    const prompts = this.parseCSV(csvText)
+    const prompts = await this.parseCSV(csvText)
     return await this.importPrompts(prompts)
   }
 
@@ -74,7 +81,10 @@ export class PromptImportService {
   /**
    * Parse CSV text to prompt objects using Papa Parse
    */
-  private parseCSV(csvText: string): Prompt[] {
+  private async parseCSV(csvText: string): Promise<Prompt[]> {
+    // Reset missing preset IDs for each import
+    this.missingPresetIds.clear()
+
     const parseResult = Papa.parse<PromptCSVRow>(csvText, {
       header: true,
       dynamicTyping: true,
@@ -90,11 +100,18 @@ export class PromptImportService {
       throw new ImportError(parseResult.errors.length, msgs)
     }
 
+    // Get all existing presets to check references
+    const existingPresets = await getVariablePresets()
+    const existingPresetIds = new Set(existingPresets.map((p) => p.id))
+
     const prompts: Prompt[] = []
     const errors: string[] = []
     for (let i = 0; i < parseResult.data.length; i++) {
       try {
-        const prompt = this.parseRowData(parseResult.data[i])
+        const prompt = this.parseRowData(
+          parseResult.data[i],
+          existingPresetIds,
+        )
         prompts.push(prompt)
       } catch (error) {
         errors.push(
@@ -181,7 +198,10 @@ export class PromptImportService {
    * Parse Papa Parse row data to prompt object
    * Note: Uses Record type because Papa Parse may not fully convert types despite dynamicTyping option
    */
-  private parseRowData(row: PromptCSVRow): Prompt {
+  private parseRowData(
+    row: PromptCSVRow,
+    existingPresetIds: Set<string>,
+  ): Prompt {
     const requiredFields = [
       "name",
       "content",
@@ -209,6 +229,19 @@ export class PromptImportService {
             if (item.type === "textarea") {
               // Migrate old "textarea" type to "text"
               return { ...item, type: "text" as const }
+            }
+            // Check if this is a preset reference
+            if (item.type === "preset" && item.presetId) {
+              // Check if the preset exists
+              if (!existingPresetIds.has(item.presetId)) {
+                // Convert to text type if preset is missing
+                this.missingPresetIds.add(item.presetId)
+                return {
+                  name: item.name,
+                  type: "text" as const,
+                  defaultValue: "",
+                }
+              }
             }
             return item
           })
@@ -274,7 +307,12 @@ export class PromptImportService {
   private async importPrompts(prompts: Prompt[]): Promise<ImportResult> {
     try {
       // Use the bulk save API for efficient import
-      return await this.serviceFacade.saveBulkPrompts(prompts)
+      const result = await this.serviceFacade.saveBulkPrompts(prompts)
+      // Add missing presets info to result
+      if (this.missingPresetIds.size > 0) {
+        result.missingPresets = Array.from(this.missingPresetIds)
+      }
+      return result
     } catch (error) {
       // If bulk save fails, return an error result
       throw new ImportError(prompts.length, [

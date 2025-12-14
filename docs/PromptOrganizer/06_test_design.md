@@ -199,13 +199,13 @@ describe('TemplateGeneratorService', () => {
 #### 1.3.1 calculateCost()
 
 ```typescript
-describe('CostEstimatorService', () => {
-  describe('calculateCost', () => {
-    it('should calculate cost correctly', () => {
+describe("CostEstimatorService", () => {
+  describe("calculateCost", () => {
+    it("should calculate cost correctly", () => {
       // Given: トークン使用量
       const usage = {
-        inputTokens: 1_000_000,  // 1M input tokens
-        outputTokens: 500_000,   // 0.5M output tokens
+        inputTokens: 1_000_000, // 1M input tokens
+        outputTokens: 500_000, // 0.5M output tokens
       }
 
       // When: コスト計算
@@ -218,7 +218,7 @@ describe('CostEstimatorService', () => {
       expect(cost).toBeCloseTo(33.75, 2)
     })
 
-    it('should return 0 for zero tokens', () => {
+    it("should return 0 for zero tokens", () => {
       // Given: トークン使用量ゼロ
       const usage = { inputTokens: 0, outputTokens: 0 }
 
@@ -230,8 +230,8 @@ describe('CostEstimatorService', () => {
     })
   })
 
-  describe('estimateExecution', () => {
-    it('should estimate cost before execution', async () => {
+  describe("estimateExecution", () => {
+    it("should estimate cost before execution", async () => {
       // Given: 設定とプロンプト
       const settings = createMockSettings()
       mockGeminiClient.estimateTokens.mockResolvedValue(5000)
@@ -245,7 +245,7 @@ describe('CostEstimatorService', () => {
         estimatedInputTokens: 5000,
         contextUsageRate: expect.any(Number),
         estimatedCost: expect.any(Number),
-        model: 'gemini-2.5-flash',
+        model: "gemini-2.5-flash",
       })
     })
   })
@@ -430,7 +430,7 @@ describe('TemplateConverter', () => {
       })
     })
 
-    it('should infer type as textarea for detail-related variables', () => {
+    it('should infer type as text for detail-related variables', () => {
       // Given: 詳細系の変数
       const extracted: ExtractedVariable = {
         name: 'issue_detail',
@@ -440,8 +440,8 @@ describe('TemplateConverter', () => {
       // When: 変換実行
       const result = templateConverter.convertToVariableConfig(extracted)
 
-      // Then: typeがtextareaになる
-      expect(result.type).toBe('textarea')
+      // Then: typeがtextになる
+      expect(result.type).toBe('text')
     })
   })
 
@@ -615,14 +615,14 @@ describe('validation', () => {
 ### 2.1 エンドツーエンドのプロンプト整理フロー
 
 ```typescript
-describe('Prompt Organization Integration', () => {
-  it('should complete full organization workflow', async () => {
+describe("Prompt Organization Integration", () => {
+  it("should complete full organization workflow", async () => {
     // Given: 初期設定とプロンプトデータ
     const settings: PromptOrganizerSettings = {
       filterPeriodDays: 7,
       filterMinExecutionCount: 3,
       filterMaxPrompts: 50,
-      organizationPrompt: 'カテゴリごとに整理',
+      organizationPrompt: "カテゴリごとに整理",
     }
 
     // 1. フィルタリング
@@ -630,11 +630,12 @@ describe('Prompt Organization Integration', () => {
     expect(filteredPrompts.length).toBeGreaterThan(0)
 
     // 2. テンプレート生成
-    const { templates, usage } = await templateGeneratorService.generateTemplates({
-      organizationPrompt: settings.organizationPrompt,
-      prompts: filteredPrompts,
-      periodDays: settings.filterPeriodDays,
-    })
+    const { templates, usage } =
+      await templateGeneratorService.generateTemplates({
+        organizationPrompt: settings.organizationPrompt,
+        prompts: filteredPrompts,
+        periodDays: settings.filterPeriodDays,
+      })
     expect(templates.length).toBeGreaterThan(0)
 
     // 3. コスト計算
@@ -642,7 +643,7 @@ describe('Prompt Organization Integration', () => {
     expect(cost).toBeGreaterThan(0)
 
     // 4. ユーザーがテンプレートを選択（save）
-    templates[0].userAction = 'save'
+    templates[0].userAction = "save"
 
     // 5. 保存
     await templateSaveService.saveTemplates(templates)
@@ -650,7 +651,7 @@ describe('Prompt Organization Integration', () => {
     // 6. 保存されたプロンプトを確認
     const savedPrompts = await promptsService.getAllPrompts()
     const aiGeneratedPrompt = savedPrompts.find(
-      p => p.name === templates[0].title && p.isAIGenerated
+      (p) => p.name === templates[0].title && p.isAIGenerated,
     )
     expect(aiGeneratedPrompt).toBeDefined()
     expect(aiGeneratedPrompt!.aiMetadata?.confirmed).toBe(false)
@@ -661,14 +662,14 @@ describe('Prompt Organization Integration', () => {
 ### 2.2 エラー処理とリトライの統合
 
 ```typescript
-describe('Error Handling Integration', () => {
-  it('should retry on RATE_LIMIT error', async () => {
+describe("Error Handling Integration", () => {
+  it("should retry on RATE_LIMIT error", async () => {
     // Given: Gemini APIが最初はRATE_LIMITエラーを返す
     let callCount = 0
     mockGeminiClient.generateStructuredContent.mockImplementation(() => {
       callCount++
       if (callCount < 3) {
-        throw { code: 'RATE_LIMIT', message: 'Rate limit exceeded' }
+        throw { code: "RATE_LIMIT", message: "Rate limit exceeded" }
       }
       return Promise.resolve({ data: mockResponse, usage: mockUsage })
     })
@@ -681,17 +682,17 @@ describe('Error Handling Integration', () => {
     expect(result.templates).toBeDefined()
   })
 
-  it('should not retry on INVALID_API_KEY error', async () => {
+  it("should not retry on INVALID_API_KEY error", async () => {
     // Given: Gemini APIがINVALID_API_KEYエラーを返す
     mockGeminiClient.generateStructuredContent.mockRejectedValue({
-      code: 'INVALID_API_KEY',
-      message: 'Invalid API key',
+      code: "INVALID_API_KEY",
+      message: "Invalid API key",
     })
 
     // When/Then: リトライせずにエラー
     await expect(
-      templateGeneratorService.generateTemplates(request)
-    ).rejects.toThrow('Invalid API key')
+      templateGeneratorService.generateTemplates(request),
+    ).rejects.toThrow("Invalid API key")
   })
 })
 ```
@@ -739,8 +740,8 @@ describe('Category and Prompt Integration', () => {
 #### 3.2.1 プロンプト整理の完全フロー
 
 ```typescript
-describe('E2E: Prompt Organization Flow', () => {
-  it('should complete full user journey', async ({ page, extensionId }) => {
+describe("E2E: Prompt Organization Flow", () => {
+  it("should complete full user journey", async ({ page, extensionId }) => {
     // 1. 拡張機能を開く
     await page.goto(`chrome-extension://${extensionId}/popup.html`)
 
@@ -748,15 +749,15 @@ describe('E2E: Prompt Organization Flow', () => {
     await page.click('[data-testid="settings-button"]')
 
     // 3. Gemini API キーを設定
-    await page.fill('[data-testid="api-key-input"]', 'test-api-key')
+    await page.fill('[data-testid="api-key-input"]', "test-api-key")
     await page.click('[data-testid="save-api-key"]')
 
     // 4. プロンプト整理ダイアログを開く
     await page.click('[data-testid="organize-prompts-button"]')
 
     // 5. フィルタ設定を調整
-    await page.selectOption('[data-testid="period-selector"]', '7')
-    await page.fill('[data-testid="min-execution-input"]', '3')
+    await page.selectOption('[data-testid="period-selector"]', "7")
+    await page.fill('[data-testid="min-execution-input"]', "3")
 
     // 6. 実行想定を確認
     await page.waitForSelector('[data-testid="token-count"]')
@@ -769,7 +770,7 @@ describe('E2E: Prompt Organization Flow', () => {
     // 8. サマリーダイアログを確認
     await page.waitForSelector('[data-testid="summary-dialog"]')
     const templateCount = await page.textContent(
-      '[data-testid="template-count"]'
+      '[data-testid="template-count"]',
     )
     expect(parseInt(templateCount!)).toBeGreaterThan(0)
 
@@ -781,7 +782,7 @@ describe('E2E: Prompt Organization Flow', () => {
 
     // 11. タイトルを編集
     const titleInput = await page.locator('[data-testid="title-input"]')
-    await titleInput.fill('編集したタイトル')
+    await titleInput.fill("編集したタイトル")
 
     // 12. 保存
     await page.click('[data-testid="save-button"]')
@@ -789,12 +790,12 @@ describe('E2E: Prompt Organization Flow', () => {
     // 13. Pinned メニューで確認
     await page.click('[data-testid="pinned-menu-button"]')
     const aiTemplates = await page.locator(
-      '[data-testid="ai-recommended-section"]'
+      '[data-testid="ai-recommended-section"]',
     )
-    await expect(aiTemplates).toContainText('編集したタイトル')
+    await expect(aiTemplates).toContainText("編集したタイトル")
 
     // 14. キラキラアニメーションを確認
-    const shimmerElement = await page.locator('.ai-generated-unconfirmed')
+    const shimmerElement = await page.locator(".ai-generated-unconfirmed")
     await expect(shimmerElement).toBeVisible()
 
     // 15. クリックして確認済みにする
@@ -809,8 +810,11 @@ describe('E2E: Prompt Organization Flow', () => {
 #### 3.2.2 カテゴリ管理フロー
 
 ```typescript
-describe('E2E: Category Management', () => {
-  it('should create, rename, and delete category', async ({ page, extensionId }) => {
+describe("E2E: Category Management", () => {
+  it("should create, rename, and delete category", async ({
+    page,
+    extensionId,
+  }) => {
     // 1. 設定画面を開く
     await page.goto(`chrome-extension://${extensionId}/settings.html`)
 
@@ -819,23 +823,26 @@ describe('E2E: Category Management', () => {
 
     // 3. 新規カテゴリを作成
     await page.click('[data-testid="add-category-button"]')
-    await page.fill('[data-testid="category-name-input"]', 'テストカテゴリ')
-    await page.press('[data-testid="category-name-input"]', 'Enter')
+    await page.fill('[data-testid="category-name-input"]', "テストカテゴリ")
+    await page.press('[data-testid="category-name-input"]', "Enter")
 
     // 4. カテゴリが作成されたことを確認
-    await expect(
-      page.locator('[data-testid="category-list"]')
-    ).toContainText('テストカテゴリ')
+    await expect(page.locator('[data-testid="category-list"]')).toContainText(
+      "テストカテゴリ",
+    )
 
     // 5. カテゴリをリネーム
     await page.click('[data-testid="rename-category-button"]')
-    await page.fill('[data-testid="category-name-input"]', 'リネームしたカテゴリ')
-    await page.press('[data-testid="category-name-input"]', 'Enter')
+    await page.fill(
+      '[data-testid="category-name-input"]',
+      "リネームしたカテゴリ",
+    )
+    await page.press('[data-testid="category-name-input"]', "Enter")
 
     // 6. リネームされたことを確認
-    await expect(
-      page.locator('[data-testid="category-list"]')
-    ).toContainText('リネームしたカテゴリ')
+    await expect(page.locator('[data-testid="category-list"]')).toContainText(
+      "リネームしたカテゴリ",
+    )
 
     // 7. カテゴリを削除
     await page.click('[data-testid="delete-category-button"]')
@@ -843,21 +850,24 @@ describe('E2E: Category Management', () => {
 
     // 8. カテゴリが削除されたことを確認
     await expect(
-      page.locator('[data-testid="category-list"]')
-    ).not.toContainText('リネームしたカテゴリ')
+      page.locator('[data-testid="category-list"]'),
+    ).not.toContainText("リネームしたカテゴリ")
   })
 
-  it('should prevent deletion of default category', async ({ page, extensionId }) => {
+  it("should prevent deletion of default category", async ({
+    page,
+    extensionId,
+  }) => {
     // 1. 設定画面を開く
     await page.goto(`chrome-extension://${extensionId}/settings.html`)
     await page.click('[data-testid="category-management-tab"]')
 
     // 2. デフォルトカテゴリの削除ボタンが表示されないことを確認
     const defaultCategory = page.locator(
-      '[data-testid="category-external-communication"]'
+      '[data-testid="category-external-communication"]',
     )
     await expect(
-      defaultCategory.locator('[data-testid="delete-button"]')
+      defaultCategory.locator('[data-testid="delete-button"]'),
     ).not.toBeVisible()
   })
 })
@@ -866,15 +876,21 @@ describe('E2E: Category Management', () => {
 #### 3.2.3 エラーハンドリングフロー
 
 ```typescript
-describe('E2E: Error Handling', () => {
-  it('should display error dialog on API failure', async ({ page, extensionId }) => {
+describe("E2E: Error Handling", () => {
+  it("should display error dialog on API failure", async ({
+    page,
+    extensionId,
+  }) => {
     // Given: Gemini APIがエラーを返すように設定
-    await page.route('https://generativelanguage.googleapis.com/**', route => {
-      route.fulfill({
-        status: 500,
-        body: JSON.stringify({ error: 'Internal Server Error' }),
-      })
-    })
+    await page.route(
+      "https://generativelanguage.googleapis.com/**",
+      (route) => {
+        route.fulfill({
+          status: 500,
+          body: JSON.stringify({ error: "Internal Server Error" }),
+        })
+      },
+    )
 
     // When: プロンプト整理を実行
     await page.goto(`chrome-extension://${extensionId}/popup.html`)
@@ -884,24 +900,27 @@ describe('E2E: Error Handling', () => {
     // Then: エラーダイアログが表示される
     await page.waitForSelector('[data-testid="error-dialog"]')
     const errorMessage = await page.textContent('[data-testid="error-message"]')
-    expect(errorMessage).toContain('API')
+    expect(errorMessage).toContain("API")
   })
 
-  it('should allow retry on network error', async ({ page, extensionId }) => {
+  it("should allow retry on network error", async ({ page, extensionId }) => {
     let requestCount = 0
 
     // Given: 最初はネットワークエラー、2回目は成功
-    await page.route('https://generativelanguage.googleapis.com/**', route => {
-      requestCount++
-      if (requestCount === 1) {
-        route.abort('failed')
-      } else {
-        route.fulfill({
-          status: 200,
-          body: JSON.stringify({ templates: [] }),
-        })
-      }
-    })
+    await page.route(
+      "https://generativelanguage.googleapis.com/**",
+      (route) => {
+        requestCount++
+        if (requestCount === 1) {
+          route.abort("failed")
+        } else {
+          route.fulfill({
+            status: 200,
+            body: JSON.stringify({ templates: [] }),
+          })
+        }
+      },
+    )
 
     // When: プロンプト整理を実行してエラー
     await page.goto(`chrome-extension://${extensionId}/popup.html`)
@@ -934,7 +953,7 @@ function createMockPrompts(count: number): Prompt[] {
     executionCount: Math.floor(Math.random() * 20) + 1,
     lastExecutedAt: new Date(now - Math.random() * 30 * 24 * 60 * 60 * 1000),
     isPinned: false,
-    lastExecutionUrl: 'https://chatgpt.com',
+    lastExecutionUrl: "https://chatgpt.com",
     createdAt: new Date(now - 60 * 24 * 60 * 60 * 1000),
     updatedAt: new Date(now - 10 * 24 * 60 * 60 * 1000),
     isAIGenerated: false,
@@ -949,27 +968,28 @@ function createMockPrompts(count: number): Prompt[] {
 const mockGeminiResponse: OrganizePromptsResponse = {
   templates: [
     {
-      title: '社内報告用テンプレート',
-      content: '{{date}}の{{event}}について報告いたします。\n\n{{detail}}',
-      useCase: '社内の定期報告に使用',
-      categoryId: 'internal-communication',
-      sourcePromptIds: ['1', '2', '3'],
+      title: "社内報告用テンプレート",
+      content: "{{date}}の{{event}}について報告いたします。\n\n{{detail}}",
+      useCase: "社内の定期報告に使用",
+      categoryId: "internal-communication",
+      sourcePromptIds: ["1", "2", "3"],
       variables: [
-        { name: 'date', description: '報告日' },
-        { name: 'event', description: 'イベント名' },
-        { name: 'detail', description: '詳細内容' },
+        { name: "date", description: "報告日" },
+        { name: "event", description: "イベント名" },
+        { name: "detail", description: "詳細内容" },
       ],
     },
     {
-      title: '対外メール用テンプレート',
-      content: '{{client}}様\n\nお世話になっております。{{company}}の{{name}}です。',
-      useCase: '取引先への初回メール',
-      categoryId: 'external-communication',
-      sourcePromptIds: ['4', '5'],
+      title: "対外メール用テンプレート",
+      content:
+        "{{client}}様\n\nお世話になっております。{{company}}の{{name}}です。",
+      useCase: "取引先への初回メール",
+      categoryId: "external-communication",
+      sourcePromptIds: ["4", "5"],
       variables: [
-        { name: 'client', description: '取引先名' },
-        { name: 'company', description: '自社名' },
-        { name: 'name', description: '自分の名前' },
+        { name: "client", description: "取引先名" },
+        { name: "company", description: "自社名" },
+        { name: "name", description: "自分の名前" },
       ],
     },
   ],
@@ -980,18 +1000,18 @@ const mockGeminiResponse: OrganizePromptsResponse = {
 
 ```typescript
 const mockCategories: Record<string, Category> = {
-  'external-communication': {
-    id: 'external-communication',
-    name: '対外コミュニケーション',
-    description: '社外とのやり取りに使用',
+  "external-communication": {
+    id: "external-communication",
+    name: "対外コミュニケーション",
+    description: "社外とのやり取りに使用",
     isDefault: true,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
-  'internal-communication': {
-    id: 'internal-communication',
-    name: '社内コミュニケーション',
-    description: '社内報告や連絡に使用',
+  "internal-communication": {
+    id: "internal-communication",
+    name: "社内コミュニケーション",
+    description: "社内報告や連絡に使用",
     isDefault: true,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -1034,8 +1054,8 @@ const mockCategories: Record<string, Category> = {
 ### 6.1 大量データテスト
 
 ```typescript
-describe('Performance Tests', () => {
-  it('should filter 1000 prompts within 1 second', async () => {
+describe("Performance Tests", () => {
+  it("should filter 1000 prompts within 1 second", async () => {
     // Given: 1000件のプロンプト
     const prompts = createMockPrompts(1000)
     const settings = createMockSettings()
@@ -1050,14 +1070,14 @@ describe('Performance Tests', () => {
     expect(result.length).toBeGreaterThan(0)
   })
 
-  it('should handle 100 templates conversion within 2 seconds', async () => {
+  it("should handle 100 templates conversion within 2 seconds", async () => {
     // Given: 100件のテンプレート
     const generated = createMockGeneratedTemplates(100)
 
     // When: 変換実行（時間計測）
     const start = performance.now()
-    const candidates = generated.map(g =>
-      templateConverter.convertToCandidate(g, 7)
+    const candidates = generated.map((g) =>
+      templateConverter.convertToCandidate(g, 7),
     )
     const duration = performance.now() - start
 
@@ -1071,8 +1091,8 @@ describe('Performance Tests', () => {
 ### 6.2 メモリ使用量テスト
 
 ```typescript
-describe('Memory Tests', () => {
-  it('should not leak memory on repeated operations', async () => {
+describe("Memory Tests", () => {
+  it("should not leak memory on repeated operations", async () => {
     // Given: 初期メモリ使用量
     const initialMemory = process.memoryUsage().heapUsed
 
@@ -1092,8 +1112,8 @@ describe('Memory Tests', () => {
 ### 6.3 API呼び出しパフォーマンス
 
 ```typescript
-describe('API Performance', () => {
-  it('should complete Gemini API call within 10 seconds', async () => {
+describe("API Performance", () => {
+  it("should complete Gemini API call within 10 seconds", async () => {
     // Given: 実際のGemini API（モックなし）
     const request = createRealOrganizerRequest()
 

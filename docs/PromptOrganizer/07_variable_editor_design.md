@@ -187,7 +187,7 @@ VariableSettingsSection (統括)
 - 型: `VariableConfig[]`
 - 各変数には以下の属性が含まれる：
   - name: 変数名
-  - type: 変数の型（text, textarea, select, exclude）
+  - type: 変数の型（text, select, exclude）
   - defaultValue: デフォルト値（任意）
   - selectOptions: 選択肢（select型の場合）
 

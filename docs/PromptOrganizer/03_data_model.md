@@ -173,8 +173,7 @@ interface VariableConfigEditor {
 
 - `variables`配列を順番に処理
 - 各変数の`type`に応じたフォームコントロールを表示
-  - `text`: `<input type="text">`
-  - `textarea`: `<textarea>`
+  - `text`: `<textarea>`
   - `select`: `<select>` with `options`
 
 **3. デフォルト値の適用**:
@@ -209,7 +208,7 @@ interface VariableConfigEditor {
   TemplateCandidate {
     variables: [
       { name: 'client_name', label: '取引先名', type: 'text', required: true },
-      { name: 'issue', label: '発生した問題の詳細', type: 'textarea', required: true }
+      { name: 'issue', label: '発生した問題の詳細', type: 'text', required: true }
     ]
   }
   ↓

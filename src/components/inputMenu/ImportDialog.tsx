@@ -353,37 +353,54 @@ export function ImportDialog({
 
           {/* Success result */}
           {state === ImportState.Success && result && (
-            <div
-              className="bg-green-50 border border-green-200 rounded-lg p-6 space-y-2"
-              role="status"
-              aria-label={i18n.t("importDialog.status.importResult")}
-            >
-              <h4
-                className="font-medium text-neutral-800 flex flex-col items-center gap-2"
-                id="file-status-text"
+            <>
+              <div
+                className="bg-green-50 border border-green-200 rounded-lg p-6 space-y-2"
+                role="status"
+                aria-label={i18n.t("importDialog.status.importResult")}
               >
-                {getStatusIcon()}
-                {i18n.t("importDialog.status.importResult")}
-              </h4>
-              {selectedFile && (
-                <p className="text-sm text-neutral-500 flex items-center justify-center gap-1">
-                  <FileText size={14} />
-                  {selectedFile.name}
-                </p>
-              )}
-              <div className="text-sm text-center text-green-700 space-y-1">
-                <p data-testid={TestIds.import.ui.imported}>
-                  {i18n.t("importDialog.result.imported", [result.imported])}
-                </p>
-                {result.duplicates > 0 && (
-                  <p data-testid={TestIds.import.ui.duplicate}>
-                    {i18n.t("importDialog.result.skippedDuplicates", [
-                      result.duplicates,
-                    ])}
+                <h4
+                  className="font-medium text-neutral-800 flex flex-col items-center gap-2"
+                  id="file-status-text"
+                >
+                  {getStatusIcon()}
+                  {i18n.t("importDialog.status.importResult")}
+                </h4>
+                {selectedFile && (
+                  <p className="text-sm text-neutral-500 flex items-center justify-center gap-1">
+                    <FileText size={14} />
+                    {selectedFile.name}
                   </p>
                 )}
+                <div className="text-sm text-center text-green-700 space-y-1">
+                  <p data-testid={TestIds.import.ui.imported}>
+                    {i18n.t("importDialog.result.imported", [result.imported])}
+                  </p>
+                  {result.duplicates > 0 && (
+                    <p data-testid={TestIds.import.ui.duplicate}>
+                      {i18n.t("importDialog.result.skippedDuplicates", [
+                        result.duplicates,
+                      ])}
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
+              {/* Missing presets warning */}
+              {result.missingPresets && result.missingPresets.length > 0 && (
+                <div
+                  className="bg-yellow-50 border border-yellow-200 rounded-lg p-4"
+                  role="alert"
+                  aria-label={i18n.t("variablePresets.importWarning.title")}
+                >
+                  <h4 className="font-medium text-yellow-700 mb-2">
+                    {i18n.t("variablePresets.importWarning.title")}
+                  </h4>
+                  <p className="text-sm text-yellow-700">
+                    {i18n.t("variablePresets.importWarning.convertedToText")}
+                  </p>
+                </div>
+              )}
+            </>
           )}
 
           {/* Error message */}

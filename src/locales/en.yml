@@ -251,25 +251,51 @@ variablePresets:
   selectOptions: Select Options
   selectOptionsDescription: Enter options separated by commas
   dictionaryItems: Dictionary Items
+  dictionaryItemsDescription: Set the item names and contents that will be the choices at runtime
   addItem: Add Item
   itemName: Item Name
   itemContent: Item Content
-  noPresets: No presets available
-  selectPreset: Select or add a preset.
+  noPresets: No variables available
+  selectPreset: Select or add a variable.
   enterName: Enter name (max 40 characters)
   enterDescription: Enter description (max 80 characters)
   enterTextContent: Enter text content
   enterSelectOptions: Enter options separated by commas
   enterItemName: Enter item name
   enterItemContent: Enter item content
-  presetTypeDescription: Select the preset type
+  presetTypeDescription: Select the variable type
   deleteConfirm:
-    title: Delete Preset
-    message: Are you sure you want to delete this variable preset? This action cannot be undone.
-    affectedPrompts: This preset is used by $1 prompt(s). Deleting it will convert those variables to text type.
+    title: Delete Variable
+    message: Are you sure you want to delete this variable? This action cannot be undone.
+    affectedPrompts: This variable is used by $1 prompt(s). Deleting it will convert those variables to text type.
     affectedPromptsList: Affected prompts
     cancel: Cancel
-    deleteAndConvert: Delete and Convert
+  dictionalyItem:
+    deleteConfirm:
+      title: Delete Dictionary Item
+      message: Are you sure you want to delete this item? This action cannot be undone.
+  export: Export
+  import: Import
+  exportDialog:
+    title: Export Variable Presets
+    description: Export variable presets as JSON file.
+    exportAll: Export All
+    exportSelected: Export Selected
+    fileName: File Name
+    exported: Exported $1 preset(s) successfully
+    error: Failed to export presets
+  importDialog:
+    title: Import Variable Presets
+    description: Import variable presets from JSON file.
+    selectFile: Select File
+    mode: Import Mode
+    merge: Merge
+    replace: Replace All
+    mergeDescription: Add new presets while keeping existing ones
+    replaceDescription: Delete all existing presets and import new ones
+    imported: Imported $1 preset(s) successfully
+    error: Failed to import presets. Please check the file format.
+    invalidFile: Invalid file format
   importWarning:
     title: Preset Reference Warning
     missingPresets: The following presets were not found

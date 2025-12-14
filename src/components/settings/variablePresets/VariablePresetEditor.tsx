@@ -17,6 +17,7 @@ import {
   FieldGroup,
 } from "@/components/ui/field"
 import { ScrollAreaWithGradient } from "@/components/inputMenu/ScrollAreaWithGradient"
+import { RemoveDialog } from "@/components/inputMenu/controller/RemoveDialog"
 import type {
   VariablePreset,
   PresetVariableType,
@@ -50,6 +51,12 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
   const [localPreset, setLocalPreset] = useState<VariablePreset | null>(preset)
   const { container } = useContainer()
   const selectOptionsRef = useRef<HTMLInputElement>(null)
+  const scrollAreaRef = useRef<HTMLDivElement>(null)
+
+  // For remove dialog
+  const [removeDictionaryItemIdx, setRemoveDictionaryItemIdx] = useState<
+    number | null
+  >(null)
 
   // Update local state when preset prop changes
   useEffect(() => {
@@ -132,6 +139,15 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
     }
     const updatedItems = [...(localPreset.dictionaryItems || []), newItem]
     handleFieldChange("dictionaryItems", updatedItems)
+    // Scroll to bottom to show new item
+    setTimeout(() => {
+      if (scrollAreaRef.current) {
+        scrollAreaRef.current.scrollTo({
+          top: scrollAreaRef.current.scrollHeight,
+          behavior: "smooth",
+        })
+      }
+    }, 100)
   }
 
   /**
@@ -208,7 +224,11 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
       </div>
 
       {/* Form fields */}
-      <ScrollAreaWithGradient rootClassName="min-h-0" indicatorVisible={false}>
+      <ScrollAreaWithGradient
+        rootClassName="min-h-0"
+        indicatorVisible={false}
+        ref={scrollAreaRef}
+      >
         <div className="space-y-4 pl-1 pr-6 py-1">
           {/* Preset Name */}
           <Field className="flex-1">
@@ -332,11 +352,11 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
               <FieldLabel>
                 {i18n.t("variablePresets.dictionaryItems")}
               </FieldLabel>
-              <div className="space-y-3">
+              <div className="border-t-1">
                 {localPreset.dictionaryItems?.map((item, index) => (
                   <div
                     key={item.id}
-                    className="rounded-md border pl-3 pr-2 pt-6 pb-3 space-y-1 bg-accent"
+                    className="space-y-2 border-b-1 pl-3 pr-2 py-4 bg-muted/30"
                   >
                     <Field className="flex flex-row gap-1">
                       <FieldLabel
@@ -360,7 +380,7 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
                           placeholder={i18n.t("variablePresets.enterItemName")}
                           className="bg-white w-full"
                         />
-                        <span className="absolute text-xs text-muted-foreground right-2 -top-4.5">
+                        <span className="absolute text-xs text-muted-foreground/80 right-2 top-2.5">
                           {i18n.t("common.characterCount", [
                             20 - item.name.length,
                           ])}
@@ -371,7 +391,7 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
                         className="w-fit! mr-1"
                         onMoveUp={handleMoveUpDictionaryItem}
                         onMoveDown={handleMoveDownDictionaryItem}
-                        onDelete={handleDeleteDictionaryItem}
+                        onDelete={(idx) => setRemoveDictionaryItemIdx(idx)}
                       />
                     </Field>
                     <Field className="flex flex-row gap-1">
@@ -402,7 +422,7 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
                   variant="outline"
                   size="sm"
                   onClick={handleAddDictionaryItem}
-                  className="w-full group"
+                  className="w-full group mt-3 mb-1"
                 >
                   <Plus
                     className={cn(
@@ -417,6 +437,25 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
           )}
         </div>
       </ScrollAreaWithGradient>
+
+      {/* Remove Preset Dialog */}
+      <RemoveDialog
+        open={removeDictionaryItemIdx !== null}
+        onOpenChange={(val) =>
+          setRemoveDictionaryItemIdx(val ? removeDictionaryItemIdx : null)
+        }
+        title={i18n.t("variablePresets.dictionalyItem.deleteConfirm.title")}
+        description={i18n.t(
+          "variablePresets.dictionalyItem.deleteConfirm.message",
+        )}
+        onRemove={() => handleDeleteDictionaryItem(removeDictionaryItemIdx!)}
+      >
+        {localPreset.dictionaryItems && removeDictionaryItemIdx !== null && (
+          <span className="text-base break-all text-center">
+            {localPreset.dictionaryItems[removeDictionaryItemIdx].name}
+          </span>
+        )}
+      </RemoveDialog>
     </div>
   )
 }
