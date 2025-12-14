@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from "react"
-import { Copy, Trash2 } from "lucide-react"
+import { Plus, Copy, Trash, MoveUp, MoveDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -10,13 +10,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Field, FieldLabel, FieldDescription } from "@/components/ui/field"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import {
+  Field,
+  FieldLabel,
+  FieldDescription,
+  FieldGroup,
+} from "@/components/ui/field"
+import { ScrollAreaWithGradient } from "@/components/inputMenu/ScrollAreaWithGradient"
 import type {
   VariablePreset,
   PresetVariableType,
   DictionaryItem,
 } from "@/types/prompt"
+import { cn } from "@/lib/utils"
+import { movePrev, moveNext } from "@/utils/array"
 import { useContainer } from "@/hooks/useContainer"
 import { i18n } from "#imports"
 
@@ -128,6 +135,21 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
   }
 
   /**
+   * Move dictionary item
+   */
+  const handleMoveUpDictionaryItem = (index: number) => {
+    if (!localPreset?.dictionaryItems) return
+    const updatedItems = movePrev(localPreset.dictionaryItems, index)
+    handleFieldChange("dictionaryItems", updatedItems)
+  }
+
+  const handleMoveDownDictionaryItem = (index: number) => {
+    if (!localPreset?.dictionaryItems) return
+    const updatedItems = moveNext(localPreset.dictionaryItems, index)
+    handleFieldChange("dictionaryItems", updatedItems)
+  }
+
+  /**
    * Delete dictionary item
    */
   const handleDeleteDictionaryItem = (index: number) => {
@@ -153,19 +175,40 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
       <div className="mb-4 flex items-center justify-between pl-1 pr-6">
         <h3 className="text-lg font-semibold">{i18n.t("common.edit")}</h3>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={onDuplicate}>
-            <Copy className="size-4 mr-1" />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onDuplicate}
+            className="group"
+          >
+            <Copy
+              className={cn(
+                "size-4 stroke-neutral-600 transition",
+                "group-hover:scale-110 group-hover:stroke-green-500",
+              )}
+            />
             {i18n.t("variablePresets.duplicate")}
           </Button>
-          <Button variant="outline" size="sm" onClick={onDelete}>
-            <Trash2 className="size-4 mr-1" />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onDelete}
+            className="group"
+          >
+            <Trash
+              className={cn(
+                "size-4 stroke-neutral-600 transition",
+                "group-hover:scale-110 group-hover:stroke-red-500",
+              )}
+            />
+
             {i18n.t("variablePresets.delete")}
           </Button>
         </div>
       </div>
 
       {/* Form fields */}
-      <ScrollArea className="overflow-hidden">
+      <ScrollAreaWithGradient rootClassName="min-h-0" indicatorVisible={false}>
         <div className="space-y-4 pl-1 pr-6 py-1">
           {/* Preset Name */}
           <Field className="flex-1">
@@ -285,7 +328,7 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
           )}
 
           {localPreset.type === "dictionary" && (
-            <Field>
+            <FieldGroup>
               <FieldLabel>
                 {i18n.t("variablePresets.dictionaryItems")}
               </FieldLabel>
@@ -293,56 +336,141 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
                 {localPreset.dictionaryItems?.map((item, index) => (
                   <div
                     key={item.id}
-                    className="rounded-md border p-3 space-y-2"
+                    className="rounded-md border pl-3 pr-2 pt-6 pb-3 space-y-1 bg-accent"
                   >
-                    <div className="flex items-center justify-between">
-                      <Input
-                        value={item.name}
+                    <Field className="flex flex-row gap-1">
+                      <FieldLabel
+                        htmlFor={`dictionary-item-name-${index}`}
+                        className="w-1/6! text-xs text-muted-foreground font-medium"
+                      >
+                        {i18n.t("variablePresets.itemName")}
+                      </FieldLabel>
+                      <div className="relative flex-1">
+                        <Input
+                          id={`dictionary-item-name-${index}`}
+                          value={item.name}
+                          onChange={(e) =>
+                            handleDictionaryItemChange(
+                              index,
+                              "name",
+                              e.target.value,
+                            )
+                          }
+                          maxLength={20}
+                          placeholder={i18n.t("variablePresets.enterItemName")}
+                          className="bg-white w-full"
+                        />
+                        <span className="absolute text-xs text-muted-foreground right-2 -top-4.5">
+                          {i18n.t("common.characterCount", [
+                            20 - item.name.length,
+                          ])}
+                        </span>
+                      </div>
+                      <DictionaryItemController
+                        index={index}
+                        className="w-fit! mr-1"
+                        onMoveUp={handleMoveUpDictionaryItem}
+                        onMoveDown={handleMoveDownDictionaryItem}
+                        onDelete={handleDeleteDictionaryItem}
+                      />
+                    </Field>
+                    <Field className="flex flex-row gap-1">
+                      <FieldLabel
+                        htmlFor={`dictionary-item-content-${index}`}
+                        className="w-1/6! text-xs text-muted-foreground font-medium"
+                      >
+                        {i18n.t("variablePresets.itemContent")}
+                      </FieldLabel>
+                      <Textarea
+                        id={`dictionary-item-content-${index}`}
+                        value={item.content}
                         onChange={(e) =>
                           handleDictionaryItemChange(
                             index,
-                            "name",
+                            "content",
                             e.target.value,
                           )
                         }
-                        placeholder={i18n.t("variablePresets.enterItemName")}
-                        className="flex-1 mr-2"
+                        placeholder={i18n.t("variablePresets.enterItemContent")}
+                        rows={1}
+                        className="flex-1 py-1.5 min-h-9 max-h-40 break-all bg-white"
                       />
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteDictionaryItem(index)}
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
-                    </div>
-                    <Textarea
-                      value={item.content}
-                      onChange={(e) =>
-                        handleDictionaryItemChange(
-                          index,
-                          "content",
-                          e.target.value,
-                        )
-                      }
-                      placeholder={i18n.t("variablePresets.enterItemContent")}
-                      rows={3}
-                    />
+                    </Field>
                   </div>
                 ))}
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleAddDictionaryItem}
-                  className="w-full"
+                  className="w-full group"
                 >
+                  <Plus
+                    className={cn(
+                      "size-4 transition",
+                      "group-hover:scale-120 group-hover:stroke-blue-500",
+                    )}
+                  />
                   {i18n.t("variablePresets.addItem")}
                 </Button>
               </div>
-            </Field>
+            </FieldGroup>
           )}
         </div>
-      </ScrollArea>
+      </ScrollAreaWithGradient>
+    </div>
+  )
+}
+
+const DictionaryItemController: React.FC<{
+  index: number
+  className?: string
+  onMoveUp: (index: number) => void
+  onMoveDown: (index: number) => void
+  onDelete: (index: number) => void
+}> = ({ index, className, onMoveUp, onMoveDown, onDelete }) => {
+  return (
+    <div className={cn("flex items-center", className)}>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={onMoveUp.bind(null, index)}
+        className="size-7 p-1.5 group hover:bg-neutral-200/80 transition"
+      >
+        <MoveUp
+          className={cn(
+            "size-4 stroke-neutral-500 transition",
+            "group-hover:scale-120",
+          )}
+        />
+      </Button>
+
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={onMoveDown.bind(null, index)}
+        className="size-7 p-1.5 group hover:bg-neutral-200/80 transition"
+      >
+        <MoveDown
+          className={cn(
+            "size-4 stroke-neutral-500 transition",
+            "group-hover:scale-120",
+          )}
+        />
+      </Button>
+
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={onDelete.bind(null, index)}
+        className="size-7 p-1.5 group hover:bg-neutral-200/80 transition"
+      >
+        <Trash
+          className={cn(
+            "size-4 stroke-neutral-500 transition",
+            "group-hover:scale-120 group-hover:stroke-red-500 group-hover:fill-red-200",
+          )}
+        />
+      </Button>
     </div>
   )
 }

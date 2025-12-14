@@ -29,8 +29,18 @@ export const VariablePresetList: React.FC<VariablePresetListProps> = ({
     <div className="flex h-full flex-col min-h-0">
       {/* Header with add button */}
       <div className="mb-4 p-1 pr-4">
-        <Button variant="outline" size="sm" onClick={onAdd} className="w-full">
-          <Plus className="size-4 mr-1" />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onAdd}
+          className="w-full group"
+        >
+          <Plus
+            className={cn(
+              "size-4 transition",
+              "group-hover:scale-120 group-hover:stroke-blue-500",
+            )}
+          />
           {i18n.t("variablePresets.addVariable")}
         </Button>
       </div>

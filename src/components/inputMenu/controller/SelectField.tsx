@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/select"
 import { useContainer } from "@/hooks/useContainer"
 import { nextCyclic, prevCyclic } from "@/services/dom/elementUtils"
+import { isEmpty } from "@/lib/utils"
 
 interface SelectOption {
   label: string
@@ -27,6 +28,9 @@ export const SelectField = (props: SelectFieldProps) => {
   const { name, options, value, onValueChange } = props
   const { container } = useContainer()
   const contentRef = useRef(null)
+
+  const safeOptions = options.filter((opt) => !isEmpty(opt.value))
+  const optionsExist = safeOptions.length > 0
 
   const handleOnOpenChange = (open: boolean) => {
     if (open) {
@@ -88,7 +92,12 @@ export const SelectField = (props: SelectFieldProps) => {
         onKeyDown={handleKeyDown}
         ref={contentRef}
       >
-        {options.map((opt) => (
+        {!optionsExist && (
+          <div className="p-2 text-sm text-muted-foreground">
+            {i18n.t("selectField.noOptions")}
+          </div>
+        )}
+        {safeOptions.map((opt) => (
           <SelectItem key={opt.value} value={opt.value}>
             {opt.label}
           </SelectItem>

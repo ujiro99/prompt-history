@@ -9,10 +9,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { RemoveDialog } from "@/components/inputMenu/controller/RemoveDialog"
 import { useContainer } from "@/hooks/useContainer"
 import { VariablePresetList } from "./VariablePresetList"
 import { VariablePresetEditor } from "./VariablePresetEditor"
-import type { VariablePreset } from "@/types/prompt"
+import type { Prompt, VariablePreset } from "@/types/prompt"
 import {
   getVariablePresets,
   saveVariablePreset,
@@ -50,6 +51,10 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
   const [isSaving, setIsSaving] = useState(false)
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const delayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // For remove dialog
+  const [removePresetId, setRemovePresetId] = useState<string | null>(null)
+  const [affectedPrompts, setAffectedPrompts] = useState<Prompt[] | null>(null)
 
   /**
    * Load all presets from storage
@@ -210,35 +215,29 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
   /**
    * Handle delete preset
    */
-  const handleDeletePreset = useCallback(async () => {
+  const handleOnDelete = useCallback(async () => {
     if (!selectedPreset) return
 
     try {
       // Find affected prompts
       const affectedPrompts = await findPromptsByPresetId(selectedPreset.id)
 
-      // Build confirmation message
-      let message = i18n.t("variablePresets.deleteConfirm.message")
-      if (affectedPrompts.length > 0) {
-        message = i18n.t(
-          "variablePresets.deleteConfirm.affectedPrompts",
-          affectedPrompts.length,
-        )
-        message +=
-          "\n\n" +
-          i18n.t("variablePresets.deleteConfirm.affectedPromptsList") +
-          ":\n"
-        message += affectedPrompts.map((p) => `- ${p.name}`).join("\n")
-      }
-
       // Show confirmation
-      if (!window.confirm(message)) {
-        return
-      }
+      setAffectedPrompts(affectedPrompts)
+      setRemovePresetId(selectedPreset.id)
+    } catch (error) {
+      console.error("Failed to delete preset:", error)
+    }
+  }, [selectedPreset])
 
+  const handleDeleteConfirmed = useCallback(async () => {
+    if (!removePresetId) return
+
+    try {
       startSaving()
+
       // Delete preset (this will also convert affected prompts to text type)
-      await deleteVariablePreset(selectedPreset.id)
+      await deleteVariablePreset(removePresetId)
 
       // Reload presets and clear selection
       await loadPresets()
@@ -248,7 +247,7 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
     } finally {
       stopSaving()
     }
-  }, [selectedPreset, loadPresets, startSaving, stopSaving])
+  }, [removePresetId, loadPresets, startSaving, stopSaving])
 
   /**
    * Keyboard event handling
@@ -294,7 +293,7 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
                 preset={selectedPreset}
                 onChange={handlePresetChange}
                 onDuplicate={handleDuplicatePreset}
-                onDelete={handleDeletePreset}
+                onDelete={handleOnDelete}
               />
             </div>
           </div>
@@ -317,6 +316,33 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Remove Preset Dialog */}
+      <RemoveDialog
+        open={removePresetId !== null}
+        onOpenChange={(val) => setRemovePresetId(val ? removePresetId : null)}
+        title={i18n.t("variablePresets.deleteConfirm.title")}
+        description={i18n.t("variablePresets.deleteConfirm.message")}
+        onRemove={() => handleDeleteConfirmed()}
+      >
+        <div className="flex flex-col items-center gap-3">
+          <span className="text-base break-all">{selectedPreset?.name}</span>
+          {affectedPrompts && affectedPrompts.length > 0 && (
+            <div>
+              <p className="text-sm">
+                {i18n.t("variablePresets.deleteConfirm.affectedPrompts", [
+                  affectedPrompts.length,
+                ])}
+              </p>
+              <ul className="list-disc text-xs break-all mt-2 max-h-40 overflow-y-auto border p-2 pl-6 rounded bg-muted">
+                {affectedPrompts.map((prompt) => (
+                  <li key={prompt.id}>{prompt.name}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      </RemoveDialog>
     </>
   )
 }

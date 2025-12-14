@@ -388,10 +388,13 @@ export function InputMenu(props: Props): React.ReactElement {
       <RemoveDialog
         open={removeId !== null}
         onOpenChange={(val) => setRemoveId(val ? removeId : null)}
+        title={i18n.t("dialogs.delete.title")}
         description={i18n.t("dialogs.delete.message")}
         onRemove={() => handleDeletePrompt(removeId!)}
       >
-        <span className="text-base break-all">{removePrompt?.name}</span>
+        <div className="flex items-center justify-center">
+          <span className="text-base break-all">{removePrompt?.name}</span>
+        </div>
       </RemoveDialog>
 
       {/* Variable Input Dialog */}

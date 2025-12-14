@@ -13,8 +13,8 @@ import { i18n } from "#imports"
 const VariableTypeOptions: { label: string; value: VariableType }[] = [
   { label: i18n.t("variableTypes.text"), value: "text" },
   { label: i18n.t("variableTypes.select"), value: "select" },
-  { label: i18n.t("variableTypes.exclude"), value: "exclude" },
   { label: i18n.t("variableTypes.preset"), value: "preset" },
+  { label: i18n.t("variableTypes.exclude"), value: "exclude" },
 ]
 
 /**
@@ -207,7 +207,7 @@ export const VariableConfigField: React.FC<VariableConfigFieldProps> = ({
               onChange={(e) => handleDefaultValueChange(e.target.value)}
               placeholder={i18n.t("placeholders.enterValue")}
               rows={1}
-              className="py-1 min-h-9 max-h-60 break-all bg-white"
+              className="py-1.5 min-h-9 max-h-60 break-all bg-white"
             />
           </div>
         )}

@@ -42,6 +42,9 @@ buttons:
   complete: Complete
   close: Close
 
+selectField:
+  noOptions: No options available
+
 # Status messages
 status:
   saving: Saving...
@@ -262,7 +265,7 @@ variablePresets:
   presetTypeDescription: Select the preset type
   deleteConfirm:
     title: Delete Preset
-    message: Are you sure you want to delete this preset?
+    message: Are you sure you want to delete this variable preset? This action cannot be undone.
     affectedPrompts: This preset is used by $1 prompt(s). Deleting it will convert those variables to text type.
     affectedPromptsList: Affected prompts
     cancel: Cancel

@@ -13,10 +13,12 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { stopPropagation } from "@/utils/dom"
 
 type RemoveDialogProps = {
   open: boolean
-  description?: string
+  title: string
+  description: string
   onOpenChange: (open: boolean) => void
   onRemove: () => void
   children: React.ReactNode
@@ -36,12 +38,13 @@ export const RemoveDialog = (props: RemoveDialogProps) => {
         onOpenAutoFocus={handleOpenAutoFocus}
         className="w-auto"
         container={container}
+        {...stopPropagation()}
       >
         <DialogHeader>
-          <DialogTitle>{i18n.t("dialogs.delete.title")}</DialogTitle>
+          <DialogTitle>{props.title}</DialogTitle>
           <DialogDescription>{props.description}</DialogDescription>
         </DialogHeader>
-        <div className="flex items-center justify-center">{props.children}</div>
+        {props.children}
         <DialogFooter className="mt-2">
           <DialogClose asChild>
             <Button type="button" variant="secondary" size="lg">

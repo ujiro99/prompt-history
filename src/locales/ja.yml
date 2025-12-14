@@ -42,6 +42,9 @@ buttons:
   complete: 完了
   close: 閉じる
 
+selectField:
+  noOptions: 利用可能な選択肢がありません
+
 # Status messages
 status:
   saving: 保存中...
@@ -262,8 +265,8 @@ variablePresets:
   presetTypeDescription: プリセットの型を選択してください
   deleteConfirm:
     title: プリセットを削除
-    message: このプリセットを削除しますか？
-    affectedPrompts: このプリセットは以下の$1件のプロンプトで使用されています。削除すると、それらの変数はテキスト型に変換されます。
+    message: この変数を削除しますか？この操作は元に戻すことができません。
+    affectedPrompts: このプリセットは以下の$1件のプロンプトで使用されています。削除すると、それらの変数は文字列型に変換されます。
     affectedPromptsList: 影響を受けるプロンプト
     cancel: キャンセル
     deleteAndConvert: 削除して変換
