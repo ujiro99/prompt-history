@@ -111,10 +111,10 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
           } else if (preset.type === "select" && preset.selectOptions) {
             initialValues[variable.name] = preset.selectOptions[0] || ""
           } else if (preset.type === "dictionary" && preset.dictionaryItems) {
-            // Dictionary type: use first item's name as initial value
+            // Dictionary type: use first item's content as initial value
             const firstItem = preset.dictionaryItems[0]
             if (firstItem) {
-              initialValues[variable.name] = firstItem.name
+              initialValues[variable.name] = firstItem.content
               dictItems.set(variable.name, firstItem)
             }
           }

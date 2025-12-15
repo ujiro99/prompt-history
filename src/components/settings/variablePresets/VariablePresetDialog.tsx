@@ -171,9 +171,6 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
    */
   const handlePresetChange = useCallback(
     (updatedPreset: VariablePreset) => {
-      // Update local state immediately for responsive UI
-      setSelectedPreset(updatedPreset)
-
       // Clear existing timer
       if (debounceTimerRef.current) {
         clearTimeout(debounceTimerRef.current)
