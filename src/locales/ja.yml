@@ -297,9 +297,12 @@ variablePresets:
     error: インポートに失敗しました。ファイル形式を確認してください。
     invalidFile: 無効なファイル形式です
   importWarning:
-    title: 変数プリセット参照の警告
-    missingPresets: 以下の変数プリセットが見つかりませんでした
-    convertedToText: これらの変数はテキスト型に変換されました。
+    title: 変数プリセットのインポートに関する注意
+    check:
+      convertedToText: $1件の変数がテキスト型に変換されます
+    convertedToText: $1件の変数がテキスト型に変換されました。
+    missingpresets: 以下の変数プリセットが見つかりませんでした
+    affectedVariable: "$1 - 変数: {{$2}}"
 
 # Import Dialog
 importDialog:
@@ -325,6 +328,7 @@ importDialog:
     willImport: "✓ $1件のプロンプトをインポートします"
     noPrompts: "• インポートするプロンプトはありません"
     hasDuplicates: "• $1件の重複があります"
+    hasMissingPresets: "! $1件の変数プリセットが見つかりません"
     imported: "✓ $1件のプロンプトをインポートしました"
     skippedDuplicates: "• $1件の重複をスキップしました"
   error:

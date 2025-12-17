@@ -37,6 +37,18 @@ export interface PromptCSVRow {
 }
 
 /**
+ * Information about a missing preset reference
+ */
+export interface MissingPresetInfo {
+  /** The preset ID that was not found */
+  presetId: string
+  /** The prompt name where this preset was referenced */
+  promptName: string
+  /** The variable name that had the preset reference */
+  variableName: string
+}
+
+/**
  * Import result information
  */
 export interface ImportResult {
@@ -44,8 +56,8 @@ export interface ImportResult {
   imported: number
   /** Number of prompts that already existed */
   duplicates: number
-  /** List of missing preset IDs that were converted to text type */
-  missingPresets?: string[]
+  /** List of missing preset references that were converted to text type */
+  missingPresets?: MissingPresetInfo[]
 }
 
 /**

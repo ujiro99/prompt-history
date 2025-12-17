@@ -297,9 +297,12 @@ variablePresets:
     error: Failed to import presets. Please check the file format.
     invalidFile: Invalid file format
   importWarning:
-    title: Preset Reference Warning
+    title: Important Notice Regarding Variable Preset Import
+    check:
+      convertedToText: $1 variable(s) will be converted to text type
+    convertedToText: $1 variable(s) have been converted to text type.
     missingPresets: The following presets were not found
-    convertedToText: These variables have been converted to text type.
+    affectedVariable: "$1 - Variable: {{$2}}"
 
 # Import Dialog
 importDialog:
@@ -325,6 +328,7 @@ importDialog:
     willImport: "✓ Will import $1 prompts"
     noPrompts: "• No prompts to import"
     hasDuplicates: "• $1 duplicates found"
+    hasMissingPresets: "! $1 variable presets not found"
     imported: "✓ Imported $1 prompts"
     skippedDuplicates: "• Skipped $1 duplicates"
   error:

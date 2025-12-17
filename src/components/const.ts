@@ -34,6 +34,7 @@ export const TestIds = {
       willImport: "will-import",
       noPrompts: "no-prompts",
       duplicate: "duplicate-prompts",
+      missingPresets: "missing-presets",
       imported: "imported-prompts",
       errors: "import-errors",
     },
