@@ -204,12 +204,12 @@ describe("PromptImportService", () => {
   })
 
   describe("parseCSV", () => {
-    it("should parse valid CSV text to Prompt array", () => {
+    it("should parse valid CSV text to Prompt array", async () => {
       const csvText = `name,content,executionCount,lastExecutedAt,isPinned,lastExecutionUrl,createdAt,updatedAt
 Test Prompt 1,Content 1,1,2024-01-10T10:00:00.000Z,false,https://example.com,2024-01-01T10:00:00.000Z,2024-01-01T10:00:00.000Z
 Test Prompt 2,Content 2,2,2024-01-11T10:00:00.000Z,true,https://example2.com,2024-01-02T10:00:00.000Z,2024-01-02T10:00:00.000Z`
 
-      const result = (service as any).parseCSV(csvText)
+      const result = await (service as any).parseCSV(csvText)
 
       expect(result).toHaveLength(2)
       expect(result[0].name).toBe("Test Prompt 1")
@@ -217,16 +217,16 @@ Test Prompt 2,Content 2,2,2024-01-11T10:00:00.000Z,true,https://example2.com,202
       expect(result[1].isPinned).toBe(true)
     })
 
-    it("should handle empty CSV gracefully", () => {
+    it("should handle empty CSV gracefully", async () => {
       const csvText =
         "name,content,executionCount,lastExecutedAt,isPinned,lastExecutionUrl,createdAt,updatedAt\n"
 
-      const result = (service as any).parseCSV(csvText)
+      const result = await (service as any).parseCSV(csvText)
 
       expect(result).toHaveLength(0)
     })
 
-    it("should throw error when invalid rows are present and stop processing", () => {
+    it("should throw error when invalid rows are present and stop processing", async () => {
       const csvText = `name,content,executionCount,lastExecutedAt,isPinned,lastExecutionUrl,createdAt,updatedAt
 Test Prompt 1,Content 1,1,2024-01-10T10:00:00.000Z,false,https://example.com,2024-01-01T10:00:00.000Z,2024-01-01T10:00:00.000Z
 Invalid Row,,,,,,
@@ -235,17 +235,17 @@ Test Prompt 2,Content 2,2,2024-01-11T10:00:00.000Z,true,https://example2.com,202
       const errorMessage =
         "1 errors occurred during import.\n  - [3] Too few fields: expected 8 fields but parsed 7"
 
-      expect(() => {
-        ;(service as any).parseCSV(csvText)
-      }).toThrow(errorMessage)
+      await expect((service as any).parseCSV(csvText)).rejects.toThrow(
+        errorMessage,
+      )
     })
 
-    it("should handle CSV with special characters", () => {
+    it("should handle CSV with special characters", async () => {
       const csvText = `name,content,executionCount,lastExecutedAt,isPinned,lastExecutionUrl,createdAt,updatedAt
 "Prompt with ""quotes""","Content with
 newline and, comma",1,2024-01-10T10:00:00.000Z,false,https://example.com,2024-01-01T10:00:00.000Z,2024-01-01T10:00:00.000Z`
 
-      const result = (service as any).parseCSV(csvText)
+      const result = await (service as any).parseCSV(csvText)
 
       expect(result).toHaveLength(1)
       expect(result[0].name).toBe('Prompt with "quotes"')
@@ -414,7 +414,7 @@ newline and, comma",1,2024-01-10T10:00:00.000Z,false,https://example.com,2024-01
   })
 
   describe("parseCSV with variables", () => {
-    it("should parse CSV with variables field", () => {
+    it("should parse CSV with variables field", async () => {
       // Use Papa.unparse to properly format the CSV
       const csvData = {
         fields: [
@@ -450,7 +450,7 @@ newline and, comma",1,2024-01-10T10:00:00.000Z,false,https://example.com,2024-01
         delimiter: ",",
       })
 
-      const result = (service as any).parseCSV(csvText)
+      const result = await (service as any).parseCSV(csvText)
 
       expect(result).toHaveLength(1)
       expect(result[0].name).toBe("Test Prompt")
