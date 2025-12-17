@@ -5,6 +5,7 @@ import type { SaveDialogData, VariableConfig } from "@/types/prompt"
 import { mergeVariableConfigs } from "@/utils/variables/variableParser"
 import { VariableExpansionInfoDialog } from "./VariableExpansionInfoDialog"
 import { VariableSettingsSection } from "@/components/shared"
+import { VariablePresetDialog } from "@/components/settings/variablePresets/VariablePresetDialog"
 import { CategorySelector } from "@/components/promptOrganizer/CategorySelector"
 import { ScrollAreaWithGradient } from "@/components/inputMenu/ScrollAreaWithGradient"
 import {
@@ -104,6 +105,9 @@ export const EditDialog: React.FC<EditDialogProps> = ({
   )
   const [isLoading, setIsLoading] = useState(false)
   const [isInfoDialogOpen, setIsInfoDialogOpen] = useState(false)
+  const [variablePresetEditId, setVariablePresetEditId] = useState<
+    string | null
+  >(null)
   const isEdit = displayMode === SaveMode.Overwrite
   const isCopy = displayMode === SaveMode.Copy
   const { container } = useContainer()
@@ -367,6 +371,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
                 variables={variables}
                 onChange={setVariables}
                 enableAutoDetection={false}
+                onClickPresetEdit={(id) => setVariablePresetEditId(id)}
               />
 
               {/* Exclude from organizer checkbox */}
@@ -441,6 +446,12 @@ export const EditDialog: React.FC<EditDialogProps> = ({
       <VariableExpansionInfoDialog
         open={isInfoDialogOpen}
         onOpenChange={setIsInfoDialogOpen}
+      />
+      {/* Variable Presets Dialog */}
+      <VariablePresetDialog
+        open={variablePresetEditId !== null}
+        onOpenChange={(open) => !open && setVariablePresetEditId(null)}
+        initialSelectedPresetId={variablePresetEditId}
       />
     </>
   )

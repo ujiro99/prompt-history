@@ -306,3 +306,51 @@ export async function reorderVariablePresets(
 
   await variablePresetsOrderStorage.setValue(newOrder)
 }
+
+/**
+ * Watch for changes in all variable presets
+ * Returns an unsubscribe function
+ */
+export function watchVariablePresets(
+  callback: (presets: VariablePreset[]) => void,
+): () => void {
+  return variablePresetsStorage.watch(async (newValue) => {
+    // Get current order
+    const order = await variablePresetsOrderStorage.getValue()
+
+    // Convert and sort presets
+    const presetIds = Object.keys(newValue)
+    const orderedPresets: VariablePreset[] = []
+    const orderSet = new Set(order)
+
+    // Add presets in order
+    for (const id of order) {
+      if (newValue[id]) {
+        orderedPresets.push(fromStoredPreset(newValue[id]))
+      }
+    }
+
+    // Add any presets not in order
+    for (const id of presetIds) {
+      if (!orderSet.has(id)) {
+        orderedPresets.push(fromStoredPreset(newValue[id]))
+      }
+    }
+
+    callback(orderedPresets)
+  })
+}
+
+/**
+ * Watch for changes in a specific variable preset
+ * Returns an unsubscribe function
+ */
+export function watchVariablePreset(
+  presetId: string,
+  callback: (preset: VariablePreset | null) => void,
+): () => void {
+  return variablePresetsStorage.watch((newValue) => {
+    const stored = newValue[presetId]
+    callback(stored ? fromStoredPreset(stored) : null)
+  })
+}

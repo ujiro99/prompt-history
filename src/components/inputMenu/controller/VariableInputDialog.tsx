@@ -25,7 +25,7 @@ import { TestIds } from "@/components/const"
 import { isMac } from "@/utils/platform"
 import { expandPrompt } from "@/utils/variables/variableFormatter"
 import { stopPropagation } from "@/utils/dom"
-import { getVariablePresets } from "@/services/storage/variablePresetStorage"
+import { useVariablePresets } from "@/hooks/useVariablePresets"
 
 /**
  * Props for variable input dialog
@@ -52,11 +52,29 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
   onDismiss,
 }) => {
   const [values, setValues] = useState<VariableValues>({})
-  const [presets, setPresets] = useState<Map<string, VariablePreset>>(new Map())
   const [selectedDictItems, setSelectedDictItems] = useState<
     Map<string, DictionaryItem | null>
   >(new Map())
   const { container } = useContainer()
+
+  // Watch presets only when dialog is open
+  const { presets: allPresets } = useVariablePresets({ enabled: open })
+
+  // Convert array to map for component use
+  const presets = useMemo(() => {
+    if (!allPresets) return new Map<string, VariablePreset>()
+
+    const presetMap = new Map<string, VariablePreset>()
+    for (const variable of variables) {
+      if (variable.type === "preset" && variable.presetId) {
+        const preset = allPresets.find((p) => p.id === variable.presetId)
+        if (preset) {
+          presetMap.set(variable.name, preset)
+        }
+      }
+    }
+    return presetMap
+  }, [allPresets, variables])
 
   // Debounce values for preview
   const debouncedValues = useDebounce(values, 200)
@@ -65,33 +83,6 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
   const preview = useMemo(() => {
     return expandPrompt(content, debouncedValues)
   }, [content, debouncedValues])
-
-  // Load presets for preset-type variables
-  useEffect(() => {
-    const loadPresets = async () => {
-      try {
-        const allPresets = await getVariablePresets()
-        const presetMap = new Map<string, VariablePreset>()
-
-        for (const variable of variables) {
-          if (variable.type === "preset" && variable.presetId) {
-            const preset = allPresets.find((p) => p.id === variable.presetId)
-            if (preset) {
-              presetMap.set(variable.name, preset)
-            }
-          }
-        }
-
-        setPresets(presetMap)
-      } catch (error) {
-        console.error("Failed to load presets:", error)
-      }
-    }
-
-    if (open) {
-      loadPresets()
-    }
-  }, [open, variables])
 
   // Initialize values from variable configs and presets
   useEffect(() => {

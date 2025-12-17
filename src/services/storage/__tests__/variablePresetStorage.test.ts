@@ -7,13 +7,24 @@ import {
   findPromptsByPresetId,
   exportVariablePresets,
   importVariablePresets,
+  watchVariablePresets,
+  watchVariablePreset,
 } from "../variablePresetStorage"
 import type { VariablePreset, Prompt } from "../../../types/prompt"
-import { variablePresetsStorage, promptsStorage } from "../definitions"
+import {
+  variablePresetsStorage,
+  variablePresetsOrderStorage,
+  promptsStorage,
+} from "../definitions"
 
 // Mock storage definitions
 vi.mock("../definitions", () => ({
   variablePresetsStorage: {
+    getValue: vi.fn(),
+    setValue: vi.fn(),
+    watch: vi.fn(),
+  },
+  variablePresetsOrderStorage: {
     getValue: vi.fn(),
     setValue: vi.fn(),
   },
@@ -73,6 +84,7 @@ describe("variablePresetStorage", () => {
   describe("getVariablePresets", () => {
     it("should return empty array when no presets exist", async () => {
       vi.mocked(variablePresetsStorage.getValue).mockResolvedValue({})
+      vi.mocked(variablePresetsOrderStorage.getValue).mockResolvedValue([])
 
       const result = await getVariablePresets()
 
@@ -88,6 +100,9 @@ describe("variablePresetStorage", () => {
         },
       }
       vi.mocked(variablePresetsStorage.getValue).mockResolvedValue(stored)
+      vi.mocked(variablePresetsOrderStorage.getValue).mockResolvedValue([
+        "preset-1",
+      ])
 
       const result = await getVariablePresets()
 
@@ -104,6 +119,9 @@ describe("variablePresetStorage", () => {
         },
       }
       vi.mocked(variablePresetsStorage.getValue).mockResolvedValue(stored)
+      vi.mocked(variablePresetsOrderStorage.getValue).mockResolvedValue([
+        "preset-1",
+      ])
 
       const result = await getVariablePresets()
 
@@ -115,6 +133,7 @@ describe("variablePresetStorage", () => {
   describe("saveVariablePreset", () => {
     it("should create new preset when preset does not exist", async () => {
       vi.mocked(variablePresetsStorage.getValue).mockResolvedValue({})
+      vi.mocked(variablePresetsOrderStorage.getValue).mockResolvedValue([])
 
       await saveVariablePreset(mockPreset)
 
@@ -155,6 +174,7 @@ describe("variablePresetStorage", () => {
 
     it("should update updatedAt timestamp", async () => {
       vi.mocked(variablePresetsStorage.getValue).mockResolvedValue({})
+      vi.mocked(variablePresetsOrderStorage.getValue).mockResolvedValue([])
       const now = new Date()
 
       await saveVariablePreset(mockPreset)
@@ -177,6 +197,9 @@ describe("variablePresetStorage", () => {
         },
       }
       vi.mocked(variablePresetsStorage.getValue).mockResolvedValue(presets)
+      vi.mocked(variablePresetsOrderStorage.getValue).mockResolvedValue([
+        "preset-1",
+      ])
       vi.mocked(promptsStorage.getValue).mockResolvedValue({})
 
       const affectedPromptIds = await deleteVariablePreset("preset-1")
@@ -202,6 +225,9 @@ describe("variablePresetStorage", () => {
         },
       }
       vi.mocked(variablePresetsStorage.getValue).mockResolvedValue(presets)
+      vi.mocked(variablePresetsOrderStorage.getValue).mockResolvedValue([
+        "preset-2",
+      ])
       vi.mocked(promptsStorage.getValue).mockResolvedValue(prompts)
 
       const affectedPromptIds = await deleteVariablePreset("preset-2")
@@ -229,6 +255,7 @@ describe("variablePresetStorage", () => {
         },
       }
       vi.mocked(variablePresetsStorage.getValue).mockResolvedValue(presets)
+      vi.mocked(variablePresetsOrderStorage.getValue).mockResolvedValue([])
 
       const duplicated = await duplicateVariablePreset("preset-1")
 
@@ -248,6 +275,7 @@ describe("variablePresetStorage", () => {
         },
       }
       vi.mocked(variablePresetsStorage.getValue).mockResolvedValue(presets)
+      vi.mocked(variablePresetsOrderStorage.getValue).mockResolvedValue([])
 
       const duplicated = await duplicateVariablePreset("preset-2")
 
@@ -441,6 +469,174 @@ describe("variablePresetStorage", () => {
       await expect(
         importVariablePresets("invalid json", "merge"),
       ).rejects.toThrow()
+    })
+  })
+
+  describe("watchVariablePresets", () => {
+    it("should call callback when presets change", async () => {
+      const callback = vi.fn()
+      const unwatch = vi.fn()
+
+      const stored = {
+        "preset-1": {
+          ...mockPreset,
+          createdAt: mockPreset.createdAt.toISOString(),
+          updatedAt: mockPreset.updatedAt.toISOString(),
+        },
+      }
+
+      // Mock watch to immediately call callback with new value
+      vi.mocked(variablePresetsStorage.watch).mockImplementation((cb) => {
+        cb(stored, {})
+        return unwatch
+      })
+
+      // Mock order storage
+      vi.mocked(variablePresetsOrderStorage.getValue).mockResolvedValue([
+        "preset-1",
+      ])
+
+      watchVariablePresets(callback)
+
+      // Wait for async callback
+      await new Promise((resolve) => setTimeout(resolve, 0))
+
+      expect(callback).toHaveBeenCalledWith([mockPreset])
+    })
+
+    it("should return unsubscribe function", async () => {
+      const callback = vi.fn()
+      const unwatch = vi.fn()
+
+      vi.mocked(variablePresetsStorage.watch).mockReturnValue(unwatch)
+      vi.mocked(variablePresetsOrderStorage.getValue).mockResolvedValue([])
+
+      const result = watchVariablePresets(callback)
+
+      expect(result).toBe(unwatch)
+    })
+
+    it("should sort presets by order", async () => {
+      const callback = vi.fn()
+      const stored = {
+        "preset-1": {
+          ...mockPreset,
+          id: "preset-1",
+          name: "First",
+          createdAt: mockPreset.createdAt.toISOString(),
+          updatedAt: mockPreset.updatedAt.toISOString(),
+        },
+        "preset-2": {
+          ...mockPreset,
+          id: "preset-2",
+          name: "Second",
+          createdAt: mockPreset.createdAt.toISOString(),
+          updatedAt: mockPreset.updatedAt.toISOString(),
+        },
+      }
+
+      vi.mocked(variablePresetsStorage.watch).mockImplementation((cb) => {
+        cb(stored, {})
+        return vi.fn()
+      })
+
+      // Order: preset-2 first, then preset-1
+      vi.mocked(variablePresetsOrderStorage.getValue).mockResolvedValue([
+        "preset-2",
+        "preset-1",
+      ])
+
+      watchVariablePresets(callback)
+
+      await new Promise((resolve) => setTimeout(resolve, 0))
+
+      expect(callback).toHaveBeenCalledWith([
+        expect.objectContaining({ id: "preset-2", name: "Second" }),
+        expect.objectContaining({ id: "preset-1", name: "First" }),
+      ])
+    })
+  })
+
+  describe("watchVariablePreset", () => {
+    it("should call callback with specific preset when it changes", async () => {
+      const callback = vi.fn()
+      const stored = {
+        "preset-1": {
+          ...mockPreset,
+          createdAt: mockPreset.createdAt.toISOString(),
+          updatedAt: mockPreset.updatedAt.toISOString(),
+        },
+      }
+
+      vi.mocked(variablePresetsStorage.watch).mockImplementation((cb) => {
+        cb(stored, {})
+        return vi.fn()
+      })
+      vi.mocked(variablePresetsOrderStorage.getValue).mockResolvedValue([])
+
+      watchVariablePreset("preset-1", callback)
+
+      expect(callback).toHaveBeenCalledWith(mockPreset)
+    })
+
+    it("should call callback with null when preset is deleted", async () => {
+      const callback = vi.fn()
+      const stored = {}
+
+      vi.mocked(variablePresetsStorage.watch).mockImplementation((cb) => {
+        cb(stored, {})
+        return vi.fn()
+      })
+      vi.mocked(variablePresetsOrderStorage.getValue).mockResolvedValue([])
+
+      watchVariablePreset("preset-1", callback)
+
+      expect(callback).toHaveBeenCalledWith(null)
+    })
+
+    it("should return unsubscribe function", async () => {
+      const callback = vi.fn()
+      const unwatch = vi.fn()
+
+      vi.mocked(variablePresetsStorage.watch).mockReturnValue(unwatch)
+      vi.mocked(variablePresetsOrderStorage.getValue).mockResolvedValue([])
+
+      const result = watchVariablePreset("preset-1", callback)
+
+      expect(result).toBe(unwatch)
+    })
+
+    it("should only call callback for matching preset ID", async () => {
+      const callback = vi.fn()
+      const stored = {
+        "preset-1": {
+          ...mockPreset,
+          id: "preset-1",
+          createdAt: mockPreset.createdAt.toISOString(),
+          updatedAt: mockPreset.updatedAt.toISOString(),
+        },
+        "preset-2": {
+          ...mockPreset,
+          id: "preset-2",
+          createdAt: mockPreset.createdAt.toISOString(),
+          updatedAt: mockPreset.updatedAt.toISOString(),
+        },
+      }
+
+      vi.mocked(variablePresetsStorage.watch).mockImplementation((cb) => {
+        cb(stored, {})
+        return vi.fn()
+      })
+      vi.mocked(variablePresetsOrderStorage.getValue).mockResolvedValue([])
+
+      watchVariablePreset("preset-1", callback)
+
+      expect(callback).toHaveBeenCalledWith(
+        expect.objectContaining({ id: "preset-1" }),
+      )
+      expect(callback).not.toHaveBeenCalledWith(
+        expect.objectContaining({ id: "preset-2" }),
+      )
     })
   })
 })

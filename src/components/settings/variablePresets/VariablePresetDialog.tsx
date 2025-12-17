@@ -28,6 +28,7 @@ import { generatePromptId } from "@/utils/idGenerator"
 import { movePrev, moveNext } from "@/utils/array"
 import { stopPropagation } from "@/utils/dom"
 import { i18n } from "#imports"
+import usePrev from "@/hooks/usePrev"
 
 /**
  * Props for VariablePresetDialog
@@ -35,6 +36,7 @@ import { i18n } from "#imports"
 interface VariablePresetDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  initialSelectedPresetId?: string | null
 }
 
 /**
@@ -44,6 +46,7 @@ interface VariablePresetDialogProps {
 export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
   open,
   onOpenChange,
+  initialSelectedPresetId,
 }) => {
   const { container } = useContainer()
   const [presets, setPresets] = useState<VariablePreset[]>([])
@@ -66,6 +69,8 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
   // For import dialog
   const [importFileInputEvent, setImportFileInputEvent] =
     useState<React.ChangeEvent<HTMLInputElement> | null>(null)
+
+  const prevInitialSelectedPresetId = usePrev(initialSelectedPresetId)
 
   /**
    * Load all presets from storage
@@ -98,6 +103,17 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
       }
     }
   }, [])
+
+  useEffect(() => {
+    // When selectedPresetId changes (e.g. dialog opened with a preset), update selection
+    if (
+      initialSelectedPresetId &&
+      initialSelectedPresetId !== prevInitialSelectedPresetId
+    ) {
+      const preset = presets.find((p) => p.id === initialSelectedPresetId)
+      setSelectedPreset(preset || null)
+    }
+  }, [initialSelectedPresetId, prevInitialSelectedPresetId, presets])
 
   const startSaving = useCallback(() => {
     // Clear any pending debounced saves

@@ -81,6 +81,8 @@ dialogs:
       description1: Text enclosed in {{variable_name}} is treated as a variable.
       description2: Prompts with variables show a "Variable Input Dialog" at runtime. Values entered here are embedded into and sent with the prompt.
       description3: Variable type, default value, and options can be set in the edit dialog.
+    presetEdit: Edit
+    presetEditLink: Variable Preset Edit
   delete:
     title: Delete Prompt
     message: Are you sure you want to remove? This action cannot be undone.
