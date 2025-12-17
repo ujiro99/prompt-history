@@ -348,8 +348,6 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
     onOpenChange(false)
   }, [selectedPreset, savePresetImmediate, onOpenChange])
 
-  console.log({ isSaving, hasValidationErrors })
-
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>

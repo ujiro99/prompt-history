@@ -69,7 +69,7 @@ export const VariablePresetList: React.FC<VariablePresetListProps> = ({
                 )}
               >
                 <div className="font-medium">{preset.name}</div>
-                <div className="mt-1 text-xs text-muted-foreground">
+                <div className="mt-1 text-xs text-muted-foreground break-all">
                   {i18n.t("variableTypes.type", [
                     i18n.t(`variableTypes.${preset.type}`),
                   ])}

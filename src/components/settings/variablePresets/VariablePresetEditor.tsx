@@ -27,6 +27,7 @@ import type {
 import { cn } from "@/lib/utils"
 import { movePrev, moveNext } from "@/utils/array"
 import { useContainer } from "@/hooks/useContainer"
+import { usePresetValidation } from "@/hooks/usePresetValidation"
 import { i18n } from "#imports"
 import { validateField, type FieldErrors } from "@/schemas/variablePreset"
 
@@ -59,8 +60,12 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
   const selectOptionsRef = useRef<HTMLInputElement>(null)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
 
-  // Validation errors
-  const [errors, setErrors] = useState<FieldErrors>({})
+  // Validation using custom hook
+  const { errors, setErrors, createFieldHandler } = usePresetValidation(
+    localPreset,
+    allPresets,
+    onValidationChange,
+  )
 
   // For remove dialog
   const [removeDictionaryItemIdx, setRemoveDictionaryItemIdx] = useState<
@@ -69,30 +74,13 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
 
   // Update local state when preset prop changes
   useEffect(() => {
-    setLocalPreset((prev) => {
-      if (prev?.id !== preset?.id) {
-        // Clear errors when preset changes
-        setErrors({})
-      }
-      return preset
-    })
+    setLocalPreset(preset)
     if (selectOptionsRef.current && preset?.type === "select") {
       selectOptionsRef.current.value = preset.selectOptions
         ? preset.selectOptions.join(", ")
         : ""
     }
   }, [preset])
-
-  // Notify parent of validation state changes
-  useEffect(() => {
-    if (!localPreset) {
-      onValidationChange?.(false)
-      return
-    }
-
-    const hasErrors = Object.keys(errors).length > 0
-    onValidationChange?.(hasErrors)
-  }, [errors, localPreset, onValidationChange])
 
   /**
    * Handle field change with debounce
@@ -275,6 +263,10 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
     )
   }
 
+  // Create field handlers
+  const nameHandler = createFieldHandler("name")
+  const descHandler = createFieldHandler("description")
+
   return (
     <div className="flex h-full flex-col min-h-0 pl-4">
       {/* Header with actions */}
@@ -334,43 +326,14 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
                 value={localPreset.name}
                 onChange={(e) => {
                   handleFieldChange("name", e.target.value)
-                  // Clear error if user is typing and field was invalid
-                  if (errors.name) {
-                    const error = validateField(
-                      { ...localPreset, name: e.target.value },
-                      "name",
-                      allPresets,
-                    )
-                    if (!error) {
-                      setErrors((prev) => {
-                        const next = { ...prev }
-                        delete next.name
-                        return next
-                      })
-                    }
-                  }
+                  nameHandler.onChange(e.target.value)
                 }}
-                onBlur={(e) => {
-                  const error = validateField(
-                    { ...localPreset, name: e.target.value },
-                    "name",
-                    allPresets,
-                  )
-                  setErrors((prev) => {
-                    const next = { ...prev }
-                    if (error) {
-                      next.name = error
-                    } else {
-                      delete next.name
-                    }
-                    return next
-                  })
-                }}
+                onBlur={nameHandler.onBlur}
                 placeholder={i18n.t("variablePresets.enterName")}
                 maxLength={40}
                 minLength={1}
                 required
-                className={cn(errors.name && "border-destructive")}
+                className={cn(nameHandler.error && "border-destructive")}
               />
               <span className="absolute text-xs text-muted-foreground right-3 -top-5">
                 {i18n.t("common.characterCount", [
@@ -378,7 +341,7 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
                 ])}
               </span>
             </div>
-            <FieldError errors={[{ message: errors.name }]} />
+            <FieldError errors={[{ message: nameHandler.error }]} />
           </Field>
 
           {/* Description */}
@@ -395,41 +358,12 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
                 value={localPreset.description || ""}
                 onChange={(e) => {
                   handleFieldChange("description", e.target.value)
-                  // Clear error if user is typing and field was invalid
-                  if (errors.description) {
-                    const error = validateField(
-                      { ...localPreset, description: e.target.value },
-                      "description",
-                      allPresets,
-                    )
-                    if (!error) {
-                      setErrors((prev) => {
-                        const next = { ...prev }
-                        delete next.description
-                        return next
-                      })
-                    }
-                  }
+                  descHandler.onChange(e.target.value)
                 }}
-                onBlur={(e) => {
-                  const error = validateField(
-                    { ...localPreset, description: e.target.value },
-                    "description",
-                    allPresets,
-                  )
-                  setErrors((prev) => {
-                    const next = { ...prev }
-                    if (error) {
-                      next.description = error
-                    } else {
-                      delete next.description
-                    }
-                    return next
-                  })
-                }}
+                onBlur={descHandler.onBlur}
                 placeholder={i18n.t("variablePresets.enterDescription")}
                 maxLength={80}
-                className={cn(errors.description && "border-destructive")}
+                className={cn(descHandler.error && "border-destructive")}
               />
               <span className="absolute text-xs text-muted-foreground right-3 -top-5">
                 {i18n.t("common.characterCount", [
@@ -437,7 +371,7 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
                 ])}
               </span>
             </div>
-            <FieldError errors={[{ message: errors.description }]} />
+            <FieldError errors={[{ message: descHandler.error }]} />
           </Field>
 
           {/* Preset Type */}
@@ -513,86 +447,65 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
                 {i18n.t("variablePresets.dictionaryItems")}
               </FieldLabel>
               <div>
-                {localPreset.dictionaryItems?.map((item, index) => (
-                  <div
-                    key={item.id}
-                    className="space-y-2 first:border-t-1 border-b-1 pl-3 pr-2 py-4 bg-muted/30"
-                  >
-                    <Field className="flex flex-row gap-1">
-                      <FieldLabel
-                        htmlFor={`dictionary-item-name-${index}`}
-                        className="w-1/6! text-xs text-muted-foreground font-medium"
-                      >
-                        {i18n.t("variablePresets.itemName")}
-                      </FieldLabel>
-                      <div className="relative flex-1">
-                        <div>
-                          <Input
-                            id={`dictionary-item-name-${index}`}
-                            value={item.name}
-                            onChange={(e) => {
-                              handleDictionaryItemChange(
-                                index,
-                                "name",
-                                e.target.value,
-                              )
-                              // Clear error if user is typing and field was invalid
-                              const errorKey = `dictionaryItems.${index}.name`
-                              if (errors[errorKey]) {
-                                const error = validateField(
-                                  localPreset,
-                                  errorKey,
-                                  allPresets,
+                {localPreset.dictionaryItems?.map((item, index) => {
+                  const itemNameHandler = createFieldHandler(
+                    `dictionaryItems.${index}.name`,
+                  )
+                  const itemContentHandler = createFieldHandler(
+                    `dictionaryItems.${index}.content`,
+                  )
+
+                  return (
+                    <div
+                      key={item.id}
+                      className="space-y-2 first:border-t-1 border-b-1 pl-3 pr-2 py-4 bg-muted/30"
+                    >
+                      <Field className="flex flex-row gap-1">
+                        <FieldLabel
+                          htmlFor={`dictionary-item-name-${index}`}
+                          className="w-1/6! text-xs text-muted-foreground font-medium"
+                        >
+                          {i18n.t("variablePresets.itemName")}
+                        </FieldLabel>
+                        <div className="relative flex-1">
+                          <div>
+                            <Input
+                              id={`dictionary-item-name-${index}`}
+                              value={item.name}
+                              onChange={(e) => {
+                                handleDictionaryItemChange(
+                                  index,
+                                  "name",
+                                  e.target.value,
                                 )
-                                if (!error) {
-                                  setErrors((prev) => {
-                                    const next = { ...prev }
-                                    delete next[errorKey]
-                                    return next
-                                  })
-                                }
-                              }
-                            }}
-                            onBlur={() => {
-                              const errorKey = `dictionaryItems.${index}.name`
-                              const error = validateField(localPreset, errorKey, allPresets)
-                              setErrors((prev) => {
-                                const next = { ...prev }
-                                if (error) {
-                                  next[errorKey] = error
-                                } else {
-                                  delete next[errorKey]
-                                }
-                                return next
-                              })
-                            }}
-                            maxLength={20}
-                            placeholder={i18n.t(
-                              "variablePresets.enterItemName",
-                            )}
-                            className={cn(
-                              "bg-white w-full",
-                              errors[`dictionaryItems.${index}.name`] &&
-                                "border-destructive",
-                            )}
-                          />
-                          <span className="absolute text-xs text-muted-foreground/80 right-2 top-2.5">
-                            {i18n.t("common.characterCount", [
-                              20 - item.name.length,
-                            ])}
-                          </span>
+                                itemNameHandler.onChange(e.target.value)
+                              }}
+                              onBlur={itemNameHandler.onBlur}
+                              maxLength={20}
+                              placeholder={i18n.t(
+                                "variablePresets.enterItemName",
+                              )}
+                              className={cn(
+                                "bg-white w-full",
+                                itemNameHandler.error && "border-destructive",
+                              )}
+                            />
+                            <span className="absolute text-xs text-muted-foreground/80 right-2 top-2.5">
+                              {i18n.t("common.characterCount", [
+                                20 - item.name.length,
+                              ])}
+                            </span>
+                          </div>
+                          {itemNameHandler.error && (
+                            <FieldError
+                              errors={[
+                                {
+                                  message: itemNameHandler.error,
+                                },
+                              ]}
+                            />
+                          )}
                         </div>
-                        {errors[`dictionaryItems.${index}.name`] && (
-                          <FieldError
-                            errors={[
-                              {
-                                message:
-                                  errors[`dictionaryItems.${index}.name`],
-                              },
-                            ]}
-                          />
-                        )}
-                      </div>
                       <DictionaryItemController
                         index={index}
                         className="w-fit! mr-1"
@@ -601,73 +514,49 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
                         onDelete={(idx) => setRemoveDictionaryItemIdx(idx)}
                       />
                     </Field>
-                    <Field className="flex flex-row gap-1">
-                      <FieldLabel
-                        htmlFor={`dictionary-item-content-${index}`}
-                        className="w-1/6! text-xs text-muted-foreground font-medium"
-                      >
-                        {i18n.t("variablePresets.itemContent")}
-                      </FieldLabel>
-                      <div className="flex-1">
-                        <Textarea
-                          id={`dictionary-item-content-${index}`}
-                          value={item.content}
-                          onChange={(e) => {
-                            handleDictionaryItemChange(
-                              index,
-                              "content",
-                              e.target.value,
-                            )
-                            // Clear error if user is typing and field was invalid
-                            const errorKey = `dictionaryItems.${index}.content`
-                            if (errors[errorKey]) {
-                              const error = validateField(localPreset, errorKey, allPresets)
-                              if (!error) {
-                                setErrors((prev) => {
-                                  const next = { ...prev }
-                                  delete next[errorKey]
-                                  return next
-                                })
-                              }
-                            }
-                          }}
-                          onBlur={() => {
-                            const errorKey = `dictionaryItems.${index}.content`
-                            const error = validateField(localPreset, errorKey, allPresets)
-                            setErrors((prev) => {
-                              const next = { ...prev }
-                              if (error) {
-                                next[errorKey] = error
-                              } else {
-                                delete next[errorKey]
-                              }
-                              return next
-                            })
-                          }}
-                          placeholder={i18n.t(
-                            "variablePresets.enterItemContent",
-                          )}
-                          rows={1}
-                          className={cn(
-                            "py-1.5 min-h-9 max-h-40 break-all bg-white",
-                            errors[`dictionaryItems.${index}.content`] &&
-                              "border-destructive",
-                          )}
-                        />
-                        {errors[`dictionaryItems.${index}.content`] && (
-                          <FieldError
-                            errors={[
-                              {
-                                message:
-                                  errors[`dictionaryItems.${index}.content`],
-                              },
-                            ]}
+                      <Field className="flex flex-row gap-1">
+                        <FieldLabel
+                          htmlFor={`dictionary-item-content-${index}`}
+                          className="w-1/6! text-xs text-muted-foreground font-medium"
+                        >
+                          {i18n.t("variablePresets.itemContent")}
+                        </FieldLabel>
+                        <div className="flex-1">
+                          <Textarea
+                            id={`dictionary-item-content-${index}`}
+                            value={item.content}
+                            onChange={(e) => {
+                              handleDictionaryItemChange(
+                                index,
+                                "content",
+                                e.target.value,
+                              )
+                              itemContentHandler.onChange(e.target.value)
+                            }}
+                            onBlur={itemContentHandler.onBlur}
+                            placeholder={i18n.t(
+                              "variablePresets.enterItemContent",
+                            )}
+                            rows={1}
+                            className={cn(
+                              "py-1.5 min-h-9 max-h-40 break-all bg-white",
+                              itemContentHandler.error && "border-destructive",
+                            )}
                           />
-                        )}
-                      </div>
-                    </Field>
-                  </div>
-                ))}
+                          {itemContentHandler.error && (
+                            <FieldError
+                              errors={[
+                                {
+                                  message: itemContentHandler.error,
+                                },
+                              ]}
+                            />
+                          )}
+                        </div>
+                      </Field>
+                    </div>
+                  )
+                })}
                 <Button
                   variant="outline"
                   size="sm"
