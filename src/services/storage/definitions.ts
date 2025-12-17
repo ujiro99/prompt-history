@@ -205,3 +205,15 @@ export const variablePresetsStorage = storage.defineItem<
   version: 1,
   migrations: {},
 })
+
+/**
+ * Variable Presets Order storage definition
+ */
+export const variablePresetsOrderStorage = storage.defineItem<string[]>(
+  "local:variablePresetsOrder",
+  {
+    fallback: [],
+    version: 1,
+    migrations: {},
+  },
+)

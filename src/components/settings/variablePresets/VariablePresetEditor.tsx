@@ -59,6 +59,7 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
   const { container } = useContainer()
   const selectOptionsRef = useRef<HTMLInputElement>(null)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
+  const dictionaryItemsCount = localPreset?.dictionaryItems?.length || 0
 
   // Validation using custom hook
   const { errors, setErrors, createFieldHandler } = usePresetValidation(
@@ -506,14 +507,16 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
                             />
                           )}
                         </div>
-                      <DictionaryItemController
-                        index={index}
-                        className="w-fit! mr-1"
-                        onMoveUp={handleMoveUpDictionaryItem}
-                        onMoveDown={handleMoveDownDictionaryItem}
-                        onDelete={(idx) => setRemoveDictionaryItemIdx(idx)}
-                      />
-                    </Field>
+                        <DictionaryItemController
+                          index={index}
+                          className="w-fit! mr-1"
+                          moveUpDisabled={index === 0}
+                          moveDownDisabled={dictionaryItemsCount - 1 === index}
+                          onMoveUp={handleMoveUpDictionaryItem}
+                          onMoveDown={handleMoveDownDictionaryItem}
+                          onDelete={(idx) => setRemoveDictionaryItemIdx(idx)}
+                        />
+                      </Field>
                       <Field className="flex flex-row gap-1">
                         <FieldLabel
                           htmlFor={`dictionary-item-content-${index}`}
@@ -602,10 +605,20 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
 const DictionaryItemController: React.FC<{
   index: number
   className?: string
+  moveUpDisabled: boolean
+  moveDownDisabled: boolean
   onMoveUp: (index: number) => void
   onMoveDown: (index: number) => void
   onDelete: (index: number) => void
-}> = ({ index, className, onMoveUp, onMoveDown, onDelete }) => {
+}> = ({
+  index,
+  className,
+  moveUpDisabled,
+  moveDownDisabled,
+  onMoveUp,
+  onMoveDown,
+  onDelete,
+}) => {
   return (
     <div className={cn("flex items-center", className)}>
       <Button
@@ -613,6 +626,7 @@ const DictionaryItemController: React.FC<{
         size="sm"
         onClick={onMoveUp.bind(null, index)}
         className="size-7 p-1.5 group hover:bg-neutral-200/80 transition"
+        disabled={moveUpDisabled}
       >
         <MoveUp
           className={cn(
@@ -627,6 +641,7 @@ const DictionaryItemController: React.FC<{
         size="sm"
         onClick={onMoveDown.bind(null, index)}
         className="size-7 p-1.5 group hover:bg-neutral-200/80 transition"
+        disabled={moveDownDisabled}
       >
         <MoveDown
           className={cn(

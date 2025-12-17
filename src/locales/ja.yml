@@ -241,6 +241,8 @@ variablePresets:
   addVariable: 変数を追加
   duplicate: 複製
   delete: 削除
+  moveUp: 上に移動
+  moveDown: 下に移動
   name: 変数名
   nameDescription: プリセットを選択する際に表示される名前です
   type: 変数型

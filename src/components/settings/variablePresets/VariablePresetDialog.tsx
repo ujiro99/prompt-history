@@ -22,8 +22,10 @@ import {
   findPromptsByPresetId,
   exportVariablePresets,
   importVariablePresets,
+  reorderVariablePresets,
 } from "@/services/storage/variablePresetStorage"
 import { generatePromptId } from "@/utils/idGenerator"
+import { movePrev, moveNext } from "@/utils/array"
 import { stopPropagation } from "@/utils/dom"
 import { i18n } from "#imports"
 
@@ -332,6 +334,37 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
   )
 
   /**
+   * Handle reorder preset
+   */
+  const handleReorderPreset = useCallback(
+    async (fromIndex: number, toIndex: number) => {
+      let reorderedPresets = presets
+
+      if (toIndex < fromIndex) {
+        // Move up
+        reorderedPresets = movePrev(presets, fromIndex)
+      } else {
+        // Move down
+        reorderedPresets = moveNext(presets, fromIndex)
+      }
+
+      const newOrder = reorderedPresets.map((p) => p.id)
+
+      startSaving()
+      try {
+        await reorderVariablePresets(newOrder)
+        await loadPresets()
+        // Selection follows the moved preset
+      } catch (error) {
+        console.error("Failed to reorder preset:", error)
+      } finally {
+        stopSaving()
+      }
+    },
+    [presets, loadPresets, startSaving, stopSaving],
+  )
+
+  /**
    * Keyboard event handling
    */
   const handleKeyDown = (event: React.KeyboardEvent) => {
@@ -407,6 +440,7 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
                 selectedId={selectedPreset?.id || null}
                 onSelect={handleSelectPreset}
                 onAdd={handleAddPreset}
+                onReorder={handleReorderPreset}
               />
             </div>
 

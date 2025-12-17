@@ -241,6 +241,8 @@ variablePresets:
   addVariable: Add Variable
   duplicate: Duplicate
   delete: Delete
+  moveUp: Move up
+  moveDown: Move down
   name: Variable Name
   nameDescription: The name used to reference this preset
   type: Variable Type
