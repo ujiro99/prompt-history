@@ -284,20 +284,26 @@ variablePresets:
     exportAll: すべてエクスポート
     exportSelected: 選択したものをエクスポート
     fileName: ファイル名
-    exported: $1 個の変数プリセットをエクスポートしました
+    exported: $1 個の変数をエクスポートしました
     error: エクスポートに失敗しました
   importDialog:
     title: 変数プリセットをインポート
     description: JSON形式の変数プリセットをインポートします。
     selectFile: ファイルを選択
-    mode: インポートモード
-    merge: マージ
-    replace: すべて置換
-    mergeDescription: 既存のプリセットを保持したまま新しいプリセットを追加します
-    replaceDescription: 既存のプリセットをすべて削除してから新しいプリセットをインポートします
+    selectMode: インポート方法を選択してください
+    add: 追加
+    addDescription: 既存の変数を保持したまま新しい変数を追加します。同じ変数は上書きされます
+    replaceAll: すべて上書き
+    replaceDescription: 既存の変数をすべて削除してから、新しい変数をインポートします
+    currentCount: "現在の件数: $1 件"
+    importCount: "インポート数: $1 件"
+    overwriteCount: "うち上書き: $1 件"
+    totalAfter: "実行後の変数: $1 件"
     imported: $1 個の変数プリセットをインポートしました
     error: インポートに失敗しました。ファイル形式を確認してください。
     invalidFile: 無効なファイル形式です
+    errorTitle: エラー
+    successTitle: インポート完了
   importWarning:
     title: 変数プリセットのインポートに関する注意
     check:

@@ -13,6 +13,7 @@ import { RemoveDialog } from "@/components/inputMenu/controller/RemoveDialog"
 import { useContainer } from "@/hooks/useContainer"
 import { VariablePresetList } from "./VariablePresetList"
 import { VariablePresetEditor } from "./VariablePresetEditor"
+import { VariablePresetImportDialog } from "./VariablePresetImportDialog"
 import type { Prompt, VariablePreset } from "@/types/prompt"
 import {
   getVariablePresets,
@@ -21,7 +22,6 @@ import {
   duplicateVariablePreset,
   findPromptsByPresetId,
   exportVariablePresets,
-  importVariablePresets,
   reorderVariablePresets,
 } from "@/services/storage/variablePresetStorage"
 import { generatePromptId } from "@/utils/idGenerator"
@@ -62,6 +62,10 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
   // For remove dialog
   const [removePresetId, setRemovePresetId] = useState<string | null>(null)
   const [affectedPrompts, setAffectedPrompts] = useState<Prompt[] | null>(null)
+
+  // For import dialog
+  const [importFileInputEvent, setImportFileInputEvent] =
+    useState<React.ChangeEvent<HTMLInputElement> | null>(null)
 
   /**
    * Load all presets from storage
@@ -290,48 +294,22 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
    * Handle import presets
    */
   const handleImport = useCallback(
-    async (event: React.ChangeEvent<HTMLInputElement>) => {
+    (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0]
       if (!file) return
 
-      try {
-        const text = await file.text()
-
-        // Validate JSON format
-        try {
-          JSON.parse(text)
-        } catch {
-          alert(i18n.t("variablePresets.importDialog.invalidFile"))
-          return
-        }
-
-        // Ask for import mode
-        const merge = confirm(
-          i18n.t("variablePresets.importDialog.mergeDescription") +
-            "\n\n" +
-            i18n.t("variablePresets.importDialog.merge") +
-            ": OK\n" +
-            i18n.t("variablePresets.importDialog.replace") +
-            ": Cancel",
-        )
-        const mode = merge ? "merge" : "replace"
-
-        startSaving()
-        const count = await importVariablePresets(text, mode)
-        await loadPresets()
-
-        alert(i18n.t("variablePresets.importDialog.imported", [count]))
-      } catch (error) {
-        console.error("Failed to import presets:", error)
-        alert(i18n.t("variablePresets.importDialog.error"))
-      } finally {
-        stopSaving()
-        // Reset file input
-        event.target.value = ""
-      }
+      // Open import dialog with file input event
+      setImportFileInputEvent(event)
     },
-    [loadPresets, startSaving, stopSaving],
+    [],
   )
+
+  /**
+   * Handle import completion
+   */
+  const handleImportComplete = useCallback(async () => {
+    await loadPresets()
+  }, [loadPresets])
 
   /**
    * Handle reorder preset
@@ -391,44 +369,10 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
           {...stopPropagation()}
         >
           <DialogHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <DialogTitle>{i18n.t("variablePresets.title")}</DialogTitle>
-                <DialogDescription>
-                  {i18n.t("variablePresets.description")}
-                </DialogDescription>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleExport}
-                  disabled={presets.length === 0 || isSaving}
-                  title={i18n.t("variablePresets.export")}
-                >
-                  <Download className="size-4" />
-                </Button>
-                <label>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={isSaving}
-                    title={i18n.t("variablePresets.import")}
-                    asChild
-                  >
-                    <span>
-                      <Upload className="size-4" />
-                    </span>
-                  </Button>
-                  <input
-                    type="file"
-                    accept="application/json"
-                    onChange={handleImport}
-                    className="hidden"
-                  />
-                </label>
-              </div>
-            </div>
+            <DialogTitle>{i18n.t("variablePresets.title")}</DialogTitle>
+            <DialogDescription>
+              {i18n.t("variablePresets.description")}
+            </DialogDescription>
           </DialogHeader>
 
           {/* Two-column layout */}
@@ -457,7 +401,38 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex sm:justify-between">
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={handleExport}
+                disabled={presets.length === 0 || isSaving}
+                title={i18n.t("variablePresets.export")}
+              >
+                <Download className="size-4" />
+                {i18n.t("variablePresets.export")}
+              </Button>
+              <label>
+                <Button
+                  variant="outline"
+                  disabled={isSaving}
+                  title={i18n.t("variablePresets.import")}
+                  asChild
+                >
+                  <span>
+                    <Upload className="size-4" />
+                    {i18n.t("variablePresets.import")}
+                  </span>
+                </Button>
+                <input
+                  type="file"
+                  accept="application/json"
+                  onChange={handleImport}
+                  className="hidden"
+                />
+              </label>
+            </div>
+
             <Button
               onClick={handleSavButtonClick}
               disabled={isSaving || hasValidationErrors}
@@ -501,6 +476,19 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
           )}
         </div>
       </RemoveDialog>
+
+      {/* Import Dialog */}
+      <VariablePresetImportDialog
+        open={importFileInputEvent !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setImportFileInputEvent(null)
+          }
+        }}
+        presets={presets}
+        fileInputEvent={importFileInputEvent}
+        onImportComplete={handleImportComplete}
+      />
     </>
   )
 }

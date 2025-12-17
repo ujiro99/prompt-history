@@ -284,20 +284,26 @@ variablePresets:
     exportAll: Export All
     exportSelected: Export Selected
     fileName: File Name
-    exported: Exported $1 preset(s) successfully
+    exported: Exported $1 variable(s) successfully
     error: Failed to export presets
   importDialog:
     title: Import Variable Presets
     description: Import variable presets from JSON file.
     selectFile: Select File
-    mode: Import Mode
-    merge: Merge
-    replace: Replace All
-    mergeDescription: Add new presets while keeping existing ones
-    replaceDescription: Delete all existing presets and import new ones
+    selectMode: Select import method
+    add: Add
+    addDescription: Add new variables while keeping existing ones. Variables with the same ID will be overwritten.
+    replaceAll: Replace All
+    replaceDescription: Delete all existing variables, and import new ones
+    currentCount: "Current count: $1"
+    importCount: "Import count: $1"
+    overwriteCount: "Including overwrites: $1"
+    totalAfter: "Total variables after execution: $1"
     imported: Imported $1 preset(s) successfully
-    error: Failed to import presets. Please check the file format.
+    error: Failed to import variables. Please check the file format.
     invalidFile: Invalid file format
+    errorTitle: Error
+    successTitle: Import Complete
   importWarning:
     title: Important Notice Regarding Variable Preset Import
     check:
