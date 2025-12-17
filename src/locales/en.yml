@@ -303,6 +303,15 @@ variablePresets:
     convertedToText: $1 variable(s) have been converted to text type.
     missingPresets: The following presets were not found
     affectedVariable: "$1 - Variable: {{$2}}"
+  errors:
+    nameRequired: Name is required
+    nameMaxLength: Name must be 40 characters or less
+    descriptionMaxLength: Description must be 80 characters or less
+    selectOptionsRequired: At least one option is required
+    dictionaryItemsRequired: At least one dictionary item is required
+    itemNameRequired: Item name is required
+    itemNameMaxLength: Item name must be 20 characters or less
+    itemContentRequired: Item content is required
 
 # Import Dialog
 importDialog:

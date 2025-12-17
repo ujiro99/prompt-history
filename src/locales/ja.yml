@@ -303,6 +303,15 @@ variablePresets:
     convertedToText: $1件の変数がテキスト型に変換されました。
     missingpresets: 以下の変数プリセットが見つかりませんでした
     affectedVariable: "$1 - 変数: {{$2}}"
+  errors:
+    nameRequired: 変数名は必須です
+    nameMaxLength: 変数名は40文字以内で入力してください
+    descriptionMaxLength: 用途は80文字以内で入力してください
+    selectOptionsRequired: 少なくとも1つの選択肢が必要です
+    dictionaryItemsRequired: 少なくとも1つの項目が必要です
+    itemNameRequired: 項目名は必須です
+    itemNameMaxLength: 項目名は20文字以内で入力してください
+    itemContentRequired: 項目内容は必須です
 
 # Import Dialog
 importDialog:

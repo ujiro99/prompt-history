@@ -25,7 +25,9 @@
       "mcp__serena__insert_after_symbol",
       "Bash(pnpm test:run:*)",
       "mcp__chrome-devtools__list_pages",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(xargs:*)",
+      "Bash(pnpm add:*)"
     ],
     "deny": [],
     "ask": []

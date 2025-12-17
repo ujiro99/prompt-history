@@ -187,6 +187,13 @@ export class AutoCompleteManager {
       this.presets,
       this.options.maxMatches,
     )
+    console.log(
+      "Preset matches:",
+      presetMatches,
+      searchTerm,
+      this.presets,
+      this.options.maxMatches,
+    )
 
     // Update match positions for preset matches
     const inputMatchStart = caret.position - searchTerm.length

@@ -54,6 +54,9 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const delayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  // For validation state control
+  const [hasValidationErrors, setHasValidationErrors] = useState(false)
+
   // For remove dialog
   const [removePresetId, setRemovePresetId] = useState<string | null>(null)
   const [affectedPrompts, setAffectedPrompts] = useState<Prompt[] | null>(null)
@@ -194,6 +197,13 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
   )
 
   /**
+   * Handle validation state change from editor
+   */
+  const handleValidationChange = useCallback((hasErrors: boolean) => {
+    setHasValidationErrors(hasErrors)
+  }, [])
+
+  /**
    * Handle duplicate preset
    */
   const handleDuplicatePreset = useCallback(async () => {
@@ -331,6 +341,15 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
     event.nativeEvent.stopImmediatePropagation()
   }
 
+  const handleSavButtonClick = useCallback(async () => {
+    if (selectedPreset) {
+      await savePresetImmediate(selectedPreset)
+    }
+    onOpenChange(false)
+  }, [selectedPreset, savePresetImmediate, onOpenChange])
+
+  console.log({ isSaving, hasValidationErrors })
+
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -400,14 +419,15 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
                 onChange={handlePresetChange}
                 onDuplicate={handleDuplicatePreset}
                 onDelete={handleOnDelete}
+                onValidationChange={handleValidationChange}
               />
             </div>
           </div>
 
           <DialogFooter>
             <Button
-              onClick={() => onOpenChange(false)}
-              disabled={isSaving}
+              onClick={handleSavButtonClick}
+              disabled={isSaving || hasValidationErrors}
               className="min-w-24"
             >
               {isSaving ? (
