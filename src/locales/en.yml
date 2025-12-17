@@ -306,11 +306,13 @@ variablePresets:
   errors:
     nameRequired: Name is required
     nameMaxLength: Name must be 40 characters or less
+    nameDuplicate: This name is already in use
     descriptionMaxLength: Description must be 80 characters or less
     selectOptionsRequired: At least one option is required
     dictionaryItemsRequired: At least one dictionary item is required
     itemNameRequired: Item name is required
     itemNameMaxLength: Item name must be 20 characters or less
+    itemNameDuplicate: This item name is already in use
     itemContentRequired: Item content is required
 
 # Import Dialog

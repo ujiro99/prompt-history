@@ -35,6 +35,7 @@ import { validateField, type FieldErrors } from "@/schemas/variablePreset"
  */
 interface VariablePresetEditorProps {
   preset: VariablePreset | null
+  allPresets: VariablePreset[]
   onChange: (preset: VariablePreset) => void
   onDuplicate: () => void
   onDelete: () => void
@@ -47,6 +48,7 @@ interface VariablePresetEditorProps {
  */
 export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
   preset,
+  allPresets,
   onChange,
   onDuplicate,
   onDelete,
@@ -337,6 +339,7 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
                     const error = validateField(
                       { ...localPreset, name: e.target.value },
                       "name",
+                      allPresets,
                     )
                     if (!error) {
                       setErrors((prev) => {
@@ -351,6 +354,7 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
                   const error = validateField(
                     { ...localPreset, name: e.target.value },
                     "name",
+                    allPresets,
                   )
                   setErrors((prev) => {
                     const next = { ...prev }
@@ -396,6 +400,7 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
                     const error = validateField(
                       { ...localPreset, description: e.target.value },
                       "description",
+                      allPresets,
                     )
                     if (!error) {
                       setErrors((prev) => {
@@ -410,6 +415,7 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
                   const error = validateField(
                     { ...localPreset, description: e.target.value },
                     "description",
+                    allPresets,
                   )
                   setErrors((prev) => {
                     const next = { ...prev }
@@ -536,6 +542,7 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
                                 const error = validateField(
                                   localPreset,
                                   errorKey,
+                                  allPresets,
                                 )
                                 if (!error) {
                                   setErrors((prev) => {
@@ -548,7 +555,7 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
                             }}
                             onBlur={() => {
                               const errorKey = `dictionaryItems.${index}.name`
-                              const error = validateField(localPreset, errorKey)
+                              const error = validateField(localPreset, errorKey, allPresets)
                               setErrors((prev) => {
                                 const next = { ...prev }
                                 if (error) {
@@ -614,7 +621,7 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
                             // Clear error if user is typing and field was invalid
                             const errorKey = `dictionaryItems.${index}.content`
                             if (errors[errorKey]) {
-                              const error = validateField(localPreset, errorKey)
+                              const error = validateField(localPreset, errorKey, allPresets)
                               if (!error) {
                                 setErrors((prev) => {
                                   const next = { ...prev }
@@ -626,7 +633,7 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
                           }}
                           onBlur={() => {
                             const errorKey = `dictionaryItems.${index}.content`
-                            const error = validateField(localPreset, errorKey)
+                            const error = validateField(localPreset, errorKey, allPresets)
                             setErrors((prev) => {
                               const next = { ...prev }
                               if (error) {

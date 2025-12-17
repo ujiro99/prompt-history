@@ -92,16 +92,27 @@ export interface FieldErrors {
  *
  * @param preset - Partial preset object
  * @param field - Field name to validate
+ * @param allPresets - All presets for duplicate checking (optional)
  * @returns Error message or null if valid
  */
 export const validateField = (
   preset: Partial<VariablePreset>,
   field: string,
+  allPresets?: VariablePreset[],
 ): string | null => {
   try {
     switch (field) {
       case "name":
         baseFieldsSchema.shape.name.parse(preset.name)
+        // Check for duplicate name
+        if (allPresets && preset.name) {
+          const isDuplicate = allPresets.some(
+            (p) => p.id !== preset.id && p.name === preset.name,
+          )
+          if (isDuplicate) {
+            return i18n.t("variablePresets.errors.nameDuplicate")
+          }
+        }
         break
 
       case "description":
@@ -160,6 +171,16 @@ export const validateField = (
             if (item) {
               if (itemField === "name") {
                 dictionaryItemSchema.shape.name.parse(item.name)
+                // Check for duplicate item name within the same preset
+                if (item.name) {
+                  const isDuplicate = preset.dictionaryItems.some(
+                    (otherItem, otherIndex) =>
+                      otherIndex !== index && otherItem.name === item.name,
+                  )
+                  if (isDuplicate) {
+                    return i18n.t("variablePresets.errors.itemNameDuplicate")
+                  }
+                }
               } else if (itemField === "content") {
                 dictionaryItemSchema.shape.content.parse(item.content)
               }
@@ -182,37 +203,40 @@ export const validateField = (
  * Used for determining if Complete button should be disabled
  *
  * @param preset - Partial preset object
+ * @param allPresets - All presets for duplicate checking (optional)
  * @returns Record of field errors
  */
 export const validateVariablePreset = (
   preset: Partial<VariablePreset>,
+  allPresets?: VariablePreset[],
 ): FieldErrors => {
   const errors: FieldErrors = {}
 
   // Validate base fields
-  const nameError = validateField(preset, "name")
+  const nameError = validateField(preset, "name", allPresets)
   if (nameError) errors.name = nameError
 
-  const descError = validateField(preset, "description")
+  const descError = validateField(preset, "description", allPresets)
   if (descError) errors.description = descError
 
   // Validate type-specific fields
   if (preset.type === "select") {
-    const selectError = validateField(preset, "selectOptions")
+    const selectError = validateField(preset, "selectOptions", allPresets)
     if (selectError) errors.selectOptions = selectError
   } else if (preset.type === "dictionary") {
-    const dictError = validateField(preset, "dictionaryItems")
+    const dictError = validateField(preset, "dictionaryItems", allPresets)
     if (dictError) errors.dictionaryItems = dictError
 
     // Validate each dictionary item
     if (preset.dictionaryItems) {
       preset.dictionaryItems.forEach((item, index) => {
-        const nameError = validateField(preset, `dictionaryItems.${index}.name`)
+        const nameError = validateField(preset, `dictionaryItems.${index}.name`, allPresets)
         if (nameError) errors[`dictionaryItems.${index}.name`] = nameError
 
         const contentError = validateField(
           preset,
           `dictionaryItems.${index}.content`,
+          allPresets,
         )
         if (contentError) errors[`dictionaryItems.${index}.content`] = contentError
       })

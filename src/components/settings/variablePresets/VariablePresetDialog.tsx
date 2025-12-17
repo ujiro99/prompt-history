@@ -416,6 +416,7 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
             <div className="col-span-2 flex flex-col border-l min-h-0">
               <VariablePresetEditor
                 preset={selectedPreset}
+                allPresets={presets}
                 onChange={handlePresetChange}
                 onDuplicate={handleDuplicatePreset}
                 onDelete={handleOnDelete}
