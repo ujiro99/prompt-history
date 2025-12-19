@@ -75,7 +75,12 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
 
   // Update local state when preset prop changes
   useEffect(() => {
-    setLocalPreset(preset)
+    setLocalPreset((prev) => {
+      if (prev?.id !== preset?.id) {
+        return preset
+      }
+      return prev
+    })
     if (selectOptionsRef.current && preset?.type === "select") {
       selectOptionsRef.current.value = preset.selectOptions
         ? preset.selectOptions.join(", ")
