@@ -138,10 +138,13 @@ export async function deleteVariablePreset(id: string): Promise<string[]> {
 
       // Convert preset-type variables to text type
       const updatedVariables = storedPrompt.variables.map((variable) => {
-        if (variable.type === "preset" && variable.presetId === id) {
+        if (
+          variable.type === "preset" &&
+          variable.presetOptions?.presetId === id
+        ) {
           // Convert to text type
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { presetId, ...rest } = variable
+          const { presetOptions, ...rest } = variable
           return {
             ...rest,
             type: "text" as const,
@@ -227,7 +230,8 @@ export async function findPromptsByPresetId(
     if (prompt.variables) {
       const hasPresetReference = prompt.variables.some(
         (variable) =>
-          variable.type === "preset" && variable.presetId === presetId,
+          variable.type === "preset" &&
+          variable.presetOptions?.presetId === presetId,
       )
 
       if (hasPresetReference) {

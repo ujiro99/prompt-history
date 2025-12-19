@@ -72,7 +72,9 @@ describe("variablePresetStorage", () => {
       {
         name: "role",
         type: "preset",
-        presetId: "preset-2",
+        presetOptions: {
+          presetId: "preset-2",
+        },
       },
     ],
   }

@@ -1,6 +1,9 @@
 import { Pencil } from "lucide-react"
 import { Input } from "@/components/ui/input"
-import { SelectField } from "@/components/inputMenu/controller/SelectField"
+import {
+  DropdownMenuField,
+  MenuOption,
+} from "@/components/inputMenu/controller/DropdownMenuField"
 import type { VariableConfig, VariableType } from "@/types/prompt"
 import { Textarea } from "@/components/ui/textarea"
 import { useVariablePresets } from "@/hooks/useVariablePresets"
@@ -12,6 +15,8 @@ const VariableTypeOptions: { label: string; value: VariableType }[] = [
   { label: i18n.t("variableTypes.preset"), value: "preset" },
   { label: i18n.t("variableTypes.exclude"), value: "exclude" },
 ]
+
+type VariableTypeOption = VariableType | `preset.${string}`
 
 /**
  * Props for variable configuration field
@@ -42,13 +47,23 @@ export const VariableConfigField: React.FC<VariableConfigFieldProps> = ({
 
   // Watch selected preset for details display
   const { preset: selectedPreset } = useVariablePresets({
-    presetId: variable.presetId,
+    presetId: variable.presetOptions?.presetId,
   })
 
   /**
    * Handle variable type change
    */
-  const handleTypeChange = (type: VariableType) => {
+  const handleTypeChange = (option: VariableTypeOption) => {
+    // Determine new type and presetId
+    let type: VariableType
+    let presetId: string | undefined = undefined
+    if (option.startsWith("preset.")) {
+      type = "preset"
+      presetId = option.split(".")[1]
+    } else {
+      type = option as VariableType
+    }
+
     const updatedConfig: VariableConfig = {
       ...variable,
       type,
@@ -56,7 +71,7 @@ export const VariableConfigField: React.FC<VariableConfigFieldProps> = ({
 
     // Clear type-specific fields
     delete updatedConfig.selectOptions
-    delete updatedConfig.presetId
+    delete updatedConfig.presetOptions
 
     if (type === "select") {
       // If type is 'select', ensure selectOptions exists or restore if empty
@@ -71,23 +86,20 @@ export const VariableConfigField: React.FC<VariableConfigFieldProps> = ({
         }
       }
     } else if (type === "preset") {
-      // If type is 'preset', restore presetId if available
-      if (initialVariable?.type === "preset" && initialVariable.presetId) {
-        updatedConfig.presetId = initialVariable.presetId
+      if (presetId) {
+        updatedConfig.presetOptions = {
+          presetId,
+        }
+      } else if (
+        initialVariable?.type === "preset" &&
+        initialVariable.presetOptions
+      ) {
+        // If type is 'preset', restore presetId if available
+        updatedConfig.presetOptions = initialVariable.presetOptions
       }
     }
 
     onChange(updatedConfig)
-  }
-
-  /**
-   * Handle preset selection change
-   */
-  const handlePresetChange = (presetId: string) => {
-    onChange({
-      ...variable,
-      presetId,
-    })
   }
 
   /**
@@ -135,6 +147,43 @@ export const VariableConfigField: React.FC<VariableConfigFieldProps> = ({
     return variable.selectOptions?.options.join(", ") || ""
   }
 
+  /**
+   * Variable types for hierarchical menu
+   */
+  const getVariableTypeOptions = () => {
+    if (!presets || presets.length === 0) return []
+
+    // Presets options for submenu
+    const presetOptions = presets
+      .filter((p) => p.name)
+      .map((preset) => ({
+        label: preset.name,
+        value: `preset.${preset.id}`,
+      }))
+
+    // Convert to menu options format
+    const options: Array<MenuOption> = []
+    VariableTypeOptions.forEach((type) => {
+      if (type.value === "preset") {
+        options.push({
+          label: type.label,
+          children: presetOptions,
+        })
+        return
+      }
+      options.push(type)
+    })
+
+    return options
+  }
+
+  const getVariableTypeValue = () => {
+    if (variable.type === "preset" && variable.presetOptions?.presetId) {
+      return `preset.${variable.presetOptions.presetId}`
+    }
+    return variable.type
+  }
+
   return (
     <div className="space-y-1 border-b-1 px-3 py-4 bg-muted/30">
       <div className="flex flex-col sm:flex-row gap-3">
@@ -156,13 +205,21 @@ export const VariableConfigField: React.FC<VariableConfigFieldProps> = ({
           >
             {i18n.t("common.variableType")}
           </label>
-          <SelectField
-            options={VariableTypeOptions}
+          <DropdownMenuField
             name="variable-type"
-            value={variable.type}
-            onValueChange={(_, v) => handleTypeChange(v as VariableType)}
+            options={getVariableTypeOptions()}
+            value={getVariableTypeValue()}
+            onValueChange={(_, v) => handleTypeChange(v as VariableTypeOption)}
             className="bg-white"
           />
+          {variable.type === "preset" && selectedPreset && (
+            <p className="ml-2 text-xs text-muted-foreground break-all">
+              {i18n.t("variableTypes.type", [
+                i18n.t(`variableTypes.${selectedPreset.type}`),
+              ])}
+              {selectedPreset.description && ` - ${selectedPreset.description}`}
+            </p>
+          )}
         </div>
 
         {/* Default value input (only for text, textarea) */}
@@ -229,24 +286,7 @@ export const VariableConfigField: React.FC<VariableConfigFieldProps> = ({
                 </button>
               )}
             </div>
-            <SelectField
-              options={
-                presets?.map((p) => ({ label: p.name, value: p.id })) || []
-              }
-              name="preset-select"
-              value={variable.presetId || ""}
-              onValueChange={(_, v) => handlePresetChange(v)}
-              className="bg-white h-auto! py-[0.4rem] whitespace-normal break-all text-left"
-            />
-            {selectedPreset && (
-              <p className="ml-2 text-xs text-muted-foreground break-all">
-                {i18n.t("variableTypes.type", [
-                  i18n.t(`variableTypes.${selectedPreset.type}`),
-                ])}
-                {selectedPreset.description &&
-                  ` - ${selectedPreset.description}`}
-              </p>
-            )}
+            {/* TODO: Preset dropdown default */}
           </div>
         )}
       </div>

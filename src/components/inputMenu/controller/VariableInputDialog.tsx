@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Key } from "@/components/Key"
 import { SelectField } from "@/components/inputMenu/controller/SelectField"
+import { VariablePreview } from "@/components/inputMenu/VariablePreview"
 import { useContainer } from "@/hooks/useContainer"
 import { useDebounce } from "@/hooks/useDebounce"
 import type {
@@ -26,6 +27,7 @@ import { isMac } from "@/utils/platform"
 import { expandPrompt } from "@/utils/variables/variableFormatter"
 import { stopPropagation } from "@/utils/dom"
 import { useVariablePresets } from "@/hooks/useVariablePresets"
+import { isEmpty } from "@/lib/utils"
 
 /**
  * Props for variable input dialog
@@ -57,6 +59,10 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
   >(new Map())
   const { container } = useContainer()
 
+  // For preview of dictionary items
+  const [selectElm, setSelectElm] = useState<HTMLElement | null>(null)
+  const [previewItemId, setPreviewItemId] = useState<string | null>(null)
+
   // Watch presets only when dialog is open
   const { presets: allPresets } = useVariablePresets({ enabled: open })
 
@@ -66,8 +72,10 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
 
     const presetMap = new Map<string, VariablePreset>()
     for (const variable of variables) {
-      if (variable.type === "preset" && variable.presetId) {
-        const preset = allPresets.find((p) => p.id === variable.presetId)
+      if (variable.type === "preset" && variable.presetOptions?.presetId) {
+        const preset = allPresets.find(
+          (p) => p.id === variable.presetOptions!.presetId,
+        )
         if (preset) {
           presetMap.set(variable.name, preset)
         }
@@ -296,7 +304,7 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
                   if (preset.type === "dictionary" && preset.dictionaryItems) {
                     const selectedItem = selectedDictItems.get(variable.name)
                     return (
-                      <div className="space-y-2">
+                      <>
                         <SelectField
                           options={preset.dictionaryItems.map((item) => ({
                             label: item.name,
@@ -307,21 +315,24 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
                           onValueChange={(_, itemName) =>
                             handleDictionaryItemChange(variable.name, itemName)
                           }
+                          onHover={(value) => {
+                            const item = preset.dictionaryItems?.find(
+                              (i) => i.name === value,
+                            )
+                            setPreviewItemId(item?.id || "")
+                          }}
+                          ref={setSelectElm}
                         />
-                        {selectedItem && (
-                          <div className="bg-neutral-50 border border-neutral-200 rounded-md p-3 max-h-32 overflow-y-auto">
-                            <div className="text-xs font-medium text-muted-foreground mb-1">
-                              {i18n.t("dialogs.variables.preview")}:
-                            </div>
-                            <pre className="text-xs text-neutral-800 whitespace-pre-wrap break-all">
-                              {selectedItem.content}
-                            </pre>
-                          </div>
-                        )}
-                      </div>
+                        <VariablePreview
+                          open={!isEmpty(previewItemId)}
+                          anchorElm={selectElm}
+                          variable={variable}
+                          previewItemId={previewItemId}
+                          presets={Array.from(presets.values())}
+                        />
+                      </>
                     )
                   }
-
                   return null
                 })()}
             </div>

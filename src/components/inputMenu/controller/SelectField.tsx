@@ -1,4 +1,4 @@
-import { useRef } from "react"
+import { useState, useEffect, forwardRef } from "react"
 import { i18n } from "#imports"
 import {
   Select,
@@ -21,88 +21,111 @@ interface SelectFieldProps {
   options: SelectOption[]
   value: string
   onValueChange: (name: string, value: string) => void
+  onHover?: (vlaue: string) => void
   className?: string
 }
 
-export const SelectField = (props: SelectFieldProps) => {
-  const { name, options, value, onValueChange } = props
-  const { container } = useContainer()
-  const contentRef = useRef(null)
+export const SelectField = forwardRef<HTMLDivElement, SelectFieldProps>(
+  (props, ref) => {
+    const { name, options, value, onValueChange, onHover } = props
+    const { container } = useContainer()
+    const [contentElm, setContentElm] = useState<HTMLDivElement | null>(null)
 
-  const safeOptions = options.filter((opt) => !isEmpty(opt.value))
-  const optionsExist = safeOptions.length > 0
+    const safeOptions = options.filter((opt) => !isEmpty(opt.value))
+    const optionsExist = safeOptions.length > 0
 
-  const handleOnOpenChange = (open: boolean) => {
-    if (open) {
-      // Set focus to the selected item when opened
-      setTimeout(() => {
-        if (!contentRef.current) return
-        const contentElm = contentRef.current as HTMLElement
-        const selectedItem = contentElm?.querySelector(
-          '[data-slot="select-item"][data-state="checked"]',
-        ) as HTMLElement
-        if (selectedItem) {
-          selectedItem?.focus()
-        } else {
-          // Focus the first item if none selected
-          const firstItem = contentElm?.querySelector(
-            '[data-slot="select-item"]',
+    const handleOnOpenChange = (open: boolean) => {
+      if (open) {
+        // Set focus to the selected item when opened
+        setTimeout(() => {
+          if (!contentElm) return
+          const selectedItem = contentElm?.querySelector(
+            '[data-slot="select-item"][data-state="checked"]',
           ) as HTMLElement
-          firstItem?.focus()
-        }
-      }, 0)
-    }
-  }
-
-  const handleKeyDown = (event: React.KeyboardEvent) => {
-    const currentActive = document.activeElement?.shadowRoot?.activeElement
-    if (currentActive == null) return
-
-    // Implement a custom focus movement with Arrow Keys,
-    // to avoid the focus management bug in Radix UI when using the Shadow DOM.
-    // See: https://github.com/radix-ui/primitives/issues/2606
-    if (event.key === "ArrowDown") {
-      const nextEl = nextCyclic(currentActive) as HTMLElement
-      nextEl?.focus()
-      event.preventDefault()
-      event.stopPropagation()
-      return
+          if (selectedItem) {
+            selectedItem?.focus()
+          } else {
+            // Focus the first item if none selected
+            const firstItem = contentElm?.querySelector(
+              '[data-slot="select-item"]',
+            ) as HTMLElement
+            firstItem?.focus()
+          }
+        }, 0)
+      }
+      onHover?.("")
     }
 
-    if (event.key === "ArrowUp") {
-      const prevEl = prevCyclic(currentActive) as HTMLElement
-      prevEl?.focus()
-      event.preventDefault()
-      event.stopPropagation()
-      return
-    }
-  }
+    const handleKeyDown = (event: React.KeyboardEvent) => {
+      const currentActive = document.activeElement?.shadowRoot?.activeElement
+      if (currentActive == null) return
 
-  return (
-    <Select
-      value={value || ""}
-      onValueChange={(v) => onValueChange(name, v)}
-      onOpenChange={handleOnOpenChange}
-    >
-      <SelectTrigger id={`var-${name}`} className={props.className}>
-        <SelectValue placeholder={i18n.t("placeholders.selectOption")} />
-      </SelectTrigger>
-      <SelectContent
-        container={container}
-        onKeyDown={handleKeyDown}
-        ref={contentRef}
+      // Implement a custom focus movement with Arrow Keys,
+      // to avoid the focus management bug in Radix UI when using the Shadow DOM.
+      // See: https://github.com/radix-ui/primitives/issues/2606
+      if (event.key === "ArrowDown") {
+        const nextEl = nextCyclic(currentActive) as HTMLElement
+        nextEl?.focus()
+        event.preventDefault()
+        event.stopPropagation()
+        return
+      }
+
+      if (event.key === "ArrowUp") {
+        const prevEl = prevCyclic(currentActive) as HTMLElement
+        prevEl?.focus()
+        event.preventDefault()
+        event.stopPropagation()
+        return
+      }
+    }
+
+    const handleMouseEnter = (value: string) => (e: React.MouseEvent) => {
+      onHover?.(value)
+      setContentElm(e.currentTarget as HTMLDivElement)
+    }
+
+    useEffect(() => {
+      if (!ref) return
+      if (typeof ref === "function") {
+        ref(contentElm)
+      } else {
+        ref.current = contentElm
+      }
+    }, [contentElm, ref])
+
+    return (
+      <Select
+        value={value || ""}
+        onValueChange={(v) => onValueChange(name, v)}
+        onOpenChange={handleOnOpenChange}
       >
-        {!optionsExist && (
-          <div className="p-2 text-sm text-muted-foreground">
-            {i18n.t("selectField.noOptions")}
-          </div>
-        )}
-        {safeOptions.map((opt) => (
-          <SelectItem key={opt.value} value={opt.value}>
-            {opt.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  )
-}
+        <SelectTrigger id={`var-${name}`} className={props.className}>
+          <SelectValue placeholder={i18n.t("placeholders.selectOption")} />
+        </SelectTrigger>
+        <SelectContent
+          container={container}
+          onKeyDown={handleKeyDown}
+          onMouseLeave={() => onHover?.("")}
+        >
+          {!optionsExist && (
+            <div className="p-2 text-sm text-muted-foreground">
+              {i18n.t("selectField.noOptions")}
+            </div>
+          )}
+          {safeOptions.map((opt) => (
+            <SelectItem
+              key={opt.value}
+              value={opt.value}
+              onMouseEnter={handleMouseEnter(opt.value)}
+            >
+              {opt.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    )
+  },
+)
+
+SelectField.displayName = "SelectField"

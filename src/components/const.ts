@@ -18,6 +18,7 @@ export const TestIds = {
     settingsTrigger: "settings-trigger",
     settingsContent: "settings-content",
     promptPreview: "prompt-preview",
+    variablePreview: "variable-preview",
   },
   settingsMenu: {
     import: "settings-import",

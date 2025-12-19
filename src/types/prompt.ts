@@ -23,6 +23,11 @@ export interface SelectOptions {
   // multiSelect?: boolean        // Allow multiple selection
 }
 
+export interface PresetOptions {
+  presetId?: string
+  default?: string // Default value or dictionary item ID
+}
+
 /**
  * Dictionary item for dictionary-type presets
  */
@@ -80,8 +85,8 @@ export interface VariableConfig {
   defaultValue?: string
   /** Select options (when type='select') */
   selectOptions?: SelectOptions
-  /** Preset ID (when type='preset') */
-  presetId?: string
+  /** Preset options (when type='preset') */
+  presetOptions?: PresetOptions
 }
 
 /**
