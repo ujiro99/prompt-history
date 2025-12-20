@@ -447,12 +447,17 @@ export const EditDialog: React.FC<EditDialogProps> = ({
         open={isInfoDialogOpen}
         onOpenChange={setIsInfoDialogOpen}
       />
-      {/* Variable Presets Dialog */}
-      <VariablePresetDialog
-        open={variablePresetEditId !== null}
-        onOpenChange={(open) => !open && setVariablePresetEditId(null)}
-        initialSelectedPresetId={variablePresetEditId}
-      />
+      {/* Variable Presets Dialog
+          Use conditional branching with initialSelectedPresetId so that
+          it is applied only during the initial component render.
+        */}
+      {variablePresetEditId !== null && (
+        <VariablePresetDialog
+          open={true}
+          onOpenChange={(open) => !open && setVariablePresetEditId(null)}
+          initialSelectedPresetId={variablePresetEditId}
+        />
+      )}
     </>
   )
 }

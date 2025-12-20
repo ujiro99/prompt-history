@@ -28,7 +28,6 @@ import { generatePromptId } from "@/utils/idGenerator"
 import { movePrev, moveNext } from "@/utils/array"
 import { stopPropagation } from "@/utils/dom"
 import { i18n } from "#imports"
-import usePrev from "@/hooks/usePrev"
 
 /**
  * Props for VariablePresetDialog
@@ -71,8 +70,6 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
   const [importFileInputEvent, setImportFileInputEvent] =
     useState<React.ChangeEvent<HTMLInputElement> | null>(null)
 
-  const prevInitialSelectedPresetId = usePrev(initialSelectedPresetId)
-
   /**
    * Load all presets from storage
    */
@@ -80,9 +77,16 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
     try {
       const loadedPresets = await getVariablePresets()
       setPresets(loadedPresets)
+      if (initialSelectedPresetId) {
+        const preset = loadedPresets.find(
+          (p) => p.id === initialSelectedPresetId,
+        )
+        setSelectedPreset(preset || null)
+      }
     } catch (error) {
       console.error("Failed to load presets:", error)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   /**
@@ -104,17 +108,6 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
       }
     }
   }, [])
-
-  useEffect(() => {
-    // When selectedPresetId changes (e.g. dialog opened with a preset), update selection
-    if (
-      initialSelectedPresetId &&
-      initialSelectedPresetId !== prevInitialSelectedPresetId
-    ) {
-      const preset = presets.find((p) => p.id === initialSelectedPresetId)
-      setSelectedPreset(preset || null)
-    }
-  }, [initialSelectedPresetId, prevInitialSelectedPresetId, presets])
 
   const startSaving = useCallback(() => {
     // Clear any pending debounced saves
@@ -430,23 +423,23 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
                 <Download className="size-4" />
                 {i18n.t("variablePresets.export")}
               </Button>
-                <Button
-                  variant="outline"
+              <Button
+                variant="outline"
                 onClick={() => importInputRef.current?.click()}
-                  disabled={isSaving}
-                  title={i18n.t("variablePresets.import")}
-                >
-                    <Upload className="size-4" />
-                    {i18n.t("variablePresets.import")}
-                </Button>
-                <input
+                disabled={isSaving}
+                title={i18n.t("variablePresets.import")}
+              >
+                <Upload className="size-4" />
+                {i18n.t("variablePresets.import")}
+              </Button>
+              <input
                 id="variable-preset-import-input"
-                  type="file"
-                  accept="application/json"
-                  onChange={handleImport}
-                  className="hidden"
+                type="file"
+                accept="application/json"
+                onChange={handleImport}
+                className="hidden"
                 ref={importInputRef}
-                />
+              />
             </div>
 
             <Button
