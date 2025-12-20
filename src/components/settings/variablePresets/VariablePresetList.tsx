@@ -140,7 +140,7 @@ const ListItemController: React.FC<PresetItemControllerProps> = ({
         size="sm"
         onClick={() => onReorder(index, index - 1)}
         disabled={moveUpDisabled}
-        className="size-7 p-1.5 group/button transition bg-background/50 backdrop-blur-xs hover:bg-background/80"
+        className="size-7 p-1.5 group/button transition backdrop-blur-xs hover:bg-background/80"
         title={i18n.t("variablePresets.moveUp")}
       >
         <MoveUp
@@ -156,7 +156,7 @@ const ListItemController: React.FC<PresetItemControllerProps> = ({
         size="sm"
         onClick={() => onReorder(index, index + 1)}
         disabled={moveDownDisabled}
-        className="-ml-2 size-7 p-1.5 group/button transition bg-background/50 backdrop-blur-xs hover:bg-background/80"
+        className="-ml-2 size-7 p-1.5 group/button transition backdrop-blur-xs hover:bg-background/80"
         title={i18n.t("variablePresets.moveDown")}
       >
         <MoveDown

@@ -27,7 +27,8 @@
       "mcp__chrome-devtools__list_pages",
       "Bash(mkdir:*)",
       "Bash(xargs:*)",
-      "Bash(pnpm add:*)"
+      "Bash(pnpm add:*)",
+      "mcp__serena__think_about_task_adherence"
     ],
     "deny": [],
     "ask": []

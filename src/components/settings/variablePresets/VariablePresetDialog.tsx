@@ -67,6 +67,7 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
   const [affectedPrompts, setAffectedPrompts] = useState<Prompt[] | null>(null)
 
   // For import dialog
+  const importInputRef = useRef<HTMLInputElement | null>(null)
   const [importFileInputEvent, setImportFileInputEvent] =
     useState<React.ChangeEvent<HTMLInputElement> | null>(null)
 
@@ -382,6 +383,7 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
           container={container}
           className="w-full sm:max-w-4xl h-[80vh] flex flex-col"
           onKeyDown={handleKeyDown}
+          tabIndex={undefined}
           {...stopPropagation()}
         >
           <DialogHeader>
@@ -428,25 +430,23 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
                 <Download className="size-4" />
                 {i18n.t("variablePresets.export")}
               </Button>
-              <label>
                 <Button
                   variant="outline"
+                onClick={() => importInputRef.current?.click()}
                   disabled={isSaving}
                   title={i18n.t("variablePresets.import")}
-                  asChild
                 >
-                  <span>
                     <Upload className="size-4" />
                     {i18n.t("variablePresets.import")}
-                  </span>
                 </Button>
                 <input
+                id="variable-preset-import-input"
                   type="file"
                   accept="application/json"
                   onChange={handleImport}
                   className="hidden"
+                ref={importInputRef}
                 />
-              </label>
             </div>
 
             <Button
