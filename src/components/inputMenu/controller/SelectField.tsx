@@ -115,6 +115,7 @@ export const SelectField = forwardRef<HTMLDivElement, SelectFieldProps>(
               key={opt.value}
               value={opt.value}
               onMouseEnter={() => onHover?.(opt.value)}
+              onFocus={() => onHover?.(opt.value)}
             >
               {opt.label}
             </SelectItem>

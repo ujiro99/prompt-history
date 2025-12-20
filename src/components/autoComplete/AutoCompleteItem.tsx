@@ -1,5 +1,5 @@
 import React from "react"
-import { Star, ChevronRight, Variable, MessageSquareText } from "lucide-react"
+import { Star, ChevronRight, Variable } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { TestIds } from "@/components/const"
 import { Key } from "@/components/Key"
@@ -52,29 +52,26 @@ export const AutoCompleteItem: React.FC<AutoCompleteItemProps> = ({
     >
       {isSelected && <ChevronRight size={18} className="text-neutral-500" />}
       {isPreset && (
-        <div className="mr-2 flex-shrink-0 size-5.5 flex items-center justify-center bg-blue-100 text-blue-600 rounded">
+        <div className="mr-2 flex-shrink-0 size-5.5 flex items-center justify-center bg-blue-50 text-blue-600 rounded">
           <Variable className="inline size-4.5" />
         </div>
       )}
-      {!isPreset && (
-        <div className="mr-2 flex-shrink-0 size-5.5 flex items-center justify-center bg-green-100 text-green-600 rounded">
-          <MessageSquareText className="flex-shrink-0 size-4" />
-        </div>
-      )}
       <div className="w-full overflow-hidden">
-        <p className="truncate">
-          {name1}
-          <span className="font-medium bg-amber-100 px-0.5 rounded">
-            {name2}
-          </span>
-          {name3}
+        <div className="flex items-center gap-0.5">
+          <p className="truncate">
+            {name1}
+            <span className="font-medium bg-amber-100 px-0.5 rounded">
+              {name2}
+            </span>
+            {name3}
+          </p>
           {match.isPinned && (
             <Star
               size={14}
-              className="inline ml-1 mb-0.5 fill-yellow-300 stroke-yellow-400"
+              className="shrink-0 inline fill-yellow-300 stroke-yellow-400"
             />
           )}
-        </p>
+        </div>
         <div className="text-xs text-neutral-600 truncate mt-0.5 font-light">
           {match.content}
         </div>

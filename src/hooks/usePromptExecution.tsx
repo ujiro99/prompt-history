@@ -36,6 +36,8 @@ export interface UsePromptExecutionOptions {
 export interface UsePromptExecutionReturn {
   /** Current variable input data */
   variableInputData: VariableInputData | null
+  /** Set variable input data (for external control) */
+  setVariableInputData: (data: VariableInputData | null) => void
   /** Insert a prompt into text input with optional match data */
   insertPrompt: (promptId: string, match?: AutoCompleteMatch) => Promise<void>
   /** Set prompt text directly into text input */
@@ -194,6 +196,7 @@ export const usePromptExecution = (
 
   return {
     variableInputData,
+    setVariableInputData,
     insertPrompt,
     setPrompt,
     handleVariableSubmit,

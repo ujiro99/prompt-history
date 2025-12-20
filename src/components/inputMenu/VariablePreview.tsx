@@ -69,7 +69,7 @@ export const VariablePreview = ({
         {shouldRender && (
           <PopoverContent
             ref={setContent}
-            className="relative px-4 py-2 max-w-lg"
+            className="relative px-3 pt-1 pb-2 max-w-lg"
             side={"right"}
             align={"end"}
             sideOffset={8}
@@ -77,28 +77,18 @@ export const VariablePreview = ({
             data-testid={TestIds.inputPopup.variablePreview}
             {...stopPropagation()}
           >
-            <div className="space-y-1 text-foreground">
-              <div>
-                <label className="text-xs font-semibold text-muted-foreground/80">
-                  {i18n.t("variablePresets.name")}
-                </label>
-                <p className="font-mono text-sm break-all whitespace-normal text-foreground/80">
-                  {selectedPreset?.name}
+            <div className="text-foreground">
+              <label className="text-xs font-semibold text-muted-foreground/80">
+                {i18n.t("variablePresets.itemContent")}
+              </label>
+              <ScrollAreaWithGradient
+                className="max-h-100"
+                gradientHeight={"2rem"}
+              >
+                <p className="font-mono break-all text-sm whitespace-pre-line text-foreground/80">
+                  {item?.content}
                 </p>
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-muted-foreground/80">
-                  {i18n.t("variablePresets.itemContent")}
-                </label>
-                <ScrollAreaWithGradient
-                  className="max-h-100"
-                  gradientHeight={"2rem"}
-                >
-                  <p className="font-mono break-all text-sm whitespace-pre-line text-foreground/80">
-                    {item?.content}
-                  </p>
-                </ScrollAreaWithGradient>
-              </div>
+              </ScrollAreaWithGradient>
             </div>
             {content && (
               <BridgeArea

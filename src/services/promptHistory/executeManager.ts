@@ -12,17 +12,17 @@ import { analyticsService, ANALYTICS_EVENTS } from "@/services/analytics"
  *
  * ## Methods Overview
  *
- * ### insertPrompt vs setPrompt
+ * ### insertPrompt vs setPrompt vs replaceText
  *
- * | Feature             | insertPrompt             | setPrompt                |
- * |---------------------|--------------------------|--------------------------|
- * | Input               | `promptId: string`       | `content: string`        |
- * | Storage reference   | ✓ Required               | ✗ Not required           |
- * | Variable expansion  | ✓ Supported              | ✓ Supported              |
- * | Session management  | ✓ Tracked                | ✗ Not tracked            |
- * | Execution count     | ✓ Incremented            | ✗ Not incremented        |
- * | Analytics           | ✓ "insert-prompt" event  | ✓ "set-prompt" event     |
- * | Use case            | Insert saved prompts     | Set arbitrary text       |
+ * | Feature             | insertPrompt             | setPrompt                | replaceText              |
+ * |---------------------|--------------------------|--------------------------|--------------------------|
+ * | Input               | `promptId: string`       | `content: string`        | `AutoCompleteMatch`      |
+ * | Storage reference   | ✓ Required               | ✗ Not required           | ✗ Not required           |
+ * | Variable expansion  | ✓ Supported              | ✓ Supported              | ✗ Not supported          |
+ * | Session management  | ✓ Tracked                | ✗ Not tracked            | ✗ Not tracked            |
+ * | Execution count     | ✓ Incremented            | ✗ Not incremented        | ✗ Not incremented        |
+ * | Analytics           | ✓ "insert-prompt" event  | ✓ "set-prompt" event     | ✗ None                   |
+ * | Use case            | Insert saved prompts     | Set arbitrary text       | Replace text at caret    |
  */
 export class ExecuteManager {
   constructor(
@@ -149,6 +149,36 @@ export class ExecuteManager {
     } catch (error) {
       const err =
         error instanceof Error ? error : new Error("Set prompt failed")
+      onError?.(err)
+    }
+  }
+
+  /**
+   * Replace text at caret position using AutoCompleteMatch
+   * This is a generic text replacement method that doesn't involve storage operations.
+   */
+  async replaceText(
+    match: AutoCompleteMatch,
+    aiService: AIServiceInterface,
+    nodeAtCaret: Node | null,
+    onSuccess?: () => void,
+    onError?: (error: Error) => void,
+  ): Promise<void> {
+    try {
+      const textInput = aiService.getTextInput()
+      if (textInput) {
+        await replaceTextAtCaret(
+          textInput,
+          match,
+          nodeAtCaret,
+          aiService.legacyMode,
+        )
+      }
+
+      onSuccess?.()
+    } catch (error) {
+      const err =
+        error instanceof Error ? error : new Error("Replace text failed")
       onError?.(err)
     }
   }

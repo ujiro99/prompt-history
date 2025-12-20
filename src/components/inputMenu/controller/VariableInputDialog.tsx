@@ -62,6 +62,9 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
 
   // For preview of dictionary items
   const [selectElm, setSelectElm] = useState<HTMLElement | null>(null)
+  const [previewVariable, setPreviewVariable] = useState<VariableConfig | null>(
+    null,
+  )
   const [previewItemId, setPreviewItemId] = useState<string | null>(null)
 
   // Watch presets only when dialog is open
@@ -234,7 +237,7 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
         </DialogHeader>
 
         {/* Preview Section */}
-        {content && (
+        {!isEmpty(preview) && (
           <section>
             <h3 className="text-sm font-medium text-foreground">
               {i18n.t("dialogs.variables.preview")}
@@ -329,39 +332,40 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
                   if (preset.type === "dictionary" && preset.dictionaryItems) {
                     const selectedItem = selectedDictItems.get(variable.name)
                     return (
-                      <>
-                        <SelectField
-                          options={preset.dictionaryItems.map((item) => ({
-                            label: item.name,
-                            value: item.name,
-                          }))}
-                          name={variable.name}
-                          value={selectedItem?.name || ""}
-                          onValueChange={(_, itemName) =>
-                            handleDictionaryItemChange(variable.name, itemName)
-                          }
-                          onHover={(value) => {
-                            const item = preset.dictionaryItems?.find(
-                              (i) => i.name === value,
-                            )
-                            setPreviewItemId(item?.id || "")
-                          }}
-                          ref={setSelectElm}
-                        />
-                        <VariablePreview
-                          open={!isEmpty(previewItemId)}
-                          anchorElm={selectElm}
-                          variable={variable}
-                          previewItemId={previewItemId}
-                          presets={Array.from(presets.values())}
-                        />
-                      </>
+                      <SelectField
+                        options={preset.dictionaryItems.map((item) => ({
+                          label: item.name,
+                          value: item.name,
+                        }))}
+                        name={variable.name}
+                        value={selectedItem?.name || ""}
+                        onValueChange={(_, itemName) =>
+                          handleDictionaryItemChange(variable.name, itemName)
+                        }
+                        onHover={(value) => {
+                          const item = preset.dictionaryItems?.find(
+                            (i) => i.name === value,
+                          )
+                          setPreviewVariable(variable)
+                          setPreviewItemId(item?.id || "")
+                        }}
+                        ref={setSelectElm}
+                      />
                     )
                   }
                   return null
                 })()}
             </div>
           ))}
+          {previewVariable && (
+            <VariablePreview
+              open={!isEmpty(previewItemId)}
+              anchorElm={selectElm}
+              variable={previewVariable}
+              previewItemId={previewItemId}
+              presets={Array.from(presets.values())}
+            />
+          )}
         </div>
 
         <DialogFooter>

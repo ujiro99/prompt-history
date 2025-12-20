@@ -66,6 +66,7 @@ const AutoCompletePopupInner: React.FC<AutoCompletePopupInnerProps> = ({
     variableInputData,
     clearVariableInputData,
     handleVariableSubmit,
+    handlePresetVariableSubmit,
   } = useAutoComplete({ prompts, presets })
   const inputRef = useRef<HTMLElement>(null)
   const popupRef = useRef<HTMLDivElement>(null)
@@ -113,9 +114,20 @@ const AutoCompletePopupInner: React.FC<AutoCompletePopupInnerProps> = ({
   const handleOnSubmit = useCallback(
     (values: VariableValues) => {
       restoreCaret()
-      handleVariableSubmit(values)
+
+      // Check if this is a preset submission
+      if (variableInputData?.match?.matchType === "preset") {
+        handlePresetVariableSubmit(values)
+      } else {
+        handleVariableSubmit(values)
+      }
     },
-    [restoreCaret, handleVariableSubmit],
+    [
+      restoreCaret,
+      variableInputData,
+      handlePresetVariableSubmit,
+      handleVariableSubmit,
+    ],
   )
 
   // When Escape is pressed, close popup and return focus to input.
