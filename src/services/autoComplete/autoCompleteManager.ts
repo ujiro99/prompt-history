@@ -122,6 +122,11 @@ export class AutoCompleteManager {
 
     const searchTerm = wordMatch[1]
 
+    // Check minimum search length
+    if (searchTerm.length < this.options.minSearchLength) {
+      return []
+    }
+
     // Check if search term contains dot notation
     const dotNotation = parseDotNotation(searchTerm)
     if (dotNotation) {

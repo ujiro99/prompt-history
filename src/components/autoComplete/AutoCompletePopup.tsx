@@ -4,15 +4,15 @@ import { PromptServiceFacade } from "@/services/promptServiceFacade"
 import { AutoCompleteItem } from "./AutoCompleteItem"
 import { useAutoComplete } from "./useAutoComplete"
 import { useSettings } from "@/hooks/useSettings"
+import { useVariablePresets } from "@/hooks/useVariablePresets"
 import { Popover, PopoverContent, PopoverAnchor } from "../ui/popover"
 import { TestIds } from "@/components/const"
 import { Key } from "@/components/Key"
 import { isWindows } from "@/utils/platform"
 import { setCaretPosition } from "@/services/dom/caretUtils"
 import { i18n } from "#imports"
-import type { Prompt, VariableValues, VariablePreset } from "@/types/prompt"
+import type { Prompt, VariableValues } from "@/types/prompt"
 import { VariableInputDialog } from "@/components/inputMenu/controller/VariableInputDialog"
-import { getVariablePresets } from "@/services/storage/variablePresetStorage"
 
 const serviceFacade = PromptServiceFacade.getInstance()
 
@@ -49,12 +49,9 @@ interface AutoCompletePopupInnerProps {
 const AutoCompletePopupInner: React.FC<AutoCompletePopupInnerProps> = ({
   prompts,
 }) => {
-  const [presets, setPresets] = useState<VariablePreset[]>([])
-
-  // Load variable presets
-  useEffect(() => {
-    getVariablePresets().then(setPresets)
-  }, [])
+  // Watch variable presets for real-time updates
+  const { presets: presetsData } = useVariablePresets()
+  const presets = presetsData ?? []
 
   const {
     isVisible,

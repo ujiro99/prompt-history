@@ -36,7 +36,7 @@ interface VariableInputDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   variables: VariableConfig[]
-  content: string
+  content?: string
   onSubmit: (values: VariableValues) => void
   onDismiss?: () => void
 }
@@ -90,6 +90,7 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
 
   // Generate preview with debounced values
   const preview = useMemo(() => {
+    if (!content) return ""
     return expandPrompt(content, debouncedValues)
   }, [content, debouncedValues])
 
@@ -233,16 +234,18 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
         </DialogHeader>
 
         {/* Preview Section */}
-        <section>
-          <h3 className="text-sm font-medium text-foreground">
-            {i18n.t("dialogs.variables.preview") || "Preview"}
-          </h3>
-          <div className="mt-1 bg-neutral-50 border border-neutral-200 rounded-md p-3 max-h-48 overflow-y-auto">
-            <pre className="text-xs/5 text-neutral-800 whitespace-pre-wrap break-all font-mono">
-              {preview}
-            </pre>
-          </div>
-        </section>
+        {content && (
+          <section>
+            <h3 className="text-sm font-medium text-foreground">
+              {i18n.t("dialogs.variables.preview")}
+            </h3>
+            <div className="mt-1 bg-neutral-50 border border-neutral-200 rounded-md p-3 max-h-48 overflow-y-auto">
+              <pre className="text-xs/5 text-neutral-800 whitespace-pre-wrap break-all font-mono">
+                {preview}
+              </pre>
+            </div>
+          </section>
+        )}
 
         {/* Input Section */}
         <div className="space-y-2" ref={inputAreaRef}>
