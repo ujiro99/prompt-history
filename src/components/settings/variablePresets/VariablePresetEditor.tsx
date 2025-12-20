@@ -423,6 +423,7 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
                 }
                 placeholder={i18n.t("variablePresets.enterTextContent")}
                 rows={6}
+                className={cn("min-h-9 max-h-40 break-all")}
               />
             </Field>
           )}

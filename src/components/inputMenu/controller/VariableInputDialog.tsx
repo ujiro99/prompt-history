@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import { CornerDownLeft } from "lucide-react"
 import { i18n } from "#imports"
 import {
@@ -58,6 +58,7 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
     Map<string, DictionaryItem | null>
   >(new Map())
   const { container } = useContainer()
+  const inputAreaRef = useRef<HTMLDivElement | null>(null)
 
   // For preview of dictionary items
   const [selectElm, setSelectElm] = useState<HTMLElement | null>(null)
@@ -191,6 +192,26 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
     event.stopPropagation()
   }
 
+  const handleOnenAutoFocus = (event: Event) => {
+    event.preventDefault()
+
+    // Focus the first input element
+    const focusFirstInput = () => {
+      const inputArea = inputAreaRef.current
+      const firstInput = inputArea?.querySelector(
+        "textarea, input, select, button",
+      ) as HTMLElement
+      console.log("Focusing first input", firstInput)
+      if (firstInput) {
+        firstInput.focus()
+      }
+    }
+
+    setTimeout(() => {
+      focusFirstInput()
+    }, 200)
+  }
+
   // Filter out exclude type variables
   const visibleVariables = variables.filter((v) => v.type !== "exclude")
 
@@ -201,6 +222,7 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
         className="w-xl sm:max-w-xl max-h-9/10"
         onKeyDown={handleKeyDown}
         onEscapeKeyDown={onDismiss}
+        onOpenAutoFocus={handleOnenAutoFocus}
         {...stopPropagation()}
       >
         <DialogHeader>
@@ -223,7 +245,7 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
         </section>
 
         {/* Input Section */}
-        <div className="space-y-2">
+        <div className="space-y-2" ref={inputAreaRef}>
           {visibleVariables.map((variable) => (
             <div key={variable.name} className="space-y-2">
               <label

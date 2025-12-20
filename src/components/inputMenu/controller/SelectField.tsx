@@ -1,4 +1,4 @@
-import { useState, useEffect, forwardRef } from "react"
+import { useState, useEffect, forwardRef, useCallback } from "react"
 import { i18n } from "#imports"
 import {
   Select,
@@ -34,28 +34,6 @@ export const SelectField = forwardRef<HTMLDivElement, SelectFieldProps>(
     const safeOptions = options.filter((opt) => !isEmpty(opt.value))
     const optionsExist = safeOptions.length > 0
 
-    const handleOnOpenChange = (open: boolean) => {
-      if (open) {
-        // Set focus to the selected item when opened
-        setTimeout(() => {
-          if (!contentElm) return
-          const selectedItem = contentElm?.querySelector(
-            '[data-slot="select-item"][data-state="checked"]',
-          ) as HTMLElement
-          if (selectedItem) {
-            selectedItem?.focus()
-          } else {
-            // Focus the first item if none selected
-            const firstItem = contentElm?.querySelector(
-              '[data-slot="select-item"]',
-            ) as HTMLElement
-            firstItem?.focus()
-          }
-        }, 0)
-      }
-      onHover?.("")
-    }
-
     const handleKeyDown = (event: React.KeyboardEvent) => {
       const currentActive = document.activeElement?.shadowRoot?.activeElement
       if (currentActive == null) return
@@ -80,10 +58,28 @@ export const SelectField = forwardRef<HTMLDivElement, SelectFieldProps>(
       }
     }
 
-    const handleMouseEnter = (value: string) => (e: React.MouseEvent) => {
-      onHover?.(value)
-      setContentElm(e.currentTarget as HTMLDivElement)
-    }
+    const focusSelectedItem = useCallback(() => {
+      if (!contentElm) return
+      const selectedItem = contentElm?.querySelector(
+        '[data-slot="select-item"][data-state="checked"]',
+      ) as HTMLElement
+      if (selectedItem) {
+        selectedItem?.focus()
+      } else {
+        // Focus the first item if none selected
+        const firstItem = contentElm?.querySelector(
+          '[data-slot="select-item"]',
+        ) as HTMLElement
+        firstItem?.focus()
+      }
+    }, [contentElm])
+
+    useEffect(() => {
+      if (contentElm == null) return
+      setTimeout(() => {
+        focusSelectedItem()
+      }, 100)
+    }, [contentElm, focusSelectedItem])
 
     useEffect(() => {
       if (!ref) return
@@ -98,7 +94,7 @@ export const SelectField = forwardRef<HTMLDivElement, SelectFieldProps>(
       <Select
         value={value || ""}
         onValueChange={(v) => onValueChange(name, v)}
-        onOpenChange={handleOnOpenChange}
+        onOpenChange={() => onHover?.("")}
       >
         <SelectTrigger id={`var-${name}`} className={props.className}>
           <SelectValue placeholder={i18n.t("placeholders.selectOption")} />
@@ -107,6 +103,7 @@ export const SelectField = forwardRef<HTMLDivElement, SelectFieldProps>(
           container={container}
           onKeyDown={handleKeyDown}
           onMouseLeave={() => onHover?.("")}
+          ref={setContentElm}
         >
           {!optionsExist && (
             <div className="p-2 text-sm text-muted-foreground">
@@ -117,7 +114,7 @@ export const SelectField = forwardRef<HTMLDivElement, SelectFieldProps>(
             <SelectItem
               key={opt.value}
               value={opt.value}
-              onMouseEnter={handleMouseEnter(opt.value)}
+              onMouseEnter={() => onHover?.(opt.value)}
             >
               {opt.label}
             </SelectItem>

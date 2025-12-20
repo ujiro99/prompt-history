@@ -375,8 +375,8 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
         <DialogContent
           container={container}
           className="w-full sm:max-w-4xl h-[80vh] flex flex-col"
-          onKeyDown={handleKeyDown}
           tabIndex={undefined}
+          onKeyDown={handleKeyDown}
           {...stopPropagation()}
         >
           <DialogHeader>
