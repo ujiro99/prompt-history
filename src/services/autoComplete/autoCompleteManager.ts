@@ -10,11 +10,7 @@ import type {
   AutoCompletePosition,
   AutoCompleteCallbacks,
 } from "./types"
-import {
-  matchPresets,
-  matchPresetItems,
-  parseDotNotation,
-} from "./presetMatcher"
+import { matchPresets } from "./presetMatcher"
 
 const NO_SELECTED_INDEX = -1
 const MAX_WORD_COUNT = 3
@@ -106,7 +102,6 @@ export class AutoCompleteManager {
   /**
    * Find matching prompts and presets based on input and caret position
    * Supports matching 1-3 words, prioritizing longer matches
-   * Also supports dot notation for preset items (e.g., "role.customer")
    */
   private findMatches(
     input: string,
@@ -125,26 +120,6 @@ export class AutoCompleteManager {
     // Check minimum search length
     if (searchTerm.length < this.options.minSearchLength) {
       return []
-    }
-
-    // Check if search term contains dot notation
-    const dotNotation = parseDotNotation(searchTerm)
-    if (dotNotation) {
-      // Match preset items using dot notation
-      const presetItemMatches = matchPresetItems(
-        searchTerm,
-        this.presets,
-        this.options.maxMatches,
-      )
-
-      // Update match positions
-      const inputMatchStart = caret.position - searchTerm.length
-      return presetItemMatches.map((match) => ({
-        ...match,
-        matchStart: inputMatchStart,
-        matchEnd: caret.position,
-        newlineCount: caret.newlineCount,
-      }))
     }
 
     // Collect matches from prompts (all word counts)

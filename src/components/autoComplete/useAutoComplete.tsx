@@ -258,11 +258,6 @@ export const useAutoComplete = ({
             // Close popup after inserting
             return true
           }
-        } else if (match.matchType === "preset-item") {
-          // Always insert preset-item directly
-          insertPresetDirectly(match)
-          // Close popup after inserting
-          return true
         }
       },
       onSelectChange: (index: number) => {

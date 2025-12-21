@@ -2,7 +2,7 @@
 
 ## 概要
 
-変数プリセット機能は、再利用可能な変数定義をグローバルに管理し、プロンプト編集時に簡単に適用できるようにする機能です。ユーザーは事前に変数プリセットを定義し、プロンプト編集時にそれらを選択することで、変数の設定を効率化できます。また、入力補完との連携により、変数プリセットの値を直接展開することも可能です。
+変数プリセット機能は、再利用可能な変数定義をグローバルに管理し、プロンプト編集時に簡単に適用できるようにする機能です。ユーザーは事前に変数プリセットを定義し、プロンプト編集時にそれらを選択することで、変数の設定を効率化できます。入力補完との連携により、変数プリセット名を検索して選択することができます。
 
 ## 機能要件
 
@@ -104,13 +104,9 @@ type が "preset" の場合:
 
 ユーザーが変数プリセット名を入力すると、補完候補が表示されます:
 
-- **文字列型**: テキストコンテンツに展開
-- **選択肢型**:
-  - `プリセット名.` と入力すると選択肢リストを表示
-  - 選択肢を選択するとその値に展開
-- **辞書型**:
-  - `プリセット名.` と入力すると項目名リストを表示
-  - 項目を選択するとその内容に展開
+- **文字列型**: 選択すると、テキストコンテンツに展開
+- **選択肢型**: 選択すると、選択肢リストを表示するインライン画面に遷移。選択肢を選択するとその値に展開
+- **辞書型**: 選択すると、項目名リストを表示するインライン画面に遷移。項目を選択するとその内容に展開
 
 #### UI上の区別
 
@@ -130,13 +126,14 @@ AutoCompleteManager.analyzeInput()
   ↓
 結合された結果を表示（タイプ別にグループ化）
   ↓
-ユーザー入力: "role."
+ユーザーがプリセットを選択
   ↓
-ドット記法を検出 → プリセット項目を表示
+選択肢型/辞書型の場合: インライン画面でオプション一覧を表示
+文字列型の場合: 直接テキストとして展開
   ↓
-ユーザーが項目を選択
+ユーザーがオプションを選択
   ↓
-項目内容を直接テキストとして展開（{{variable}} ではない）
+選択した内容を直接テキストとして展開（{{variable}} ではない）
 ```
 
 ## アーキテクチャ
@@ -342,7 +339,7 @@ export async function importVariablePresets(
 /**
  * 入力補完マッチの種類
  */
-export type AutoCompleteMatchType = "prompt" | "preset" | "preset-item"
+export type AutoCompleteMatchType = "prompt" | "preset"
 
 /**
  * 拡張された AutoCompleteMatch
@@ -361,10 +358,8 @@ export interface AutoCompleteMatch {
   // 新規フィールド
   /** マッチの種類 */
   matchType: AutoCompleteMatchType
-  /** プリセット型（matchType が "preset" または "preset-item" の場合） */
+  /** プリセット型（matchType が "preset" の場合） */
   presetType?: PresetVariableType
-  /** 親プリセットID（matchType が "preset-item" の場合） */
-  parentPresetId?: string
 }
 ```
 
@@ -383,23 +378,6 @@ export function matchPresets(
   presets: VariablePreset[],
   maxMatches: number,
 ): AutoCompleteMatch[]
-
-/**
- * ドット記法のプリセット項目をマッチング（例: "role.customer"）
- */
-export function matchPresetItems(
-  searchTerm: string,
-  presets: VariablePreset[],
-  maxMatches: number,
-): AutoCompleteMatch[]
-
-/**
- * ドット記法を解析し、プリセット名と項目クエリを抽出
- */
-export function parseDotNotation(searchTerm: string): {
-  presetName: string
-  itemQuery: string
-} | null
 ```
 
 #### 3. AutoCompleteManager の拡張
@@ -410,7 +388,6 @@ export function parseDotNotation(searchTerm: string): {
 
 - `setPresets()` メソッドの追加
 - `findMatches()` をプリセットマッチを含むように修正
-- ドット記法の検出をサポート
 - 結果を種類別にグループ化（プロンプト / プリセット）
 
 ### 実行フロー
@@ -489,18 +466,18 @@ AutoCompleteManager.handleContentChange()
   ↓
 カーソル前の入力を解析
   ↓
-ドット記法をチェック（例: "role."）
-  ↓
-ドット記法の場合:
-  matchPresetItems()
-それ以外:
-  matchPresets() + 既存のプロンプトマッチング
+matchPresets() + 既存のプロンプトマッチング
   ↓
 グループ化された結果を表示:
   - プロンプト（プロンプトアイコン付き）
   - 変数プリセット（プリセットアイコン付き）
   ↓
-ユーザーが選択 → 内容を直接テキストとして展開
+ユーザーがプリセットを選択
+  ↓
+選択肢型/辞書型の場合: インライン画面でオプション一覧を表示
+文字列型の場合: 内容を直接テキストとして展開
+  ↓
+ユーザーがオプションを選択 → 選択した内容を直接テキストとして展開
 ```
 
 ## UI/UX フロー
@@ -597,16 +574,14 @@ AutoCompleteManager.handleContentChange()
 |                    +-------------------+ |
 +------------------------------------------+
 
-"role." と入力後（ドット記法）:
+プリセット「役割」を選択後（辞書型の場合）:
 
 +------------------------------------------+
-| 入力フィールド: "role."                  |
-|                     |                    |
-|                     +------------------+ |
-|                     | === 役割 ===     | |
-|                     | • 顧客           | |
-|                     | • 上司           | |
-|                     +------------------+ |
+|                    +------------------+ |
+|                    | === 役割 ===     | |
+|                    | • 顧客           | |
+|                    | • 上司           | |
+|                    +------------------+ |
 +------------------------------------------+
 ```
 
@@ -716,8 +691,6 @@ AutoCompleteManager.handleContentChange()
 **マッチングロジック**:
 
 - 名前でプリセットをマッチング（大文字小文字を区別しない）
-- ドット記法でプリセット項目をマッチング
-- ドット記法の解析（有効、無効）
 - 特殊文字の処理
 - 最大マッチ数制限
 
@@ -769,9 +742,8 @@ AutoCompleteManager.handleContentChange()
 **プリセット入力補完**:
 
 - プリセットとプロンプトのマッチング
-- ドット記法の検出
-- プリセット項目のマッチング
 - 種類別の結果グループ化
+- プリセット選択時のインライン画面表示
 
 ### E2E テスト
 
@@ -780,7 +752,7 @@ AutoCompleteManager.handleContentChange()
 1. 変数プリセット作成（辞書型）
 2. プリセット参照付きプロンプト作成
 3. プロンプト実行と変数入力
-4. ドット記法での入力補完
+4. プリセット選択後のインライン画面での入力補完
 5. プリセット付きエクスポート/インポート
 6. 参照付きプリセット削除
 
@@ -813,7 +785,7 @@ AutoCompleteManager.handleContentChange()
 - `AutoCompleteMatch` 型の拡張
 - `presetMatcher.ts` の実装
 - `AutoCompleteManager` の更新
-- ドット記法サポート
+- プリセット選択時のインライン画面表示
 - プリセットマッチのUI区別
 - ユニットテスト
 
@@ -980,21 +952,17 @@ AutoCompleteManager.handleContentChange()
   - [x] `AutoCompleteMatch` インターフェースの拡張
     - [x] `matchType` フィールド
     - [x] `presetType` フィールド
-    - [x] `parentPresetId` フィールド
 
 #### マッチャー実装
 
 - [x] `src/services/autoComplete/presetMatcher.ts` の実装
   - [x] `matchPresets()` - プリセット名マッチング
-  - [x] `matchPresetItems()` - ドット記法による項目マッチング
-  - [x] `parseDotNotation()` - ドット記法解析
 
 #### AutoCompleteManager拡張
 
 - [x] `src/services/autoComplete/autoCompleteManager.ts` の拡張
   - [x] `setPresets()` メソッド追加
   - [x] `findMatches()` にプリセットマッチ統合
-  - [x] ドット記法検出サポート
   - [x] 結果のグループ化（プロンプト / プリセット）
 
 #### UI拡張
@@ -1002,18 +970,15 @@ AutoCompleteManager.handleContentChange()
 - [x] 入力補完UI でのプリセット区別表示
   - [x] プリセット用アイコン ("P" バッジ)
   - [x] セクションヘッダー（「プロンプト」 / 「変数プリセット」）※UI実装済み（視覚的区別のみ実装）
-- [x] ドット記法入力時のプリセット項目表示
+- [x] プリセット選択時のインライン画面でオプション表示（選択肢型/辞書型）
 
 #### テスト
 
 - [ ] `presetMatcher.test.ts`（後回し）
   - [ ] プリセット名マッチング
-  - [ ] ドット記法マッチング
-  - [ ] ドット記法解析
   - [ ] 最大マッチ数制限
 - [ ] `AutoCompleteManager.test.ts`（拡張）（後回し）
   - [ ] プリセットとプロンプトの統合マッチング
-  - [ ] ドット記法検出
   - [ ] グループ化動作
 
 ### ✅ フェーズ5: インポート/エクスポート & 仕上げ（完了）
@@ -1045,7 +1010,7 @@ AutoCompleteManager.handleContentChange()
   - [ ] 変数プリセット作成フロー（辞書型）
   - [ ] プリセット参照付きプロンプト作成
   - [ ] プロンプト実行と変数入力
-  - [ ] ドット記法での入力補完
+  - [ ] プリセット選択後のインライン画面での入力補完
   - [ ] エクスポート/インポート
   - [ ] 参照付きプリセット削除
 
