@@ -33,8 +33,7 @@ export const AutoCompleteItem: React.FC<AutoCompleteItemProps> = ({
   const name2 = match.name.slice(start, end)
   const name3 = match.name.slice(end)
 
-  const isPreset =
-    match.matchType === "preset" || match.matchType === "preset-item"
+  const isPreset = match.matchType === "preset"
 
   return (
     <button

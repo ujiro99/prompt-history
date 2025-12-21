@@ -35,15 +35,12 @@ export const OptionItem = forwardRef<HTMLButtonElement, OptionItemProps>(
         onClick={onClick}
         onMouseEnter={(e) => onMouseEnter(e)}
       >
-        <div className="flex items-center gap-2">
-          <div
-            className={cn(
-              "flex-shrink-0",
-              isSelected ? "visible" : "invisible",
-            )}
-          >
-            <ChevronRight size={18} />
-          </div>
+        <div className="flex items-center gap-1">
+          {isSelected && (
+            <div className={cn("shrink-0")}>
+              <ChevronRight size={18} className="shrink-0 text-neutral-500" />
+            </div>
+          )}
           <div className="flex-1 min-w-0">
             <p className="font-medium">{name}</p>
             {presetType === "dictionary" && (
