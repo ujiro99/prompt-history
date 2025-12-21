@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react"
+import Papa from "papaparse"
 import {
   Dialog,
   DialogContent,
@@ -35,6 +36,21 @@ interface ImportDialogState {
 }
 
 /**
+ * CSV row type for variable preset import
+ */
+interface VariablePresetCSVRow {
+  id: string
+  name: string
+  type: string
+  description: string
+  textContent: string
+  selectOptions: string
+  dictionaryItems: string
+  createdAt: string
+  updatedAt: string
+}
+
+/**
  * Variable Preset Import Dialog Component
  * Handles the import flow with mode selection and preview
  */
@@ -56,20 +72,52 @@ export const VariablePresetImportDialog: React.FC<
       try {
         const text = await file.text()
 
-        // Validate JSON format
-        let importedPresets: VariablePreset[]
-        try {
-          importedPresets = JSON.parse(text)
-          if (!Array.isArray(importedPresets)) {
-            throw new Error("Expected an array")
-          }
-        } catch {
+        // Parse CSV to get preview data
+        const parseResult = Papa.parse<VariablePresetCSVRow>(text, {
+          header: true,
+          dynamicTyping: false,
+          skipEmptyLines: true,
+          transformHeader: (header: string) => header.trim(),
+        })
+
+        if (parseResult.errors.length > 0) {
+          console.error("CSV parsing error:", parseResult.errors)
           setDialogState({
             mode: "error",
             errorMessage: i18n.t("variablePresets.importDialog.invalidFile"),
           })
           return
         }
+
+        if (parseResult.data.length === 0) {
+          setDialogState({
+            mode: "error",
+            errorMessage: i18n.t("variablePresets.importDialog.invalidFile"),
+          })
+          return
+        }
+
+        // Convert CSV row to VariablePreset for preview
+        const importedPresets: VariablePreset[] = parseResult.data.map(
+          (row) => ({
+            id: row.id,
+            name: row.name,
+            type: row.type as "text" | "select" | "dictionary",
+            description: row.description,
+            textContent: row.textContent,
+            selectOptions: row.selectOptions
+              ? row.selectOptions
+                  .split(",")
+                  .map((opt: string) => opt.trim())
+                  .filter((opt: string) => opt.length > 0)
+              : undefined,
+            dictionaryItems: row.dictionaryItems
+              ? JSON.parse(row.dictionaryItems)
+              : undefined,
+            createdAt: new Date(row.createdAt),
+            updatedAt: new Date(row.updatedAt),
+          }),
+        )
 
         // Show import mode selection dialog
         setDialogState({

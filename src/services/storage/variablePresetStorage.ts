@@ -3,6 +3,8 @@ import type {
   StoredVariablePreset,
   Prompt,
   StoredPrompt,
+  DictionaryItem,
+  PresetVariableType,
 } from "../../types/prompt"
 import {
   variablePresetsStorage,
@@ -10,6 +12,7 @@ import {
   promptsStorage,
 } from "./definitions"
 import { generatePromptId } from "../../utils/idGenerator"
+import Papa from "papaparse"
 
 /**
  * Convert VariablePreset to StoredVariablePreset for storage
@@ -244,7 +247,22 @@ export async function findPromptsByPresetId(
 }
 
 /**
- * Export variable presets as JSON
+ * CSV row type for variable preset export/import
+ */
+interface VariablePresetCSVRow {
+  id: string
+  name: string
+  type: string
+  description: string
+  textContent: string
+  selectOptions: string
+  dictionaryItems: string
+  createdAt: string
+  updatedAt: string
+}
+
+/**
+ * Export variable presets as CSV using papaparse
  */
 export async function exportVariablePresets(
   presetIds: string[],
@@ -261,21 +279,141 @@ export async function exportVariablePresets(
     presetsToExport.push(preset)
   }
 
-  return JSON.stringify(presetsToExport, null, 2)
+  // Convert to CSV row format
+  const csvData: VariablePresetCSVRow[] = presetsToExport.map((preset) => ({
+    id: preset.id,
+    name: preset.name,
+    type: preset.type,
+    description: preset.description ?? "",
+    textContent: preset.textContent ?? "",
+    selectOptions: preset.selectOptions ? preset.selectOptions.join(",") : "",
+    dictionaryItems: preset.dictionaryItems
+      ? JSON.stringify(preset.dictionaryItems)
+      : "",
+    createdAt: preset.createdAt,
+    updatedAt: preset.updatedAt,
+  }))
+
+  // Use Papa Parse to generate CSV with headers and proper escaping
+  return Papa.unparse(
+    {
+      fields: [
+        "id",
+        "name",
+        "type",
+        "description",
+        "textContent",
+        "selectOptions",
+        "dictionaryItems",
+        "createdAt",
+        "updatedAt",
+      ],
+      data: csvData,
+    },
+    {
+      header: true,
+      quotes: true,
+      delimiter: ",",
+    },
+  )
 }
 
 /**
- * Import variable presets from JSON
+ * Import variable presets from CSV using papaparse
  * @returns Number of imported presets
  */
 export async function importVariablePresets(
-  jsonData: string,
+  csvData: string,
   mode: "merge" | "replace",
 ): Promise<number> {
-  const presetsToImport = JSON.parse(jsonData) as StoredVariablePreset[]
+  // Parse CSV using Papa Parse
+  const parseResult = Papa.parse<VariablePresetCSVRow>(csvData, {
+    header: true,
+    dynamicTyping: false, // Keep all values as strings for custom parsing
+    skipEmptyLines: true,
+    transformHeader: (header: string) => header.trim(),
+  })
 
-  if (!Array.isArray(presetsToImport)) {
-    throw new Error("Invalid JSON format: expected an array of presets")
+  if (parseResult.errors.length > 0) {
+    console.error("CSV parsing error:", parseResult.errors)
+    const errorMessages = parseResult.errors.map(
+      (e) => (e.row ? `[Row ${e.row + 2}] ${e.message}` : e.message), // +2 for header and 0-based index
+    )
+    throw new Error(
+      `Invalid CSV format: ${errorMessages.join("; ")}`,
+    )
+  }
+
+  if (parseResult.data.length === 0) {
+    throw new Error("Invalid CSV format: expected header and at least one row")
+  }
+
+  const presetsToImport: StoredVariablePreset[] = []
+  const errors: string[] = []
+
+  // Parse each row
+  for (let i = 0; i < parseResult.data.length; i++) {
+    try {
+      const row = parseResult.data[i]
+
+      // Validate required fields
+      const requiredFields = [
+        "id",
+        "name",
+        "type",
+        "createdAt",
+        "updatedAt",
+      ]
+      for (const field of requiredFields) {
+        if (!(field in row) || !row[field as keyof VariablePresetCSVRow]) {
+          throw new Error(`Missing required field: ${field}`)
+        }
+      }
+
+      // Parse selectOptions (comma-separated string to array)
+      let selectOptions: string[] | undefined
+      if (row.selectOptions) {
+        selectOptions = row.selectOptions
+          .split(",")
+          .map((opt) => opt.trim())
+          .filter((opt) => opt.length > 0)
+      }
+
+      // Parse dictionaryItems (JSON string to array)
+      let dictionaryItems: DictionaryItem[] | undefined
+      if (row.dictionaryItems) {
+        try {
+          dictionaryItems = JSON.parse(row.dictionaryItems) as DictionaryItem[]
+        } catch (error) {
+          throw new Error(
+            `Invalid JSON format for dictionaryItems: ${error}`,
+          )
+        }
+      }
+
+      const preset: StoredVariablePreset = {
+        id: row.id,
+        name: row.name,
+        type: row.type as PresetVariableType,
+        description: row.description || undefined,
+        textContent: row.textContent || undefined,
+        selectOptions,
+        dictionaryItems,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+      }
+
+      presetsToImport.push(preset)
+    } catch (error) {
+      errors.push(
+        `[Row ${i + 2}] ${error instanceof Error ? error.message : error}`,
+      )
+    }
+  }
+
+  if (errors.length > 0) {
+    console.error("CSV parsing errors:", errors)
+    throw new Error(`Failed to parse CSV: ${errors.join("; ")}`)
   }
 
   const currentPresets =
