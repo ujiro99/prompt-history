@@ -50,9 +50,11 @@ export const AutoCompleteItem: React.FC<AutoCompleteItemProps> = ({
       onMouseEnter={onMouseEnter}
       data-testid={TestIds.autocomplete.item}
     >
-      {isSelected && <ChevronRight size={18} className="text-neutral-500" />}
+      {isSelected && (
+        <ChevronRight size={18} className="shrink-0 text-neutral-500" />
+      )}
       {isPreset && (
-        <div className="mr-2 flex-shrink-0 size-5.5 flex items-center justify-center bg-blue-50 text-blue-600 rounded">
+        <div className="mr-2 shrink-0 size-5.5 flex items-center justify-center bg-blue-50 text-blue-600 rounded">
           <Variable className="inline size-4.5" />
         </div>
       )}

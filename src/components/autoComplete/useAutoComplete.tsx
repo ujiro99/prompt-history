@@ -4,12 +4,7 @@ import { AutoCompleteManager } from "@/services/autoComplete/autoCompleteManager
 import { useCaretNode } from "@/hooks/useCaretNode"
 import { usePromptExecution } from "@/hooks/usePromptExecution"
 import type { AutoCompleteMatch } from "@/services/autoComplete/types"
-import type {
-  Prompt,
-  VariablePreset,
-  VariableConfig,
-  VariableValues,
-} from "@/types/prompt"
+import type { Prompt, VariablePreset, VariableValues } from "@/types/prompt"
 
 const serviceFacade = PromptServiceFacade.getInstance()
 
@@ -29,9 +24,18 @@ export const useAutoComplete = ({
   const managerRef = useRef<AutoCompleteManager | null>(null)
   const { nodeAtCaret } = useCaretNode()
 
+  // View mode state: matches list or preset options list
+  const [viewMode, setViewMode] = useState<"matches" | "preset-options">(
+    "matches",
+  )
+  const [selectedPreset, setSelectedPreset] = useState<VariablePreset | null>(
+    null,
+  )
+  const [selectedPresetMatch, setSelectedPresetMatch] =
+    useState<AutoCompleteMatch | null>(null)
+
   const {
     variableInputData,
-    setVariableInputData,
     insertPrompt,
     handleVariableSubmit,
     clearVariableInputData,
@@ -51,28 +55,6 @@ export const useAutoComplete = ({
   })
 
   /**
-   * Convert VariablePreset to VariableConfig
-   */
-  const createVariableConfigFromPreset = useCallback(
-    (preset: VariablePreset): VariableConfig => {
-      return {
-        name: preset.name,
-        type: "preset",
-        presetOptions: {
-          presetId: preset.id,
-          default:
-            preset.type === "select"
-              ? preset.selectOptions?.[0]
-              : preset.type === "dictionary"
-                ? preset.dictionaryItems?.[0]?.id
-                : undefined,
-        },
-      }
-    },
-    [],
-  )
-
-  /**
    * Insert preset content directly as text
    */
   const insertPresetDirectly = useCallback(
@@ -83,18 +65,34 @@ export const useAutoComplete = ({
   )
 
   /**
-   * Handle preset selection that requires user input (select/dictionary types)
+   * Handle showing preset options inline in the autocomplete popup
    */
-  const handlePresetSelection = useCallback(
+  const handlePresetOptionView = useCallback(
     (match: AutoCompleteMatch) => {
+      console.log("handlePresetOptionView called", {
+        matchId: match.id,
+        matchName: match.name,
+        matchType: match.matchType,
+        presetType: match.presetType,
+        presetsCount: presets.length,
+        presetIds: presets.map((p) => p.id),
+      })
+
       // Find the preset
       const preset = presets.find((p) => p.id === match.id)
       if (!preset) {
-        console.error("Preset not found:", match.id)
+        console.error(
+          "Preset not found:",
+          match.id,
+          "Available presets:",
+          presets,
+        )
         // Fallback: insert directly
         insertPresetDirectly(match)
         return
       }
+
+      console.log("Preset found:", preset)
 
       // Validation: check for empty options/items
       if (
@@ -114,25 +112,67 @@ export const useAutoComplete = ({
         return
       }
 
-      // Create VariableConfig from preset
-      const variableConfig = createVariableConfigFromPreset(preset)
-
-      // Set variable input data to show dialog
-      setVariableInputData({
-        promptId: "", // Empty string indicates preset mode
-        variables: [variableConfig],
-        content: "", // Not used for preset
-        match,
-        nodeAtCaret,
-      })
+      // Set view mode to preset-options
+      console.log(
+        "Setting view mode to preset-options and selectedPreset to:",
+        preset,
+      )
+      setViewMode("preset-options")
+      setSelectedPreset(preset)
+      setSelectedPresetMatch(match)
+      // Reset selection to first option
+      setSelectedIndex(0)
     },
-    [
-      presets,
-      createVariableConfigFromPreset,
-      insertPresetDirectly,
-      setVariableInputData,
-      nodeAtCaret,
-    ],
+    [presets, insertPresetDirectly],
+  )
+
+  /**
+   * Handle option selection from preset options view
+   */
+  const handleOptionExecute = useCallback(
+    async (option: string | { name: string; content: string; id: string }) => {
+      if (!selectedPresetMatch) {
+        console.error("No preset match selected")
+        return
+      }
+
+      // Get content from option
+      const content = typeof option === "string" ? option : option.content
+
+      // Create updated match with selected content
+      const updatedMatch: AutoCompleteMatch = {
+        ...selectedPresetMatch,
+        content,
+      }
+
+      // Insert the text
+      await serviceFacade.replaceText(updatedMatch, nodeAtCaret ?? null)
+
+      // Reset state and close popup
+      handleClose()
+      setViewMode("matches")
+      setSelectedPreset(null)
+      setSelectedPresetMatch(null)
+    },
+    [selectedPresetMatch, nodeAtCaret],
+  )
+
+  /**
+   * Get options list from preset based on type
+   */
+  const getOptionsFromPreset = useCallback(
+    (
+      preset: VariablePreset,
+    ): (string | { name: string; content: string; id: string })[] => {
+      if (preset.type === "select") {
+        return preset.selectOptions || []
+      }
+      if (preset.type === "dictionary") {
+        return preset.dictionaryItems || []
+      }
+      return []
+    },
+    [],
   )
 
   /**
@@ -178,36 +218,58 @@ export const useAutoComplete = ({
         }
       },
       onHide: () => {
+        console.log("onHide called - resetting all state")
         setMatches([])
         managerRef.current?.selectReset()
         setIsVisible(false)
+        // Reset view mode when hiding
+        setViewMode("matches")
+        setSelectedPreset(null)
+        setSelectedPresetMatch(null)
       },
-      onExecute: async (match: AutoCompleteMatch) => {
+      onExecute: async (match: AutoCompleteMatch): Promise<boolean | void> => {
+        console.log("onExecute called", {
+          matchType: match.matchType,
+          presetType: match.presetType,
+          matchId: match.id,
+          matchName: match.name,
+        })
+
         if (match.matchType === "prompt") {
           // Insert prompt (with variable check)
           await insertPrompt(match.id, match)
+          // Close popup after inserting prompt
+          return true
         } else if (match.matchType === "preset") {
-          // Check preset type to determine if dialog is needed
+          // Check preset type to determine if inline options should be shown
           if (
             match.presetType === "select" ||
             match.presetType === "dictionary"
           ) {
-            // Show dialog for select/dictionary presets
-            handlePresetSelection(match)
+            console.log("Calling handlePresetOptionView for", match.presetType)
+            // Show inline preset options view
+            handlePresetOptionView(match)
+            // Keep popup open to show options
+            return false
           } else {
+            console.log("Inserting text preset directly")
             // Insert text presets directly
             insertPresetDirectly(match)
+            // Close popup after inserting
+            return true
           }
         } else if (match.matchType === "preset-item") {
           // Always insert preset-item directly
           insertPresetDirectly(match)
+          // Close popup after inserting
+          return true
         }
       },
       onSelectChange: (index: number) => {
         setSelectedIndex(index)
       },
     }),
-    [insertPrompt, insertPresetDirectly, handlePresetSelection],
+    [insertPrompt, insertPresetDirectly, handlePresetOptionView],
   )
 
   useEffect(() => {
@@ -265,18 +327,45 @@ export const useAutoComplete = ({
     if (managerRef.current) {
       managerRef.current.forceHide()
     }
+    // Reset view mode state
+    setViewMode("matches")
+    setSelectedPreset(null)
+    setSelectedPresetMatch(null)
   }
 
-  const selectIndex = (index: number) => {
-    managerRef.current?.selectIndex(index)
+  const selectAt = (index: number) => {
+    if (viewMode === "preset-options" && selectedPreset) {
+      // In options view: directly set selectedIndex
+      const options = getOptionsFromPreset(selectedPreset)
+      if (index >= 0 && index < options.length) {
+        setSelectedIndex(index)
+      }
+    } else {
+      // In matches view: use AutoCompleteManager
+      managerRef.current?.selectAt(index)
+    }
   }
 
   const selectNext = () => {
-    managerRef.current?.selectNext()
+    if (viewMode === "preset-options" && selectedPreset) {
+      // In options view: cycle through options
+      const options = getOptionsFromPreset(selectedPreset)
+      setSelectedIndex((prev) => (prev + 1) % options.length)
+    } else {
+      // In matches view: use AutoCompleteManager
+      managerRef.current?.selectNext()
+    }
   }
 
   const selectPrevious = () => {
-    managerRef.current?.selectPrevious()
+    if (viewMode === "preset-options" && selectedPreset) {
+      // In options view: cycle through options (backwards)
+      const options = getOptionsFromPreset(selectedPreset)
+      setSelectedIndex((prev) => (prev - 1 + options.length) % options.length)
+    } else {
+      // In matches view: use AutoCompleteManager
+      managerRef.current?.selectPrevious()
+    }
   }
 
   return {
@@ -286,12 +375,17 @@ export const useAutoComplete = ({
     position,
     handleExecute,
     handleClose,
-    selectIndex,
+    selectAt,
     selectNext,
     selectPrevious,
     variableInputData,
     clearVariableInputData,
     handleVariableSubmit,
     handlePresetVariableSubmit,
+    // New state and functions for preset options view
+    viewMode,
+    selectedPreset,
+    handleOptionExecute,
+    getOptionsFromPreset,
   }
 }

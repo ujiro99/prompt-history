@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Key } from "@/components/Key"
 import { SelectField } from "@/components/inputMenu/controller/SelectField"
-import { VariablePreview } from "@/components/inputMenu/VariablePreview"
+import { DictionaryItemPreview } from "@/components/inputMenu/DictionaryItemPreview"
 import { useContainer } from "@/hooks/useContainer"
 import { useDebounce } from "@/hooks/useDebounce"
 import type {
@@ -62,10 +62,7 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
 
   // For preview of dictionary items
   const [selectElm, setSelectElm] = useState<HTMLElement | null>(null)
-  const [previewVariable, setPreviewVariable] = useState<VariableConfig | null>(
-    null,
-  )
-  const [previewItemId, setPreviewItemId] = useState<string | null>(null)
+  const [previewItem, setPreviewItem] = useState<DictionaryItem | null>(null)
 
   // Watch presets only when dialog is open
   const { presets: allPresets } = useVariablePresets({ enabled: open })
@@ -346,10 +343,9 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
                           const item = preset.dictionaryItems?.find(
                             (i) => i.name === value,
                           )
-                          setPreviewVariable(variable)
-                          setPreviewItemId(item?.id || "")
+                          setPreviewItem(item || null)
                         }}
-                        ref={setSelectElm}
+                        hoveredRef={setSelectElm}
                       />
                     )
                   }
@@ -357,13 +353,11 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
                 })()}
             </div>
           ))}
-          {previewVariable && (
-            <VariablePreview
-              open={!isEmpty(previewItemId)}
+          {previewItem && (
+            <DictionaryItemPreview
+              open={previewItem != null}
               anchorElm={selectElm}
-              variable={previewVariable}
-              previewItemId={previewItemId}
-              presets={Array.from(presets.values())}
+              dictionaryItem={previewItem}
             />
           )}
         </div>

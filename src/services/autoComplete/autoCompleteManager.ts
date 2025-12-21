@@ -331,7 +331,7 @@ export class AutoCompleteManager {
   /**
    * Execute current highlighted match
    */
-  execute(): void {
+  async execute(): Promise<void> {
     if (
       this.currentMatches.length === 0 ||
       this.selectedIndex >= this.currentMatches.length
@@ -340,8 +340,12 @@ export class AutoCompleteManager {
     }
 
     const selectedMatch = this.currentMatches[this.selectedIndex]
-    this.callbacks.onExecute(selectedMatch)
-    this.hide()
+    const shouldHide = await this.callbacks.onExecute(selectedMatch)
+
+    // Only hide if shouldHide is not explicitly false
+    if (shouldHide !== false) {
+      this.hide()
+    }
   }
 
   /**
@@ -355,7 +359,7 @@ export class AutoCompleteManager {
   /**
    * Select specific index
    */
-  selectIndex(index: number): void {
+  selectAt(index: number): void {
     if (index < 0 || index >= this.currentMatches.length) {
       console.warn("Index out of bounds:", index)
       return

@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/popover"
 import { ScrollAreaWithGradient } from "./ScrollAreaWithGradient"
 import { BridgeArea } from "./BridgeArea"
-import type { VariableConfig, VariablePreset } from "@/types/prompt"
+import type { DictionaryItem } from "@/types/prompt"
 import { TestIds } from "@/components/const"
 import { stopPropagation } from "@/utils/dom"
 import { useContainer } from "@/hooks/useContainer"
@@ -15,39 +15,26 @@ import { useContainer } from "@/hooks/useContainer"
 interface VariableDetailProps {
   open: boolean
   anchorElm: HTMLElement | null
-  variable: VariableConfig
-  presets: VariablePreset[]
-  previewItemId?: string | null
+  dictionaryItem: DictionaryItem
 }
 
 const noFocus = (e: Event) => e.preventDefault()
 
 /**
- * Variable Preview component
+ * Dictionary Item Preview component
  */
-export const VariablePreview = ({
+export const DictionaryItemPreview = ({
   open,
   anchorElm,
-  variable,
-  previewItemId,
-  presets,
+  dictionaryItem,
 }: VariableDetailProps) => {
   const [content, setContent] = useState<HTMLDivElement | null>(null)
   const [shouldRender, setShouldRender] = useState(false)
   const { container } = useContainer()
-  const selectedPreset =
-    variable.type === "preset"
-      ? presets.find((p) => p.id === variable.presetOptions?.presetId)
-      : null
-  const needPreview =
-    variable.type === "preset" && selectedPreset?.type === "dictionary"
-  const item = selectedPreset?.dictionaryItems?.find(
-    (i) => i.id === previewItemId,
-  )
 
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout> | null = null
-    if (open && needPreview) {
+    if (open) {
       // Delay rendering to avoid flicker on quick open/close
       timeout = setTimeout(() => setShouldRender(true), 50)
     } else {
@@ -56,7 +43,7 @@ export const VariablePreview = ({
     return () => {
       if (timeout) clearTimeout(timeout)
     }
-  }, [open, anchorElm, needPreview])
+  }, [open, anchorElm])
 
   if (!anchorElm) {
     return null
@@ -69,7 +56,7 @@ export const VariablePreview = ({
         {shouldRender && (
           <PopoverContent
             ref={setContent}
-            className="relative px-3 pt-1 pb-2 max-w-lg"
+            className="relative px-3 pt-1 pb-2 max-w-md"
             side={"right"}
             align={"end"}
             sideOffset={8}
@@ -86,7 +73,7 @@ export const VariablePreview = ({
                 gradientHeight={"2rem"}
               >
                 <p className="font-mono break-all text-sm whitespace-pre-line text-foreground/80">
-                  {item?.content}
+                  {dictionaryItem?.content}
                 </p>
               </ScrollAreaWithGradient>
             </div>
@@ -104,4 +91,4 @@ export const VariablePreview = ({
     </Popover>
   )
 }
-VariablePreview.displayName = "VariablePreview"
+DictionaryItemPreview.displayName = "DictionaryItemPreview"
