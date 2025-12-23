@@ -362,7 +362,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
                   onChange={(e) => setContent(e.target.value)}
                   placeholder={i18n.t("placeholders.enterPromptContent")}
                   disabled={isLoading}
-                  className="max-h-60"
+                  className="max-h-60 min-h-30 break-all font-mono"
                   rows={6}
                 />
               </div>

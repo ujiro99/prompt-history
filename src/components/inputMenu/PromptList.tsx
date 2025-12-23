@@ -112,7 +112,6 @@ export const PromptList = ({
 
     // For history menu, show all
     const groups = groupPrompts(filtered, sortOrder, sideFlipped)
-    console.log("Grouped Prompts:", groups, sideFlipped) // Debug log
 
     // Calculate total count
     const count = groups.reduce((acc, group) => acc + group.prompts.length, 0)
@@ -123,8 +122,6 @@ export const PromptList = ({
       totalCount: count,
     }
   }, [isLoaded, prompts, sideFlipped, deferredSearchQuery, sortOrder, menuType])
-
-  console.log("PromptList Render:", aiTemplateGroups)
 
   const isListEmpty = totalCount === 0
 

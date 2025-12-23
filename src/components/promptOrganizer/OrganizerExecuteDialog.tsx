@@ -367,7 +367,7 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
             {/* Progress Display */}
             {isExecuting && progress && (
               <section className="space-y-2">
-                <div className="rounded-lg border p-4 space-y-1 text-xs font-mono text-muted-dforeground">
+                <div className="rounded-lg border p-4 space-y-2 text-xs font-mono text-muted-dforeground">
                   {/* Progress Bar */}
                   <div className="space-y-1">
                     <div className="flex justify-between items-center">
