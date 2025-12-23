@@ -27,6 +27,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   showNotifications: true,
   minimalMode: false,
   autoCompleteTarget: "all",
+  hideOrganizerExcluded: true,
 }
 
 /**

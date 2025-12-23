@@ -254,6 +254,8 @@ export interface AppSettings {
   autoCompleteTarget?: "all" | "pinned"
   /** Enable/disable variable expansion feature */
   variableExpansionEnabled?: boolean
+  /** Whether to hide automatically organized prompts. */
+  hideOrganizerExcluded?: boolean
 }
 
 /**

@@ -147,8 +147,15 @@ tooltips:
   improveMenu: Launch prompt improvement menu
   urlModeDescription: Please specify a URL that can be fetched as plain text.
 
+listOptions:
+  menu: Display Settings
+  filter:
+    label: Filter Conditions
+    hideOrganizerExcluded: Hide organized prompts
+
 # sort order
 sortOrder:
+  label: Sort Order
   recent:
     label: Recent Usage
     description: Prioritize recently used prompts
