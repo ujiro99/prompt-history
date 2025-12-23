@@ -75,6 +75,7 @@ dialogs:
     excludeFromOrganizerHelp: チェックすると、自動整理の対象から除外します。整理・精製されたプロンプトは、自動的にチェックが入ります。
     variableSettings: 変数設定
     variableSettingsDescription: プロンプト内で見つかった変数を設定します
+    excludeExpansion: 変数展開の対象外です
     variableExpansionInfo:
       link: 変数展開について
       title: 変数展開について

@@ -30,6 +30,7 @@ import { useContainer } from "@/hooks/useContainer"
 import { usePresetValidation } from "@/hooks/usePresetValidation"
 import { i18n } from "#imports"
 import { validateField, type FieldErrors } from "@/schemas/variablePreset"
+import { generateDictItemId } from "@/utils/idGenerator"
 
 /**
  * Props for VariablePresetEditor
@@ -183,7 +184,7 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
     if (!localPreset) return
 
     const newItem: DictionaryItem = {
-      id: crypto.randomUUID(),
+      id: generateDictItemId(),
       name: "",
       content: "",
     }

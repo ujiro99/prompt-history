@@ -75,6 +75,7 @@ dialogs:
     excludeFromOrganizerHelp: Check to exclude from automatic organization. Prompts that have been organized/refined will be automatically checked.
     variableSettings: Variable Settings
     variableSettingsDescription: Configure variables found in the prompt
+    excludeExpansion: Exclude from variable expansion
     variableExpansionInfo:
       link: About Variable Expansion
       title: About Variable Expansion

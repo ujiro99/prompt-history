@@ -71,6 +71,7 @@ const variableEquals = (
     x.type === y.type &&
     x.defaultValue === y.defaultValue &&
     x.presetOptions?.presetId === y.presetOptions?.presetId &&
+    x.presetOptions?.default === y.presetOptions?.default &&
     JSON.stringify(x.selectOptions) === JSON.stringify(y.selectOptions)
   )
 }
