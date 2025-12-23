@@ -7,13 +7,24 @@ import {
   findPromptsByPresetId,
   exportVariablePresets,
   importVariablePresets,
+  watchVariablePresets,
+  watchVariablePreset,
 } from "../variablePresetStorage"
 import type { VariablePreset, Prompt } from "../../../types/prompt"
-import { variablePresetsStorage, promptsStorage } from "../definitions"
+import {
+  variablePresetsStorage,
+  variablePresetsOrderStorage,
+  promptsStorage,
+} from "../definitions"
 
 // Mock storage definitions
 vi.mock("../definitions", () => ({
   variablePresetsStorage: {
+    getValue: vi.fn(),
+    setValue: vi.fn(),
+    watch: vi.fn(),
+  },
+  variablePresetsOrderStorage: {
     getValue: vi.fn(),
     setValue: vi.fn(),
   },
@@ -61,7 +72,9 @@ describe("variablePresetStorage", () => {
       {
         name: "role",
         type: "preset",
-        presetId: "preset-2",
+        presetOptions: {
+          presetId: "preset-2",
+        },
       },
     ],
   }
@@ -73,6 +86,7 @@ describe("variablePresetStorage", () => {
   describe("getVariablePresets", () => {
     it("should return empty array when no presets exist", async () => {
       vi.mocked(variablePresetsStorage.getValue).mockResolvedValue({})
+      vi.mocked(variablePresetsOrderStorage.getValue).mockResolvedValue([])
 
       const result = await getVariablePresets()
 
@@ -88,6 +102,9 @@ describe("variablePresetStorage", () => {
         },
       }
       vi.mocked(variablePresetsStorage.getValue).mockResolvedValue(stored)
+      vi.mocked(variablePresetsOrderStorage.getValue).mockResolvedValue([
+        "preset-1",
+      ])
 
       const result = await getVariablePresets()
 
@@ -104,6 +121,9 @@ describe("variablePresetStorage", () => {
         },
       }
       vi.mocked(variablePresetsStorage.getValue).mockResolvedValue(stored)
+      vi.mocked(variablePresetsOrderStorage.getValue).mockResolvedValue([
+        "preset-1",
+      ])
 
       const result = await getVariablePresets()
 
@@ -115,6 +135,7 @@ describe("variablePresetStorage", () => {
   describe("saveVariablePreset", () => {
     it("should create new preset when preset does not exist", async () => {
       vi.mocked(variablePresetsStorage.getValue).mockResolvedValue({})
+      vi.mocked(variablePresetsOrderStorage.getValue).mockResolvedValue([])
 
       await saveVariablePreset(mockPreset)
 
@@ -155,6 +176,7 @@ describe("variablePresetStorage", () => {
 
     it("should update updatedAt timestamp", async () => {
       vi.mocked(variablePresetsStorage.getValue).mockResolvedValue({})
+      vi.mocked(variablePresetsOrderStorage.getValue).mockResolvedValue([])
       const now = new Date()
 
       await saveVariablePreset(mockPreset)
@@ -177,6 +199,9 @@ describe("variablePresetStorage", () => {
         },
       }
       vi.mocked(variablePresetsStorage.getValue).mockResolvedValue(presets)
+      vi.mocked(variablePresetsOrderStorage.getValue).mockResolvedValue([
+        "preset-1",
+      ])
       vi.mocked(promptsStorage.getValue).mockResolvedValue({})
 
       const affectedPromptIds = await deleteVariablePreset("preset-1")
@@ -202,6 +227,9 @@ describe("variablePresetStorage", () => {
         },
       }
       vi.mocked(variablePresetsStorage.getValue).mockResolvedValue(presets)
+      vi.mocked(variablePresetsOrderStorage.getValue).mockResolvedValue([
+        "preset-2",
+      ])
       vi.mocked(promptsStorage.getValue).mockResolvedValue(prompts)
 
       const affectedPromptIds = await deleteVariablePreset("preset-2")
@@ -229,6 +257,7 @@ describe("variablePresetStorage", () => {
         },
       }
       vi.mocked(variablePresetsStorage.getValue).mockResolvedValue(presets)
+      vi.mocked(variablePresetsOrderStorage.getValue).mockResolvedValue([])
 
       const duplicated = await duplicateVariablePreset("preset-1")
 
@@ -248,6 +277,7 @@ describe("variablePresetStorage", () => {
         },
       }
       vi.mocked(variablePresetsStorage.getValue).mockResolvedValue(presets)
+      vi.mocked(variablePresetsOrderStorage.getValue).mockResolvedValue([])
 
       const duplicated = await duplicateVariablePreset("preset-2")
 
@@ -327,7 +357,7 @@ describe("variablePresetStorage", () => {
   })
 
   describe("exportVariablePresets", () => {
-    it("should export selected presets as JSON", async () => {
+    it("should export selected presets as CSV", async () => {
       const presets = {
         "preset-1": {
           ...mockPreset,
@@ -344,9 +374,14 @@ describe("variablePresetStorage", () => {
 
       const result = await exportVariablePresets(["preset-1"])
 
-      const exported = JSON.parse(result)
-      expect(exported).toHaveLength(1)
-      expect(exported[0].id).toBe("preset-1")
+      const lines = result.split("\n")
+      expect(lines).toHaveLength(2) // Header + 1 data row
+      // papaparse outputs quoted headers
+      expect(lines[0]).toContain("id")
+      expect(lines[0]).toContain("name")
+      expect(lines[0]).toContain("type")
+      expect(lines[1]).toContain("preset-1")
+      expect(lines[1]).toContain("Test Preset")
     })
 
     it("should export multiple presets", async () => {
@@ -366,8 +401,73 @@ describe("variablePresetStorage", () => {
 
       const result = await exportVariablePresets(["preset-1", "preset-2"])
 
-      const exported = JSON.parse(result)
-      expect(exported).toHaveLength(2)
+      const lines = result.split("\n")
+      expect(lines).toHaveLength(3) // Header + 2 data rows
+    })
+
+    it("should export selectOptions as comma-separated string", async () => {
+      const selectPreset = {
+        ...mockPreset,
+        id: "preset-select",
+        type: "select" as const,
+        selectOptions: ["Option 1", "Option 2", "Option 3"],
+      }
+      const presets = {
+        "preset-select": {
+          ...selectPreset,
+          createdAt: selectPreset.createdAt.toISOString(),
+          updatedAt: selectPreset.updatedAt.toISOString(),
+        },
+      }
+      vi.mocked(variablePresetsStorage.getValue).mockResolvedValue(presets)
+
+      const result = await exportVariablePresets(["preset-select"])
+
+      const lines = result.split("\n")
+      expect(lines[1]).toContain("Option 1,Option 2,Option 3")
+    })
+
+    it("should export dictionaryItems as JSON", async () => {
+      const presets = {
+        "preset-2": {
+          ...mockDictionaryPreset,
+          createdAt: mockDictionaryPreset.createdAt.toISOString(),
+          updatedAt: mockDictionaryPreset.updatedAt.toISOString(),
+        },
+      }
+      vi.mocked(variablePresetsStorage.getValue).mockResolvedValue(presets)
+
+      const result = await exportVariablePresets(["preset-2"])
+
+      const lines = result.split("\n")
+      // dictionaryItems should be in JSON format and properly escaped in CSV
+      expect(lines[1]).toContain('"[{')
+      expect(lines[1]).toContain("Customer")
+      expect(lines[1]).toContain("Manager")
+    })
+
+    it("should handle special characters in CSV", async () => {
+      const specialPreset = {
+        ...mockPreset,
+        id: "preset-special",
+        name: 'Preset with "quotes" and, commas',
+        description: "Line 1\nLine 2",
+      }
+      const presets = {
+        "preset-special": {
+          ...specialPreset,
+          createdAt: specialPreset.createdAt.toISOString(),
+          updatedAt: specialPreset.updatedAt.toISOString(),
+        },
+      }
+      vi.mocked(variablePresetsStorage.getValue).mockResolvedValue(presets)
+
+      const result = await exportVariablePresets(["preset-special"])
+
+      const lines = result.split("\n")
+      // Fields with special characters should be quoted
+      expect(lines[1]).toContain('""quotes""') // Escaped quotes
+      expect(lines[1]).toContain('"Preset with ""quotes"" and, commas"')
     })
 
     it("should throw error when preset not found", async () => {
@@ -388,16 +488,12 @@ describe("variablePresetStorage", () => {
       }
       vi.mocked(variablePresetsStorage.getValue).mockResolvedValue(existing)
 
-      const toImport = [mockDictionaryPreset]
-      const jsonData = JSON.stringify(
-        toImport.map((p) => ({
-          ...p,
-          createdAt: p.createdAt.toISOString(),
-          updatedAt: p.updatedAt.toISOString(),
-        })),
-      )
+      const csvData = [
+        "id,name,type,description,textContent,selectOptions,dictionaryItems,createdAt,updatedAt",
+        'preset-2,Role,dictionary,User roles,,,"[{""id"":""item-1"",""name"":""Customer"",""content"":""You are a customer...""},{""id"":""item-2"",""name"":""Manager"",""content"":""You are a manager...""}]",2024-01-01T00:00:00.000Z,2024-01-01T00:00:00.000Z',
+      ].join("\n")
 
-      const count = await importVariablePresets(jsonData, "merge")
+      const count = await importVariablePresets(csvData, "merge")
 
       expect(count).toBe(1)
       expect(variablePresetsStorage.setValue).toHaveBeenCalledWith(
@@ -418,16 +514,12 @@ describe("variablePresetStorage", () => {
       }
       vi.mocked(variablePresetsStorage.getValue).mockResolvedValue(existing)
 
-      const toImport = [mockDictionaryPreset]
-      const jsonData = JSON.stringify(
-        toImport.map((p) => ({
-          ...p,
-          createdAt: p.createdAt.toISOString(),
-          updatedAt: p.updatedAt.toISOString(),
-        })),
-      )
+      const csvData = [
+        "id,name,type,description,textContent,selectOptions,dictionaryItems,createdAt,updatedAt",
+        'preset-2,Role,dictionary,User roles,,,"[{""id"":""item-1"",""name"":""Customer"",""content"":""You are a customer...""},{""id"":""item-2"",""name"":""Manager"",""content"":""You are a manager...""}]",2024-01-01T00:00:00.000Z,2024-01-01T00:00:00.000Z',
+      ].join("\n")
 
-      const count = await importVariablePresets(jsonData, "replace")
+      const count = await importVariablePresets(csvData, "replace")
 
       expect(count).toBe(1)
       expect(variablePresetsStorage.setValue).toHaveBeenCalledWith(
@@ -437,10 +529,247 @@ describe("variablePresetStorage", () => {
       )
     })
 
-    it("should throw error for invalid JSON", async () => {
+    it("should import selectOptions from comma-separated string", async () => {
+      vi.mocked(variablePresetsStorage.getValue).mockResolvedValue({})
+
+      const csvData = [
+        "id,name,type,description,textContent,selectOptions,dictionaryItems,createdAt,updatedAt",
+        'preset-select,Select Preset,select,,,"Option 1,Option 2,Option 3",,2024-01-01T00:00:00.000Z,2024-01-01T00:00:00.000Z',
+      ].join("\n")
+
+      const count = await importVariablePresets(csvData, "merge")
+
+      expect(count).toBe(1)
+      const savedData =
+        vi.mocked(variablePresetsStorage.setValue).mock.calls[0][0]
+      expect(savedData["preset-select"].selectOptions).toEqual([
+        "Option 1",
+        "Option 2",
+        "Option 3",
+      ])
+    })
+
+    it("should import dictionaryItems from JSON string", async () => {
+      vi.mocked(variablePresetsStorage.getValue).mockResolvedValue({})
+
+      const csvData = [
+        "id,name,type,description,textContent,selectOptions,dictionaryItems,createdAt,updatedAt",
+        'preset-dict,Dict Preset,dictionary,,,,"[{""id"":""item-1"",""name"":""Test"",""content"":""Content""}]",2024-01-01T00:00:00.000Z,2024-01-01T00:00:00.000Z',
+      ].join("\n")
+
+      const count = await importVariablePresets(csvData, "merge")
+
+      expect(count).toBe(1)
+      const savedData =
+        vi.mocked(variablePresetsStorage.setValue).mock.calls[0][0]
+      expect(savedData["preset-dict"].dictionaryItems).toEqual([
+        { id: "item-1", name: "Test", content: "Content" },
+      ])
+    })
+
+    it("should handle quoted fields with special characters", async () => {
+      vi.mocked(variablePresetsStorage.getValue).mockResolvedValue({})
+
+      // Note: In CSV, newlines inside quoted fields are literal newlines
+      const descriptionWithNewline = "Line 1\nLine 2"
+      const csvData =
+        "id,name,type,description,textContent,selectOptions,dictionaryItems,createdAt,updatedAt\n" +
+        `preset-special,"Name with ""quotes"" and, comma",text,"${descriptionWithNewline}",Text content,,,2024-01-01T00:00:00.000Z,2024-01-01T00:00:00.000Z`
+
+      const count = await importVariablePresets(csvData, "merge")
+
+      expect(count).toBe(1)
+      const savedData =
+        vi.mocked(variablePresetsStorage.setValue).mock.calls[0][0]
+      expect(savedData["preset-special"].name).toBe(
+        'Name with "quotes" and, comma',
+      )
+      expect(savedData["preset-special"].description).toBe("Line 1\nLine 2")
+    })
+
+    it("should throw error for invalid CSV format", async () => {
       await expect(
-        importVariablePresets("invalid json", "merge"),
-      ).rejects.toThrow()
+        importVariablePresets("invalid csv", "merge"),
+      ).rejects.toThrow("Invalid CSV format")
+    })
+
+    it("should throw error for invalid dictionaryItems JSON", async () => {
+      const csvData = [
+        "id,name,type,description,textContent,selectOptions,dictionaryItems,createdAt,updatedAt",
+        "preset-bad,Bad Preset,dictionary,,,,invalid json,2024-01-01T00:00:00.000Z,2024-01-01T00:00:00.000Z",
+      ].join("\n")
+
+      await expect(importVariablePresets(csvData, "merge")).rejects.toThrow(
+        "Invalid JSON format for dictionaryItems",
+      )
+    })
+  })
+
+  describe("watchVariablePresets", () => {
+    it("should call callback when presets change", async () => {
+      const callback = vi.fn()
+      const unwatch = vi.fn()
+
+      const stored = {
+        "preset-1": {
+          ...mockPreset,
+          createdAt: mockPreset.createdAt.toISOString(),
+          updatedAt: mockPreset.updatedAt.toISOString(),
+        },
+      }
+
+      // Mock watch to immediately call callback with new value
+      vi.mocked(variablePresetsStorage.watch).mockImplementation((cb) => {
+        cb(stored, {})
+        return unwatch
+      })
+
+      // Mock order storage
+      vi.mocked(variablePresetsOrderStorage.getValue).mockResolvedValue([
+        "preset-1",
+      ])
+
+      watchVariablePresets(callback)
+
+      // Wait for async callback
+      await new Promise((resolve) => setTimeout(resolve, 0))
+
+      expect(callback).toHaveBeenCalledWith([mockPreset])
+    })
+
+    it("should return unsubscribe function", async () => {
+      const callback = vi.fn()
+      const unwatch = vi.fn()
+
+      vi.mocked(variablePresetsStorage.watch).mockReturnValue(unwatch)
+      vi.mocked(variablePresetsOrderStorage.getValue).mockResolvedValue([])
+
+      const result = watchVariablePresets(callback)
+
+      expect(result).toBe(unwatch)
+    })
+
+    it("should sort presets by order", async () => {
+      const callback = vi.fn()
+      const stored = {
+        "preset-1": {
+          ...mockPreset,
+          id: "preset-1",
+          name: "First",
+          createdAt: mockPreset.createdAt.toISOString(),
+          updatedAt: mockPreset.updatedAt.toISOString(),
+        },
+        "preset-2": {
+          ...mockPreset,
+          id: "preset-2",
+          name: "Second",
+          createdAt: mockPreset.createdAt.toISOString(),
+          updatedAt: mockPreset.updatedAt.toISOString(),
+        },
+      }
+
+      vi.mocked(variablePresetsStorage.watch).mockImplementation((cb) => {
+        cb(stored, {})
+        return vi.fn()
+      })
+
+      // Order: preset-2 first, then preset-1
+      vi.mocked(variablePresetsOrderStorage.getValue).mockResolvedValue([
+        "preset-2",
+        "preset-1",
+      ])
+
+      watchVariablePresets(callback)
+
+      await new Promise((resolve) => setTimeout(resolve, 0))
+
+      expect(callback).toHaveBeenCalledWith([
+        expect.objectContaining({ id: "preset-2", name: "Second" }),
+        expect.objectContaining({ id: "preset-1", name: "First" }),
+      ])
+    })
+  })
+
+  describe("watchVariablePreset", () => {
+    it("should call callback with specific preset when it changes", async () => {
+      const callback = vi.fn()
+      const stored = {
+        "preset-1": {
+          ...mockPreset,
+          createdAt: mockPreset.createdAt.toISOString(),
+          updatedAt: mockPreset.updatedAt.toISOString(),
+        },
+      }
+
+      vi.mocked(variablePresetsStorage.watch).mockImplementation((cb) => {
+        cb(stored, {})
+        return vi.fn()
+      })
+      vi.mocked(variablePresetsOrderStorage.getValue).mockResolvedValue([])
+
+      watchVariablePreset("preset-1", callback)
+
+      expect(callback).toHaveBeenCalledWith(mockPreset)
+    })
+
+    it("should call callback with null when preset is deleted", async () => {
+      const callback = vi.fn()
+      const stored = {}
+
+      vi.mocked(variablePresetsStorage.watch).mockImplementation((cb) => {
+        cb(stored, {})
+        return vi.fn()
+      })
+      vi.mocked(variablePresetsOrderStorage.getValue).mockResolvedValue([])
+
+      watchVariablePreset("preset-1", callback)
+
+      expect(callback).toHaveBeenCalledWith(null)
+    })
+
+    it("should return unsubscribe function", async () => {
+      const callback = vi.fn()
+      const unwatch = vi.fn()
+
+      vi.mocked(variablePresetsStorage.watch).mockReturnValue(unwatch)
+      vi.mocked(variablePresetsOrderStorage.getValue).mockResolvedValue([])
+
+      const result = watchVariablePreset("preset-1", callback)
+
+      expect(result).toBe(unwatch)
+    })
+
+    it("should only call callback for matching preset ID", async () => {
+      const callback = vi.fn()
+      const stored = {
+        "preset-1": {
+          ...mockPreset,
+          id: "preset-1",
+          createdAt: mockPreset.createdAt.toISOString(),
+          updatedAt: mockPreset.updatedAt.toISOString(),
+        },
+        "preset-2": {
+          ...mockPreset,
+          id: "preset-2",
+          createdAt: mockPreset.createdAt.toISOString(),
+          updatedAt: mockPreset.updatedAt.toISOString(),
+        },
+      }
+
+      vi.mocked(variablePresetsStorage.watch).mockImplementation((cb) => {
+        cb(stored, {})
+        return vi.fn()
+      })
+      vi.mocked(variablePresetsOrderStorage.getValue).mockResolvedValue([])
+
+      watchVariablePreset("preset-1", callback)
+
+      expect(callback).toHaveBeenCalledWith(
+        expect.objectContaining({ id: "preset-1" }),
+      )
+      expect(callback).not.toHaveBeenCalledWith(
+        expect.objectContaining({ id: "preset-2" }),
+      )
     })
   })
 })

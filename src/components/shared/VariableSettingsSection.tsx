@@ -20,6 +20,8 @@ interface VariableSettingsSectionProps {
   variables: VariableConfig[]
   /** Callback when variables change */
   onChange: (variables: VariableConfig[]) => void
+  /** Callback when editing preset (optional) */
+  onClickPresetEdit?: (presetId: string) => void
   /** Enable auto-detection from content (default: false) */
   enableAutoDetection?: boolean
   autoDetectOptions?: {
@@ -67,6 +69,7 @@ export const VariableSettingsSection: React.FC<
 > = ({
   variables: externalVariables,
   onChange,
+  onClickPresetEdit,
   enableAutoDetection = false,
   autoDetectOptions: { promptId, content } = { promptId: "", content: "" },
   showHeader = true,
@@ -75,105 +78,106 @@ export const VariableSettingsSection: React.FC<
   className = "",
   scrollAreaClassName,
 }) => {
-    // Internal state for auto-detection mode
-    const [internalVariables, setInternalVariables] =
-      useState<VariableConfig[]>(externalVariables)
+  // Internal state for auto-detection mode
+  const [internalVariables, setInternalVariables] =
+    useState<VariableConfig[]>(externalVariables)
 
-    // Use internal or external variables based on enableAutoDetection
-    const variables = enableAutoDetection ? internalVariables : externalVariables
+  // Use internal or external variables based on enableAutoDetection
+  const variables = enableAutoDetection ? internalVariables : externalVariables
 
-    const prevPromptId = usePrev<string>(promptId)
-    const prevContent = usePrev<string>(content)
-    const prevVariables = usePrev<VariableConfig[]>(variables)
+  const prevPromptId = usePrev<string>(promptId)
+  const prevContent = usePrev<string>(content)
+  const prevVariables = usePrev<VariableConfig[]>(variables)
 
-    // Sync external variables to internal state when they change
-    useEffect(() => {
-      if (enableAutoDetection) {
-        setInternalVariables(externalVariables)
-      }
-    }, [externalVariables, enableAutoDetection])
+  // Sync external variables to internal state when they change
+  useEffect(() => {
+    if (enableAutoDetection) {
+      setInternalVariables(externalVariables)
+    }
+  }, [externalVariables, enableAutoDetection])
 
-    // Auto-detect variables from content when enabled
-    useEffect(() => {
+  // Auto-detect variables from content when enabled
+  useEffect(() => {
+    if (
+      enableAutoDetection &&
+      content !== undefined &&
+      promptId === prevPromptId
+    ) {
       if (
-        enableAutoDetection &&
-        content !== undefined &&
-        promptId === prevPromptId
+        content === prevContent &&
+        variablesEqual(internalVariables, prevVariables)
       ) {
-        if (
-          content === prevContent &&
-          variablesEqual(internalVariables, prevVariables)
-        ) {
-          return
-        }
-
-        const detected = mergeVariableConfigs(content, internalVariables)
-        setInternalVariables(detected)
-        onChange(detected)
-      }
-    }, [
-      promptId,
-      content,
-      enableAutoDetection,
-      internalVariables,
-      onChange,
-      prevContent,
-      prevPromptId,
-      prevVariables,
-    ])
-
-    /**
-     * Handle variable configuration change
-     */
-    const handleVariableChange = (index: number, config: VariableConfig) => {
-      const updatedVariables = [...variables]
-      updatedVariables[index] = config
-
-      if (enableAutoDetection) {
-        setInternalVariables(updatedVariables)
+        return
       }
 
-      onChange(updatedVariables)
+      const detected = mergeVariableConfigs(content, internalVariables)
+      setInternalVariables(detected)
+      onChange(detected)
+    }
+  }, [
+    promptId,
+    content,
+    enableAutoDetection,
+    internalVariables,
+    onChange,
+    prevContent,
+    prevPromptId,
+    prevVariables,
+  ])
+
+  /**
+   * Handle variable configuration change
+   */
+  const handleVariableChange = (index: number, config: VariableConfig) => {
+    const updatedVariables = [...variables]
+    updatedVariables[index] = config
+
+    if (enableAutoDetection) {
+      setInternalVariables(updatedVariables)
     }
 
-    // If no variables, show empty state
-    if (variables.length === 0) {
-      return null
-    }
-
-    const defaultHeaderText = i18n.t("dialogs.edit.variableSettings")
-    const defaultDescriptionText = i18n.t(
-      "dialogs.edit.variableSettingsDescription",
-    )
-
-    return (
-      <div className={`space-y-1 ${className}`}>
-        {/* Header */}
-        {showHeader && (
-          <div>
-            <label className="text-sm font-semibold text-foreground inline-block">
-              {headerText || defaultHeaderText}
-            </label>
-            <p className="text-xs text-muted-foreground mt-1">
-              {descriptionText || defaultDescriptionText}
-            </p>
-          </div>
-        )}
-
-        {/* Scrollable variable list */}
-        <ScrollAreaWithGradient
-          className={`border-t-1 ${scrollAreaClassName}`}
-          gradientHeight={25}
-        >
-          {variables.map((variable, index) => (
-            <VariableConfigField
-              key={variable.name}
-              variable={variable}
-              initialVariable={externalVariables?.[index]}
-              onChange={(config) => handleVariableChange(index, config)}
-            />
-          ))}
-        </ScrollAreaWithGradient>
-      </div>
-    )
+    onChange(updatedVariables)
   }
+
+  // If no variables, show empty state
+  if (variables.length === 0) {
+    return null
+  }
+
+  const defaultHeaderText = i18n.t("dialogs.edit.variableSettings")
+  const defaultDescriptionText = i18n.t(
+    "dialogs.edit.variableSettingsDescription",
+  )
+
+  return (
+    <div className={`space-y-1 ${className}`}>
+      {/* Header */}
+      {showHeader && (
+        <div>
+          <label className="text-sm font-semibold text-foreground inline-block">
+            {headerText || defaultHeaderText}
+          </label>
+          <p className="text-xs text-muted-foreground mt-1">
+            {descriptionText || defaultDescriptionText}
+          </p>
+        </div>
+      )}
+
+      {/* Scrollable variable list */}
+      <ScrollAreaWithGradient
+        className={`border-t-1 ${scrollAreaClassName}`}
+        gradientHeight={25}
+      >
+        {variables.map((variable, index) => (
+          <VariableConfigField
+            key={variable.name}
+            variable={variable}
+            initialVariable={externalVariables?.[index]}
+            onChange={(config) => handleVariableChange(index, config)}
+            onClickPresetEdit={onClickPresetEdit}
+          />
+        ))}
+      </ScrollAreaWithGradient>
+    </div>
+  )
+}

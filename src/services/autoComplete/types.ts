@@ -3,7 +3,7 @@ import type { PresetVariableType } from "@/types/prompt"
 /**
  * Type of autocomplete match
  */
-export type AutoCompleteMatchType = "prompt" | "preset" | "preset-item"
+export type AutoCompleteMatchType = "prompt" | "preset"
 
 export interface AutoCompleteMatch {
   // Prompt id
@@ -22,10 +22,8 @@ export interface AutoCompleteMatch {
   searchTerm: string
   /** Type of match */
   matchType: AutoCompleteMatchType
-  /** Preset type (only for matchType "preset" or "preset-item") */
+  /** Preset type (only for matchType "preset") */
   presetType?: PresetVariableType
-  /** Parent preset ID (only for matchType "preset-item") */
-  parentPresetId?: string
 }
 
 export interface AutoCompleteOptions {
@@ -43,6 +41,10 @@ export interface AutoCompletePosition {
 export interface AutoCompleteCallbacks {
   onShow: () => void
   onHide: () => void
-  onExecute: (match: AutoCompleteMatch) => Promise<void>
+  /**
+   * Execute callback for selected match
+   * @returns Promise<boolean | void> - Return false to keep popup open, true or void to close popup
+   */
+  onExecute: (match: AutoCompleteMatch) => Promise<boolean | void>
   onSelectChange: (index: number) => void
 }

@@ -18,6 +18,7 @@ export const TestIds = {
     settingsTrigger: "settings-trigger",
     settingsContent: "settings-content",
     promptPreview: "prompt-preview",
+    variablePreview: "variable-preview",
   },
   settingsMenu: {
     import: "settings-import",
@@ -34,6 +35,7 @@ export const TestIds = {
       willImport: "will-import",
       noPrompts: "no-prompts",
       duplicate: "duplicate-prompts",
+      missingPresets: "missing-presets",
       imported: "imported-prompts",
       errors: "import-errors",
     },

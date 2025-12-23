@@ -1,18 +1,19 @@
 import React, { useEffect, useRef, useState, useCallback } from "react"
 import { cn } from "@/lib/utils"
 import { PromptServiceFacade } from "@/services/promptServiceFacade"
-import { AutoCompleteItem } from "./AutoCompleteItem"
+import { MatchesList } from "./MatchesList"
+import { OptionsView } from "./OptionsView"
 import { useAutoComplete } from "./useAutoComplete"
 import { useSettings } from "@/hooks/useSettings"
+import { useVariablePresets } from "@/hooks/useVariablePresets"
 import { Popover, PopoverContent, PopoverAnchor } from "../ui/popover"
 import { TestIds } from "@/components/const"
 import { Key } from "@/components/Key"
 import { isWindows } from "@/utils/platform"
 import { setCaretPosition } from "@/services/dom/caretUtils"
 import { i18n } from "#imports"
-import type { Prompt, VariableValues, VariablePreset } from "@/types/prompt"
+import type { Prompt, VariableValues } from "@/types/prompt"
 import { VariableInputDialog } from "@/components/inputMenu/controller/VariableInputDialog"
-import { getVariablePresets } from "@/services/storage/variablePresetStorage"
 
 const serviceFacade = PromptServiceFacade.getInstance()
 
@@ -49,12 +50,9 @@ interface AutoCompletePopupInnerProps {
 const AutoCompletePopupInner: React.FC<AutoCompletePopupInnerProps> = ({
   prompts,
 }) => {
-  const [presets, setPresets] = useState<VariablePreset[]>([])
-
-  // Load variable presets
-  useEffect(() => {
-    getVariablePresets().then(setPresets)
-  }, [])
+  // Watch variable presets for real-time updates
+  const { presets: presetsData } = useVariablePresets()
+  const presets = presetsData ?? []
 
   const {
     isVisible,
@@ -63,13 +61,20 @@ const AutoCompletePopupInner: React.FC<AutoCompletePopupInnerProps> = ({
     position,
     handleExecute,
     handleClose,
-    selectIndex,
+    selectAt,
     selectNext,
     selectPrevious,
     variableInputData,
     clearVariableInputData,
     handleVariableSubmit,
+    handlePresetVariableSubmit,
+    // New state and functions for preset options view
+    viewMode,
+    selectedPreset,
+    handleOptionExecute,
+    getOptionsFromPreset,
   } = useAutoComplete({ prompts, presets })
+
   const inputRef = useRef<HTMLElement>(null)
   const popupRef = useRef<HTMLDivElement>(null)
   const anchorRef = useRef<HTMLDivElement>(null)
@@ -77,7 +82,7 @@ const AutoCompletePopupInner: React.FC<AutoCompletePopupInnerProps> = ({
   const [userInteracted, setUserInteracted] = useState(false)
 
   const currentMatch = matches[selectedIndex]
-  const isSingleMatch = matches.length === 1
+  const isSingleMatch = matches.length === 1 && viewMode === "matches"
 
   // Dynamic side calculation to prevent overlap with input
   const POPUP_HEIGHT = popupRef.current?.clientHeight ?? 200 // Expected popup height
@@ -116,9 +121,20 @@ const AutoCompletePopupInner: React.FC<AutoCompletePopupInnerProps> = ({
   const handleOnSubmit = useCallback(
     (values: VariableValues) => {
       restoreCaret()
-      handleVariableSubmit(values)
+
+      // Check if this is a preset submission
+      if (variableInputData?.match?.matchType === "preset") {
+        handlePresetVariableSubmit(values)
+      } else {
+        handleVariableSubmit(values)
+      }
     },
-    [restoreCaret, handleVariableSubmit],
+    [
+      restoreCaret,
+      variableInputData,
+      handlePresetVariableSubmit,
+      handleVariableSubmit,
+    ],
   )
 
   // When Escape is pressed, close popup and return focus to input.
@@ -144,8 +160,17 @@ const AutoCompletePopupInner: React.FC<AutoCompletePopupInnerProps> = ({
         case "Tab":
           event.preventDefault()
           event.stopPropagation()
-          if (currentMatch) {
+
+          if (viewMode === "matches" && currentMatch) {
+            // In matches view: execute the selected match (may show options or insert)
             handleExecute(currentMatch)
+          } else if (viewMode === "preset-options" && selectedPreset) {
+            // In options view: select the current option and insert
+            const options = getOptionsFromPreset(selectedPreset)
+            const selectedOption = options[selectedIndex]
+            if (selectedOption) {
+              handleOptionExecute(selectedOption)
+            }
           }
           break
       }
@@ -155,7 +180,18 @@ const AutoCompletePopupInner: React.FC<AutoCompletePopupInnerProps> = ({
     return () => {
       document.removeEventListener("keydown", handleKeyDownActive, true)
     }
-  }, [isVisible, isFocused, userInteracted, currentMatch, handleExecute])
+  }, [
+    isVisible,
+    isFocused,
+    userInteracted,
+    currentMatch,
+    handleExecute,
+    viewMode,
+    selectedPreset,
+    selectedIndex,
+    getOptionsFromPreset,
+    handleOptionExecute,
+  ])
 
   useEffect(() => {
     // Only add event listeners when popup is visible
@@ -202,7 +238,7 @@ const AutoCompletePopupInner: React.FC<AutoCompletePopupInnerProps> = ({
           event.stopPropagation()
           popupRef.current?.focus()
           if (selectedIndex < 0) {
-            selectIndex(0)
+            selectAt(0)
           }
           break
       }
@@ -212,15 +248,7 @@ const AutoCompletePopupInner: React.FC<AutoCompletePopupInnerProps> = ({
     return () => {
       document.removeEventListener("keydown", handleKeyDownNotFocus, true)
     }
-  }, [
-    isVisible,
-    isFocused,
-    selectedIndex,
-    handlePopupClose,
-    selectIndex,
-    selectNext,
-    selectPrevious,
-  ])
+  }, [isVisible, isFocused, selectedIndex, handlePopupClose, selectAt])
 
   useEffect(() => {
     if (!isVisible) return
@@ -229,6 +257,7 @@ const AutoCompletePopupInner: React.FC<AutoCompletePopupInnerProps> = ({
       // Always listen for Escape
       if (event.key === "Escape") {
         event.preventDefault()
+        // close the popup
         handlePopupClose()
         return
       }
@@ -251,7 +280,7 @@ const AutoCompletePopupInner: React.FC<AutoCompletePopupInnerProps> = ({
     return () => {
       document.removeEventListener("keydown", handleKeyDownAlways, true)
     }
-  }, [isVisible, handlePopupClose, selectNext, selectPrevious])
+  }, [isVisible, viewMode, handlePopupClose, selectNext, selectPrevious])
 
   // Update anchor position when position changes
   useEffect(() => {
@@ -291,16 +320,45 @@ const AutoCompletePopupInner: React.FC<AutoCompletePopupInnerProps> = ({
             onOpenAutoFocus={noFocus}
             data-testid={TestIds.autocomplete.popup}
           >
-            <div>
-              {matches.map((match, index) => (
-                <AutoCompleteItem
-                  key={`${match.name}-${index}`}
-                  match={match}
-                  isSelected={index === selectedIndex}
-                  onClick={handleExecute}
-                  onMouseEnter={() => selectIndex(index)}
+            {/* Two-view layout with slide animations */}
+            <div className="relative overflow-hidden">
+              {/* Matches view */}
+              <div
+                className={cn(
+                  "transition-transform duration-200 ease-in-out",
+                  viewMode === "preset-options" && "absolute inset-0",
+                  viewMode === "preset-options"
+                    ? "-translate-x-full"
+                    : "translate-x-0",
+                )}
+              >
+                <MatchesList
+                  matches={matches}
+                  selectedIndex={selectedIndex}
+                  onExecute={handleExecute}
+                  onSelectAt={selectAt}
                 />
-              ))}
+              </div>
+
+              {/* Options view */}
+              <div
+                className={cn(
+                  "transition-transform duration-200 ease-in-out",
+                  viewMode === "matches" && "absolute inset-0",
+                  viewMode === "preset-options"
+                    ? "translate-x-0"
+                    : "translate-x-full",
+                )}
+              >
+                {selectedPreset && (
+                  <OptionsView
+                    preset={selectedPreset}
+                    selectedIndex={selectedIndex}
+                    onSelectAt={selectAt}
+                    onOptionExecute={handleOptionExecute}
+                  />
+                )}
+              </div>
             </div>
             <div className="flex justify-end p-2 py-1.5 text-xs text-neutral-500 border-t gap-1 empty:hidden">
               {(!isFocused && !userInteracted) ||

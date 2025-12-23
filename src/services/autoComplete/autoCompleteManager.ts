@@ -10,11 +10,7 @@ import type {
   AutoCompletePosition,
   AutoCompleteCallbacks,
 } from "./types"
-import {
-  matchPresets,
-  matchPresetItems,
-  parseDotNotation,
-} from "./presetMatcher"
+import { matchPresets } from "./presetMatcher"
 
 const NO_SELECTED_INDEX = -1
 const MAX_WORD_COUNT = 3
@@ -106,7 +102,6 @@ export class AutoCompleteManager {
   /**
    * Find matching prompts and presets based on input and caret position
    * Supports matching 1-3 words, prioritizing longer matches
-   * Also supports dot notation for preset items (e.g., "role.customer")
    */
   private findMatches(
     input: string,
@@ -122,24 +117,9 @@ export class AutoCompleteManager {
 
     const searchTerm = wordMatch[1]
 
-    // Check if search term contains dot notation
-    const dotNotation = parseDotNotation(searchTerm)
-    if (dotNotation) {
-      // Match preset items using dot notation
-      const presetItemMatches = matchPresetItems(
-        searchTerm,
-        this.presets,
-        this.options.maxMatches,
-      )
-
-      // Update match positions
-      const inputMatchStart = caret.position - searchTerm.length
-      return presetItemMatches.map((match) => ({
-        ...match,
-        matchStart: inputMatchStart,
-        matchEnd: caret.position,
-        newlineCount: caret.newlineCount,
-      }))
+    // Check minimum search length
+    if (searchTerm.length < this.options.minSearchLength) {
+      return []
     }
 
     // Collect matches from prompts (all word counts)
@@ -183,6 +163,13 @@ export class AutoCompleteManager {
 
     // Match variable presets
     const presetMatches = matchPresets(
+      searchTerm,
+      this.presets,
+      this.options.maxMatches,
+    )
+    console.log(
+      "Preset matches:",
+      presetMatches,
       searchTerm,
       this.presets,
       this.options.maxMatches,
@@ -319,7 +306,7 @@ export class AutoCompleteManager {
   /**
    * Execute current highlighted match
    */
-  execute(): void {
+  async execute(): Promise<void> {
     if (
       this.currentMatches.length === 0 ||
       this.selectedIndex >= this.currentMatches.length
@@ -328,8 +315,12 @@ export class AutoCompleteManager {
     }
 
     const selectedMatch = this.currentMatches[this.selectedIndex]
-    this.callbacks.onExecute(selectedMatch)
-    this.hide()
+    const shouldHide = await this.callbacks.onExecute(selectedMatch)
+
+    // Only hide if shouldHide is not explicitly false
+    if (shouldHide !== false) {
+      this.hide()
+    }
   }
 
   /**
@@ -343,7 +334,7 @@ export class AutoCompleteManager {
   /**
    * Select specific index
    */
-  selectIndex(index: number): void {
+  selectAt(index: number): void {
     if (index < 0 || index >= this.currentMatches.length) {
       console.warn("Index out of bounds:", index)
       return

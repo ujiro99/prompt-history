@@ -1,5 +1,5 @@
 import React from "react"
-import { Star, ChevronRight, FileText } from "lucide-react"
+import { Star, ChevronRight, Variable } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { TestIds } from "@/components/const"
 import { Key } from "@/components/Key"
@@ -33,7 +33,7 @@ export const AutoCompleteItem: React.FC<AutoCompleteItemProps> = ({
   const name2 = match.name.slice(start, end)
   const name3 = match.name.slice(end)
 
-  const isPreset = match.matchType === "preset" || match.matchType === "preset-item"
+  const isPreset = match.matchType === "preset"
 
   return (
     <button
@@ -49,29 +49,30 @@ export const AutoCompleteItem: React.FC<AutoCompleteItemProps> = ({
       onMouseEnter={onMouseEnter}
       data-testid={TestIds.autocomplete.item}
     >
-      {isSelected && <ChevronRight size={18} className="text-neutral-500" />}
-      {isPreset && !isSelected && (
-        <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center bg-blue-100 text-blue-700 rounded text-xs font-semibold">
-          P
+      {isSelected && (
+        <ChevronRight size={18} className="shrink-0 text-neutral-500" />
+      )}
+      {isPreset && (
+        <div className="mr-2 shrink-0 size-5.5 flex items-center justify-center bg-blue-50 text-blue-600 rounded">
+          <Variable className="inline size-4.5" />
         </div>
       )}
-      {!isPreset && !isSelected && (
-        <FileText size={18} className="text-neutral-400 flex-shrink-0" />
-      )}
       <div className="w-full overflow-hidden">
-        <p className="truncate">
-          {name1}
-          <span className="font-medium bg-amber-100 px-0.5 rounded">
-            {name2}
-          </span>
-          {name3}
+        <div className="flex items-center gap-0.5">
+          <p className="truncate">
+            {name1}
+            <span className="font-medium bg-amber-100 px-0.5 rounded">
+              {name2}
+            </span>
+            {name3}
+          </p>
           {match.isPinned && (
             <Star
               size={14}
-              className="inline ml-1 mb-0.5 fill-yellow-300 stroke-yellow-400"
+              className="shrink-0 inline fill-yellow-300 stroke-yellow-400"
             />
           )}
-        </p>
+        </div>
         <div className="text-xs text-neutral-600 truncate mt-0.5 font-light">
           {match.content}
         </div>

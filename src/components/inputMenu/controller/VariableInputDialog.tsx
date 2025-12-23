@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import { CornerDownLeft } from "lucide-react"
 import { i18n } from "#imports"
 import {
@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Key } from "@/components/Key"
 import { SelectField } from "@/components/inputMenu/controller/SelectField"
+import { DictionaryItemPreview } from "@/components/inputMenu/DictionaryItemPreview"
 import { useContainer } from "@/hooks/useContainer"
 import { useDebounce } from "@/hooks/useDebounce"
 import type {
@@ -25,7 +26,8 @@ import { TestIds } from "@/components/const"
 import { isMac } from "@/utils/platform"
 import { expandPrompt } from "@/utils/variables/variableFormatter"
 import { stopPropagation } from "@/utils/dom"
-import { getVariablePresets } from "@/services/storage/variablePresetStorage"
+import { useVariablePresets } from "@/hooks/useVariablePresets"
+import { isEmpty } from "@/lib/utils"
 
 /**
  * Props for variable input dialog
@@ -34,7 +36,7 @@ interface VariableInputDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   variables: VariableConfig[]
-  content: string
+  content?: string
   onSubmit: (values: VariableValues) => void
   onDismiss?: () => void
 }
@@ -52,46 +54,45 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
   onDismiss,
 }) => {
   const [values, setValues] = useState<VariableValues>({})
-  const [presets, setPresets] = useState<Map<string, VariablePreset>>(new Map())
   const [selectedDictItems, setSelectedDictItems] = useState<
     Map<string, DictionaryItem | null>
   >(new Map())
   const { container } = useContainer()
+  const inputAreaRef = useRef<HTMLDivElement | null>(null)
+
+  // For preview of dictionary items
+  const [selectElm, setSelectElm] = useState<HTMLElement | null>(null)
+  const [previewItem, setPreviewItem] = useState<DictionaryItem | null>(null)
+
+  // Watch presets only when dialog is open
+  const { presets: allPresets } = useVariablePresets({ enabled: open })
+
+  // Convert array to map for component use
+  const presets = useMemo(() => {
+    if (!allPresets) return new Map<string, VariablePreset>()
+
+    const presetMap = new Map<string, VariablePreset>()
+    for (const variable of variables) {
+      if (variable.type === "preset" && variable.presetOptions?.presetId) {
+        const preset = allPresets.find(
+          (p) => p.id === variable.presetOptions!.presetId,
+        )
+        if (preset) {
+          presetMap.set(variable.name, preset)
+        }
+      }
+    }
+    return presetMap
+  }, [allPresets, variables])
 
   // Debounce values for preview
   const debouncedValues = useDebounce(values, 200)
 
   // Generate preview with debounced values
   const preview = useMemo(() => {
+    if (!content) return ""
     return expandPrompt(content, debouncedValues)
   }, [content, debouncedValues])
-
-  // Load presets for preset-type variables
-  useEffect(() => {
-    const loadPresets = async () => {
-      try {
-        const allPresets = await getVariablePresets()
-        const presetMap = new Map<string, VariablePreset>()
-
-        for (const variable of variables) {
-          if (variable.type === "preset" && variable.presetId) {
-            const preset = allPresets.find((p) => p.id === variable.presetId)
-            if (preset) {
-              presetMap.set(variable.name, preset)
-            }
-          }
-        }
-
-        setPresets(presetMap)
-      } catch (error) {
-        console.error("Failed to load presets:", error)
-      }
-    }
-
-    if (open) {
-      loadPresets()
-    }
-  }, [open, variables])
 
   // Initialize values from variable configs and presets
   useEffect(() => {
@@ -109,13 +110,17 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
           if (preset.type === "text") {
             initialValues[variable.name] = preset.textContent || ""
           } else if (preset.type === "select" && preset.selectOptions) {
-            initialValues[variable.name] = preset.selectOptions[0] || ""
+            const defaultValue = variable.presetOptions?.default ?? ""
+            initialValues[variable.name] = defaultValue
           } else if (preset.type === "dictionary" && preset.dictionaryItems) {
-            // Dictionary type: use first item's name as initial value
-            const firstItem = preset.dictionaryItems[0]
-            if (firstItem) {
-              initialValues[variable.name] = firstItem.name
-              dictItems.set(variable.name, firstItem)
+            // Dictionary type: use first item's content as initial value
+            const id = variable.presetOptions?.default
+            const item =
+              preset.dictionaryItems.find((item) => item.id === id) ??
+              preset.dictionaryItems[0]
+            if (item) {
+              initialValues[variable.name] = item.content
+              dictItems.set(variable.name, item)
             }
           }
         } else {
@@ -192,6 +197,26 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
     event.stopPropagation()
   }
 
+  const handleOnenAutoFocus = (event: Event) => {
+    event.preventDefault()
+
+    // Focus the first input element
+    const focusFirstInput = () => {
+      const inputArea = inputAreaRef.current
+      const firstInput = inputArea?.querySelector(
+        "textarea, input, select, button",
+      ) as HTMLElement
+      console.log("Focusing first input", firstInput)
+      if (firstInput) {
+        firstInput.focus()
+      }
+    }
+
+    setTimeout(() => {
+      focusFirstInput()
+    }, 200)
+  }
+
   // Filter out exclude type variables
   const visibleVariables = variables.filter((v) => v.type !== "exclude")
 
@@ -202,6 +227,7 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
         className="w-xl sm:max-w-xl max-h-9/10"
         onKeyDown={handleKeyDown}
         onEscapeKeyDown={onDismiss}
+        onOpenAutoFocus={handleOnenAutoFocus}
         {...stopPropagation()}
       >
         <DialogHeader>
@@ -212,19 +238,21 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
         </DialogHeader>
 
         {/* Preview Section */}
-        <section>
-          <h3 className="text-sm font-medium text-foreground">
-            {i18n.t("dialogs.variables.preview") || "Preview"}
-          </h3>
-          <div className="mt-1 bg-neutral-50 border border-neutral-200 rounded-md p-3 max-h-48 overflow-y-auto">
-            <pre className="text-xs/5 text-neutral-800 whitespace-pre-wrap break-all font-mono">
-              {preview}
-            </pre>
-          </div>
-        </section>
+        {!isEmpty(preview) && (
+          <section>
+            <h3 className="text-sm font-medium text-foreground">
+              {i18n.t("dialogs.variables.preview")}
+            </h3>
+            <div className="mt-1 bg-neutral-50 border border-neutral-200 rounded-md p-3 max-h-48 overflow-y-auto">
+              <pre className="text-xs/5 text-neutral-800 whitespace-pre-wrap break-all font-mono">
+                {preview}
+              </pre>
+            </div>
+          </section>
+        )}
 
         {/* Input Section */}
-        <div className="space-y-2">
+        <div className="space-y-2" ref={inputAreaRef}>
           {visibleVariables.map((variable) => (
             <div key={variable.name} className="space-y-2">
               <label
@@ -305,36 +333,37 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
                   if (preset.type === "dictionary" && preset.dictionaryItems) {
                     const selectedItem = selectedDictItems.get(variable.name)
                     return (
-                      <div className="space-y-2">
-                        <SelectField
-                          options={preset.dictionaryItems.map((item) => ({
-                            label: item.name,
-                            value: item.name,
-                          }))}
-                          name={variable.name}
-                          value={selectedItem?.name || ""}
-                          onValueChange={(_, itemName) =>
-                            handleDictionaryItemChange(variable.name, itemName)
-                          }
-                        />
-                        {selectedItem && (
-                          <div className="bg-neutral-50 border border-neutral-200 rounded-md p-3 max-h-32 overflow-y-auto">
-                            <div className="text-xs font-medium text-muted-foreground mb-1">
-                              {i18n.t("dialogs.variables.preview")}:
-                            </div>
-                            <pre className="text-xs text-neutral-800 whitespace-pre-wrap break-all">
-                              {selectedItem.content}
-                            </pre>
-                          </div>
-                        )}
-                      </div>
+                      <SelectField
+                        options={preset.dictionaryItems.map((item) => ({
+                          label: item.name,
+                          value: item.name,
+                        }))}
+                        name={variable.name}
+                        value={selectedItem?.name || ""}
+                        onValueChange={(_, itemName) =>
+                          handleDictionaryItemChange(variable.name, itemName)
+                        }
+                        onHover={(value) => {
+                          const item = preset.dictionaryItems?.find(
+                            (i) => i.name === value,
+                          )
+                          setPreviewItem(item || null)
+                        }}
+                        hoveredRef={setSelectElm}
+                      />
                     )
                   }
-
                   return null
                 })()}
             </div>
           ))}
+          {previewItem && (
+            <DictionaryItemPreview
+              open={previewItem != null}
+              anchorElm={selectElm}
+              dictionaryItem={previewItem}
+            />
+          )}
         </div>
 
         <DialogFooter>

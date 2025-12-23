@@ -13,6 +13,7 @@ import {
   findBestMatch,
   findBestMatchLevenshtein,
 } from "@/utils/stringSimilarity"
+import { generatePromptId } from "@/utils/idGenerator"
 
 /**
  * Template Converter Service
@@ -123,7 +124,7 @@ class TemplateConverter {
    */
   convertToPrompt(candidate: TemplateCandidate): Prompt {
     return {
-      id: crypto.randomUUID(),
+      id: generatePromptId(),
       name: candidate.title,
       content: candidate.content,
       variables: candidate.variables, // Use VariableConfig[] as is

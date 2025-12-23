@@ -9,8 +9,8 @@ import { VARIABLE_SECTION_HEADER } from "./variableParser"
 function escapeSingleLineValue(value: string): string {
   // Order is important: escape backslashes first, then double quotes
   return value
-    .replace(/\\/g, "\\\\")  // Escape backslashes
-    .replace(/"/g, '\\"')     // Escape double quotes
+    .replace(/\\/g, "\\\\") // Escape backslashes
+    .replace(/"/g, '\\"') // Escape double quotes
 }
 
 /**

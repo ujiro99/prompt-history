@@ -1,13 +1,19 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
+import { Pencil } from "lucide-react"
 import { Input } from "@/components/ui/input"
+import {
+  DropdownMenuField,
+  MenuOption,
+} from "@/components/inputMenu/controller/DropdownMenuField"
 import { SelectField } from "@/components/inputMenu/controller/SelectField"
+import { DictionaryItemPreview } from "@/components/inputMenu/DictionaryItemPreview"
 import type {
   VariableConfig,
   VariableType,
-  VariablePreset,
+  DictionaryItem,
 } from "@/types/prompt"
 import { Textarea } from "@/components/ui/textarea"
-import { getVariablePresets } from "@/services/storage/variablePresetStorage"
+import { useVariablePresets } from "@/hooks/useVariablePresets"
 import { i18n } from "#imports"
 
 const VariableTypeOptions: { label: string; value: VariableType }[] = [
@@ -16,6 +22,8 @@ const VariableTypeOptions: { label: string; value: VariableType }[] = [
   { label: i18n.t("variableTypes.preset"), value: "preset" },
   { label: i18n.t("variableTypes.exclude"), value: "exclude" },
 ]
+
+type VariableTypeOption = VariableType | `preset.${string}`
 
 /**
  * Props for variable configuration field
@@ -27,6 +35,8 @@ interface VariableConfigFieldProps {
   initialVariable?: VariableConfig
   /** Callback when configuration changes */
   onChange: (config: VariableConfig) => void
+  /** Callback when editing preset */
+  onClickPresetEdit?: (presetId: string) => void
 }
 
 /**
@@ -37,37 +47,34 @@ export const VariableConfigField: React.FC<VariableConfigFieldProps> = ({
   variable,
   initialVariable,
   onChange,
+  onClickPresetEdit,
 }) => {
-  const [presets, setPresets] = useState<VariablePreset[]>([])
-  const [selectedPreset, setSelectedPreset] = useState<VariablePreset | null>(
-    null,
-  )
+  // For preview of dictionary items
+  const [selectElm, setSelectElm] = useState<HTMLElement | null>(null)
+  const [previewItem, setPreviewItem] = useState<DictionaryItem | null>(null)
 
-  /**
-   * Load presets on mount
-   */
-  useEffect(() => {
-    const loadPresets = async () => {
-      try {
-        const loadedPresets = await getVariablePresets()
-        setPresets(loadedPresets)
+  // Watch all presets for dropdown
+  const { presets } = useVariablePresets()
 
-        // Find and set selected preset if variable has presetId
-        if (variable.presetId) {
-          const preset = loadedPresets.find((p) => p.id === variable.presetId)
-          setSelectedPreset(preset || null)
-        }
-      } catch (error) {
-        console.error("Failed to load presets:", error)
-      }
-    }
-    loadPresets()
-  }, [variable.presetId])
+  // Watch selected preset for details display
+  const { preset: selectedPreset } = useVariablePresets({
+    presetId: variable.presetOptions?.presetId,
+  })
 
   /**
    * Handle variable type change
    */
-  const handleTypeChange = (type: VariableType) => {
+  const handleTypeChange = (option: VariableTypeOption) => {
+    // Determine new type and presetId
+    let type: VariableType
+    let presetId: string | undefined = undefined
+    if (option.startsWith("preset.")) {
+      type = "preset"
+      presetId = option.split(".")[1]
+    } else {
+      type = option as VariableType
+    }
+
     const updatedConfig: VariableConfig = {
       ...variable,
       type,
@@ -75,7 +82,7 @@ export const VariableConfigField: React.FC<VariableConfigFieldProps> = ({
 
     // Clear type-specific fields
     delete updatedConfig.selectOptions
-    delete updatedConfig.presetId
+    delete updatedConfig.presetOptions
 
     if (type === "select") {
       // If type is 'select', ensure selectOptions exists or restore if empty
@@ -90,31 +97,20 @@ export const VariableConfigField: React.FC<VariableConfigFieldProps> = ({
         }
       }
     } else if (type === "preset") {
-      // If type is 'preset', restore presetId if available
-      if (initialVariable?.type === "preset" && initialVariable.presetId) {
-        updatedConfig.presetId = initialVariable.presetId
+      if (presetId) {
+        updatedConfig.presetOptions = {
+          presetId,
+        }
+      } else if (
+        initialVariable?.type === "preset" &&
+        initialVariable.presetOptions
+      ) {
+        // If type is 'preset', restore presetId if available
+        updatedConfig.presetOptions = initialVariable.presetOptions
       }
     }
 
-    // Clear selected preset if type is not 'preset'
-    if (type !== "preset") {
-      setSelectedPreset(null)
-    }
-
     onChange(updatedConfig)
-  }
-
-  /**
-   * Handle preset selection change
-   */
-  const handlePresetChange = (presetId: string) => {
-    const preset = presets.find((p) => p.id === presetId)
-    setSelectedPreset(preset || null)
-
-    onChange({
-      ...variable,
-      presetId,
-    })
   }
 
   /**
@@ -124,6 +120,20 @@ export const VariableConfigField: React.FC<VariableConfigFieldProps> = ({
     onChange({
       ...variable,
       defaultValue: value,
+    })
+  }
+
+  /**
+   * Handle preset default change (for preset type)
+   * @param optionOrId - Select option value or dictionary item ID
+   */
+  const handlePresetDefaultChange = (optionOrId: string) => {
+    onChange({
+      ...variable,
+      presetOptions: {
+        ...variable.presetOptions,
+        default: optionOrId,
+      },
     })
   }
 
@@ -162,6 +172,42 @@ export const VariableConfigField: React.FC<VariableConfigFieldProps> = ({
     return variable.selectOptions?.options.join(", ") || ""
   }
 
+  /**
+   * Variable types for hierarchical menu
+   */
+  const getVariableTypeOptions = () => {
+    // Presets options for submenu
+    const presetOptions =
+      presets
+        ?.filter((p) => p.name)
+        .map((preset) => ({
+          label: preset.name,
+          value: `preset.${preset.id}`,
+        })) ?? []
+
+    // Convert to menu options format
+    const options: Array<MenuOption> = []
+    VariableTypeOptions.forEach((type) => {
+      if (type.value === "preset") {
+        options.push({
+          label: type.label,
+          children: presetOptions,
+        })
+        return
+      }
+      options.push(type)
+    })
+
+    return options
+  }
+
+  const getVariableTypeValue = () => {
+    if (variable.type === "preset" && variable.presetOptions?.presetId) {
+      return `preset.${variable.presetOptions.presetId}`
+    }
+    return variable.type
+  }
+
   return (
     <div className="space-y-1 border-b-1 px-3 py-4 bg-muted/30">
       <div className="flex flex-col sm:flex-row gap-3">
@@ -183,13 +229,21 @@ export const VariableConfigField: React.FC<VariableConfigFieldProps> = ({
           >
             {i18n.t("common.variableType")}
           </label>
-          <SelectField
-            options={VariableTypeOptions}
+          <DropdownMenuField
             name="variable-type"
-            value={variable.type}
-            onValueChange={(_, v) => handleTypeChange(v as VariableType)}
+            options={getVariableTypeOptions()}
+            value={getVariableTypeValue()}
+            onValueChange={(_, v) => handleTypeChange(v as VariableTypeOption)}
             className="bg-white"
           />
+          {variable.type === "preset" && selectedPreset && (
+            <p className="ml-2 text-xs text-muted-foreground break-all">
+              {i18n.t("variableTypes.type", [
+                i18n.t(`variableTypes.${selectedPreset.type}`),
+              ])}
+              {selectedPreset.description && ` - ${selectedPreset.description}`}
+            </p>
+          )}
         </div>
 
         {/* Default value input (only for text, textarea) */}
@@ -238,28 +292,74 @@ export const VariableConfigField: React.FC<VariableConfigFieldProps> = ({
         {/* Preset selector (only for preset type) */}
         {variable.type === "preset" && (
           <div className="space-y-1 flex-1">
-            <label
-              htmlFor={`var-preset-${variable.name}`}
-              className="block text-xs text-muted-foreground"
-            >
-              {i18n.t("variableTypes.preset")}
-            </label>
-            <SelectField
-              options={presets.map((p) => ({ label: p.name, value: p.id }))}
-              name="preset-select"
-              value={variable.presetId || ""}
-              onValueChange={(_, v) => handlePresetChange(v)}
-              className="bg-white h-auto! py-[0.4rem] whitespace-normal wrap-break-word text-left"
-            />
-            {selectedPreset && (
-              <p className="ml-2 text-xs text-muted-foreground">
-                {i18n.t("variableTypes.type", [
-                  i18n.t(`variableTypes.${selectedPreset.type}`),
-                ])}
-                {selectedPreset.description &&
-                  ` - ${selectedPreset.description}`}
-              </p>
-            )}
+            <div className="flex items-center justify-between">
+              <label
+                htmlFor={`var-preset-${variable.name}`}
+                className="block text-xs text-muted-foreground"
+              >
+                {i18n.t("common.defaultValue")}
+              </label>
+              {selectedPreset && onClickPresetEdit && (
+                <button
+                  onClick={() => onClickPresetEdit(selectedPreset.id)}
+                  className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors whitespace-nowrap cursor-pointer"
+                  aria-label={i18n.t("dialogs.edit.presetEditLink")}
+                >
+                  <Pencil className="size-3.5" />
+                  {i18n.t("dialogs.edit.presetEdit")}
+                </button>
+              )}
+            </div>
+            {selectedPreset &&
+              (selectedPreset.type === "select" &&
+              selectedPreset.selectOptions ? (
+                <SelectField
+                  options={selectedPreset.selectOptions.map((opt) => ({
+                    label: opt,
+                    value: opt,
+                  }))}
+                  name={variable.name}
+                  value={variable.presetOptions?.default || ""}
+                  onValueChange={(_, val) => handlePresetDefaultChange(val)}
+                  className="bg-white w-full"
+                />
+              ) : selectedPreset.type === "dictionary" &&
+                selectedPreset.dictionaryItems ? (
+                <>
+                  <SelectField
+                    options={selectedPreset.dictionaryItems.map((item) => ({
+                      label: item.name,
+                      value: item.id,
+                    }))}
+                    name={variable.name}
+                    value={variable.presetOptions?.default || ""}
+                    onValueChange={(_, id) => handlePresetDefaultChange(id)}
+                    onHover={(value) => {
+                      const item = selectedPreset.dictionaryItems?.find(
+                        (i) => i.id === value,
+                      )
+                      setPreviewItem(item || null)
+                    }}
+                    hoveredRef={setSelectElm}
+                    className="bg-white w-full"
+                  />
+                  {previewItem && (
+                    <DictionaryItemPreview
+                      open={previewItem != null}
+                      anchorElm={selectElm}
+                      dictionaryItem={previewItem}
+                    />
+                  )}
+                </>
+              ) : null)}
+          </div>
+        )}
+
+        {variable.type === "exclude" && (
+          <div className="pb-3 flex items-end">
+            <p className="text-xs text-muted-foreground">
+              {i18n.t("dialogs.edit.excludeExpansion")}
+            </p>
           </div>
         )}
       </div>

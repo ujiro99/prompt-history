@@ -6,6 +6,7 @@
 import type { Category } from "@/types/promptOrganizer"
 import { categoriesStorage } from "@/services/storage/definitions"
 import { getDefaultCategories } from "@/services/storage/categoryHelper"
+import { generateCategoryId } from "@/utils/idGenerator"
 
 /**
  * Get the category map, initializing with default categories if empty
@@ -47,7 +48,7 @@ export class CategoryService {
 
     const now = new Date()
     const newCategory: Category = {
-      id: crypto.randomUUID(),
+      id: generateCategoryId(),
       name,
       description,
       isDefault: false,

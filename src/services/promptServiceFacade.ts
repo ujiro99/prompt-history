@@ -400,6 +400,34 @@ export class PromptServiceFacade {
   }
 
   /**
+   * Replace text at caret position
+   * Generic text replacement without storage operations
+   */
+  async replaceText(
+    match: AutoCompleteMatch,
+    nodeAtCaret: Node | null,
+  ): Promise<void> {
+    this.ensureInitialized()
+
+    if (!this.aiService) {
+      this.handleError("REPLACE_FAILED", "AI service not available", null)
+      return
+    }
+
+    await this.executeManager.replaceText(
+      match,
+      this.aiService,
+      nodeAtCaret,
+      () => {
+        // Success - no notification needed for simple text replacement
+      },
+      (error) => {
+        this.handleError("REPLACE_FAILED", "Failed to replace text", error)
+      },
+    )
+  }
+
+  /**
    * Prepare data for save dialog
    */
   async prepareSaveDialogData(): Promise<

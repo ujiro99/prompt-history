@@ -1,11 +1,12 @@
 import React, { useState, useRef, useCallback } from "react"
 import {
-  CircleCheckBig,
-  Upload,
   CheckCircle,
-  AlertCircle,
-  Loader2,
+  CircleAlert,
+  CircleCheckBig,
+  CircleX,
   FileText,
+  Loader2,
+  Upload,
 } from "lucide-react"
 import {
   Dialog,
@@ -52,6 +53,9 @@ export function ImportDialog({
   const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  const missingPressetIds = new Set(
+    result?.missingPresets?.map((info) => info.presetId) ?? [],
+  )
   const handleReset = useCallback(() => {
     setState(ImportState.Idle)
     setError(null)
@@ -167,7 +171,7 @@ export function ImportDialog({
       case ImportState.Success:
         return <CheckCircle className="text-green-600" size={20} />
       case ImportState.Error:
-        return <AlertCircle className="text-red-700" size={20} />
+        return <CircleX className="text-red-700" size={20} />
       default:
         return <Upload size={20} />
     }
@@ -187,7 +191,7 @@ export function ImportDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="sm:max-w-md"
+        className="sm:max-w-xl"
         data-testid={TestIds.import.dialog}
         container={container}
         onWheel={(e) => e.stopPropagation()}
@@ -315,9 +319,12 @@ export function ImportDialog({
                   {selectedFile.name}
                 </p>
               )}
-              <div className="text-sm text-center text-green-700 space-y-1">
+              <div className="text-sm text-center space-y-1">
                 {result.imported > 0 ? (
-                  <p data-testid={TestIds.import.ui.willImport}>
+                  <p
+                    className="text-green-700"
+                    data-testid={TestIds.import.ui.willImport}
+                  >
                     {i18n.t("importDialog.result.willImport", [
                       result.imported,
                     ])}
@@ -334,6 +341,17 @@ export function ImportDialog({
                     ])}
                   </p>
                 )}
+                {result.missingPresets && result.missingPresets.length > 0 && (
+                  <p
+                    className="text-yellow-600"
+                    data-testid={TestIds.import.ui.missingPresets}
+                  >
+                    {i18n.t("importDialog.result.hasMissingPresets", [
+                      missingPressetIds.size,
+                    ])}
+                  </p>
+                )}
+
                 {result.imported > 0 && (
                   <div className="mt-4 mb-2 flex justify-center">
                     <Button
@@ -353,55 +371,86 @@ export function ImportDialog({
 
           {/* Success result */}
           {state === ImportState.Success && result && (
-            <>
-              <div
-                className="bg-green-50 border border-green-200 rounded-lg p-6 space-y-2"
-                role="status"
-                aria-label={i18n.t("importDialog.status.importResult")}
+            <div
+              className="bg-green-50 border border-green-200 rounded-lg p-6 space-y-2"
+              role="status"
+              aria-label={i18n.t("importDialog.status.importResult")}
+            >
+              <h4
+                className="font-medium text-neutral-800 flex flex-col items-center gap-2"
+                id="file-status-text"
               >
-                <h4
-                  className="font-medium text-neutral-800 flex flex-col items-center gap-2"
-                  id="file-status-text"
-                >
-                  {getStatusIcon()}
-                  {i18n.t("importDialog.status.importResult")}
-                </h4>
-                {selectedFile && (
-                  <p className="text-sm text-neutral-500 flex items-center justify-center gap-1">
-                    <FileText size={14} />
-                    {selectedFile.name}
+                {getStatusIcon()}
+                {i18n.t("importDialog.status.importResult")}
+              </h4>
+              {selectedFile && (
+                <p className="text-sm text-neutral-500 flex items-center justify-center gap-1">
+                  <FileText size={14} />
+                  {selectedFile.name}
+                </p>
+              )}
+              <div className="text-sm text-center text-green-700 space-y-1">
+                <p data-testid={TestIds.import.ui.imported}>
+                  {i18n.t("importDialog.result.imported", [result.imported])}
+                </p>
+                {result.duplicates > 0 && (
+                  <p data-testid={TestIds.import.ui.duplicate}>
+                    {i18n.t("importDialog.result.skippedDuplicates", [
+                      result.duplicates,
+                    ])}
                   </p>
                 )}
-                <div className="text-sm text-center text-green-700 space-y-1">
-                  <p data-testid={TestIds.import.ui.imported}>
-                    {i18n.t("importDialog.result.imported", [result.imported])}
-                  </p>
-                  {result.duplicates > 0 && (
-                    <p data-testid={TestIds.import.ui.duplicate}>
-                      {i18n.t("importDialog.result.skippedDuplicates", [
-                        result.duplicates,
-                      ])}
-                    </p>
-                  )}
-                </div>
               </div>
-              {/* Missing presets warning */}
-              {result.missingPresets && result.missingPresets.length > 0 && (
-                <div
-                  className="bg-yellow-50 border border-yellow-200 rounded-lg p-4"
-                  role="alert"
-                  aria-label={i18n.t("variablePresets.importWarning.title")}
-                >
-                  <h4 className="font-medium text-yellow-700 mb-2">
-                    {i18n.t("variablePresets.importWarning.title")}
-                  </h4>
-                  <p className="text-sm text-yellow-700">
-                    {i18n.t("variablePresets.importWarning.convertedToText")}
-                  </p>
-                </div>
-              )}
-            </>
+            </div>
           )}
+
+          {/* Varidation result */}
+          {/* Missing presets warning */}
+          {result &&
+            result.missingPresets &&
+            result.missingPresets.length > 0 && (
+              <div
+                className="bg-yellow-50 border border-yellow-200 rounded-lg p-4"
+                role="alert"
+                aria-label={i18n.t("variablePresets.importWarning.title")}
+              >
+                <h4 className="text-base text-yellow-700 mb-2">
+                  <CircleAlert className="inline mb-1 mr-1 size-4" />
+                  {state === ImportState.Success
+                    ? i18n.t("variablePresets.importWarning.convertedToText", [
+                        result.missingPresets.length,
+                      ])
+                    : i18n.t(
+                        "variablePresets.importWarning.check.convertedToText",
+                        [result.missingPresets.length],
+                      )}
+                </h4>
+                <ScrollAreaWithGradient
+                  className="max-h-40"
+                  indicatorVisible={false}
+                  gradientHeight={"1.5rem"}
+                  style={
+                    {
+                      "--ph-gradient-background": "#fefce8",
+                    } as React.CSSProperties
+                  }
+                >
+                  <ul className="space-y-1">
+                    {result.missingPresets.map((info, index) => (
+                      <li
+                        key={`${info.promptName}-${info.variableName}-${index}`}
+                        className="text-xs text-yellow-700 list-disc list-inside"
+                      >
+                        {i18n.t(
+                          "variablePresets.importWarning.affectedVariable",
+                          [info.promptName, info.variableName],
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </ScrollAreaWithGradient>
+              </div>
+            )}
 
           {/* Error message */}
           {state === ImportState.Error && error && (

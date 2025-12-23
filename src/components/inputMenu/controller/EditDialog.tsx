@@ -5,6 +5,7 @@ import type { SaveDialogData, VariableConfig } from "@/types/prompt"
 import { mergeVariableConfigs } from "@/utils/variables/variableParser"
 import { VariableExpansionInfoDialog } from "./VariableExpansionInfoDialog"
 import { VariableSettingsSection } from "@/components/shared"
+import { VariablePresetDialog } from "@/components/settings/variablePresets/VariablePresetDialog"
 import { CategorySelector } from "@/components/promptOrganizer/CategorySelector"
 import { ScrollAreaWithGradient } from "@/components/inputMenu/ScrollAreaWithGradient"
 import {
@@ -69,7 +70,8 @@ const variableEquals = (
     x.name === y.name &&
     x.type === y.type &&
     x.defaultValue === y.defaultValue &&
-    x.presetId === y.presetId &&
+    x.presetOptions?.presetId === y.presetOptions?.presetId &&
+    x.presetOptions?.default === y.presetOptions?.default &&
     JSON.stringify(x.selectOptions) === JSON.stringify(y.selectOptions)
   )
 }
@@ -104,6 +106,9 @@ export const EditDialog: React.FC<EditDialogProps> = ({
   )
   const [isLoading, setIsLoading] = useState(false)
   const [isInfoDialogOpen, setIsInfoDialogOpen] = useState(false)
+  const [variablePresetEditId, setVariablePresetEditId] = useState<
+    string | null
+  >(null)
   const isEdit = displayMode === SaveMode.Overwrite
   const isCopy = displayMode === SaveMode.Copy
   const { container } = useContainer()
@@ -367,6 +372,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
                 variables={variables}
                 onChange={setVariables}
                 enableAutoDetection={false}
+                onClickPresetEdit={(id) => setVariablePresetEditId(id)}
               />
 
               {/* Exclude from organizer checkbox */}
@@ -442,6 +448,17 @@ export const EditDialog: React.FC<EditDialogProps> = ({
         open={isInfoDialogOpen}
         onOpenChange={setIsInfoDialogOpen}
       />
+      {/* Variable Presets Dialog
+          Use conditional branching with initialSelectedPresetId so that
+          it is applied only during the initial component render.
+        */}
+      {variablePresetEditId !== null && (
+        <VariablePresetDialog
+          open={true}
+          onOpenChange={(open) => !open && setVariablePresetEditId(null)}
+          initialSelectedPresetId={variablePresetEditId}
+        />
+      )}
     </>
   )
 }

@@ -1,11 +1,14 @@
 import * as React from "react"
+import { Dispatch, SetStateAction } from "react"
 import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area"
 
 import { cn } from "@/lib/utils"
 
 type ScrollAreaProps = React.ComponentProps<typeof ScrollAreaPrimitive.Root> & {
   scrollbarClassName?: string
-  viewportRef?: React.RefObject<HTMLDivElement | null>
+  viewportRef?:
+    | React.RefObject<HTMLDivElement | null>
+    | Dispatch<SetStateAction<HTMLDivElement | null>>
   viewportClassName?: string
 }
 

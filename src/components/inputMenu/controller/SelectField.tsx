@@ -1,4 +1,4 @@
-import { useRef } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { i18n } from "#imports"
 import {
   Select,
@@ -20,39 +20,19 @@ interface SelectFieldProps {
   name: string
   options: SelectOption[]
   value: string
-  onValueChange: (name: string, value: string) => void
   className?: string
+  hoveredRef?: React.Ref<HTMLDivElement | null>
+  onValueChange: (name: string, value: string) => void
+  onHover?: (vlaue: string) => void
 }
 
 export const SelectField = (props: SelectFieldProps) => {
-  const { name, options, value, onValueChange } = props
+  const { name, options, value, onValueChange, onHover, hoveredRef } = props
   const { container } = useContainer()
-  const contentRef = useRef(null)
+  const [contentElm, setContentElm] = useState<HTMLDivElement | null>(null)
 
   const safeOptions = options.filter((opt) => !isEmpty(opt.value))
   const optionsExist = safeOptions.length > 0
-
-  const handleOnOpenChange = (open: boolean) => {
-    if (open) {
-      // Set focus to the selected item when opened
-      setTimeout(() => {
-        if (!contentRef.current) return
-        const contentElm = contentRef.current as HTMLElement
-        const selectedItem = contentElm?.querySelector(
-          '[data-slot="select-item"][data-state="checked"]',
-        ) as HTMLElement
-        if (selectedItem) {
-          selectedItem?.focus()
-        } else {
-          // Focus the first item if none selected
-          const firstItem = contentElm?.querySelector(
-            '[data-slot="select-item"]',
-          ) as HTMLElement
-          firstItem?.focus()
-        }
-      }, 0)
-    }
-  }
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
     const currentActive = document.activeElement?.shadowRoot?.activeElement
@@ -78,11 +58,48 @@ export const SelectField = (props: SelectFieldProps) => {
     }
   }
 
+  const handleHover = useCallback(
+    (value: string) => (event: React.MouseEvent | React.FocusEvent) => {
+      onHover?.(value)
+      if (hoveredRef) {
+        if (typeof hoveredRef === "function") {
+          hoveredRef(event.currentTarget as HTMLDivElement)
+        } else {
+          hoveredRef.current = event.currentTarget as HTMLDivElement
+        }
+      }
+    },
+    [hoveredRef, onHover],
+  )
+
+  const focusSelectedItem = useCallback(() => {
+    if (!contentElm) return
+    const selectedItem = contentElm?.querySelector(
+      '[data-slot="select-item"][data-state="checked"]',
+    ) as HTMLElement
+    if (selectedItem) {
+      selectedItem?.focus()
+    } else {
+      // Focus the first item if none selected
+      const firstItem = contentElm?.querySelector(
+        '[data-slot="select-item"]',
+      ) as HTMLElement
+      firstItem?.focus()
+    }
+  }, [contentElm])
+
+  useEffect(() => {
+    if (contentElm == null) return
+    setTimeout(() => {
+      focusSelectedItem()
+    }, 100)
+  }, [contentElm, focusSelectedItem])
+
   return (
     <Select
       value={value || ""}
       onValueChange={(v) => onValueChange(name, v)}
-      onOpenChange={handleOnOpenChange}
+      onOpenChange={() => onHover?.("")}
     >
       <SelectTrigger id={`var-${name}`} className={props.className}>
         <SelectValue placeholder={i18n.t("placeholders.selectOption")} />
@@ -90,7 +107,8 @@ export const SelectField = (props: SelectFieldProps) => {
       <SelectContent
         container={container}
         onKeyDown={handleKeyDown}
-        ref={contentRef}
+        onMouseLeave={() => onHover?.("")}
+        ref={setContentElm}
       >
         {!optionsExist && (
           <div className="p-2 text-sm text-muted-foreground">
@@ -98,7 +116,12 @@ export const SelectField = (props: SelectFieldProps) => {
           </div>
         )}
         {safeOptions.map((opt) => (
-          <SelectItem key={opt.value} value={opt.value}>
+          <SelectItem
+            key={opt.value}
+            value={opt.value}
+            onMouseEnter={handleHover(opt.value)}
+            onFocus={handleHover(opt.value)}
+          >
             {opt.label}
           </SelectItem>
         ))}
@@ -106,3 +129,5 @@ export const SelectField = (props: SelectFieldProps) => {
     </Select>
   )
 }
+
+SelectField.displayName = "SelectField"

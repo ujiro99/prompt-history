@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useState, useCallback } from "react"
 import { ChevronDown } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import "./ScrollAreaWithGradient.css"
@@ -24,8 +24,14 @@ export function ScrollAreaWithGradient({
   style,
 }: ScrollAreaWithGradientProps): React.ReactElement {
   const [isScrollable, setIsScrollable] = useState(false)
-  const scrollViewportRef = useRef<HTMLDivElement>(null)
-  const viewport = scrollViewportRef.current
+  const [viewport, setViewport] = useState<HTMLDivElement | null>(null)
+
+  const checkScrollable = useCallback(() => {
+    if (!viewport) return
+    const { scrollHeight, clientHeight } = viewport
+    const scrollable = scrollHeight > clientHeight
+    setIsScrollable(scrollable)
+  }, [viewport])
 
   useEffect(() => {
     // Update external ref.
@@ -37,36 +43,17 @@ export function ScrollAreaWithGradient({
   }, [ref, viewport])
 
   useEffect(() => {
-    if (!viewport) return
-
-    const checkScrollable = () => {
-      if (!viewport) return
-      const { scrollHeight, clientHeight } = viewport
-      const scrollable = scrollHeight > clientHeight
-      setIsScrollable(scrollable)
+    if (children) {
+      // Check scrollability when children change
+      checkScrollable()
     }
-
-    // Initial check
-    checkScrollable()
-
-    // Check on content changes (using ResizeObserver)
-    const resizeObserver = new ResizeObserver(() => {
-      // Small delay to ensure DOM has updated
-      requestAnimationFrame(checkScrollable)
-    })
-
-    resizeObserver.observe(viewport)
-
-    return () => {
-      resizeObserver.disconnect()
-    }
-  }, [viewport])
+  }, [children, checkScrollable])
 
   return (
     <ScrollArea
       className={cn("scroll-gradient-container", rootClassName)}
       scrollbarClassName="scrollbar"
-      viewportRef={scrollViewportRef}
+      viewportRef={setViewport}
       viewportClassName={cn("scroll-viewport-timeline", className)}
       data-scrollable={isScrollable}
       style={style}
