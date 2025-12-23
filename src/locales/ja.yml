@@ -464,8 +464,7 @@ promptOrganizer:
     title_label: タイトル
     useCase: 用途
     category: カテゴリ
-    explanation: 整理結果の解説 by AI
-    explanationDescription: このプロンプトがどのように整理されたかを解説します。
+    explanation: 解説 by AI
     content: プロンプト内容
     variables: 変数
     sourcePrompts: ソースプロンプト

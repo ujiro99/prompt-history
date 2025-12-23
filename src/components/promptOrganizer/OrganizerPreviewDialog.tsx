@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Save, Trash, Star } from "lucide-react"
+import { Save, Trash, Star, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -204,7 +204,7 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="w-full sm:max-w-6xl max-h-[80vh] flex flex-col"
+        className="w-full sm:max-w-6xl max-h-[90vh] flex flex-col"
         container={container}
         {...stopPropagation()}
       >
@@ -216,7 +216,7 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
         </DialogHeader>
 
         {/* Two Column Layout */}
-        <div className="grid grid-cols-3 gap-2 py-2 flex-1 min-h-0">
+        <div className="grid grid-cols-3 gap-2 pb-2 flex-1 min-h-0">
           {/* Left Pane: Template List */}
           <div
             className="col-span-1 flex flex-col min-h-0 gap-2"
@@ -283,53 +283,10 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
             ) : (
               <>
                 <ScrollArea className="flex-1 min-h-0" viewportRef={contentRef}>
-                  <div className="space-y-4 pl-2 pr-4 pb-2">
-                    {/* Explanation */}
-                    <div className="space-y-1">
-                      <div className="text-sm font-medium">
-                        {i18n.t("promptOrganizer.preview.explanation")}
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {i18n.t(
-                          "promptOrganizer.preview.explanationDescription",
-                        )}
-                      </p>
-                      <p className="font-serif text-sm px-4 py-3 border bg-muted/30 rounded-lg">
-                        {selectedTemplate.clusterExplanation}
-                      </p>
-                    </div>
-
-                    {/* Title Input */}
-                    <div className="space-y-2">
-                      <div className="text-sm font-semibold">
-                        {i18n.t("promptOrganizer.preview.title_label")}
-                      </div>
-                      <Input
-                        value={selectedTemplate.title}
-                        onChange={(e) =>
-                          updateTemplate({ title: e.target.value })
-                        }
-                        maxLength={40}
-                      />
-                    </div>
-
-                    {/* Use Case Input */}
-                    <div className="space-y-2">
-                      <div className="text-sm font-semibold">
-                        {i18n.t("promptOrganizer.preview.useCase")}
-                      </div>
-                      <Input
-                        value={selectedTemplate.useCase}
-                        onChange={(e) =>
-                          updateTemplate({ useCase: e.target.value })
-                        }
-                        maxLength={80}
-                      />
-                    </div>
-
+                  <div className="space-y-5 pl-2 pr-4 pb-2">
                     {/* Category Selector */}
-                    <div className="space-y-2">
-                      <div className="text-sm font-semibold">
+                    <div className="space-y-1">
+                      <div className="text-xs font-semibold">
                         {i18n.t("promptOrganizer.preview.category")}
                       </div>
                       <CategorySelector
@@ -340,9 +297,55 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
                       />
                     </div>
 
+                    {/* Title Input */}
+                    <div className="space-y-1">
+                      <div className="text-xs font-semibold">
+                        {i18n.t("promptOrganizer.preview.title_label")}
+                      </div>
+                      <Input
+                        value={selectedTemplate.title}
+                        onChange={(e) =>
+                          updateTemplate({ title: e.target.value })
+                        }
+                        maxLength={40}
+                        className="md:text-3xl py-3 font-extrabold h-auto text-foreground/80"
+                      />
+                    </div>
+
+                    {/* Use Case Input */}
+                    <div className="space-y-1">
+                      <div className="text-xs font-semibold">
+                        {i18n.t("promptOrganizer.preview.useCase")}
+                      </div>
+                      <Textarea
+                        value={selectedTemplate.useCase}
+                        onChange={(e) =>
+                          updateTemplate({ useCase: e.target.value })
+                        }
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault()
+                          }
+                        }}
+                        maxLength={80}
+                        className="md:text-base py-1 font-medium h-auto min-h-auto resize-none"
+                      />
+                    </div>
+
+                    {/* Explanation */}
+                    <div className="space-y-1">
+                      <div className="text-sm font-medium">
+                        <Sparkles className="size-4 inline-block mr-2 -mt-1 text-muted-foreground" />
+                        {i18n.t("promptOrganizer.preview.explanation")}
+                      </div>
+                      <blockquote className="font-serif text-sm border-l-2 px-4 py-3 bg-muted/60">
+                        {selectedTemplate.clusterExplanation}
+                      </blockquote>
+                    </div>
+
                     {/* Content Editor */}
-                    <div className="space-y-2">
-                      <div className="text-sm font-semibold">
+                    <div className="space-y-1">
+                      <div className="text-xs font-semibold">
                         {i18n.t("promptOrganizer.preview.content")}
                       </div>
                       <Textarea
@@ -366,12 +369,13 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
                       }}
                       headerText={i18n.t("promptOrganizer.preview.variables")}
                       showHeader={selectedTemplate.variables.length > 0}
+                      classNameHeader="text-xs"
                     />
 
                     {/* Source Prompts */}
-                    <section className="space-y-2">
+                    <section className="space-y-1">
                       <h3>
-                        <span className="text-sm font-semibold">
+                        <span className="text-xs font-semibold">
                           {i18n.t("promptOrganizer.preview.sourcePrompts")} (
                           {selectedTemplate.aiMetadata.sourceCount})
                         </span>
@@ -381,7 +385,7 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
                           (id) => (
                             <div
                               key={id}
-                              className="text-xs text-muted-foreground"
+                              className="text-xs text-foreground/80"
                             >
                               {sourcePromptNames.get(id) || id}
                             </div>

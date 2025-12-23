@@ -37,6 +37,8 @@ interface VariableSettingsSectionProps {
   descriptionText?: string
   /** Additional CSS class names */
   className?: string
+  /** CSS class names for header */
+  classNameHeader?: string
   /** CSS class names for scroll area */
   scrollAreaClassName?: string
 }
@@ -76,6 +78,7 @@ export const VariableSettingsSection: React.FC<
   headerText,
   descriptionText,
   className = "",
+  classNameHeader,
   scrollAreaClassName,
 }) => {
   // Internal state for auto-detection mode
@@ -154,10 +157,12 @@ export const VariableSettingsSection: React.FC<
       {/* Header */}
       {showHeader && (
         <div>
-          <label className="text-sm font-semibold text-foreground inline-block">
+          <label
+            className={`text-sm font-semibold text-foreground inline-block ${classNameHeader}`}
+          >
             {headerText || defaultHeaderText}
           </label>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className={`text-xs text-muted-foreground mt-1`}>
             {descriptionText || defaultDescriptionText}
           </p>
         </div>
