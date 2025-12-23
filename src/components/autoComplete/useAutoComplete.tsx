@@ -69,15 +69,6 @@ export const useAutoComplete = ({
    */
   const handlePresetOptionView = useCallback(
     (match: AutoCompleteMatch) => {
-      console.log("handlePresetOptionView called", {
-        matchId: match.id,
-        matchName: match.name,
-        matchType: match.matchType,
-        presetType: match.presetType,
-        presetsCount: presets.length,
-        presetIds: presets.map((p) => p.id),
-      })
-
       // Find the preset
       const preset = presets.find((p) => p.id === match.id)
       if (!preset) {
@@ -92,14 +83,11 @@ export const useAutoComplete = ({
         return
       }
 
-      console.log("Preset found:", preset)
-
       // Validation: check for empty options/items
       if (
         preset.type === "select" &&
         (!preset.selectOptions || preset.selectOptions.length === 0)
       ) {
-        console.warn("Select preset has no options")
         insertPresetDirectly(match)
         return
       }
@@ -107,16 +95,11 @@ export const useAutoComplete = ({
         preset.type === "dictionary" &&
         (!preset.dictionaryItems || preset.dictionaryItems.length === 0)
       ) {
-        console.warn("Dictionary preset has no items")
         insertPresetDirectly(match)
         return
       }
 
       // Set view mode to preset-options
-      console.log(
-        "Setting view mode to preset-options and selectedPreset to:",
-        preset,
-      )
       setViewMode("preset-options")
       setSelectedPreset(preset)
       setSelectedPresetMatch(match)
@@ -208,63 +191,66 @@ export const useAutoComplete = ({
     [variableInputData, clearVariableInputData],
   )
 
+  const onShow = useCallback(() => {
+    if (managerRef.current) {
+      setMatches(managerRef.current.getMatches())
+      setPosition(managerRef.current.getPopupPosition())
+      setIsVisible(true)
+    }
+  }, [])
+
+  const onHide = useCallback(() => {
+    setMatches([])
+    managerRef.current?.selectReset()
+    setIsVisible(false)
+    // Reset view mode when hiding
+    setViewMode("matches")
+    setSelectedPreset(null)
+    setSelectedPresetMatch(null)
+  }, [])
+
+  const onSelectChange = useCallback((index: number) => {
+    setSelectedIndex(index)
+  }, [])
+
+  const onExecute = useCallback(
+    async (match: AutoCompleteMatch): Promise<boolean | void> => {
+      if (match.matchType === "prompt") {
+        // Insert prompt (with variable check)
+        await insertPrompt(match.id, match)
+        // Close popup after inserting prompt
+        return true
+      } else if (match.matchType === "preset") {
+        // Check preset type to determine if inline options should be shown
+        if (
+          match.presetType === "select" ||
+          match.presetType === "dictionary"
+        ) {
+          console.log("Calling handlePresetOptionView for", match.presetType)
+          // Show inline preset options view
+          handlePresetOptionView(match)
+          // Keep popup open to show options
+          return false
+        } else {
+          console.log("Inserting text preset directly")
+          // Insert text presets directly
+          insertPresetDirectly(match)
+          // Close popup after inserting
+          return true
+        }
+      }
+    },
+    [insertPrompt, insertPresetDirectly, handlePresetOptionView],
+  )
+
   const callbacks = useMemo(
     () => ({
-      onShow: () => {
-        if (managerRef.current) {
-          setMatches(managerRef.current.getMatches())
-          setPosition(managerRef.current.getPopupPosition())
-          setIsVisible(true)
-        }
-      },
-      onHide: () => {
-        console.log("onHide called - resetting all state")
-        setMatches([])
-        managerRef.current?.selectReset()
-        setIsVisible(false)
-        // Reset view mode when hiding
-        setViewMode("matches")
-        setSelectedPreset(null)
-        setSelectedPresetMatch(null)
-      },
-      onExecute: async (match: AutoCompleteMatch): Promise<boolean | void> => {
-        console.log("onExecute called", {
-          matchType: match.matchType,
-          presetType: match.presetType,
-          matchId: match.id,
-          matchName: match.name,
-        })
-
-        if (match.matchType === "prompt") {
-          // Insert prompt (with variable check)
-          await insertPrompt(match.id, match)
-          // Close popup after inserting prompt
-          return true
-        } else if (match.matchType === "preset") {
-          // Check preset type to determine if inline options should be shown
-          if (
-            match.presetType === "select" ||
-            match.presetType === "dictionary"
-          ) {
-            console.log("Calling handlePresetOptionView for", match.presetType)
-            // Show inline preset options view
-            handlePresetOptionView(match)
-            // Keep popup open to show options
-            return false
-          } else {
-            console.log("Inserting text preset directly")
-            // Insert text presets directly
-            insertPresetDirectly(match)
-            // Close popup after inserting
-            return true
-          }
-        }
-      },
-      onSelectChange: (index: number) => {
-        setSelectedIndex(index)
-      },
+      onShow,
+      onHide,
+      onExecute,
+      onSelectChange,
     }),
-    [insertPrompt, insertPresetDirectly, handlePresetOptionView],
+    [onShow, onHide, onExecute, onSelectChange],
   )
 
   useEffect(() => {

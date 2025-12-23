@@ -490,7 +490,7 @@ describe("variablePresetStorage", () => {
 
       const csvData = [
         "id,name,type,description,textContent,selectOptions,dictionaryItems,createdAt,updatedAt",
-        'preset-2,Role,dictionary,User roles,,,\"[{\"\"id\"\":\"\"item-1\"\",\"\"name\"\":\"\"Customer\"\",\"\"content\"\":\"\"You are a customer...\"\"},{\"\"id\"\":\"\"item-2\"\",\"\"name\"\":\"\"Manager\"\",\"\"content\"\":\"\"You are a manager...\"\"}]\",2024-01-01T00:00:00.000Z,2024-01-01T00:00:00.000Z',
+        'preset-2,Role,dictionary,User roles,,,"[{""id"":""item-1"",""name"":""Customer"",""content"":""You are a customer...""},{""id"":""item-2"",""name"":""Manager"",""content"":""You are a manager...""}]",2024-01-01T00:00:00.000Z,2024-01-01T00:00:00.000Z',
       ].join("\n")
 
       const count = await importVariablePresets(csvData, "merge")
@@ -516,7 +516,7 @@ describe("variablePresetStorage", () => {
 
       const csvData = [
         "id,name,type,description,textContent,selectOptions,dictionaryItems,createdAt,updatedAt",
-        'preset-2,Role,dictionary,User roles,,,\"[{\"\"id\"\":\"\"item-1\"\",\"\"name\"\":\"\"Customer\"\",\"\"content\"\":\"\"You are a customer...\"\"},{\"\"id\"\":\"\"item-2\"\",\"\"name\"\":\"\"Manager\"\",\"\"content\"\":\"\"You are a manager...\"\"}]\",2024-01-01T00:00:00.000Z,2024-01-01T00:00:00.000Z',
+        'preset-2,Role,dictionary,User roles,,,"[{""id"":""item-1"",""name"":""Customer"",""content"":""You are a customer...""},{""id"":""item-2"",""name"":""Manager"",""content"":""You are a manager...""}]",2024-01-01T00:00:00.000Z,2024-01-01T00:00:00.000Z',
       ].join("\n")
 
       const count = await importVariablePresets(csvData, "replace")
@@ -534,7 +534,7 @@ describe("variablePresetStorage", () => {
 
       const csvData = [
         "id,name,type,description,textContent,selectOptions,dictionaryItems,createdAt,updatedAt",
-        'preset-select,Select Preset,select,,,\"Option 1,Option 2,Option 3\",,2024-01-01T00:00:00.000Z,2024-01-01T00:00:00.000Z',
+        'preset-select,Select Preset,select,,,"Option 1,Option 2,Option 3",,2024-01-01T00:00:00.000Z,2024-01-01T00:00:00.000Z',
       ].join("\n")
 
       const count = await importVariablePresets(csvData, "merge")

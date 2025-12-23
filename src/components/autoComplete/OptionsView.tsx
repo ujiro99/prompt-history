@@ -105,7 +105,9 @@ export const OptionsView: React.FC<OptionsViewProps> = ({
         >
           {options.map((option, index) => (
             <OptionItem
-              key={index}
+              key={
+                typeof option === "string" ? `${index}-${option}` : option.id
+              }
               ref={index === selectedIndex ? setOptionItemElm : null}
               option={option}
               presetType={preset.type}

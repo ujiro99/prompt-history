@@ -124,11 +124,11 @@ describe("useVariablePresets", () => {
 
   describe("watch specific preset", () => {
     it("should watch specific preset by ID", async () => {
-      let watchCallback: (preset: VariablePreset | null) => void = () => {}
+      let _watchCallback: (preset: VariablePreset | null) => void = () => {}
 
       vi.mocked(getVariablePresets).mockResolvedValue([mockPreset1, mockPreset2])
       vi.mocked(watchVariablePreset).mockImplementation((_, cb) => {
-        watchCallback = cb
+        _watchCallback = cb
         return vi.fn()
       })
 
@@ -202,7 +202,7 @@ describe("useVariablePresets", () => {
     it("should cleanup watch on unmount", async () => {
       const unwatch = vi.fn()
       vi.mocked(getVariablePresets).mockResolvedValue([mockPreset1])
-      vi.mocked(watchVariablePreset).mockImplementation((_, cb) => {
+      vi.mocked(watchVariablePreset).mockImplementation(() => {
         return unwatch
       })
 
@@ -291,10 +291,10 @@ describe("useVariablePresets", () => {
         .mockResolvedValueOnce([mockPreset1, mockPreset2])
 
       vi.mocked(watchVariablePreset)
-        .mockImplementationOnce((_, cb) => {
+        .mockImplementationOnce(() => {
           return unwatch1
         })
-        .mockImplementationOnce((_, cb) => {
+        .mockImplementationOnce(() => {
           return unwatch2
         })
 
