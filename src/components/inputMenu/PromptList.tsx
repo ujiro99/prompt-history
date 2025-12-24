@@ -75,11 +75,15 @@ export const PromptList = ({
   const [hoveredElm, setHoveredElm] = useState<HTMLElement | null>(null)
   const [searchQuery, setSearchQuery] = useState<string>("")
   const deferredSearchQuery = useDeferredValue(searchQuery)
-  const {
-    settings: { sortOrder, hideOrganizerExcluded },
-    isLoaded,
-  } = useSettings()
+  const { settings, isLoaded } = useSettings()
   const [viewportElm, setViewportElm] = useState<HTMLElement | null>(null)
+
+  // Get menuType-specific settings or fall back to default
+  const menuSettings =
+    menuType === "history" ? settings.historySettings : settings.pinnedSettings
+  const defaultSortOrder = menuType === "history" ? "recent" : "composite"
+  const sortOrder = menuSettings?.sortOrder ?? defaultSortOrder
+  const hideOrganizerExcluded = menuSettings?.hideOrganizerExcluded ?? true
 
   const { filteredGroups, totalCount, aiTemplateGroups } = useMemo(() => {
     if (!isLoaded) {
@@ -238,7 +242,11 @@ export const PromptList = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-          <ListOptions sortOrder={sortOrder} />
+          <ListOptions
+            menuType={menuType}
+            sortOrder={sortOrder}
+            hideOrganizerExcluded={hideOrganizerExcluded}
+          />
         </div>
       )}
       <ScrollAreaWithGradient
@@ -336,19 +344,40 @@ export const PromptList = ({
 }
 
 interface ListOptionsProps {
+  menuType: "history" | "pinned"
   sortOrder: SortOrder
+  hideOrganizerExcluded?: boolean
   className?: string
 }
 
-const ListOptions = ({ sortOrder, className }: ListOptionsProps) => {
-  const { settings, update } = useSettings()
+const ListOptions = ({
+  menuType,
+  sortOrder,
+  hideOrganizerExcluded,
+  className,
+}: ListOptionsProps) => {
+  const { update } = useSettings()
 
   const handleSortOrderChange = (newSortOrder: SortOrder) => {
-    update({ sortOrder: newSortOrder })
+    const settingsKey =
+      menuType === "history" ? "historySettings" : "pinnedSettings"
+    update({
+      [settingsKey]: {
+        sortOrder: newSortOrder,
+        hideOrganizerExcluded,
+      },
+    })
   }
 
   const handleFilterToggle = (checked: boolean) => {
-    update({ hideOrganizerExcluded: checked })
+    const settingsKey =
+      menuType === "history" ? "historySettings" : "pinnedSettings"
+    update({
+      [settingsKey]: {
+        sortOrder,
+        hideOrganizerExcluded: checked,
+      },
+    })
   }
 
   const { container } = useContainer()
@@ -401,7 +430,7 @@ const ListOptions = ({ sortOrder, className }: ListOptionsProps) => {
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="hideOrganizerExcluded"
-                checked={settings.hideOrganizerExcluded ?? false}
+                checked={hideOrganizerExcluded ?? false}
                 onCheckedChange={handleFilterToggle}
               />
               <label

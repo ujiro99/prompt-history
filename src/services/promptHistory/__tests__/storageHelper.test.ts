@@ -66,9 +66,16 @@ const mockPrompt: Prompt = {
 const mockSettings: AppSettings = {
   autoSaveEnabled: true,
   maxPrompts: 100,
-  sortOrder: "recent",
   showNotifications: true,
   autoCompleteEnabled: true,
+  historySettings: {
+    sortOrder: "recent",
+    hideOrganizerExcluded: true,
+  },
+  pinnedSettings: {
+    sortOrder: "composite",
+    hideOrganizerExcluded: true,
+  },
 }
 
 describe("StorageHelper", () => {
@@ -198,7 +205,10 @@ describe("StorageHelper", () => {
       vi.mocked(mockStorage.getAllPrompts).mockResolvedValue(prompts)
       vi.mocked(mockStorage.getSettings).mockResolvedValue({
         ...mockSettings,
-        sortOrder: "recent",
+        historySettings: {
+          ...mockSettings.historySettings!,
+          sortOrder: "recent",
+        },
       })
 
       const result = await storageHelper.getPrompts()
@@ -212,7 +222,10 @@ describe("StorageHelper", () => {
       vi.mocked(mockStorage.getAllPrompts).mockResolvedValue(prompts)
       vi.mocked(mockStorage.getSettings).mockResolvedValue({
         ...mockSettings,
-        sortOrder: "execution",
+        historySettings: {
+          ...mockSettings.historySettings!,
+          sortOrder: "execution",
+        },
       })
 
       const result = await storageHelper.getPrompts()
@@ -226,7 +239,10 @@ describe("StorageHelper", () => {
       vi.mocked(mockStorage.getAllPrompts).mockResolvedValue(prompts)
       vi.mocked(mockStorage.getSettings).mockResolvedValue({
         ...mockSettings,
-        sortOrder: "name",
+        historySettings: {
+          ...mockSettings.historySettings!,
+          sortOrder: "name",
+        },
       })
 
       const result = await storageHelper.getPrompts()
@@ -240,7 +256,10 @@ describe("StorageHelper", () => {
       vi.mocked(mockStorage.getAllPrompts).mockResolvedValue(prompts)
       vi.mocked(mockStorage.getSettings).mockResolvedValue({
         ...mockSettings,
-        sortOrder: "composite",
+        historySettings: {
+          ...mockSettings.historySettings!,
+          sortOrder: "composite",
+        },
       })
 
       const result = await storageHelper.getPrompts()
@@ -795,7 +814,10 @@ Different content.
       vi.mocked(mockStorage.getAllPrompts).mockResolvedValue(prompts)
       vi.mocked(mockStorage.getSettings).mockResolvedValue({
         ...mockSettings,
-        sortOrder: "composite",
+        historySettings: {
+          ...mockSettings.historySettings!,
+          sortOrder: "composite",
+        },
       })
 
       // First call should calculate and cache scores
