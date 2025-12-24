@@ -29,7 +29,7 @@ export const GroupHeader = ({
   return (
     <div
       className={cn(
-        "flex items-center justify-between px-2 py-1.5 text-xs",
+        "flex items-center justify-between px-2 py-1.5 text-xs select-none",
         className,
       )}
       role="group"

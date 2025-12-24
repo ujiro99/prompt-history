@@ -23,10 +23,17 @@ export const DEFAULT_SETTINGS: AppSettings = {
   autoSaveEnabled: true,
   autoCompleteEnabled: true,
   maxPrompts: 1000,
-  sortOrder: "composite",
   showNotifications: true,
   minimalMode: false,
   autoCompleteTarget: "all",
+  historySettings: {
+    sortOrder: "recent",
+    hideOrganizerExcluded: true,
+  },
+  pinnedSettings: {
+    sortOrder: "composite",
+    hideOrganizerExcluded: true,
+  },
 }
 
 /**
@@ -94,8 +101,29 @@ export const settingsStorage = storage.defineItem<AppSettings>(
   "local:settings",
   {
     fallback: DEFAULT_SETTINGS,
-    version: 1,
-    migrations: {},
+    version: 2,
+    migrations: {
+      2: (oldSettings: AppSettings) => {
+        // Migrate existing sortOrder menuType-specific settings
+        // If historySettings or pinnedSettings are not set, initialize them with current values
+        const migratedSettings = { ...oldSettings }
+
+        if (!migratedSettings.historySettings) {
+          migratedSettings.historySettings = {
+            ...DEFAULT_SETTINGS.historySettings,
+            sortOrder: oldSettings.sortOrder,
+          }
+        }
+
+        if (!migratedSettings.pinnedSettings) {
+          migratedSettings.pinnedSettings = {
+            ...DEFAULT_SETTINGS.pinnedSettings,
+            sortOrder: oldSettings.sortOrder,
+          }
+        }
+        return migratedSettings
+      },
+    },
   },
 )
 

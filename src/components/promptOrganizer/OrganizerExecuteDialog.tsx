@@ -367,38 +367,13 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
             {/* Progress Display */}
             {isExecuting && progress && (
               <section className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-medium">
-                    <StatusLabel status={progress.status} />
-                  </h3>
-                </div>
-
-                <div className="rounded-lg border p-4 space-y-1 text-xs font-mono text-muted-dforeground">
-                  {/* Token Usage */}
-                  <div className="grid grid-cols-2">
-                    <p>
-                      <span>
-                        {i18n.t("promptOrganizer.estimate.thoughtsTokens")}
-                        :{" "}
-                      </span>
-                      <span className="text-muted-foreground">
-                        {progress.thoughtsTokens ?? 0} tokens
-                      </span>
-                    </p>
-                    <p>
-                      <span>
-                        {i18n.t("promptOrganizer.estimate.outputTokens")}:{" "}
-                      </span>
-                      <span className="text-muted-foreground">
-                        {progress.outputTokens ?? 0} tokens
-                      </span>
-                    </p>
-                  </div>
-
+                <div className="rounded-lg border p-4 space-y-2 text-xs font-mono text-muted-dforeground">
                   {/* Progress Bar */}
-                  <div className="space-y-1 pt-1">
+                  <div className="space-y-1">
                     <div className="flex justify-between items-center">
-                      <span>{i18n.t("promptOrganizer.execute.progress")}</span>
+                      <h3 className="text-sm font-medium">
+                        <StatusLabel status={progress.status} />
+                      </h3>
                       <span className="text-muted-foreground">
                         {progress.estimatedProgress}%
                       </span>
@@ -409,9 +384,31 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
                     />
                   </div>
 
+                  {/* Token Usage */}
+                  <div className="flex gap-2">
+                    <p>
+                      <span>
+                        {i18n.t("promptOrganizer.estimate.thoughtsTokens")}
+                        :{" "}
+                      </span>
+                      <span className="text-muted-foreground">
+                        {progress.thoughtsTokens ?? 0} tokens
+                      </span>
+                    </p>
+                    <span>|</span>
+                    <p>
+                      <span>
+                        {i18n.t("promptOrganizer.estimate.outputTokens")}:{" "}
+                      </span>
+                      <span className="text-muted-foreground">
+                        {progress.outputTokens ?? 0} tokens
+                      </span>
+                    </p>
+                  </div>
+
                   {/* Partial JSON Preview */}
                   {progress.accumulated && progress.accumulated.length > 50 && (
-                    <div className="space-y-1 pt-1">
+                    <div className="space-y-1 pt-3">
                       <p>
                         {i18n.t("promptOrganizer.execute.receivingPrompts")}
                       </p>
@@ -506,7 +503,7 @@ const StatusLabel: React.FC<{ status: GenerationProgress["status"] }> = ({
   }, [status])
 
   return (
-    <span>
+    <span className="font-sans text-foreground">
       ⚡ {message}
       {dot}
     </span>

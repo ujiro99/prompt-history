@@ -235,6 +235,16 @@ export interface StorageData {
 }
 
 /**
+ * Menu type specific settings
+ */
+export interface MenuTypeSettings {
+  /** Sort order for this menu type */
+  sortOrder?: SortOrder
+  /** Whether to hide automatically organized prompts */
+  hideOrganizerExcluded?: boolean
+}
+
+/**
  * Application settings
  */
 export interface AppSettings {
@@ -244,8 +254,8 @@ export interface AppSettings {
   autoCompleteEnabled: boolean
   /** Maximum number of stored prompts */
   maxPrompts: number
-  /** Default sort order */
-  sortOrder: SortOrder
+  /** Default sort order(deprecated) */
+  sortOrder?: SortOrder
   /** Notification display setting */
   showNotifications: boolean
   /** Enable/disable minimal mode */
@@ -254,6 +264,10 @@ export interface AppSettings {
   autoCompleteTarget?: "all" | "pinned"
   /** Enable/disable variable expansion feature */
   variableExpansionEnabled?: boolean
+  /** Settings specific to history menu */
+  historySettings?: MenuTypeSettings
+  /** Settings specific to pinned menu */
+  pinnedSettings?: MenuTypeSettings
 }
 
 /**

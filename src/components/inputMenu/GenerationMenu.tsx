@@ -191,6 +191,15 @@ export function GenerationMenu({
         isExecuting={isExecuting}
         isCanceling={isCanceling}
         progress={progress}
+        // progress={{
+        //   chunk: "string",
+        //   accumulated:
+        //     "123456789012345678901234567890123456789012345678901234567890",
+        //   estimatedProgress: 20,
+        //   status: "sending",
+        //   thoughtsTokens: 1000,
+        //   outputTokens: 10000,
+        // }}
         error={error}
         onCancel={cancelGeneration}
         pendingTemplates={pendingTemplates}

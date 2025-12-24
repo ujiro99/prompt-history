@@ -5,7 +5,7 @@ import {
   useDeferredValue,
   useCallback,
 } from "react"
-import { Search, Settings2 } from "lucide-react"
+import { Search, Settings2, ArrowDownUp, Funnel } from "lucide-react"
 import type { Prompt, SortOrder } from "@/types/prompt"
 import { cn, isEmpty } from "@/lib/utils"
 import { ScrollAreaWithGradient } from "./ScrollAreaWithGradient"
@@ -26,6 +26,12 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { Checkbox } from "@/components/ui/checkbox"
 import { useContainer } from "@/hooks/useContainer"
 import { i18n } from "#imports"
 
@@ -69,11 +75,15 @@ export const PromptList = ({
   const [hoveredElm, setHoveredElm] = useState<HTMLElement | null>(null)
   const [searchQuery, setSearchQuery] = useState<string>("")
   const deferredSearchQuery = useDeferredValue(searchQuery)
-  const {
-    settings: { sortOrder },
-    isLoaded,
-  } = useSettings()
+  const { settings, isLoaded } = useSettings()
   const [viewportElm, setViewportElm] = useState<HTMLElement | null>(null)
+
+  // Get menuType-specific settings or fall back to default
+  const menuSettings =
+    menuType === "history" ? settings.historySettings : settings.pinnedSettings
+  const defaultSortOrder = menuType === "history" ? "recent" : "composite"
+  const sortOrder = menuSettings?.sortOrder ?? defaultSortOrder
+  const hideOrganizerExcluded = menuSettings?.hideOrganizerExcluded ?? true
 
   const { filteredGroups, totalCount, aiTemplateGroups } = useMemo(() => {
     if (!isLoaded) {
@@ -83,11 +93,18 @@ export const PromptList = ({
     const query = deferredSearchQuery.toLowerCase()
 
     // First filter prompts by search query
-    const filtered = [...prompts].filter(
+    let filtered = [...prompts].filter(
       (p) =>
         p.content.toLowerCase().includes(query) ||
         p.name?.toLowerCase().includes(query),
     )
+
+    // Filter out prompts excluded from organizer if setting is enabled
+    if (hideOrganizerExcluded) {
+      filtered = filtered.filter(
+        (p) => !(p.excludeFromOrganizer === true && !p.isAIGenerated),
+      )
+    }
 
     // For pinned menu, separate user pinned and AI templates
     if (menuType === "pinned") {
@@ -112,7 +129,6 @@ export const PromptList = ({
 
     // For history menu, show all
     const groups = groupPrompts(filtered, sortOrder, sideFlipped)
-    console.log("Grouped Prompts:", groups, sideFlipped) // Debug log
 
     // Calculate total count
     const count = groups.reduce((acc, group) => acc + group.prompts.length, 0)
@@ -122,9 +138,15 @@ export const PromptList = ({
       aiTemplateGroups: [],
       totalCount: count,
     }
-  }, [isLoaded, prompts, sideFlipped, deferredSearchQuery, sortOrder, menuType])
-
-  console.log("PromptList Render:", aiTemplateGroups)
+  }, [
+    isLoaded,
+    prompts,
+    sideFlipped,
+    deferredSearchQuery,
+    sortOrder,
+    menuType,
+    hideOrganizerExcluded,
+  ])
 
   const isListEmpty = totalCount === 0
 
@@ -220,7 +242,11 @@ export const PromptList = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-          <SortOrderSelect sortOrder={sortOrder} className="px-1.5 py-0" />
+          <ListOptions
+            menuType={menuType}
+            sortOrder={sortOrder}
+            hideOrganizerExcluded={hideOrganizerExcluded}
+          />
         </div>
       )}
       <ScrollAreaWithGradient
@@ -317,40 +343,106 @@ export const PromptList = ({
   )
 }
 
-interface SortOrderSelectProps {
+interface ListOptionsProps {
+  menuType: "history" | "pinned"
   sortOrder: SortOrder
+  hideOrganizerExcluded?: boolean
   className?: string
 }
 
-const SortOrderSelect = ({ sortOrder, className }: SortOrderSelectProps) => {
+const ListOptions = ({
+  menuType,
+  sortOrder,
+  hideOrganizerExcluded,
+  className,
+}: ListOptionsProps) => {
   const { update } = useSettings()
 
   const handleSortOrderChange = (newSortOrder: SortOrder) => {
-    update({ sortOrder: newSortOrder })
+    const settingsKey =
+      menuType === "history" ? "historySettings" : "pinnedSettings"
+    update({
+      [settingsKey]: {
+        sortOrder: newSortOrder,
+        hideOrganizerExcluded,
+      },
+    })
   }
+
+  const handleFilterToggle = (checked: boolean) => {
+    const settingsKey =
+      menuType === "history" ? "historySettings" : "pinnedSettings"
+    update({
+      [settingsKey]: {
+        sortOrder,
+        hideOrganizerExcluded: checked,
+      },
+    })
+  }
+
   const { container } = useContainer()
 
   return (
-    <Tooltip>
-      <Select onValueChange={handleSortOrderChange} value={sortOrder}>
+    <Popover>
+      <Tooltip>
         <TooltipTrigger asChild>
-          <SelectTrigger
-            className={cn("transition hover:bg-neutral-100", className)}
-            size="sm"
-            renderIcon={false}
+          <PopoverTrigger
+            className={cn(
+              "border border-input p-1.5 shadow-xs inline-flex items-center justify-center rounded-md transition hover:bg-neutral-100 cursor-pointer",
+              className,
+            )}
           >
             <Settings2 className="size-4" />
-          </SelectTrigger>
+          </PopoverTrigger>
         </TooltipTrigger>
-        <SelectContent className="bg-white" container={container}>
-          {orders.map((order) => (
-            <SelectItem key={order} value={order}>
-              {i18n.t(`sortOrder.${order}.label`)}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      <TooltipContent>{i18n.t(`sortOrder.${sortOrder}.label`)}</TooltipContent>
-    </Tooltip>
+        <TooltipContent>{i18n.t("listOptions.menu")}</TooltipContent>
+      </Tooltip>
+      <PopoverContent className="w-80 bg-white">
+        <div className="space-y-4">
+          {/* Sort Order Section */}
+          <div className="space-y-2">
+            <label className="text-sm inline-block select-none">
+              <ArrowDownUp className="size-4 inline-block mr-1 -mt-1" />
+              {i18n.t("sortOrder.label")}
+            </label>
+            <Select onValueChange={handleSortOrderChange} value={sortOrder}>
+              <SelectTrigger className="w-full cursor-pointer">
+                {i18n.t(`sortOrder.${sortOrder}.label`)}
+              </SelectTrigger>
+              <SelectContent className="bg-white" container={container}>
+                {orders.map((order) => (
+                  <SelectItem key={order} value={order}>
+                    {i18n.t(`sortOrder.${order}.label`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <hr />
+
+          {/* Filter Options Section */}
+          <div className="space-y-3 pb-1">
+            <label className="text-sm inline-block select-none">
+              <Funnel className="size-4 inline-block mr-1 -mt-1" />
+              {i18n.t("listOptions.filter.label")}
+            </label>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="hideOrganizerExcluded"
+                checked={hideOrganizerExcluded ?? false}
+                onCheckedChange={handleFilterToggle}
+              />
+              <label
+                htmlFor="hideOrganizerExcluded"
+                className="text-sm cursor-pointer select-none"
+              >
+                {i18n.t("listOptions.filter.hideOrganizerExcluded")}
+              </label>
+            </div>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
   )
 }

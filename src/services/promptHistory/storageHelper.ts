@@ -19,7 +19,7 @@ export class StorageHelper {
   constructor(
     private storage: StorageService,
     private sessionManager: SessionManager,
-  ) { }
+  ) {}
 
   /**
    * Get single prompt by ID
@@ -38,7 +38,7 @@ export class StorageHelper {
   async getPrompts(): Promise<Prompt[]> {
     const prompts = await this.storage.getAllPrompts()
     console.log("Fetched prompts:", prompts)
-    return await this.applySort(prompts)
+    return await this.applySort(prompts, "history")
   }
 
   /**
@@ -55,7 +55,7 @@ export class StorageHelper {
       .map((id) => promptMap.get(id))
       .filter((p): p is Prompt => Boolean(p))
 
-    return await this.applySort(pinnedPrompts)
+    return await this.applySort(pinnedPrompts, "pinned")
   }
 
   /**
@@ -63,7 +63,7 @@ export class StorageHelper {
    */
   watchPrompts(onChange: (prompts: Prompt[]) => void): () => void {
     return this.storage.watchPrompts(async (prompts) => {
-      const sorted = await this.applySort(prompts)
+      const sorted = await this.applySort(prompts, "history")
       onChange(sorted)
     })
   }
@@ -80,26 +80,51 @@ export class StorageHelper {
 
   /**
    * Watch sort order changes
+   * Note: Monitors both deprecated sortOrder and menuType-specific settings
    */
   watchSortOrder(onChange: (sortOrder: string) => void): () => void {
     return this.storage.watchSettings((newVal, oldVal) => {
-      if (newVal.sortOrder === oldVal.sortOrder) {
-        return
+      // Check if any sort order setting has changed
+      const oldSortOrder = oldVal.historySettings?.sortOrder
+      const newSortOrder = newVal.historySettings?.sortOrder
+
+      const oldPinnedSortOrder = oldVal.pinnedSettings?.sortOrder
+      const newPinnedSortOrder = newVal.pinnedSettings?.sortOrder
+
+      if (
+        newSortOrder !== oldSortOrder ||
+        newPinnedSortOrder !== oldPinnedSortOrder
+      ) {
+        onChange(newSortOrder || "recent")
       }
-      onChange(newVal.sortOrder)
     })
   }
 
   /**
    * Apply sort order to prompts array
+   * Note: This method uses deprecated sortOrder for backward compatibility.
+   * UI components should use menuType-specific settings directly.
    */
-  private async applySort(prompts: Prompt[]): Promise<Prompt[]> {
+  private async applySort(
+    prompts: Prompt[],
+    menuType: "history" | "pinned",
+  ): Promise<Prompt[]> {
     const settings = await this.storage.getSettings()
+
+    // Get sort order with fallback based on menuType:
+    // 1. Use menuType-specific settings
+    // 2. Fall back to default based on menuType
+    const menuSettings =
+      menuType === "history"
+        ? settings.historySettings
+        : settings.pinnedSettings
+    const defaultSortOrder = menuType === "history" ? "recent" : "composite"
+    const sortOrder = menuSettings?.sortOrder ?? defaultSortOrder
 
     // Create a copy to avoid mutating the original array
     const sortedPrompts = [...prompts]
 
-    switch (settings.sortOrder) {
+    switch (sortOrder) {
       case "recent":
         return sortedPrompts
           .sort(
