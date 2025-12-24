@@ -91,7 +91,7 @@
 
 **型**: `boolean`
 
-**デフォルト値**: `false`
+**デフォルト値**: `true`
 
 **説明**: trueの場合、`excludeFromOrganizer === true`かつ`isAIGenerated === false`のプロンプトを一覧から除外する
 
@@ -134,7 +134,7 @@ hideOrganizerExcluded?: boolean
 ```
 
 - オプショナルプロパティ（既存データとの互換性のため）
-- デフォルト値: false
+- デフォルト値: true
 
 ### 関連する既存の型
 

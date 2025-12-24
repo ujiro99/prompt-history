@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Save, Trash, Star, Sparkles } from "lucide-react"
+import { Save, Trash, Star, MessageCircleMore } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -335,7 +335,7 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
                     {/* Explanation */}
                     <div className="space-y-1">
                       <div className="text-sm font-medium">
-                        <Sparkles className="size-4 inline-block mr-2 -mt-1 text-muted-foreground" />
+                        <MessageCircleMore className="size-4 inline-block mr-1 -mt-1 stroke-fuchsia-400 fill-purple-100" />
                         {i18n.t("promptOrganizer.preview.explanation")}
                       </div>
                       <blockquote className="font-serif text-sm border-l-2 px-4 py-3 bg-muted/60">
