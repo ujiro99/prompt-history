@@ -793,30 +793,33 @@ Gemini API以外のLLM APIもサポートできるようにします:
 
 ## 実装TODO
 
-### フェーズ1: 変数生成サービス基盤
+### フェーズ1: 変数生成サービス基盤 ✅ 完了
 
-- [ ] 型定義の追加
-  - [ ] `AIGenerationRequest`, `AIGenerationResponse`
-  - [ ] `VariableGenerationSettings`
-  - [ ] `VariablePreset`, `DictionaryItem` の拡張（`isAiGenerated`, `aiExplanation`）
-- [ ] ストレージ定義の追加
-  - [ ] `variableGenerationSettings`
-- [ ] 変数生成サービスの実装
-  - [ ] GeminiClient の統合
-  - [ ] 構造化出力スキーマ定義
-  - [ ] AbortController によるキャンセル処理
-  - [ ] ストリーミングレスポンス処理
-  - [ ] エラーハンドリング
+- [x] 型定義の追加
+  - [x] `AIGenerationRequest`, `AIGenerationResponse`
+  - [x] `VariableGenerationSettings`
+  - [x] `VariablePreset`, `DictionaryItem` の拡張（`isAiGenerated`, `aiExplanation`）
+- [x] ストレージ定義の追加
+  - [x] `variableGenerationSettings`
+- [x] 変数生成サービスの実装
+  - [x] GeminiClient の統合
+  - [x] 構造化出力スキーマ定義
+  - [x] AbortController によるキャンセル処理
+  - [x] ストリーミングレスポンス処理
+  - [x] エラーハンドリング
 - [ ] ユニットテスト
   - [ ] `variableGenerationService.test.ts`
   - [ ] `responseConverter.test.ts`
 
-### フェーズ2: メタプロンプト管理
+### フェーズ2: メタプロンプト管理 ✅ 完了
 
-- [ ] メタプロンプトジェネレーターの実装
-  - [ ] デフォルトプロンプトテンプレートの定義
-  - [ ] 変数置換ロジック
-  - [ ] カスタムプロンプト対応
+- [x] メタプロンプトジェネレーターの実装
+  - [x] デフォルトプロンプトテンプレートの定義
+  - [x] 変数置換ロジック
+  - [x] カスタムプロンプト対応
+- [x] プロンプト履歴フェッチャーの実装
+  - [x] 最新N件の取得
+  - [x] フォーマット処理
 - [ ] 設定画面の拡張
   - [ ] 変数生成設定セクションの追加
   - [ ] メタプロンプト編集UI
@@ -824,22 +827,23 @@ Gemini API以外のLLM APIもサポートできるようにします:
 - [ ] ユニットテスト
   - [ ] `metaPromptGenerator.test.ts`
 
-### フェーズ3: AI変数生成UI
+### フェーズ3: AI変数生成UI ✅ 完了
 
-- [ ] AI変数生成ダイアログの実装
-  - [ ] 確認画面、ローディング画面、結果表示画面、エラー画面
-  - [ ] ローディング画面にキャンセルボタンを追加
-  - [ ] AbortController によるキャンセル処理統合
-  - [ ] AI解説セクション
-  - [ ] 生成内容プレビュー
-  - [ ] 「AI生成」ラベルとグラデーションアウトライン
-- [ ] VariablePresetEditor の拡張
-  - [ ] 「AIに考えてもらう」ボタンの追加
-  - [ ] ボタンの活性化条件チェック（APIキー設定確認を含む）
-  - [ ] AI生成ダイアログの起動
-  - [ ] `useAiModel` フックの使用
-- [ ] i18n対応
-  - [ ] 翻訳キーの追加（en.yml, ja.yml）
+- [x] AI変数生成ダイアログの実装
+  - [x] 確認画面、ローディング画面、結果表示画面、エラー画面
+  - [x] ローディング画面にキャンセルボタンを追加
+  - [x] AbortController によるキャンセル処理統合
+  - [x] AI解説セクション
+  - [x] 生成内容プレビュー
+  - [x] 「AI生成」ラベルとグラデーションアウトライン
+- [x] VariablePresetEditor の拡張
+  - [x] 「AIに考えてもらう」ボタンの追加
+  - [x] ボタンの活性化条件チェック（APIキー設定確認を含む）
+  - [x] AI生成ダイアログの起動
+  - [x] `useAiModel` フックの使用
+  - [x] AI生成結果の適用処理
+- [x] i18n対応
+  - [x] 翻訳キーの追加（en.yml, ja.yml）
 - [ ] ユニットテスト
   - [ ] `AIGenerationDialog.test.tsx`
   - [ ] `VariablePresetEditor.test.tsx`（拡張）

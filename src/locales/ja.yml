@@ -244,6 +244,20 @@ settings:
     description: プロンプトの改善方法を設定します。
   promptOrganizerSettings: プロンプト整理の設定
   variablePresetsSettings: 変数プリセットの設定
+  variableGeneration:
+    title: 変数生成設定
+    description: AI生成プロンプトの設定を管理します。
+    metaPrompt: AI生成プロンプト設定
+    useDefault: デフォルトプロンプトを使用
+    customPrompt: カスタムプロンプト
+    customPromptDescription: カスタムプロンプトテンプレートを入力してください
+    promptHistoryCount: プロンプト履歴件数
+    promptHistoryCountDescription: 変数生成に使用するプロンプト履歴の件数を選択してください
+    count50: 50件
+    count100: 100件
+    count200: 200件
+    count500: 500件
+    countUnlimited: 無制限
 
 # Variable Presets
 variablePresets:
@@ -333,6 +347,33 @@ variablePresets:
     itemNameMaxLength: 項目名は20文字以内で入力してください
     itemNameDuplicate: この項目名は既に使用されています
     itemContentRequired: 項目内容は必須です
+  aiGeneration:
+    button: AIに考えてもらう
+    label: AI生成
+    tooltip: 変数名、用途、変数型を入力してください
+    tooltipApiKey: APIキーを設定してください
+    dialog:
+      title: AIに変数を生成してもらいます
+      description: 以下の情報とこれまでのプロンプト履歴から、変数の内容をAIに考えてもらいます。スタートを押してください。
+      variableName: "変数名: $1"
+      variablePurpose: "用途: $1"
+      variableType: "変数型: $1"
+      start: スタート
+      loading: 考え中...
+      loadingDescription: AIが変数を生成しています。しばらくお待ちください。
+      success: 変数を作成しました
+      successDescription: AIが生成した内容は以下の通りです。必要に応じて編集してください。
+      explanation: AIからの解説
+      previewTitle: 生成された内容
+      apply: 適用
+      retry: 再試行
+      improving: 生成中...
+    error:
+      apiKeyMissing: Gemini APIキーが設定されていません
+      networkError: ネットワークエラーが発生しました
+      apiError: API呼び出しに失敗しました
+      invalidResponse: 不正なレスポンス形式です
+      cancelled: 生成がキャンセルされました
 
 # Import Dialog
 importDialog:

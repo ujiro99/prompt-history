@@ -6,6 +6,7 @@ import type {
   Session,
   AppSettings,
   ImprovePromptSettings,
+  VariableGenerationSettings,
 } from "@/types/prompt"
 import type {
   Category,
@@ -245,3 +246,19 @@ export const variablePresetsOrderStorage = storage.defineItem<string[]>(
     migrations: {},
   },
 )
+
+/**
+ * Variable Generation Settings storage definition
+ */
+export const variableGenerationSettingsStorage =
+  storage.defineItem<VariableGenerationSettings>(
+    "local:variableGenerationSettings",
+    {
+      fallback: {
+        useDefault: true,
+        promptHistoryCount: 200,
+      },
+      version: 1,
+      migrations: {},
+    },
+  )

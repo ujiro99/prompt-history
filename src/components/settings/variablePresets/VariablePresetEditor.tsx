@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from "react"
-import { Plus, Copy, Trash, MoveUp, MoveDown } from "lucide-react"
+import { Plus, Copy, Trash, MoveUp, MoveDown, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -19,15 +19,18 @@ import {
 } from "@/components/ui/field"
 import { ScrollAreaWithGradient } from "@/components/inputMenu/ScrollAreaWithGradient"
 import { RemoveDialog } from "@/components/inputMenu/controller/RemoveDialog"
+import { AIGenerationDialog } from "./AIGenerationDialog"
 import type {
   VariablePreset,
   PresetVariableType,
   DictionaryItem,
+  AIGenerationResponse,
 } from "@/types/prompt"
-import { cn } from "@/lib/utils"
+import { cn, uuid } from "@/lib/utils"
 import { movePrev, moveNext } from "@/utils/array"
 import { useContainer } from "@/hooks/useContainer"
 import { usePresetValidation } from "@/hooks/usePresetValidation"
+import { useAiModel } from "@/hooks/useAiModel"
 import { i18n } from "#imports"
 import { validateField, type FieldErrors } from "@/schemas/variablePreset"
 import { generateDictItemId } from "@/utils/idGenerator"
@@ -73,6 +76,10 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
   const [removeDictionaryItemIdx, setRemoveDictionaryItemIdx] = useState<
     number | null
   >(null)
+
+  // For AI generation dialog
+  const [aiDialogOpen, setAiDialogOpen] = useState(false)
+  const { genaiApiKey } = useAiModel()
 
   // Update local state when preset prop changes
   useEffect(() => {
@@ -262,6 +269,65 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
     })
   }
 
+  /**
+   * Handle AI generation apply
+   */
+  const handleAiGenerationApply = (response: AIGenerationResponse) => {
+    if (!localPreset) return
+
+    // Prepare all updates in a single object
+    const updates: Partial<VariablePreset> = {
+      isAiGenerated: true,
+      aiExplanation: response.explanation,
+    }
+
+    // Apply generated content based on variable type
+    switch (localPreset.type) {
+      case "text":
+        updates.textContent = response.textContent || ""
+        break
+
+      case "select":
+        updates.selectOptions = response.selectOptions || []
+        // Update ref for select options input
+        if (selectOptionsRef.current) {
+          selectOptionsRef.current.value = response.selectOptions
+            ? response.selectOptions.join(", ")
+            : ""
+        }
+        break
+
+      case "dictionary": {
+        // Convert response items to DictionaryItem format
+        updates.dictionaryItems =
+          response.dictionaryItems?.map((item) => ({
+            id: uuid(),
+            name: item.name,
+            content: item.content,
+            isAiGenerated: true,
+          })) || []
+        break
+      }
+    }
+
+    // Apply all updates at once
+    const updatedPreset = {
+      ...localPreset,
+      ...updates,
+    }
+    setLocalPreset(updatedPreset)
+    onChange(updatedPreset)
+  }
+
+  /**
+   * Check if AI generation button should be enabled
+   */
+  const isAiGenerationEnabled =
+    localPreset &&
+    localPreset.name.trim() !== "" &&
+    localPreset.description?.trim() !== "" &&
+    Boolean(genaiApiKey)
+
   if (!localPreset) {
     return (
       <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
@@ -406,6 +472,35 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
               </SelectContent>
             </Select>
           </Field>
+
+          {/* AI Generation Button */}
+          <div className="flex justify-center py-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setAiDialogOpen(true)}
+              disabled={!isAiGenerationEnabled}
+              className={cn(
+                "flex items-center gap-2",
+                "bg-gradient-to-r from-purple-50 to-blue-50",
+                "border-purple-200 hover:border-purple-300",
+                "hover:from-purple-100 hover:to-blue-100",
+                "text-purple-700 hover:text-purple-800",
+                "transition-all duration-200",
+                "disabled:opacity-50 disabled:cursor-not-allowed",
+              )}
+              title={
+                !localPreset.name.trim() || !localPreset.description?.trim()
+                  ? i18n.t("variablePresets.aiGeneration.tooltip")
+                  : !genaiApiKey
+                    ? i18n.t("variablePresets.aiGeneration.tooltipApiKey")
+                    : undefined
+              }
+            >
+              <Sparkles className="size-4" fill="url(#lucideGradient)" />
+              {i18n.t("variablePresets.aiGeneration.button")}
+            </Button>
+          </div>
 
           {/* Type-specific fields */}
           {localPreset.type === "text" && (
@@ -605,6 +700,16 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
           </span>
         )}
       </RemoveDialog>
+
+      {/* AI Generation Dialog */}
+      <AIGenerationDialog
+        open={aiDialogOpen}
+        onOpenChange={setAiDialogOpen}
+        variableName={localPreset.name}
+        variablePurpose={localPreset.description || ""}
+        variableType={localPreset.type}
+        onApply={handleAiGenerationApply}
+      />
     </div>
   )
 }

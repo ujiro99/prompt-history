@@ -38,6 +38,8 @@ export interface DictionaryItem {
   name: string
   /** Item content (multi-line string, expanded when selected) */
   content: string
+  /** Whether this dictionary item was AI-generated */
+  isAiGenerated?: boolean
 }
 
 /**
@@ -58,6 +60,10 @@ export interface VariablePreset {
   selectOptions?: string[]
   /** [Dictionary type only] Dictionary items */
   dictionaryItems?: DictionaryItem[]
+  /** Whether this variable preset was AI-generated */
+  isAiGenerated?: boolean
+  /** AI generation explanation (reasoning for the generated content) */
+  aiExplanation?: string
   /** Creation date */
   createdAt: Date
   /** Update date */
@@ -344,4 +350,46 @@ export interface PromptStats {
   mostExecutedPrompt?: Prompt
   /** Recently executed prompt */
   recentlyExecutedPrompt?: Prompt
+}
+
+/**
+ * AI generation request parameters
+ */
+export interface AIGenerationRequest {
+  /** Variable name */
+  variableName: string
+  /** Variable purpose/description */
+  variablePurpose: string
+  /** Variable type (text / select / dictionary) */
+  variableType: PresetVariableType
+  /** Prompt history (concatenated text) */
+  promptHistory: string
+  /** Meta-prompt template */
+  metaPrompt: string
+}
+
+/**
+ * AI generation response (structured output from Gemini API)
+ */
+export interface AIGenerationResponse {
+  /** AI explanation for the generated content */
+  explanation: string
+  /** [Text type only] Generated text content */
+  textContent?: string
+  /** [Select type only] Generated select options */
+  selectOptions?: string[]
+  /** [Dictionary type only] Generated dictionary items */
+  dictionaryItems?: { name: string; content: string }[]
+}
+
+/**
+ * Variable generation settings
+ */
+export interface VariableGenerationSettings {
+  /** Use default meta-prompt template */
+  useDefault: boolean
+  /** Custom meta-prompt template (if useDefault is false) */
+  customPrompt?: string
+  /** Number of prompt history items to use (default: 200) */
+  promptHistoryCount: number
 }
