@@ -11,8 +11,10 @@ import { variableGenerationSettingsStorage } from "@/services/storage/definition
 import { i18n } from "#imports"
 import {
   DEFAULT_META_PROMPT,
+  INPUT_SECTION,
   ADDITION_TO_EXISTING_VARIABLES,
   MODIFICATION_TO_EXISTING_VARIABLES,
+  ADDITIONAL_INSTRUCTIONS,
 } from "@/services/variableGeneration/defaultPrompts"
 
 /**
@@ -98,6 +100,8 @@ export interface GenerateMetaPromptOptions {
   promptHistory: string
   /** Existing variable content (optional) */
   existingContent?: ExistingVariableContent
+  /** Additional instructions from user (optional) */
+  additionalInstructions?: string
 }
 
 /**
@@ -116,6 +120,7 @@ export async function generateMetaPrompt(
     variableType,
     promptHistory,
     existingContent,
+    additionalInstructions,
   } = options
 
   // Load settings to determine which template to use
@@ -143,6 +148,15 @@ export async function generateMetaPrompt(
       }
     }
   }
+
+  // Add additional instructions if provided
+  if (additionalInstructions && additionalInstructions.trim()) {
+    const instructionsSection = `\n\n${ADDITIONAL_INSTRUCTIONS}\n\n${additionalInstructions.trim()}`
+    template = template + instructionsSection
+  }
+
+  // Append input section
+  template = template + `\n\n${INPUT_SECTION}`
 
   // Prepare variables for replacement
   const variables = {

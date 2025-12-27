@@ -246,8 +246,8 @@ settings:
   variablePresetsSettings: Variable Preset Settings
   variableGeneration:
     title: Variable Generation Settings
-    description: Configure AI-powered variable generation.
-    metaPrompt: AI Generation Prompt Settings
+    description: Manage settings for automatic variable generation using AI.
+    metaPrompt: Variable Generation Prompt Settings
     useDefault: Use default prompt
     customPrompt: Custom prompt
     customPromptDescription: Enter your custom prompt template
@@ -358,6 +358,8 @@ variablePresets:
       variableName: "Variable Name: $1"
       variablePurpose: "Purpose: $1"
       variableType: "Type: $1"
+      additionalInstructions: Additional Instructions
+      additionalInstructionsPlaceholder: Enter additional instructions for AI (optional)
       start: Start
       loading: Generating...
       loadingDescription: AI is generating variable content. Please wait.

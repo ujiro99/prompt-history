@@ -35,16 +35,25 @@ Based on the Input representing the user's request, design reusable prompt varia
 6. **Generate explanation:** Create a concise explanation **within 400 characters** from the following perspectives:
     - Which parts of the prompt history were referenced (evoking the user’s own experience)
     - How the variables help the user achieve their goals (creating anticipation for future use)
-    - Improve readability with line breaks and bullet points
+    - Improve readability with line breaks and bullet points`
 
+/**
+ * Input section template
+ * This section describes the input variables provided to the AI
+ * This is a fixed section included in every meta-prompt
+ */
+export const INPUT_SECTION = `
 # Input
 1. Variable name: {{variable_name}}
 2. Purpose of the variable: {{variable_purpose}}
-3. Prompt history: {{prompt_history}}
-4. Variable type: {{variable_type}}
+3. Variable type: {{variable_type}}
    - Text type: Multiline string directly embedded into the prompt.
    - Select type: Multiple choices selectable by the user during input.
    - Dictionary type: Key-value structure where keys are options and values are multiline strings.
+4. Prompt history:
+<prompt_history>
+{{prompt_history}}
+</prompt_history>
 `
 /**
  * Instruction for existing variable contents
@@ -52,7 +61,7 @@ Based on the Input representing the user's request, design reusable prompt varia
  */
 export const ADDITION_TO_EXISTING_VARIABLES = `# Existing Variables
 The following are existing variable contents.
-Please generate new content that does not duplicate these.`
+Please generate new content that does not duplicate these:`
 
 /**
  * Instruction for modifying existing variable contents
@@ -60,4 +69,11 @@ Please generate new content that does not duplicate these.`
  */
 export const MODIFICATION_TO_EXISTING_VARIABLES = `# Existing Variable
 The following are existing variable contents.
-Please improve the content based on the new input while retaining the original intent.`
+Please improve the content based on the new input while retaining the original intent:`
+
+/**
+ * Instruction for additional user instructions
+ * This is appended when the user provides extra instructions
+ */
+export const ADDITIONAL_INSTRUCTIONS = `# Additional Instructions
+Please follow these additional instructions when generating content:`

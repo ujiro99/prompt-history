@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react"
-import { Sparkles, Loader2, AlertCircle } from "lucide-react"
+import { Sparkles, Loader2, AlertCircle, Settings } from "lucide-react"
 import type {
   PresetVariableType,
   AIGenerationResponse,
@@ -27,6 +27,7 @@ import { fetchPromptHistory } from "@/services/variableGeneration/promptHistoryF
 import { mergeResponse } from "@/services/variableGeneration/responseMerger"
 import { GeminiError, GeminiErrorType } from "@/services/genai/types"
 import { stopPropagation } from "@/utils/dom"
+import { VariableGenerationSettingsDialog } from "@/components/settings/variablePresets/VariableGenerationSettingsDialog"
 
 /**
  * Dialog state
@@ -73,6 +74,8 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
     useState<AIGenerationResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [accumulatedText, setAccumulatedText] = useState("")
+  const [additionalInstructions, setAdditionalInstructions] = useState("")
+  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false)
 
   /**
    * Reset state when dialog closes
@@ -83,6 +86,7 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
       setError(null)
       setGeneratedResponse(null)
       setAccumulatedText("")
+      setAdditionalInstructions("")
     }
   }, [open])
 
@@ -102,14 +106,17 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
       const historyCount = await getPromptHistoryCount()
       const promptHistory = await fetchPromptHistory(historyCount)
 
-      // Generate meta-prompt (including existing content if provided)
+      // Generate meta-prompt (including existing content and additional instructions if provided)
       const metaPrompt = await generateMetaPrompt({
         variableName,
         variablePurpose,
         variableType,
         promptHistory,
         existingContent,
+        additionalInstructions,
       })
+
+      console.log("Generated Meta-Prompt:", metaPrompt)
 
       // Generate variable content
       const response = await generateVariable({
@@ -208,14 +215,24 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
         {/* Confirmation Screen */}
         {state === "confirm" && (
           <>
-            <DialogHeader>
-              <DialogTitle>
-                {i18n.t("variablePresets.aiGeneration.dialog.title")}
-              </DialogTitle>
-              <DialogDescription>
-                {i18n.t("variablePresets.aiGeneration.dialog.description")}
-              </DialogDescription>
-            </DialogHeader>
+            <div className="flex items-center gap-2">
+              <DialogHeader className="flex-1">
+                <DialogTitle>
+                  {i18n.t("variablePresets.aiGeneration.dialog.title")}
+                </DialogTitle>
+                <DialogDescription>
+                  {i18n.t("variablePresets.aiGeneration.dialog.description")}
+                </DialogDescription>
+              </DialogHeader>
+              <Button
+                onClick={() => setSettingsDialogOpen(true)}
+                variant="ghost"
+                size="sm"
+                className="group mr-1"
+              >
+                <Settings className="size-5 stroke-neutral-600 group-hover:stroke-neutral-800" />
+              </Button>
+            </div>
 
             <div className="space-y-2 text-sm">
               <div>
@@ -233,6 +250,23 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
                   i18n.t(`variableTypes.${variableType}`),
                 ])}
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">
+                {i18n.t(
+                  "variablePresets.aiGeneration.dialog.additionalInstructions",
+                )}
+              </label>
+              <Textarea
+                value={additionalInstructions}
+                onChange={(e) => setAdditionalInstructions(e.target.value)}
+                placeholder={i18n.t(
+                  "variablePresets.aiGeneration.dialog.additionalInstructionsPlaceholder",
+                )}
+                rows={2}
+                className="max-h-[144px] resize-none"
+              />
             </div>
 
             <DialogFooter>
@@ -365,6 +399,10 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
           </>
         )}
       </DialogContent>
+      <VariableGenerationSettingsDialog
+        open={settingsDialogOpen}
+        onOpenChange={setSettingsDialogOpen}
+      />
     </Dialog>
   )
 }

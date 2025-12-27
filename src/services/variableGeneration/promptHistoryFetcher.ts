@@ -47,12 +47,14 @@ function formatPromptsAsText(prompts: StoredPrompt[]): string {
   }
 
   return prompts
-    .map((prompt, index) => {
-      // Format: [Index] Name: Content
+    .map((prompt) => {
+      // Format:
+      //   Name: {{prompt.name}}
+      //   Content: {{prompt.content}}
       const nameSection = prompt.name ? `${prompt.name}:` : ""
-      return `[${index + 1}] ${nameSection}\n${prompt.content}\n`
+      return `Name: ${nameSection}\nContent: ${prompt.content}`
     })
-    .join("\n---\n\n")
+    .join("\n\n")
 }
 
 /**

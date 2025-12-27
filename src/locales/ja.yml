@@ -246,8 +246,8 @@ settings:
   variablePresetsSettings: 変数プリセットの設定
   variableGeneration:
     title: 変数生成設定
-    description: AI生成プロンプトの設定を管理します。
-    metaPrompt: AI生成プロンプト設定
+    description: AIによる変数自動生成の設定を管理します。
+    metaPrompt: 変数生成プロンプト設定
     useDefault: デフォルトプロンプトを使用
     customPrompt: カスタムプロンプト
     customPromptDescription: カスタムプロンプトテンプレートを入力してください
@@ -358,6 +358,8 @@ variablePresets:
       variableName: "変数名: $1"
       variablePurpose: "用途: $1"
       variableType: "変数型: $1"
+      additionalInstructions: 追加の指示
+      additionalInstructionsPlaceholder: AIへの追加の指示があれば入力してください（任意）
       start: スタート
       loading: 考え中...
       loadingDescription: AIが変数を生成しています。しばらくお待ちください。
