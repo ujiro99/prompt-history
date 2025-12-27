@@ -185,8 +185,8 @@ export const ModelSettingsDialog: React.FC<ModelSettingsDialogProps> = ({
                 </span>
               </FieldDescription>
 
-              <FieldDescription className="flex items-start gap-1.5">
-                <TriangleAlert className="size-5.5 stroke-amber-500 fill-amber-100 mt-0.5" />
+              <FieldDescription className="flex items-center gap-1.5">
+                <TriangleAlert className="size-4.5 stroke-amber-500 fill-amber-100 mt-0.5" />
                 <span>
                   {i18n.t("settings.modelSettings.freeApiWarning")}{" "}
                   <a
