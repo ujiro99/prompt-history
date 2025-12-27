@@ -1,6 +1,10 @@
 import { useState, useRef, useCallback, useEffect } from "react"
 import { Sparkles, Loader2, AlertCircle } from "lucide-react"
-import type { PresetVariableType, AIGenerationResponse } from "@/types/prompt"
+import type {
+  PresetVariableType,
+  AIGenerationResponse,
+  ExistingVariableContent,
+} from "@/types/prompt"
 import {
   Dialog,
   DialogTitle,
@@ -20,6 +24,7 @@ import {
   getPromptHistoryCount,
 } from "@/services/variableGeneration/metaPromptGenerator"
 import { fetchPromptHistory } from "@/services/variableGeneration/promptHistoryFetcher"
+import { mergeResponse } from "@/services/variableGeneration/responseMerger"
 import { GeminiError, GeminiErrorType } from "@/services/genai/types"
 import { stopPropagation } from "@/utils/dom"
 
@@ -40,6 +45,8 @@ interface AIGenerationDialogProps {
   variablePurpose: string
   /** Variable type */
   variableType: PresetVariableType
+  /** Existing variable content (optional) */
+  existingContent?: ExistingVariableContent
   /** Callback on apply */
   onApply: (response: AIGenerationResponse) => void
 }
@@ -53,6 +60,7 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
   variableName,
   variablePurpose,
   variableType,
+  existingContent,
   onApply,
 }) => {
   const { container } = useContainer()
@@ -94,12 +102,13 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
       const historyCount = await getPromptHistoryCount()
       const promptHistory = await fetchPromptHistory(historyCount)
 
-      // Generate meta-prompt
+      // Generate meta-prompt (including existing content if provided)
       const metaPrompt = await generateMetaPrompt({
         variableName,
         variablePurpose,
         variableType,
         promptHistory,
+        existingContent,
       })
 
       // Generate variable content
@@ -110,6 +119,7 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
           variableType,
           promptHistory,
           metaPrompt,
+          existingContent,
         },
         apiKey: genaiApiKey || "",
         signal: abortControllerRef.current.signal,
@@ -118,7 +128,14 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
         },
       })
 
-      setGeneratedResponse(response)
+      // Merge with existing content if provided
+      const mergedResponse = mergeResponse(
+        response,
+        variableType,
+        existingContent,
+      )
+
+      setGeneratedResponse(mergedResponse)
       setState("success")
     } catch (err) {
       // Handle cancellation

@@ -25,6 +25,7 @@ import type {
   PresetVariableType,
   DictionaryItem,
   AIGenerationResponse,
+  ExistingVariableContent,
 } from "@/types/prompt"
 import { cn, uuid } from "@/lib/utils"
 import { movePrev, moveNext } from "@/utils/array"
@@ -317,6 +318,39 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
     }
     setLocalPreset(updatedPreset)
     onChange(updatedPreset)
+  }
+
+  /**
+   * Extract existing variable content for AI generation
+   */
+  const getExistingContent = (): ExistingVariableContent | undefined => {
+    if (!localPreset) return undefined
+
+    switch (localPreset.type) {
+      case "text":
+        if (localPreset.textContent) {
+          return { textContent: localPreset.textContent }
+        }
+        return undefined
+
+      case "select":
+        if (localPreset.selectOptions && localPreset.selectOptions.length > 0) {
+          return { selectOptions: localPreset.selectOptions }
+        }
+        return undefined
+
+      case "dictionary":
+        if (
+          localPreset.dictionaryItems &&
+          localPreset.dictionaryItems.length > 0
+        ) {
+          return { dictionaryItems: localPreset.dictionaryItems }
+        }
+        return undefined
+
+      default:
+        return undefined
+    }
   }
 
   /**
@@ -708,6 +742,7 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
         variableName={localPreset.name}
         variablePurpose={localPreset.description || ""}
         variableType={localPreset.type}
+        existingContent={getExistingContent()}
         onApply={handleAiGenerationApply}
       />
     </div>

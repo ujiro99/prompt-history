@@ -3,10 +3,65 @@
  * Generates meta-prompts for AI variable generation by replacing template variables
  */
 
-import type { PresetVariableType } from "@/types/prompt"
+import type {
+  PresetVariableType,
+  ExistingVariableContent,
+} from "@/types/prompt"
 import { variableGenerationSettingsStorage } from "@/services/storage/definitions"
 import { i18n } from "#imports"
-import { DEFAULT_META_PROMPT } from "@/services/variableGeneration/defaultPrompts"
+import {
+  DEFAULT_META_PROMPT,
+  ADDITION_TO_EXISTING_VARIABLES,
+  MODIFICATION_TO_EXISTING_VARIABLES,
+} from "@/services/variableGeneration/defaultPrompts"
+
+/**
+ * Format existing variable content for meta-prompt
+ *
+ * @param existingContent - Existing variable content
+ * @param variableType - Variable type
+ * @returns Formatted string for meta-prompt
+ */
+function formatExistingContent(
+  existingContent: ExistingVariableContent,
+  variableType: PresetVariableType,
+): string {
+  switch (variableType) {
+    case "text":
+      if (existingContent.textContent) {
+        return `Existing text content:\n${existingContent.textContent}`
+      }
+      return ""
+
+    case "select":
+      if (
+        existingContent.selectOptions &&
+        existingContent.selectOptions.length > 0
+      ) {
+        return `Existing options: ${existingContent.selectOptions.join(", ")}`
+      }
+      return ""
+
+    case "dictionary":
+      if (
+        existingContent.dictionaryItems &&
+        existingContent.dictionaryItems.length > 0
+      ) {
+        const items = existingContent.dictionaryItems
+          .map((item) => {
+            const contentPreview = item.content.slice(0, 100)
+            const ellipsis = item.content.length > 100 ? "..." : ""
+            return `- ${item.name}: ${contentPreview}${ellipsis}`
+          })
+          .join("\n")
+        return `Existing dictionary items:\n${items}`
+      }
+      return ""
+
+    default:
+      return ""
+  }
+}
 
 /**
  * Replace template variables in meta-prompt
@@ -41,6 +96,8 @@ export interface GenerateMetaPromptOptions {
   variableType: PresetVariableType
   /** Prompt history (concatenated text) */
   promptHistory: string
+  /** Existing variable content (optional) */
+  existingContent?: ExistingVariableContent
 }
 
 /**
@@ -53,16 +110,39 @@ export interface GenerateMetaPromptOptions {
 export async function generateMetaPrompt(
   options: GenerateMetaPromptOptions,
 ): Promise<string> {
-  const { variableName, variablePurpose, variableType, promptHistory } = options
+  const {
+    variableName,
+    variablePurpose,
+    variableType,
+    promptHistory,
+    existingContent,
+  } = options
 
   // Load settings to determine which template to use
   const settings = await variableGenerationSettingsStorage.getValue()
 
   // Select template (custom or default)
-  const template =
+  let template =
     settings?.useDefault === false && settings?.customPrompt
       ? settings.customPrompt
       : DEFAULT_META_PROMPT
+
+  // Add existing variable section if provided
+  if (existingContent) {
+    const formattedExisting = formatExistingContent(
+      existingContent,
+      variableType,
+    )
+    if (formattedExisting) {
+      if (variableType === "text") {
+        const existingSection = `\n\n${MODIFICATION_TO_EXISTING_VARIABLES}\n\n${formattedExisting}`
+        template = template + existingSection
+      } else {
+        const existingSection = `\n\n${ADDITION_TO_EXISTING_VARIABLES}\n\n${formattedExisting}`
+        template = template + existingSection
+      }
+    }
+  }
 
   // Prepare variables for replacement
   const variables = {

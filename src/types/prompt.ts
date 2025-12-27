@@ -353,6 +353,18 @@ export interface PromptStats {
 }
 
 /**
+ * Existing variable content for merging with generated content
+ */
+export interface ExistingVariableContent {
+  /** Existing text content (for text type) */
+  textContent?: string
+  /** Existing select options (for select type) */
+  selectOptions?: string[]
+  /** Existing dictionary items (for dictionary type) */
+  dictionaryItems?: DictionaryItem[]
+}
+
+/**
  * AI generation request parameters
  */
 export interface AIGenerationRequest {
@@ -366,6 +378,8 @@ export interface AIGenerationRequest {
   promptHistory: string
   /** Meta-prompt template */
   metaPrompt: string
+  /** Existing variable content (optional, for merging) */
+  existingContent?: ExistingVariableContent
 }
 
 /**

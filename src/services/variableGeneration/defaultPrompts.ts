@@ -46,3 +46,18 @@ Based on the Input representing the user's request, design reusable prompt varia
    - Select type: Multiple choices selectable by the user during input.
    - Dictionary type: Key-value structure where keys are options and values are multiline strings.
 `
+/**
+ * Instruction for existing variable contents
+ * This is appended when existing content is provided for merging
+ */
+export const ADDITION_TO_EXISTING_VARIABLES = `# Existing Variables
+The following are existing variable contents.
+Please generate new content that does not duplicate these.`
+
+/**
+ * Instruction for modifying existing variable contents
+ * This is used when the AI is asked to improve existing content
+ */
+export const MODIFICATION_TO_EXISTING_VARIABLES = `# Existing Variable
+The following are existing variable contents.
+Please improve the content based on the new input while retaining the original intent.`
