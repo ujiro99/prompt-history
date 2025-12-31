@@ -11,6 +11,18 @@ export const genaiApiKeyStorage = {
   },
 }
 
+export const promptsStorage = {
+  setValue: async (value: unknown) => {
+    console.log("Mock: promptsStorage.setValue called with:", value)
+  },
+  getValue: async () => {
+    return {}
+  },
+  watch: () => {
+    return () => {}
+  },
+}
+
 export const improvePromptSettingsStorage = {
   setValue: async (value: unknown) => {
     console.log(
@@ -24,6 +36,24 @@ export const improvePromptSettingsStorage = {
       textContent: "",
       urlContent: "",
       lastModified: Date.now(),
+    }
+  },
+  watch: () => {
+    return () => {}
+  },
+}
+
+export const variableGenerationSettingsStorage = {
+  setValue: async (value: unknown) => {
+    console.log(
+      "Mock: variableGenerationSettingsStorage.setValue called with:",
+      value,
+    )
+  },
+  getValue: async () => {
+    return {
+      useDefault: true,
+      promptHistoryCount: 200,
     }
   },
   watch: () => {
