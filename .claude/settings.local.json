@@ -32,7 +32,8 @@
       "Bash(npx storybook@latest init:*)",
       "Bash(lsof:*)",
       "Bash(ls:*)",
-      "Bash(pnpm storybook:*)"
+      "Bash(pnpm storybook:*)",
+      "WebSearch"
     ],
     "deny": [],
     "ask": []

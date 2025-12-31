@@ -17,22 +17,38 @@ const config: StorybookConfig = {
   ],
   framework: "@storybook/react-vite",
   async viteFinal(config) {
-    // Add path alias
+    // Configure path aliases using array format for precise control
+    // Using regex with ^ and $ anchors ensures exact matching, avoiding prefix conflicts
     config.resolve = config.resolve || {}
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      "@": resolve(__dirname, "../src"),
-      "#imports": resolve(__dirname, "./mocks/i18n.ts"),
-      "@/services/storage/definitions": resolve(
-        __dirname,
-        "./mocks/storage.ts",
-      ),
-      "@/services/storage/improvePromptCache": resolve(
-        __dirname,
-        "./mocks/improvePromptCache.ts",
-      ),
-      "@/services/analytics": resolve(__dirname, "./mocks/analytics.ts"),
-    }
+    config.resolve.alias = [
+      // Exact matches using regex (MUST come first)
+      {
+        find: /^@\/services\/storage\/lazyStorage$/,
+        replacement: resolve(__dirname, "./mocks/lazyStorage.ts"),
+      },
+      {
+        find: /^@\/services\/storage\/definitions$/,
+        replacement: resolve(__dirname, "./mocks/storage.ts"),
+      },
+      {
+        find: /^@\/services\/storage\/improvePromptCache$/,
+        replacement: resolve(__dirname, "./mocks/improvePromptCache.ts"),
+      },
+      {
+        find: /^@\/services\/analytics$/,
+        replacement: resolve(__dirname, "./mocks/analytics.ts"),
+      },
+      {
+        find: /^@\/hooks\/useLazyStorage$/,
+        replacement: resolve(__dirname, "./mocks/useLazyStorage.ts"),
+      },
+      {
+        find: /^#imports$/,
+        replacement: resolve(__dirname, "./mocks/i18n.ts"),
+      },
+      // Prefix match for general @ alias (MUST come last)
+      { find: "@", replacement: resolve(__dirname, "../src") },
+    ]
 
     // Add Tailwind CSS plugin
     config.plugins = config.plugins || []

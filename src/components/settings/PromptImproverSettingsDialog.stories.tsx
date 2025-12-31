@@ -86,18 +86,21 @@ export const OpenTextModeNoApiKey: Story = {
     onClickModelSettings: fn(),
   },
   decorators: [
-    (Story: React.ComponentType) => (
-      <AiModelContext.Provider value={{ genaiApiKey: null }}>
-        <Story />
-      </AiModelContext.Provider>
-    ),
-  ],
-  parameters: {
-    // Mock the storage to return text mode settings
-    mockData: {
-      mode: "text",
+    (Story: React.ComponentType) => {
+      // Set mock data on window for useLazyStorage hook
+      ;(window as Window & { __STORYBOOK_MOCK_DATA__?: unknown }).__STORYBOOK_MOCK_DATA__ = {
+        mode: "text",
+        textContent:
+          "Please improve the following prompt to make it more effective and clear:\n\n{{prompt}}",
+        urlContent: "",
+      }
+      return (
+        <AiModelContext.Provider value={{ genaiApiKey: null }}>
+          <Story />
+        </AiModelContext.Provider>
+      )
     },
-  },
+  ],
 }
 
 // Dialog open with text mode (with API key)
@@ -108,18 +111,21 @@ export const OpenTextModeWithApiKey: Story = {
     onClickModelSettings: fn(),
   },
   decorators: [
-    (Story: React.ComponentType) => (
-      <AiModelContext.Provider
-        value={{ genaiApiKey: "AIzaSyD1234567890abcdefghijklmnopqrstuv" }}
-      >
-        <Story />
-      </AiModelContext.Provider>
-    ),
-  ],
-  parameters: {
-    // Mock the storage to return text mode settings
-    mockData: {
-      mode: "text",
+    (Story: React.ComponentType) => {
+      // Set mock data on window for useLazyStorage hook
+      ;(window as Window & { __STORYBOOK_MOCK_DATA__?: unknown }).__STORYBOOK_MOCK_DATA__ = {
+        mode: "text",
+        textContent:
+          "Please improve the following prompt to make it more effective and clear:\n\n{{prompt}}",
+        urlContent: "",
+      }
+      return (
+        <AiModelContext.Provider
+          value={{ genaiApiKey: "AIzaSyD1234567890abcdefghijklmnopqrstuv" }}
+        >
+          <Story />
+        </AiModelContext.Provider>
+      )
     },
-  },
+  ],
 }
