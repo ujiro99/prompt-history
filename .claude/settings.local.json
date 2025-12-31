@@ -28,7 +28,12 @@
       "Bash(mkdir:*)",
       "Bash(xargs:*)",
       "Bash(pnpm add:*)",
-      "mcp__serena__think_about_task_adherence"
+      "mcp__serena__think_about_task_adherence",
+      "Bash(npx storybook@latest init:*)",
+      "Bash(lsof:*)",
+      "Bash(ls:*)",
+      "Bash(pnpm storybook:*)",
+      "WebSearch"
     ],
     "deny": [],
     "ask": []
