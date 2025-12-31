@@ -35,3 +35,6 @@ web-ext.config.ts
 # e2e test
 test-results
 playwright-report
+
+*storybook.log
+storybook-static

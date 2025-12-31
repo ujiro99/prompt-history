@@ -1,3 +1,6 @@
+// For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
+import storybook from "eslint-plugin-storybook"
+
 import js from "@eslint/js"
 import typescript from "@typescript-eslint/eslint-plugin"
 import typescriptParser from "@typescript-eslint/parser"
@@ -177,6 +180,20 @@ export default [
       "@typescript-eslint/triple-slash-reference": "off",
     },
   },
+  // Configuration for Storybook files
+  {
+    files: [".storybook/**/*.{js,ts,tsx}"],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        ...globals.browser,
+        React: "readonly",
+      },
+    },
+    rules: {
+      "no-console": "off",
+    },
+  },
   {
     ignores: [
       "node_modules/**",
@@ -188,4 +205,5 @@ export default [
       "pages/out/**",
     ],
   },
+  ...storybook.configs["flat/recommended"],
 ]
