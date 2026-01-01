@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react"
+import { i18n } from "#imports"
 import { cn } from "@/lib/utils"
 import {
   Sparkles,
@@ -12,6 +13,7 @@ import type {
   AIGenerationResponse,
   ExistingVariableContent,
 } from "@/types/prompt"
+
 import {
   Dialog,
   DialogTitle,
@@ -25,19 +27,18 @@ import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
 import { ApiKeyWarningBanner } from "@/components/shared/ApiKeyWarningBanner"
 import { ModelSettingsDialog } from "@/components/settings/ModelSettingsDialog"
+import { EstimationDisplay } from "@/components/promptOrganizer/EstimationDisplay"
+import { VariableGenerationSettingsDialog } from "@/components/settings/variablePresets/VariableGenerationSettingsDialog"
+
 import { useContainer } from "@/hooks/useContainer"
 import { useAiModel } from "@/hooks/useAiModel"
-import { i18n } from "#imports"
+
 import { generateVariable } from "@/services/variableGeneration"
-import {
-  generateMetaPrompt,
-  getPromptHistoryCount,
-} from "@/services/variableGeneration/metaPromptGenerator"
-import { fetchPromptHistory } from "@/services/variableGeneration/promptHistoryFetcher"
 import { mergeResponse } from "@/services/variableGeneration/responseMerger"
+import type { VariableGenerationEstimate } from "@/types/variableGeneration"
+import { variableGenerationEstimatorService as estimatorService } from "@/services/variableGeneration/VariableGenerationEstimatorService"
 import { GeminiError, GeminiErrorType } from "@/services/genai/types"
 import { stopPropagation } from "@/utils/dom"
-import { VariableGenerationSettingsDialog } from "@/components/settings/variablePresets/VariableGenerationSettingsDialog"
 
 /**
  * Dialog state
@@ -91,6 +92,11 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
   // Model Settings Dialog state
   const [modelSettingsOpen, setModelSettingsOpen] = useState(false)
 
+  // Estimation state
+  const [estimate, setEstimate] = useState<VariableGenerationEstimate | null>(
+    null,
+  )
+
   /**
    * Reset state when dialog closes
    */
@@ -101,8 +107,47 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
       setGeneratedResponse(null)
       setAccumulatedText("")
       setAdditionalInstructions("")
+      setEstimate(null)
     }
   }, [open])
+
+  /**
+   * Estimate token usage when dialog opens
+   */
+  useEffect(() => {
+    const estimateTokens = async () => {
+      if (!open || !hasApiKey) {
+        setEstimate(null)
+        return
+      }
+
+      try {
+        // Estimate generation
+        const estimation = await estimatorService.estimateGeneration({
+          variableName,
+          variablePurpose,
+          variableType,
+          existingContent,
+          additionalInstructions,
+        })
+
+        setEstimate(estimation)
+      } catch (err) {
+        console.error("Failed to estimate token usage:", err)
+        setEstimate(null)
+      }
+    }
+
+    estimateTokens()
+  }, [
+    open,
+    hasApiKey,
+    variableName,
+    variablePurpose,
+    variableType,
+    existingContent,
+    additionalInstructions,
+  ])
 
   /**
    * Start AI generation
@@ -116,31 +161,14 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
     abortControllerRef.current = new AbortController()
 
     try {
-      // Fetch prompt history
-      const historyCount = await getPromptHistoryCount()
-      const promptHistory = await fetchPromptHistory(historyCount)
-
-      // Generate meta-prompt (including existing content and additional instructions if provided)
-      const metaPrompt = await generateMetaPrompt({
-        variableName,
-        variablePurpose,
-        variableType,
-        promptHistory,
-        existingContent,
-        additionalInstructions,
-      })
-
-      console.log("Generated Meta-Prompt:", metaPrompt)
-
       // Generate variable content
       const response = await generateVariable({
         request: {
           variableName,
           variablePurpose,
           variableType,
-          promptHistory,
-          metaPrompt,
           existingContent,
+          additionalInstructions,
         },
         apiKey: genaiApiKey || "",
         signal: abortControllerRef.current.signal,
@@ -257,42 +285,64 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
                 />
               )}
 
-              <Separator className={`my-2 ${!hasApiKey && "mt-0"}`} />
-
-              <div className="space-y-2 text-sm">
-                {/* Variable Name */}
-                <div className="space-y-0.5">
-                  <div className="text-xs font-semibold">
-                    {i18n.t("variablePresets.aiGeneration.dialog.variableName")}
+              <div>
+                <Separator className={`my-4 ${!hasApiKey && "mt-0"}`} />
+                <div className="space-y-2 text-sm px-4">
+                  {/* Variable Name */}
+                  <div className="space-y-0.5">
+                    <div className="text-xs font-semibold">
+                      {i18n.t(
+                        "variablePresets.aiGeneration.dialog.variableName",
+                      )}
+                    </div>
+                    <p className="md:text-3xl font-extrabold h-auto text-foreground/80">
+                      {variableName}
+                    </p>
                   </div>
-                  <p className="md:text-3xl font-extrabold h-auto text-foreground/80">
-                    {variableName}
-                  </p>
-                </div>
 
-                {/* Purpose */}
-                <div className="space-y-0.5">
-                  <div className="text-xs font-semibold">
-                    {i18n.t(
-                      "variablePresets.aiGeneration.dialog.variablePurpose",
-                    )}
+                  {/* Purpose */}
+                  <div className="space-y-0.5">
+                    <div className="text-xs font-semibold">
+                      {i18n.t(
+                        "variablePresets.aiGeneration.dialog.variablePurpose",
+                      )}
+                    </div>
+                    <p className="md:text-base font-medium text-foreground/60">
+                      {variablePurpose || "(未入力)"}
+                    </p>
                   </div>
-                  <p className="md:text-base font-medium text-foreground/60">
-                    {variablePurpose || "(未入力)"}
-                  </p>
-                </div>
 
-                {/* Type */}
-                <div className="flex items-center gap-2">
-                  <div className="text-xs font-semibold">
-                    {i18n.t("variablePresets.aiGeneration.dialog.variableType")}
+                  {/* Type */}
+                  <div className="flex items-center gap-2">
+                    <div className="text-xs font-semibold">
+                      {i18n.t(
+                        "variablePresets.aiGeneration.dialog.variableType",
+                      )}
+                    </div>
+                    <p className="border rounded-lg px-2 py-1 bg-muted/80 font-medium font-mono text-foreground/80">
+                      {i18n.t(`variableTypes.${variableType}`)}
+                    </p>
                   </div>
-                  <p className="border rounded-lg px-2 py-1 bg-muted/80 font-medium font-mono text-foreground/80">
-                    {i18n.t(`variableTypes.${variableType}`)}
-                  </p>
                 </div>
+                <Separator className="mt-4 mb-1" />
+
+                {/* Token Estimation */}
+                {hasApiKey && (
+                  <EstimationDisplay
+                    estimate={
+                      estimate
+                        ? {
+                            ...estimate,
+                            targetPromptCount: estimate.promptHistoryCount,
+                            estimatedOutputTokens: 0, // Not displayed in EstimationDisplay
+                          }
+                        : null
+                    }
+                    collapsible={true}
+                    hideWhenNoEstimate={false}
+                  />
+                )}
               </div>
-              <Separator className="my-2" />
 
               <div className="space-y-2">
                 <label className="text-sm font-medium inline-block">

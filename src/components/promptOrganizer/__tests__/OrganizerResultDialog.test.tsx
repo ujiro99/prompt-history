@@ -83,8 +83,6 @@ describe("OrganizerResultDialog", () => {
         executedAt: new Date(),
         inputTokens: 100,
         outputTokens: 50,
-        estimatedCost: 0.01,
-        actualCost: 0.01,
       }
 
       render(
@@ -113,8 +111,6 @@ describe("OrganizerResultDialog", () => {
         executedAt: new Date(),
         inputTokens: 100,
         outputTokens: 50,
-        estimatedCost: 0.01,
-        actualCost: 0.01,
       }
 
       render(
@@ -141,8 +137,6 @@ describe("OrganizerResultDialog", () => {
         executedAt: new Date(),
         inputTokens: 100,
         outputTokens: 50,
-        estimatedCost: 0.01,
-        actualCost: 0.01,
       }
 
       render(
@@ -191,8 +185,6 @@ describe("OrganizerResultDialog", () => {
       executedAt: new Date(),
       inputTokens: 1000,
       outputTokens: 500,
-      estimatedCost: 0.05,
-      actualCost: 0.05,
       successMessage: "Great templates created!",
       successMessageGenerated,
     })
@@ -443,8 +435,6 @@ describe("OrganizerResultDialog", () => {
         executedAt: new Date(),
         inputTokens: 1000,
         outputTokens: 500,
-        estimatedCost: 0.05,
-        actualCost: 0.05,
         successMessage: "Great templates created!",
         successMessageGenerated: true,
       }
@@ -494,8 +484,6 @@ describe("OrganizerResultDialog", () => {
         executedAt: new Date(),
         inputTokens: 100,
         outputTokens: 50,
-        estimatedCost: 0.01,
-        actualCost: 0.01,
         successMessage: "",
         successMessageGenerated: true,
       }
@@ -539,8 +527,6 @@ describe("OrganizerResultDialog", () => {
         executedAt: new Date(),
         inputTokens: 1000,
         outputTokens: 500,
-        estimatedCost: 0.05,
-        actualCost: 0.05,
         successMessage: "Great templates created!",
         successMessageGenerated: true,
       }

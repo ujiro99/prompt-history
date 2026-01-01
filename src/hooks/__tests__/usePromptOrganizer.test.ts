@@ -101,7 +101,6 @@ describe("usePromptOrganizer", () => {
     estimatedInputTokens: 1000,
     estimatedOutputTokens: 500,
     contextUsageRate: 0.5,
-    estimatedCost: 0.01,
     model: "gemini-1.5-flash",
     contextLimit: 100000,
   }
@@ -217,8 +216,6 @@ describe("usePromptOrganizer", () => {
         executedAt: new Date(),
         inputTokens: 1000,
         outputTokens: 500,
-        estimatedCost: 0.01,
-        actualCost: 0.01,
       })
 
       const { result } = renderHook(() =>
@@ -270,8 +267,6 @@ describe("usePromptOrganizer", () => {
         executedAt: new Date(),
         inputTokens: 1000,
         outputTokens: 500,
-        estimatedCost: 0.01,
-        actualCost: 0.01,
       })
 
       const { result } = renderHook(() =>
@@ -307,8 +302,6 @@ describe("usePromptOrganizer", () => {
           executedAt: new Date(),
           inputTokens: 1000,
           outputTokens: 500,
-          estimatedCost: 0.01,
-          actualCost: 0.01,
         }
       })
 
@@ -337,8 +330,6 @@ describe("usePromptOrganizer", () => {
         executedAt: new Date(),
         inputTokens: 1000,
         outputTokens: 500,
-        estimatedCost: 0.01,
-        actualCost: 0.01,
       })
 
       // Set the mock to return empty templates
@@ -371,8 +362,6 @@ describe("usePromptOrganizer", () => {
         executedAt: new Date(),
         inputTokens: 1000,
         outputTokens: 500,
-        estimatedCost: 0.01,
-        actualCost: 0.01,
       })
 
       const { result } = renderHook(() =>
@@ -484,8 +473,6 @@ describe("usePromptOrganizer", () => {
           executedAt: new Date(),
           inputTokens: 1000,
           outputTokens: 500,
-          estimatedCost: 0.01,
-          actualCost: 0.01,
         }
       })
 

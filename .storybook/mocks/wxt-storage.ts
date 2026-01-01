@@ -28,7 +28,7 @@ export const storage = {
         console.log(`Mock: setValue called for ${key}`, value)
         mockStorage[key] = value
       },
-      watch: (callback?: (value: unknown) => void) => {
+      watch: (_callback?: (value: unknown) => void) => {
         console.log(`Mock: watch called for ${key}`)
         return () => {}
       },

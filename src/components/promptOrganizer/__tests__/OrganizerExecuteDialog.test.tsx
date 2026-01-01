@@ -96,7 +96,6 @@ describe("OrganizerExecuteDialog", () => {
       estimatedInputTokens: 1000,
       estimatedOutputTokens: 500,
       contextUsageRate: 0.5,
-      estimatedCost: 0.01,
       model: "gemini-1.5-flash",
       contextLimit: 100000,
     })

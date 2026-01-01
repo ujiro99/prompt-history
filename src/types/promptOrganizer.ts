@@ -136,10 +136,6 @@ export interface PromptOrganizerResult {
   inputTokens: number
   /** Output token count */
   outputTokens: number
-  /** Estimated cost */
-  estimatedCost: number
-  /** Actual cost */
-  actualCost: number
   /** Success message for the first template*/
   successMessage?: string
   /** Success message generated flag */
@@ -170,8 +166,6 @@ export interface OrganizerExecutionEstimate {
   estimatedOutputTokens: number
   /** Context usage rate (0.0 - 1.0) */
   contextUsageRate: number
-  /** Estimated cost */
-  estimatedCost: number
   /** Model name */
   model: string
   /** Context limit (tokens) */

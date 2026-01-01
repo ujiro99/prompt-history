@@ -374,12 +374,10 @@ export interface AIGenerationRequest {
   variablePurpose: string
   /** Variable type (text / select / dictionary) */
   variableType: PresetVariableType
-  /** Prompt history (concatenated text) */
-  promptHistory: string
-  /** Meta-prompt template */
-  metaPrompt: string
   /** Existing variable content (optional, for merging) */
   existingContent?: ExistingVariableContent
+  /** Additional instructions for AI. */
+  additionalInstructions?: string
 }
 
 /**

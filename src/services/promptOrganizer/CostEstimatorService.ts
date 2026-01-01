@@ -4,16 +4,15 @@
  */
 
 import type {
-  TokenUsage,
   OrganizerExecutionEstimate,
   PromptOrganizerSettings,
 } from "@/types/promptOrganizer"
 import { GeminiClient } from "@/services/genai/GeminiClient"
+import { GEMINI_CONTEXT_LIMIT } from "@/services/genai/constants"
 import { promptFilterService } from "./PromptFilterService"
 import { TemplateGeneratorService } from "./TemplateGeneratorService"
 import { categoryService } from "./CategoryService"
 import { promptsService } from "@/services/storage/prompts"
-import { GEMINI_PRICING, GEMINI_CONTEXT_LIMIT } from "./pricing"
 
 /**
  * Cost Estimator Service
@@ -25,21 +24,6 @@ export class CostEstimatorService {
     this.geminiClient = GeminiClient.getInstance()
   }
 
-  /**
-   * Calculate cost from token usage
-   *
-   * @param usage Token usage
-   * @returns Cost in JPY
-   */
-  calculateCost(usage: TokenUsage): number {
-    const inputCost =
-      (usage.inputTokens / 1_000_000) * GEMINI_PRICING.inputTokenPer1M
-    const outputCost =
-      ((usage.outputTokens + usage.thoughtsTokens) / 1_000_000) *
-      GEMINI_PRICING.outputTokenPer1M
-    const totalUsd = inputCost + outputCost
-    return totalUsd * GEMINI_PRICING.usdToJpy
-  }
 
   /**
    * Estimate execution cost before execution
@@ -78,19 +62,12 @@ export class CostEstimatorService {
     const inputTokens = await this.geminiClient.estimateTokens(promptText)
     console.log("Estimated input tokens:", inputTokens)
 
-    // 5. Calculate cost (estimate output tokens as 0.5 x input tokens)
-    const estimatedCost = this.calculateCost({
-      inputTokens,
-      outputTokens: inputTokens * 0.5,
-      thoughtsTokens: inputTokens,
-    })
-
+    // 5. Calculate context usage
     return {
       targetPromptCount: targetPrompts.length,
       estimatedInputTokens: inputTokens,
       estimatedOutputTokens: inputTokens * 1.5, // including thoughts tokens
       contextUsageRate: inputTokens / GEMINI_CONTEXT_LIMIT,
-      estimatedCost,
       model: "gemini-2.5-flash",
       contextLimit: GEMINI_CONTEXT_LIMIT,
     }

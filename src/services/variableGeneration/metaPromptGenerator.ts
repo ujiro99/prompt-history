@@ -6,6 +6,7 @@
 import type {
   PresetVariableType,
   ExistingVariableContent,
+  VariableGenerationSettings,
 } from "@/types/prompt"
 import { variableGenerationSettingsStorage } from "@/services/storage/definitions"
 import { i18n } from "#imports"
@@ -16,6 +17,7 @@ import {
   MODIFICATION_TO_EXISTING_VARIABLES,
   ADDITIONAL_INSTRUCTIONS,
 } from "@/services/variableGeneration/defaultPrompts"
+import { WatchCallback } from "wxt/utils/storage"
 
 /**
  * Format existing variable content for meta-prompt
@@ -178,4 +180,8 @@ export async function generateMetaPrompt(
 export async function getPromptHistoryCount(): Promise<number> {
   const settings = await variableGenerationSettingsStorage.getValue()
   return settings?.promptHistoryCount ?? 200
+}
+
+export function watch(cb: WatchCallback<VariableGenerationSettings>) {
+  return variableGenerationSettingsStorage.watch(cb)
 }

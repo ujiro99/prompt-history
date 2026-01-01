@@ -12,6 +12,8 @@ import type {
 } from "@/types/prompt"
 import { getSchemaByType } from "./schemas"
 import { SYSTEM_INSTRUCTION } from "./defaultPrompts"
+import { generateMetaPrompt } from "@/services/variableGeneration/metaPromptGenerator"
+import { fetchPromptHistory } from "@/services/variableGeneration/promptHistoryFetcher"
 
 /**
  * Options for variable generation
@@ -59,10 +61,25 @@ export async function generateVariable(
   const schema = getSchemaByType(request.variableType)
 
   try {
+    // Fetch prompt history
+    const promptHistory = await fetchPromptHistory()
+
+    // Generate meta-prompt (including existing content and additional instructions if provided)
+    const metaPrompt = await generateMetaPrompt({
+      variableName: options.request.variableName,
+      variablePurpose: options.request.variablePurpose,
+      variableType: options.request.variableType,
+      existingContent: options.request.existingContent,
+      additionalInstructions: options.request.additionalInstructions,
+      promptHistory,
+    })
+
+    console.log("Generated Meta-Prompt:", metaPrompt)
+
     // Generate structured content with streaming
     const response =
       await client.generateStructuredContentStream<AIGenerationResponse>(
-        request.metaPrompt,
+        metaPrompt,
         schema,
         {
           systemInstruction: SYSTEM_INSTRUCTION,
