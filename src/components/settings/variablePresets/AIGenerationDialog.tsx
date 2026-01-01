@@ -1,5 +1,11 @@
 import { useState, useRef, useCallback, useEffect } from "react"
-import { Sparkles, Loader2, AlertCircle, Settings } from "lucide-react"
+import {
+  Sparkles,
+  Loader2,
+  AlertCircle,
+  Settings,
+  SquarePen,
+} from "lucide-react"
 import type {
   PresetVariableType,
   AIGenerationResponse,
@@ -15,6 +21,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
+import { Separator } from "@/components/ui/separator"
 import { useContainer } from "@/hooks/useContainer"
 import { useAiModel } from "@/hooks/useAiModel"
 import { i18n } from "#imports"
@@ -234,26 +241,46 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
               </Button>
             </div>
 
+            <Separator className="my-2" />
+
             <div className="space-y-2 text-sm">
-              <div>
-                {i18n.t("variablePresets.aiGeneration.dialog.variableName", [
-                  variableName,
-                ])}
+              {/* Variable Name */}
+              <div className="space-y-0.5">
+                <div className="text-xs font-semibold">
+                  {i18n.t("variablePresets.aiGeneration.dialog.variableName")}
+                </div>
+                <p className="md:text-3xl font-extrabold h-auto text-foreground/80">
+                  {variableName}
+                </p>
               </div>
-              <div>
-                {i18n.t("variablePresets.aiGeneration.dialog.variablePurpose", [
-                  variablePurpose || "(未入力)",
-                ])}
+
+              {/* Purpose */}
+              <div className="space-y-0.5">
+                <div className="text-xs font-semibold">
+                  {i18n.t(
+                    "variablePresets.aiGeneration.dialog.variablePurpose",
+                  )}
+                </div>
+                <p className="md:text-base font-medium text-foreground/60">
+                  {variablePurpose || "(未入力)"}
+                </p>
               </div>
-              <div>
-                {i18n.t("variablePresets.aiGeneration.dialog.variableType", [
-                  i18n.t(`variableTypes.${variableType}`),
-                ])}
+
+              {/* Type */}
+              <div className="flex items-center gap-2">
+                <div className="text-xs font-semibold">
+                  {i18n.t("variablePresets.aiGeneration.dialog.variableType")}
+                </div>
+                <p className="border rounded-lg px-2 py-1 bg-muted/80 font-medium font-mono text-foreground/80">
+                  {i18n.t(`variableTypes.${variableType}`)}
+                </p>
               </div>
             </div>
+            <Separator className="my-2" />
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">
+              <label className="text-sm font-medium inline-block">
+                <SquarePen className="inline-block size-4 mr-1 mb-0.5" />
                 {i18n.t(
                   "variablePresets.aiGeneration.dialog.additionalInstructions",
                 )}

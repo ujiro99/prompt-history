@@ -132,7 +132,10 @@ export const VariableGenerationSettingsDialog: React.FC<
                 checked={useDefault}
                 onCheckedChange={(checked) => setUseDefault(checked === true)}
               />
-              <FieldLabel htmlFor="use-default" className="cursor-pointer">
+              <FieldLabel
+                htmlFor="use-default"
+                className="cursor-pointer font-normal"
+              >
                 {i18n.t("settings.variableGeneration.useDefault")}
               </FieldLabel>
             </div>

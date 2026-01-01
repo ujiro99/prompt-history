@@ -355,9 +355,10 @@ variablePresets:
     dialog:
       title: AIに変数を生成してもらいます
       description: 以下の情報とこれまでのプロンプト履歴から、変数の内容をAIに考えてもらいます。スタートを押してください。
-      variableName: "変数名: $1"
-      variablePurpose: "用途: $1"
-      variableType: "変数型: $1"
+      variableName: "変数名:"
+      variablePurpose: "用途:"
+      variableType: "変数型:"
+      empty: "（未入力）"
       additionalInstructions: 追加の指示
       additionalInstructionsPlaceholder: AIへの追加の指示があれば入力してください（任意）
       start: スタート
