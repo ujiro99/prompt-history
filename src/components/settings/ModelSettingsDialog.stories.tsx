@@ -68,7 +68,7 @@ export const OpenWithApiKey: Story = {
   decorators: [
     (Story) => (
       <AiModelContext.Provider
-        value={{ genaiApiKey: "AIzaSyD1234567890abcdefghijklmnopqrstuv" }}
+        value={{ genaiApiKey: "dummy-AIzaSyD1234567890abcdefghijklmnopqrstuv" }}
       >
         <Story />
       </AiModelContext.Provider>
