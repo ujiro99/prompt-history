@@ -81,16 +81,23 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
   ]
 
   useEffect(() => {
-    // Check API key (using hook value)
-    if (!genaiApiKey) {
+    // Check API key
+    if (apiKeyMissing) {
       setEstimate(null)
       return
     }
-  }, [genaiApiKey])
+  }, [apiKeyMissing])
 
   // Load settings and calculate estimate when dialog opens
   useEffect(() => {
     const updateSettings = async (loadedSettings: PromptOrganizerSettings) => {
+      // Skip estimation if no API key
+      if (apiKeyMissing) {
+        setEstimate(null)
+        setTargetPrompts(null)
+        return
+      }
+
       try {
         // Calculate estimate
         const estimateResult =
@@ -119,7 +126,7 @@ export const OrganizerExecuteDialog: React.FC<Props> = ({
         updateSettings(loadedSettings)
       })
     }
-  }, [open])
+  }, [open, apiKeyMissing])
 
   // Auto-scroll to bottom when new data is accumulated
   useEffect(() => {

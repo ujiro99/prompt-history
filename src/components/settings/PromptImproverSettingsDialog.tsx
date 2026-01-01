@@ -300,6 +300,13 @@ export const PromptImproverSettingsDialog: React.FC<
         </DialogHeader>
 
         <div className="space-y-6">
+          {/* API Key Warning */}
+          {!hasApiKey && (
+            <ApiKeyWarningBanner
+              variant="warning"
+              onOpenSettings={onClickModelSettings}
+            />
+          )}
           {/* Improvement Prompt Settings */}
           <div className="space-y-4">
             <FieldSet>
@@ -449,14 +456,6 @@ export const PromptImproverSettingsDialog: React.FC<
               </div>
             )}
           </div>
-
-          {/* API Key Warning */}
-          {!hasApiKey && (
-            <ApiKeyWarningBanner
-              variant="warning"
-              onOpenSettings={onClickModelSettings}
-            />
-          )}
         </div>
 
         <DialogFooter>
