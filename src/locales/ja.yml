@@ -353,7 +353,7 @@ variablePresets:
     tooltip: 変数名、用途、変数型を入力してください
     tooltipApiKey: APIキーを設定してください
     dialog:
-      title: AIに変数を生成してもらいます
+      title: AIで変数を生成
       description: 以下の情報とこれまでのプロンプト履歴から、変数の内容をAIに考えてもらいます。スタートを押してください。
       variableName: "変数名:"
       variablePurpose: "用途:"
@@ -362,11 +362,11 @@ variablePresets:
       additionalInstructions: 追加の指示
       additionalInstructionsPlaceholder: AIへの追加の指示があれば入力してください（任意）
       start: スタート
-      loading: 考え中...
+      loading: 生成中...
       loadingDescription: AIが変数を生成しています。しばらくお待ちください。
-      success: 変数を作成しました
-      successDescription: AIが生成した内容は以下の通りです。必要に応じて編集してください。
-      explanation: AIからの解説
+      success: 変数を生成しました
+      successDescription: AIが生成した内容は以下の通りです。
+      explanation: 解説 by AI
       previewTitle: 生成された内容
       apply: 適用
       retry: 再試行

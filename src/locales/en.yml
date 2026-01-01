@@ -365,7 +365,7 @@ variablePresets:
       loading: Generating...
       loadingDescription: AI is generating variable content. Please wait.
       success: Variable Created
-      successDescription: AI has generated the following content. You can edit it as needed.
+      successDescription: AI has generated the following content.
       explanation: AI Explanation
       previewTitle: Generated Content
       apply: Apply
