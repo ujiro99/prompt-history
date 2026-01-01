@@ -22,6 +22,7 @@ export default defineConfig({
   },
   webExt: {
     startUrls: ["https://ujiro99.github.io/selection-command/en/test"],
+    chromiumArgs: [`--ip-address-space-overrides=127.0.0.1:3000=public`],
   },
   vite: (configEnv) => ({
     plugins: [
