@@ -3,7 +3,6 @@
  * Settings for AI-powered variable generation
  */
 
-import { useState, useEffect } from "react"
 import { RefreshCw } from "lucide-react"
 import {
   Dialog,
@@ -30,6 +29,7 @@ import {
   FieldGroup,
 } from "@/components/ui/field"
 import { useContainer } from "@/hooks/useContainer"
+import { useLazyStorage } from "@/hooks/useLazyStorage"
 import { variableGenerationSettingsStorage } from "@/services/storage/definitions"
 import { i18n } from "#imports"
 import { stopPropagation } from "@/utils/dom"
@@ -44,66 +44,28 @@ export const VariableGenerationSettingsDialog: React.FC<
   VariableGenerationSettingsDialogProps
 > = ({ open, onOpenChange }) => {
   const { container } = useContainer()
-
-  // Variable generation settings
-  const [useDefault, setUseDefault] = useState(true)
-  const [customPrompt, setCustomPrompt] = useState("")
-  const [promptHistoryCount, setPromptHistoryCount] = useState("200")
-  const [isSaving, setIsSaving] = useState(false)
-
-  /**
-   * Load settings from storage
-   */
-  useEffect(() => {
-    if (open) {
-      variableGenerationSettingsStorage.getValue().then((settings) => {
-        if (settings) {
-          setUseDefault(settings.useDefault)
-          setCustomPrompt(settings.customPrompt || "")
-          setPromptHistoryCount(settings.promptHistoryCount.toString())
-        }
-      })
-    }
-  }, [open])
+  const {
+    value: settings,
+    setValue: setSettings,
+    isSaving,
+  } = useLazyStorage(variableGenerationSettingsStorage, {
+    debounceDelay: 400,
+    artificialSetDelay: 600,
+  })
 
   /**
    * Validate settings
    */
   const isValid = () => {
+    if (!settings) return false
     // If custom prompt is selected, it must not be empty
-    if (!useDefault && !customPrompt.trim()) {
+    if (!settings.useDefault && !settings.customPrompt?.trim()) {
       return false
     }
     return true
   }
 
-  /**
-   * Save settings
-   */
-  const handleSave = async () => {
-    if (!isValid()) {
-      return
-    }
-
-    setIsSaving(true)
-
-    try {
-      await variableGenerationSettingsStorage.setValue({
-        useDefault,
-        customPrompt: useDefault ? undefined : customPrompt,
-        promptHistoryCount: Number.parseInt(promptHistoryCount),
-      })
-
-      // Short delay for visual feedback
-      await new Promise((resolve) => setTimeout(resolve, 600))
-
-      onOpenChange(false)
-    } catch (error) {
-      console.error("Failed to save settings:", error)
-    } finally {
-      setIsSaving(false)
-    }
-  }
+  if (!settings) return null
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -129,8 +91,13 @@ export const VariableGenerationSettingsDialog: React.FC<
             <div className="flex items-center gap-2">
               <Checkbox
                 id="use-default"
-                checked={useDefault}
-                onCheckedChange={(checked) => setUseDefault(checked === true)}
+                checked={settings.useDefault}
+                onCheckedChange={(checked) =>
+                  setSettings({
+                    ...settings,
+                    useDefault: checked === true,
+                  })
+                }
               />
               <FieldLabel
                 htmlFor="use-default"
@@ -141,7 +108,7 @@ export const VariableGenerationSettingsDialog: React.FC<
             </div>
           </Field>
 
-          {!useDefault && (
+          {!settings.useDefault && (
             <Field>
               <FieldLabel htmlFor="custom-prompt">
                 {i18n.t("settings.variableGeneration.customPrompt")}
@@ -151,8 +118,13 @@ export const VariableGenerationSettingsDialog: React.FC<
               </FieldDescription>
               <Textarea
                 id="custom-prompt"
-                value={customPrompt}
-                onChange={(e) => setCustomPrompt(e.target.value)}
+                value={settings.customPrompt || ""}
+                onChange={(e) =>
+                  setSettings({
+                    ...settings,
+                    customPrompt: e.target.value,
+                  })
+                }
                 placeholder={DEFAULT_META_PROMPT}
                 rows={8}
                 className="font-mono text-sm max-h-80"
@@ -170,8 +142,13 @@ export const VariableGenerationSettingsDialog: React.FC<
               )}
             </FieldDescription>
             <Select
-              value={promptHistoryCount}
-              onValueChange={setPromptHistoryCount}
+              value={settings.promptHistoryCount.toString()}
+              onValueChange={(value) =>
+                setSettings({
+                  ...settings,
+                  promptHistoryCount: Number.parseInt(value),
+                })
+              }
             >
               <SelectTrigger id="history-count">
                 <SelectValue />
@@ -199,7 +176,7 @@ export const VariableGenerationSettingsDialog: React.FC<
 
         <DialogFooter>
           <Button
-            onClick={handleSave}
+            onClick={() => onOpenChange(false)}
             disabled={isSaving || !isValid()}
             className="min-w-24"
           >
