@@ -28,7 +28,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
 import { ApiKeyWarningBanner } from "@/components/shared/ApiKeyWarningBanner"
 import { ModelSettingsDialog } from "@/components/settings/ModelSettingsDialog"
-import { EstimationDisplay } from "@/components/promptOrganizer/EstimationDisplay"
+import { EstimationDisplay } from "@/components/shared/EstimationDisplay"
 import { VariableGenerationSettingsDialog } from "@/components/settings/variablePresets/VariableGenerationSettingsDialog"
 import { GenerationProgress } from "@/components/shared/GenerationProgress"
 
@@ -96,7 +96,14 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
   // Dialog state
   const [state, setState] = useState<DialogState>(debugState)
   const [generatedResponse, setGeneratedResponse] =
-    useState<AIGenerationResponse | null>(null)
+    useState<AIGenerationResponse | null>(
+      debugState === "success"
+        ? {
+            explanation: "explanation",
+            textContent: "textContent",
+          }
+        : null,
+    )
   const [error, setError] = useState<string | null>(null)
   const [progress, setProgress] =
     useState<GenerationProgressType>(emptyProgress)
@@ -191,14 +198,7 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
         },
       })
 
-      // Merge with existing content if provided
-      const mergedResponse = mergeResponse(
-        response,
-        variableType,
-        existingContent,
-      )
-
-      setGeneratedResponse(mergedResponse)
+      setGeneratedResponse(response)
       setState("success")
     } catch (err) {
       // Handle cancellation
@@ -233,7 +233,13 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
    */
   const handleApply = () => {
     if (generatedResponse) {
-      onApply(generatedResponse)
+      // Merge with existing content if provided
+      const mergedResponse = mergeResponse(
+        generatedResponse,
+        variableType,
+        existingContent,
+      )
+      onApply(mergedResponse)
       onOpenChange(false)
     }
   }
@@ -462,14 +468,14 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
                   <div className="text-sm font-semibold text-foreground">
                     {i18n.t("variablePresets.aiGeneration.dialog.previewTitle")}
                   </div>
-                  <div className="border border-purple-200 rounded-md bg-gradient-to-r from-purple-50/50 to-blue-50/50 p-1">
+                  <div className="border rounded-md">
                     <Textarea
                       value={formatPreviewContent(
                         generatedResponse,
                         variableType,
                       )}
                       readOnly
-                      className="max-h-60 bg-white border-none resize-none"
+                      className="max-h-60 bg-background border-none resize-none cursor-default"
                       rows={8}
                     />
                   </div>

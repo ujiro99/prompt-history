@@ -487,7 +487,7 @@ promptOrganizer:
     sending: 対象プロンプトを送信中
     thinking0: 対象プロンプトを分類中
     thinking1: パターンを抽出中
-    thinking2: プロンプトを精製中
+    thinking2: アウトプットを精製中
     generating: 精製結果を受信中
     complete: 完了しました
     error: エラーが発生しました

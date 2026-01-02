@@ -29,7 +29,8 @@ import type {
   AIGenerationResponse,
   ExistingVariableContent,
 } from "@/types/variableGeneration"
-import { cn, uuid } from "@/lib/utils"
+import { applyResponseToPreset } from "@/services/variableGeneration"
+import { cn } from "@/lib/utils"
 import { movePrev, moveNext } from "@/utils/array"
 import { useContainer } from "@/hooks/useContainer"
 import { usePresetValidation } from "@/hooks/usePresetValidation"
@@ -45,6 +46,7 @@ interface VariablePresetEditorProps {
   preset: VariablePreset | null
   allPresets: VariablePreset[]
   onChange: (preset: VariablePreset) => void
+  onChangeBackground: (preset: VariablePreset) => void
   onDuplicate: () => void
   onDelete: () => void
   onValidationChange?: (hasErrors: boolean) => void
@@ -58,6 +60,7 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
   preset,
   allPresets,
   onChange,
+  onChangeBackground,
   onDuplicate,
   onDelete,
   onValidationChange,
@@ -66,6 +69,7 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
   const { container } = useContainer()
   const selectOptionsRef = useRef<HTMLInputElement>(null)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
+  const prevPresetRef = useRef<VariablePreset | null>(null)
   const dictionaryItemsCount = localPreset?.dictionaryItems?.length || 0
 
   // Validation using custom hook
@@ -98,6 +102,46 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
         : ""
     }
   }, [preset])
+
+  // Reset AI generation when preset changes or component unmounts
+  useEffect(() => {
+    const resetPreset = (targetPreset: VariablePreset) => {
+      const dictionaryItemsReset = targetPreset.dictionaryItems?.map(
+        (item) => ({
+          ...item,
+          isAiGenerated: false,
+        }),
+      )
+
+      const updatedPreset = {
+        ...targetPreset,
+        dictionaryItems: dictionaryItemsReset,
+        isAiGenerated: false,
+        aiExplanation: undefined,
+      }
+
+      onChangeBackground(updatedPreset)
+    }
+
+    // Reset previous preset if it had AI-generated content
+    if (
+      prevPresetRef.current &&
+      prevPresetRef.current.isAiGenerated &&
+      prevPresetRef.current.id !== localPreset?.id
+    ) {
+      resetPreset(prevPresetRef.current)
+    }
+
+    // Update ref to current preset
+    prevPresetRef.current = localPreset
+
+    // Cleanup on unmount
+    return () => {
+      if (prevPresetRef.current?.isAiGenerated) {
+        resetPreset(prevPresetRef.current)
+      }
+    }
+  }, [localPreset, onChangeBackground])
 
   /**
    * Handle field change with debounce
@@ -278,46 +322,16 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
   const handleAiGenerationApply = (response: AIGenerationResponse) => {
     if (!localPreset) return
 
-    // Prepare all updates in a single object
-    const updates: Partial<VariablePreset> = {
-      isAiGenerated: true,
-      aiExplanation: response.explanation,
+    // Apply AI-generated response to preset using service function
+    const updatedPreset = applyResponseToPreset(localPreset, response)
+
+    // Update ref for select options input
+    if (localPreset.type === "select" && selectOptionsRef.current) {
+      selectOptionsRef.current.value = response.selectOptions
+        ? response.selectOptions.join(", ")
+        : ""
     }
 
-    // Apply generated content based on variable type
-    switch (localPreset.type) {
-      case "text":
-        updates.textContent = response.textContent || ""
-        break
-
-      case "select":
-        updates.selectOptions = response.selectOptions || []
-        // Update ref for select options input
-        if (selectOptionsRef.current) {
-          selectOptionsRef.current.value = response.selectOptions
-            ? response.selectOptions.join(", ")
-            : ""
-        }
-        break
-
-      case "dictionary": {
-        // Convert response items to DictionaryItem format
-        updates.dictionaryItems =
-          response.dictionaryItems?.map((item) => ({
-            id: uuid(),
-            name: item.name,
-            content: item.content,
-            isAiGenerated: true,
-          })) || []
-        break
-      }
-    }
-
-    // Apply all updates at once
-    const updatedPreset = {
-      ...localPreset,
-      ...updates,
-    }
     setLocalPreset(updatedPreset)
     onChange(updatedPreset)
   }
@@ -547,16 +561,23 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
               <FieldDescription>
                 {i18n.t("variablePresets.textContentDescription")}
               </FieldDescription>
-              <Textarea
-                id="text-content"
-                value={localPreset.textContent || ""}
-                onChange={(e) =>
-                  handleFieldChange("textContent", e.target.value)
-                }
-                placeholder={i18n.t("variablePresets.enterTextContent")}
-                rows={6}
-                className={cn("min-h-9 max-h-40 break-all")}
-              />
+              <div
+                className={cn(
+                  localPreset.isAiGenerated &&
+                    "p-[1px] bg-gradient-to-r from-purple-300 to-blue-300 rounded-md",
+                )}
+              >
+                <Textarea
+                  id="text-content"
+                  value={localPreset.textContent || ""}
+                  onChange={(e) =>
+                    handleFieldChange("textContent", e.target.value)
+                  }
+                  placeholder={i18n.t("variablePresets.enterTextContent")}
+                  rows={6}
+                  className={cn("bg-background min-h-9 max-h-40 break-all")}
+                />
+              </div>
             </Field>
           )}
 
@@ -568,14 +589,24 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
               <FieldDescription>
                 {i18n.t("variablePresets.selectOptionsDescription")}
               </FieldDescription>
-              <Input
-                id="select-options"
-                defaultValue={localPreset.selectOptions?.join(", ") || ""}
-                onBlur={(e) => handleSelectOptionsChange(e.target.value)}
-                placeholder={i18n.t("variablePresets.enterSelectOptions")}
-                ref={selectOptionsRef}
-                className={cn(errors.selectOptions && "border-destructive")}
-              />
+              <div
+                className={cn(
+                  localPreset.isAiGenerated &&
+                    "p-[1px] bg-gradient-to-r from-purple-300 to-blue-300 rounded-md",
+                )}
+              >
+                <Input
+                  id="select-options"
+                  defaultValue={localPreset.selectOptions?.join(", ") || ""}
+                  onBlur={(e) => handleSelectOptionsChange(e.target.value)}
+                  placeholder={i18n.t("variablePresets.enterSelectOptions")}
+                  ref={selectOptionsRef}
+                  className={cn(
+                    "bg-background",
+                    errors.selectOptions && "border-destructive",
+                  )}
+                />
+              </div>
               <FieldError errors={[{ message: errors.selectOptions }]} />
             </Field>
           )}
@@ -607,7 +638,12 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
                           {i18n.t("variablePresets.itemName")}
                         </FieldLabel>
                         <div className="relative flex-1">
-                          <div>
+                          <div
+                            className={cn(
+                              item.isAiGenerated &&
+                                "p-[1px] bg-gradient-to-r from-purple-300 to-blue-300 rounded-md",
+                            )}
+                          >
                             <Input
                               id={`dictionary-item-name-${index}`}
                               value={item.name}
@@ -625,7 +661,7 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
                                 "variablePresets.enterItemName",
                               )}
                               className={cn(
-                                "bg-white w-full",
+                                "bg-background w-full",
                                 itemNameHandler.error && "border-destructive",
                               )}
                             />
@@ -662,7 +698,13 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
                         >
                           {i18n.t("variablePresets.itemContent")}
                         </FieldLabel>
-                        <div className="flex-1">
+                        <div
+                          className={cn(
+                            "flex-1",
+                            item.isAiGenerated &&
+                              "p-[1px] bg-gradient-to-r from-purple-300 to-blue-300 rounded-md",
+                          )}
+                        >
                           <Textarea
                             id={`dictionary-item-content-${index}`}
                             value={item.content}
@@ -680,7 +722,7 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
                             )}
                             rows={1}
                             className={cn(
-                              "py-1.5 min-h-9 max-h-40 break-all bg-white",
+                              "py-1.5 min-h-9 max-h-40 break-all bg-background",
                               itemContentHandler.error && "border-destructive",
                             )}
                           />

@@ -487,7 +487,7 @@ promptOrganizer:
     sending: Sending target prompts
     thinking0: Classifying target prompts
     thinking1: Extracting patterns
-    thinking2: Refining prompts
+    thinking2: Refining output
     generating: Receiving refined results
     complete: Completed!
     error: Error occurred

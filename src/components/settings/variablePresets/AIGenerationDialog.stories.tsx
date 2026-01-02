@@ -267,7 +267,7 @@ export const Success: Story = {
     onOpenChange: fn(),
     variableName: "projectContext",
     variablePurpose: "Provide relevant project context for the current task",
-    variableType: "dictionary",
+    variableType: "text",
     onApply: fn(),
     debugState: "success",
   },

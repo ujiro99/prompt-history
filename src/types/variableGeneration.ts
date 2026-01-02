@@ -43,7 +43,7 @@ export interface AIGenerationResponse {
   /** [Select type only] Generated select options */
   selectOptions?: string[]
   /** [Dictionary type only] Generated dictionary items */
-  dictionaryItems?: { name: string; content: string }[]
+  dictionaryItems?: DictionaryItem[]
 }
 
 /**
