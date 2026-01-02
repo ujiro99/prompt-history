@@ -68,8 +68,8 @@ const mockProgressGenerating: GenerationProgress = {
     '{"templates": [{"id": "1", "title": "Code Review", "content": "Review...',
   estimatedProgress: 65,
   status: "generating",
-  thoughtsTokens: 250,
-  outputTokens: 120,
+  thoughtsTokens: 2500,
+  outputTokens: 1200,
 }
 
 const mockProgressComplete: GenerationProgress = {

@@ -25,3 +25,14 @@ export function isEmpty(str: string | null | undefined): boolean {
 export function uuid(): string {
   return crypto.randomUUID()
 }
+
+/**
+ * Format token count with K suffix for thousands
+ */
+export const formatTokenCount = (tokens: number | undefined): string => {
+  if (!tokens) return "0"
+  if (tokens >= 1000) {
+    return `${(tokens / 1000).toFixed(1)}K`
+  }
+  return tokens.toString()
+}

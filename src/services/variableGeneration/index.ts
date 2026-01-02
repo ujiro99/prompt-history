@@ -4,8 +4,16 @@
  */
 
 export * from "./schemas"
-export * from "./variableGenerationService"
+export * from "./core"
 export * from "./responseConverter"
 export * from "./metaPromptGenerator"
 export * from "./promptHistoryFetcher"
 export * from "./responseMerger"
+export * from "./estimatorService"
+
+// Export service with progress tracking
+export { VariableGeneratorService } from "./service"
+import { VariableGeneratorService } from "./service"
+
+// Singleton instance for convenience
+export const variableGeneratorService = new VariableGeneratorService()

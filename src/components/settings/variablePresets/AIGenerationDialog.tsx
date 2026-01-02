@@ -1,18 +1,19 @@
-import { useState, useRef, useCallback, useEffect } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { i18n } from "#imports"
 import { cn } from "@/lib/utils"
 import {
   Sparkles,
-  Loader2,
   AlertCircle,
   Settings,
   PencilLine,
+  MessageCircleMore,
 } from "lucide-react"
 import type { PresetVariableType } from "@/types/prompt"
 import type {
   AIGenerationResponse,
   ExistingVariableContent,
 } from "@/types/variableGeneration"
+import type { GenerationProgress as GenerationProgressType } from "@/types/promptOrganizer"
 
 import {
   Dialog,
@@ -29,14 +30,17 @@ import { ApiKeyWarningBanner } from "@/components/shared/ApiKeyWarningBanner"
 import { ModelSettingsDialog } from "@/components/settings/ModelSettingsDialog"
 import { EstimationDisplay } from "@/components/promptOrganizer/EstimationDisplay"
 import { VariableGenerationSettingsDialog } from "@/components/settings/variablePresets/VariableGenerationSettingsDialog"
+import { GenerationProgress } from "@/components/shared/GenerationProgress"
 
 import { useContainer } from "@/hooks/useContainer"
 import { useAiModel } from "@/hooks/useAiModel"
 
-import { generateVariable } from "@/services/variableGeneration"
-import { mergeResponse } from "@/services/variableGeneration/responseMerger"
+import {
+  variableGeneratorService,
+  estimatorService,
+  mergeResponse,
+} from "@/services/variableGeneration"
 import type { VariableGenerationEstimate } from "@/types/variableGeneration"
-import { variableGenerationEstimatorService as estimatorService } from "@/services/variableGeneration/VariableGenerationEstimatorService"
 import { GeminiError, GeminiErrorType } from "@/services/genai/types"
 import { stopPropagation } from "@/utils/dom"
 
@@ -65,6 +69,13 @@ interface AIGenerationDialogProps {
   debugState?: DialogState
 }
 
+const emptyProgress: GenerationProgressType = {
+  chunk: "",
+  accumulated: "",
+  estimatedProgress: 0,
+  status: "sending",
+}
+
 /**
  * AI Variable Generation Dialog Component
  */
@@ -81,14 +92,14 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
   const { container } = useContainer()
   const { genaiApiKey } = useAiModel()
   const hasApiKey = Boolean(genaiApiKey)
-  const abortControllerRef = useRef<AbortController | null>(null)
 
   // Dialog state
   const [state, setState] = useState<DialogState>(debugState)
   const [generatedResponse, setGeneratedResponse] =
     useState<AIGenerationResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [accumulatedText, setAccumulatedText] = useState("")
+  const [progress, setProgress] =
+    useState<GenerationProgressType>(emptyProgress)
   const [additionalInstructions, setAdditionalInstructions] = useState("")
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false)
 
@@ -108,7 +119,7 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
       setState("confirm")
       setError(null)
       setGeneratedResponse(null)
-      setAccumulatedText("")
+      setProgress(emptyProgress)
       setAdditionalInstructions("")
       setEstimate(null)
     }
@@ -162,14 +173,11 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
   const handleStart = async () => {
     setState("generating")
     setError(null)
-    setAccumulatedText("")
-
-    // Create AbortController for cancellation
-    abortControllerRef.current = new AbortController()
+    setProgress(emptyProgress)
 
     try {
-      // Generate variable content
-      const response = await generateVariable({
+      // Generate variable content with progress tracking
+      const response = await variableGeneratorService.generateVariable({
         request: {
           variableName,
           variablePurpose,
@@ -178,9 +186,8 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
           additionalInstructions,
         },
         apiKey: genaiApiKey || "",
-        signal: abortControllerRef.current.signal,
-        onProgress: (_chunk, accumulated) => {
-          setAccumulatedText(accumulated)
+        onProgress: (progressInfo) => {
+          setProgress(progressInfo)
         },
       })
 
@@ -201,7 +208,7 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
       ) {
         // Reset to confirm state on cancellation
         setState("confirm")
-        setAccumulatedText("")
+        setProgress(emptyProgress)
         return
       }
 
@@ -209,8 +216,6 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
       const errorMessage = getErrorMessage(err)
       setError(errorMessage)
       setState("error")
-    } finally {
-      abortControllerRef.current = null
     }
   }
 
@@ -218,12 +223,9 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
    * Cancel generation
    */
   const handleCancel = useCallback(() => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort()
-      abortControllerRef.current = null
-    }
+    variableGeneratorService.cancel()
     setState("confirm")
-    setAccumulatedText("")
+    setProgress(emptyProgress)
   }, [])
 
   /**
@@ -243,7 +245,7 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
     setState("confirm")
     setError(null)
     setGeneratedResponse(null)
-    setAccumulatedText("")
+    setProgress(emptyProgress)
   }
 
   /**
@@ -408,25 +410,18 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="relative min-h-40">
-                <Textarea
-                  value={accumulatedText}
-                  readOnly
-                  className="max-h-60 bg-muted/50 resize-none"
-                  rows={8}
-                  placeholder={i18n.t(
-                    "variablePresets.aiGeneration.dialog.improving",
-                  )}
-                />
-                <div className="absolute inset-0 flex items-center justify-center gap-2 bg-background/50 pointer-events-none">
-                  <Loader2 className="size-6 animate-spin text-primary" />
-                </div>
-              </div>
+              <GenerationProgress
+                progress={progress}
+                accumulatedTextLabel={i18n.t(
+                  "variablePresets.aiGeneration.dialog.improving",
+                )}
+                showAccumulatedText={false}
+              />
 
               <DialogFooter>
                 <Button
                   name="cancel-generation"
-                  variant="ghost"
+                  variant="secondary"
                   size="sm"
                   onClick={handleCancel}
                 >
@@ -452,17 +447,18 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
 
               <div className="space-y-4">
                 {/* AI Explanation */}
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <div className="text-sm font-semibold text-foreground">
+                    <MessageCircleMore className="size-4 inline-block mr-1 -mt-1 stroke-fuchsia-400 fill-purple-100" />
                     {i18n.t("variablePresets.aiGeneration.dialog.explanation")}
                   </div>
-                  <div className="text-sm text-foreground/80 p-3 bg-muted/50 rounded-md border border-muted whitespace-pre-line">
+                  <blockquote className="font-serif text-sm border-l-2 px-4 py-3 bg-muted/60 tracking-wider whitespace-pre-line">
                     {generatedResponse.explanation}
-                  </div>
+                  </blockquote>
                 </div>
 
                 {/* Generated Content Preview */}
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <div className="text-sm font-semibold text-foreground">
                     {i18n.t("variablePresets.aiGeneration.dialog.previewTitle")}
                   </div>
@@ -489,7 +485,6 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
                   {i18n.t("common.cancel")}
                 </Button>
                 <Button name="apply-generated" onClick={handleApply}>
-                  <Sparkles className="mr-1 size-4" />
                   {i18n.t("variablePresets.aiGeneration.dialog.apply")}
                 </Button>
               </DialogFooter>
@@ -561,7 +556,7 @@ function formatPreviewContent(
       return (
         response.dictionaryItems
           ?.map((item) => `【${item.name}】\n${item.content}`)
-          .join("\n\n---\n\n") || ""
+          .join("\n\n") || ""
       )
 
     default:

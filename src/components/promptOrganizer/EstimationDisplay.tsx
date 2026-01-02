@@ -5,7 +5,7 @@
 
 import { ChevronsUpDown } from "lucide-react"
 import { i18n } from "#imports"
-import { cn } from "@/lib/utils"
+import { cn, formatTokenCount } from "@/lib/utils"
 import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
 import type { OrganizerExecutionEstimate } from "@/types/promptOrganizer"
@@ -21,17 +21,6 @@ interface EstimationDisplayProps {
   estimate: OrganizerExecutionEstimate | null
   hideWhenNoEstimate?: boolean
   collapsible?: boolean
-}
-
-/**
- * Format token count with K suffix for thousands
- */
-const formatTokenCount = (tokens: number | undefined): string => {
-  if (!tokens) return "0"
-  if (tokens >= 1000) {
-    return `${(tokens / 1000).toFixed(1)}K`
-  }
-  return tokens.toString()
 }
 
 /**

@@ -20,7 +20,7 @@ import { fetchPromptHistoryWithCount } from "./promptHistoryFetcher"
 /**
  * Variable Generation Estimator Service
  */
-export class VariableGenerationEstimatorService {
+export class EstimatorService {
   private geminiClient: GeminiClient
 
   constructor() {
@@ -74,5 +74,4 @@ export class VariableGenerationEstimatorService {
   }
 }
 
-export const variableGenerationEstimatorService =
-  new VariableGenerationEstimatorService()
+export const estimatorService = new EstimatorService()

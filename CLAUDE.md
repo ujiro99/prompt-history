@@ -177,6 +177,11 @@ Therefore, please strictly follow the rules below.
 - Code comments should be written to aid understanding of the code's intent.
   - Avoid comments that are self-evident from the source code itself, limiting them to the absolute minimum necessary.
 
+- File naming conventions
+  - React components: PascalCase (e.g., `PromptHistoryWidget.tsx`)
+  - Utility functions / services / hooks: camelCase (e.g., `useLazyStorage.ts`)
+  - Keep file names as simple as possible, considering the directory name as well.
+
 ## Landing Page (pages/)
 
 The `pages/` directory contains a separate Next.js project for the Prompt History service landing page, deployed via GitHub Pages.

@@ -5,6 +5,7 @@
 
 import { GeminiClient } from "@/services/genai/GeminiClient"
 import { GeminiError, GeminiErrorType } from "@/services/genai/types"
+import type { Usage } from "@/services/genai/types"
 import type { PresetVariableType } from "@/types/prompt"
 import type {
   AIGenerationRequest,
@@ -26,7 +27,11 @@ export interface GenerateVariableOptions {
   /** AbortSignal for cancellation */
   signal?: AbortSignal
   /** Progress callback for streaming */
-  onProgress?: (chunk: string | null, accumulated: string) => void
+  onProgress?: (
+    chunk: string | null,
+    accumulated: string,
+    tokenUsage: Usage,
+  ) => void
 }
 
 /**
@@ -86,8 +91,8 @@ export async function generateVariable(
         },
         {
           signal,
-          onProgress: (chunk, accumulated, _tokenUsage) => {
-            onProgress?.(chunk, accumulated)
+          onProgress: (chunk, accumulated, tokenUsage) => {
+            onProgress?.(chunk, accumulated, tokenUsage)
           },
         },
       )
