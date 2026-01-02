@@ -22,6 +22,7 @@
 - `pnpm e2e:headed` - ヘッドモードでE2Eテストを実行
 - `pnpm e2e:debug` - E2Eテストをデバッグ
 - `pnpm pre-e2e` - 拡張機能をビルドしてPlaywright依存関係をインストール
+- `pnpm storybook` - Storybook開発サーバーを起動
 
 ## アーキテクチャ
 
@@ -32,6 +33,7 @@
   - `content.ts` - AIサービスドメインで実行されるコンテンツスクリプト
 - `src/` - ソースコードディレクトリ
   - `components/` - React UIコンポーネント
+    - `shared/` - 複数コンポーネントで使用される共通コンポーネント
   - `services/` - コアビジネスロジックサービス
     - `aiService/` - AIサービス統合
       - `base/` - 抽象基底クラスと共通ユーティリティ

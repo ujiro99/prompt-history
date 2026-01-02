@@ -20,7 +20,7 @@ import { stopPropagation } from "@/utils/dom"
 import { ApiKeyWarningBanner } from "@/components/shared/ApiKeyWarningBanner"
 import { ModelSettingsDialog } from "@/components/settings/ModelSettingsDialog"
 import { OrganizerSettingsDialog } from "@/components/promptOrganizer/OrganizerSettingsDialog"
-import { EstimationDisplay } from "@/components/promptOrganizer/EstimationDisplay"
+import { EstimationDisplay } from "@/components/shared/EstimationDisplay"
 import { ScrollAreaWithGradient } from "@/components/inputMenu/ScrollAreaWithGradient"
 import { GenerationProgress } from "@/components/shared/GenerationProgress"
 import type {

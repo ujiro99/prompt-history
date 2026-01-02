@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { ApiKeyWarningBanner } from "@/components/shared/ApiKeyWarningBanner"
-import { EstimationDisplay } from "@/components/promptOrganizer/EstimationDisplay"
+import { EstimationDisplay } from "@/components/shared/EstimationDisplay"
 import { promptOrganizerSettingsStorage } from "@/services/storage/definitions"
 import { useContainer } from "@/hooks/useContainer"
 import { usePromptOrganizer } from "@/hooks/usePromptOrganizer"
