@@ -5,11 +5,11 @@
 
 import { GeminiClient } from "@/services/genai/GeminiClient"
 import { GeminiError, GeminiErrorType } from "@/services/genai/types"
+import type { PresetVariableType } from "@/types/prompt"
 import type {
   AIGenerationRequest,
   AIGenerationResponse,
-  PresetVariableType,
-} from "@/types/prompt"
+} from "@/types/variableGeneration"
 import { getSchemaByType } from "./schemas"
 import { SYSTEM_INSTRUCTION } from "./defaultPrompts"
 import { generateMetaPrompt } from "@/services/variableGeneration/metaPromptGenerator"

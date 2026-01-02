@@ -3,11 +3,11 @@
  * Generates meta-prompts for AI variable generation by replacing template variables
  */
 
+import type { PresetVariableType } from "@/types/prompt"
 import type {
-  PresetVariableType,
   ExistingVariableContent,
   VariableGenerationSettings,
-} from "@/types/prompt"
+} from "@/types/variableGeneration"
 import { variableGenerationSettingsStorage } from "@/services/storage/definitions"
 import { i18n } from "#imports"
 import {
@@ -182,6 +182,12 @@ export async function getPromptHistoryCount(): Promise<number> {
   return settings?.promptHistoryCount ?? 200
 }
 
+/**
+ * Watch for changes in variable generation setting
+ *
+ * @param cb - Callback function to invoke on changes
+ * @return Unsubscribe function
+ */
 export function watch(cb: WatchCallback<VariableGenerationSettings>) {
   return variableGenerationSettingsStorage.watch(cb)
 }

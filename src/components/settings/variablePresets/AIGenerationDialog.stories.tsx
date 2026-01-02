@@ -2,7 +2,10 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 import { fn } from "storybook/test"
 import { AIGenerationDialog } from "./AIGenerationDialog"
 import { ContainerProvider } from "@/contexts/ContainerContext"
-import { AiModelContext } from "@/contexts/AiModelContext"
+import {
+  AiModelContextProvider,
+  AiModelContext,
+} from "@/contexts/AiModelContext"
 
 const meta = {
   title: "Settings/VariablePresets/AIGenerationDialog",
@@ -28,6 +31,16 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
+const API_KEY = import.meta.env.WXT_GENAI_API_KEY
+
+// Helper function to set API key
+const setApiKey = () => {
+  const windowWithMock = window as Window & {
+    __STORYBOOK_GENAI_API_KEY__?: string | null
+  }
+  windowWithMock.__STORYBOOK_GENAI_API_KEY__ = API_KEY
+}
+
 // Dialog closed
 export const Closed: Story = {
   args: {
@@ -39,13 +52,14 @@ export const Closed: Story = {
     onApply: fn(),
   },
   decorators: [
-    (Story: React.ComponentType) => (
-      <AiModelContext.Provider
-        value={{ genaiApiKey: "AIzaSyD1234567890abcdefghijklmnopqrstuv" }}
-      >
-        <Story />
-      </AiModelContext.Provider>
-    ),
+    (Story: React.ComponentType) => {
+      setApiKey()
+      return (
+        <AiModelContextProvider>
+          <Story />
+        </AiModelContextProvider>
+      )
+    },
   ],
 }
 
@@ -60,13 +74,14 @@ export const OpenTextType: Story = {
     onApply: fn(),
   },
   decorators: [
-    (Story: React.ComponentType) => (
-      <AiModelContext.Provider
-        value={{ genaiApiKey: "AIzaSyD1234567890abcdefghijklmnopqrstuv" }}
-      >
-        <Story />
-      </AiModelContext.Provider>
-    ),
+    (Story: React.ComponentType) => {
+      setApiKey()
+      return (
+        <AiModelContextProvider>
+          <Story />
+        </AiModelContextProvider>
+      )
+    },
   ],
 }
 
@@ -81,13 +96,14 @@ export const OpenSelectType: Story = {
     onApply: fn(),
   },
   decorators: [
-    (Story: React.ComponentType) => (
-      <AiModelContext.Provider
-        value={{ genaiApiKey: "AIzaSyD1234567890abcdefghijklmnopqrstuv" }}
-      >
-        <Story />
-      </AiModelContext.Provider>
-    ),
+    (Story: React.ComponentType) => {
+      setApiKey()
+      return (
+        <AiModelContextProvider>
+          <Story />
+        </AiModelContextProvider>
+      )
+    },
   ],
 }
 
@@ -102,13 +118,14 @@ export const OpenDictionaryType: Story = {
     onApply: fn(),
   },
   decorators: [
-    (Story: React.ComponentType) => (
-      <AiModelContext.Provider
-        value={{ genaiApiKey: "AIzaSyD1234567890abcdefghijklmnopqrstuv" }}
-      >
-        <Story />
-      </AiModelContext.Provider>
-    ),
+    (Story: React.ComponentType) => {
+      setApiKey()
+      return (
+        <AiModelContextProvider>
+          <Story />
+        </AiModelContextProvider>
+      )
+    },
   ],
 }
 
@@ -127,13 +144,14 @@ export const OpenWithExistingTextContent: Story = {
     onApply: fn(),
   },
   decorators: [
-    (Story: React.ComponentType) => (
-      <AiModelContext.Provider
-        value={{ genaiApiKey: "AIzaSyD1234567890abcdefghijklmnopqrstuv" }}
-      >
-        <Story />
-      </AiModelContext.Provider>
-    ),
+    (Story: React.ComponentType) => {
+      setApiKey()
+      return (
+        <AiModelContextProvider>
+          <Story />
+        </AiModelContextProvider>
+      )
+    },
   ],
 }
 
@@ -151,13 +169,14 @@ export const OpenWithExistingSelectOptions: Story = {
     onApply: fn(),
   },
   decorators: [
-    (Story: React.ComponentType) => (
-      <AiModelContext.Provider
-        value={{ genaiApiKey: "AIzaSyD1234567890abcdefghijklmnopqrstuv" }}
-      >
-        <Story />
-      </AiModelContext.Provider>
-    ),
+    (Story: React.ComponentType) => {
+      setApiKey()
+      return (
+        <AiModelContextProvider>
+          <Story />
+        </AiModelContextProvider>
+      )
+    },
   ],
 }
 
@@ -188,13 +207,14 @@ export const OpenWithExistingDictionaryItems: Story = {
     onApply: fn(),
   },
   decorators: [
-    (Story: React.ComponentType) => (
-      <AiModelContext.Provider
-        value={{ genaiApiKey: "AIzaSyD1234567890abcdefghijklmnopqrstuv" }}
-      >
-        <Story />
-      </AiModelContext.Provider>
-    ),
+    (Story: React.ComponentType) => {
+      setApiKey()
+      return (
+        <AiModelContextProvider>
+          <Story />
+        </AiModelContextProvider>
+      )
+    },
   ],
 }
 
@@ -214,5 +234,74 @@ export const OpenNoApiKey: Story = {
         <Story />
       </AiModelContext.Provider>
     ),
+  ],
+}
+
+// Dialog open with text type variable
+export const Generating: Story = {
+  args: {
+    open: true,
+    onOpenChange: fn(),
+    variableName: "projectContext",
+    variablePurpose: "Provide relevant project context for the current task",
+    variableType: "text",
+    onApply: fn(),
+    debugState: "generating",
+  },
+  decorators: [
+    (Story: React.ComponentType) => {
+      setApiKey()
+      return (
+        <AiModelContextProvider>
+          <Story />
+        </AiModelContextProvider>
+      )
+    },
+  ],
+}
+
+// Dialog open with text type variable
+export const Success: Story = {
+  args: {
+    open: true,
+    onOpenChange: fn(),
+    variableName: "projectContext",
+    variablePurpose: "Provide relevant project context for the current task",
+    variableType: "text",
+    onApply: fn(),
+    debugState: "success",
+  },
+  decorators: [
+    (Story: React.ComponentType) => {
+      setApiKey()
+      return (
+        <AiModelContextProvider>
+          <Story />
+        </AiModelContextProvider>
+      )
+    },
+  ],
+}
+
+// Dialog open with text type variable
+export const Error: Story = {
+  args: {
+    open: true,
+    onOpenChange: fn(),
+    variableName: "projectContext",
+    variablePurpose: "Provide relevant project context for the current task",
+    variableType: "text",
+    onApply: fn(),
+    debugState: "error",
+  },
+  decorators: [
+    (Story: React.ComponentType) => {
+      setApiKey()
+      return (
+        <AiModelContextProvider>
+          <Story />
+        </AiModelContextProvider>
+      )
+    },
   ],
 }

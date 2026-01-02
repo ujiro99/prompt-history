@@ -24,9 +24,11 @@ import type {
   VariablePreset,
   PresetVariableType,
   DictionaryItem,
+} from "@/types/prompt"
+import type {
   AIGenerationResponse,
   ExistingVariableContent,
-} from "@/types/prompt"
+} from "@/types/variableGeneration"
 import { cn, uuid } from "@/lib/utils"
 import { movePrev, moveNext } from "@/utils/array"
 import { useContainer } from "@/hooks/useContainer"

@@ -8,11 +8,11 @@ import {
   Settings,
   PencilLine,
 } from "lucide-react"
+import type { PresetVariableType } from "@/types/prompt"
 import type {
-  PresetVariableType,
   AIGenerationResponse,
   ExistingVariableContent,
-} from "@/types/prompt"
+} from "@/types/variableGeneration"
 
 import {
   Dialog,
@@ -43,7 +43,7 @@ import { stopPropagation } from "@/utils/dom"
 /**
  * Dialog state
  */
-type DialogState = "confirm" | "loading" | "success" | "error"
+type DialogState = "confirm" | "generating" | "success" | "error"
 
 /**
  * Props for AI generation dialog
@@ -61,6 +61,8 @@ interface AIGenerationDialogProps {
   existingContent?: ExistingVariableContent
   /** Callback on apply */
   onApply: (response: AIGenerationResponse) => void
+  /** Debug state (for development/testing) */
+  debugState?: DialogState
 }
 
 /**
@@ -74,6 +76,7 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
   variableType,
   existingContent,
   onApply,
+  debugState = "confirm",
 }) => {
   const { container } = useContainer()
   const { genaiApiKey } = useAiModel()
@@ -81,7 +84,7 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
   const abortControllerRef = useRef<AbortController | null>(null)
 
   // Dialog state
-  const [state, setState] = useState<DialogState>("confirm")
+  const [state, setState] = useState<DialogState>(debugState)
   const [generatedResponse, setGeneratedResponse] =
     useState<AIGenerationResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -137,8 +140,12 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
         setEstimate(null)
       }
     }
-
     estimateTokens()
+
+    // Watch for changes in estimation inputs
+    return estimatorService.watch(() => {
+      estimateTokens()
+    })
   }, [
     open,
     hasApiKey,
@@ -153,7 +160,7 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
    * Start AI generation
    */
   const handleStart = async () => {
-    setState("loading")
+    setState("generating")
     setError(null)
     setAccumulatedText("")
 
@@ -268,10 +275,12 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
                   </DialogDescription>
                 </DialogHeader>
                 <Button
+                  name="open-model-settings"
                   onClick={() => setSettingsDialogOpen(true)}
                   variant="ghost"
                   size="sm"
                   className="group mr-1"
+                  aria-label={i18n.t("settings.modelSettings.title")}
                 >
                   <Settings className="size-5 stroke-neutral-600 group-hover:stroke-neutral-800" />
                 </Button>
@@ -363,10 +372,11 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
               </div>
 
               <DialogFooter>
-                <Button variant="secondary" onClick={handleClose}>
+                <Button name="cancel" variant="secondary" onClick={handleClose}>
                   {i18n.t("common.cancel")}
                 </Button>
                 <Button
+                  name="start-generation"
                   onClick={handleStart}
                   variant="outline"
                   className={cn(
@@ -384,8 +394,8 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
             </>
           )}
 
-          {/* Loading Screen */}
-          {state === "loading" && (
+          {/* Generating Screen */}
+          {state === "generating" && (
             <>
               <DialogHeader>
                 <DialogTitle>
@@ -414,7 +424,12 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
               </div>
 
               <DialogFooter>
-                <Button variant="ghost" size="sm" onClick={handleCancel}>
+                <Button
+                  name="cancel-generation"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCancel}
+                >
                   {i18n.t("common.cancel")}
                 </Button>
               </DialogFooter>
@@ -466,10 +481,14 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
               </div>
 
               <DialogFooter>
-                <Button variant="secondary" onClick={handleClose}>
+                <Button
+                  name="close-apply"
+                  variant="secondary"
+                  onClick={handleClose}
+                >
                   {i18n.t("common.cancel")}
                 </Button>
-                <Button onClick={handleApply}>
+                <Button name="apply-generated" onClick={handleApply}>
                   <Sparkles className="mr-1 size-4" />
                   {i18n.t("variablePresets.aiGeneration.dialog.apply")}
                 </Button>
@@ -492,10 +511,18 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
               </div>
 
               <DialogFooter>
-                <Button variant="secondary" onClick={handleClose}>
+                <Button
+                  name="close-error"
+                  variant="secondary"
+                  onClick={handleClose}
+                >
                   {i18n.t("common.cancel")}
                 </Button>
-                <Button variant="outline" onClick={handleRetry}>
+                <Button
+                  name="retry-generation"
+                  variant="outline"
+                  onClick={handleRetry}
+                >
                   {i18n.t("variablePresets.aiGeneration.dialog.retry")}
                 </Button>
               </DialogFooter>

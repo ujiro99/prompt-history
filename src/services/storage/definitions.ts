@@ -6,8 +6,8 @@ import type {
   Session,
   AppSettings,
   ImprovePromptSettings,
-  VariableGenerationSettings,
 } from "@/types/prompt"
+import type { VariableGenerationSettings } from "@/types/variableGeneration"
 import type {
   Category,
   PromptOrganizerSettings,

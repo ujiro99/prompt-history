@@ -3,12 +3,11 @@
  * Merges AI-generated content with existing variable content
  */
 
+import type { PresetVariableType, DictionaryItem } from "@/types/prompt"
 import type {
   AIGenerationResponse,
   ExistingVariableContent,
-  PresetVariableType,
-  DictionaryItem,
-} from "@/types/prompt"
+} from "@/types/variableGeneration"
 import { uuid } from "@/lib/utils"
 
 /**

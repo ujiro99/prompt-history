@@ -5,10 +5,14 @@
 
 import { GeminiClient } from "@/services/genai/GeminiClient"
 import { GEMINI_CONTEXT_LIMIT } from "@/services/genai/constants"
-import type { VariableGenerationEstimate } from "@/types/variableGeneration"
+import type {
+  VariableGenerationEstimate,
+  VariableGenerationSettings,
+} from "@/types/variableGeneration"
 import {
   generateMetaPrompt,
   getPromptHistoryCount,
+  watch,
   type GenerateMetaPromptOptions,
 } from "./metaPromptGenerator"
 import { fetchPromptHistoryWithCount } from "./promptHistoryFetcher"
@@ -58,6 +62,15 @@ export class VariableGenerationEstimatorService {
       model: "gemini-2.5-flash",
       contextLimit: GEMINI_CONTEXT_LIMIT,
     }
+  }
+
+  watch(
+    cb: (
+      newVal: VariableGenerationSettings,
+      oldVal: VariableGenerationSettings,
+    ) => void,
+  ) {
+    return watch(cb)
   }
 }
 

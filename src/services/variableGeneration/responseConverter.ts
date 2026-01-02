@@ -5,11 +5,11 @@
 
 import { uuid } from "@/lib/utils"
 import type {
-  AIGenerationResponse,
   VariablePreset,
   PresetVariableType,
   DictionaryItem,
 } from "@/types/prompt"
+import type { AIGenerationResponse } from "@/types/variableGeneration"
 
 /**
  * Convert AI generation response to VariablePreset
