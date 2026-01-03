@@ -59,6 +59,17 @@ export async function fetchPromptHistoryWithCount(
 }
 
 /**
+ * Truncate string to max length
+ *
+ * @param str - Input string
+ * @param maxLength - Maximum length (default: 1000)
+ * @returns Truncated string
+ */
+function truncate(str: string, maxLength = 1000): string {
+  return str.length > maxLength ? str.slice(0, maxLength) : str
+}
+
+/**
  * Format prompts as concatenated text
  * Each prompt is formatted with name and content
  *
@@ -76,25 +87,7 @@ function formatPromptsAsText(prompts: StoredPrompt[]): string {
       //   Name: {{prompt.name}}
       //   Content: {{prompt.content}}
       const nameSection = prompt.name ? `${prompt.name}:` : ""
-      return `Name: ${nameSection}\nContent: ${prompt.content}`
+      return `Name: ${nameSection}\nContent: ${truncate(prompt.content)}`
     })
     .join("\n\n")
-}
-
-/**
- * Get statistics about prompt history
- *
- * @returns Object with prompt history statistics
- */
-export async function getPromptHistoryStats(): Promise<{
-  totalPrompts: number
-  hasHistory: boolean
-}> {
-  const prompts = await promptsStorage.getValue()
-  const totalPrompts = prompts ? Object.keys(prompts).length : 0
-
-  return {
-    totalPrompts,
-    hasHistory: totalPrompts > 0,
-  }
 }

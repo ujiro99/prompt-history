@@ -21,21 +21,21 @@ CRITICAL RULES:
  * This template is used when useDefault is true in settings
  */
 export const DEFAULT_META_PROMPT = `# Task
-Based on the Input representing the user's request, design reusable prompt variables following the steps below.
+Based on the Input representing the user's request, create reusable prompt variables according to the following steps.
 
-# Instruction Steps (CoT)
-1. **Understand the purpose:** Identify the elements the user wants to control or reuse from the variable name and purpose.
-2. **Analyze history:** Refer to the prompt history and extract recurring themes, tones, and patterns consistent with the user’s requests.
-3. **Formulate design policy:** Express and summarize how the variables derived from the user’s purpose and prompt history can make prompt creation more convenient.
-4. **Design by type:** Generate candidates according to the variable type.
-    - String type: Multiline string representing patterns aligned with the context.
-    - Option type: Distinct, non-overlapping choices that are easy for the user to select.
-    - Dictionary type: At least three key definitions, each with a multiline string (value) representing its pattern.
-5. **Quality check:** Evaluate consistency and practicality of candidates and select the final structure.
-6. **Generate explanation:** Create a concise explanation **within 400 characters** from the following perspectives:
-    - Which parts of the prompt history were referenced (evoking the user’s own experience)
-    - How the variables help the user achieve their goals (creating anticipation for future use)
-    - Improve readability with line breaks and bullet points`
+# Instruction Steps
+1. **Understand the purpose:** Identify what the user wants to control or reuse based on the variable_name and variable_purpose.
+2. **Filter the history:** Refer to the prompt history and select only the entries relevant to the user’s request.
+3. **Analyze the extracted history:** From the filtered prompt history, extract patterns aligned with the user’s request.
+4. **Formulate the design policy:** Clarify and summarize how the variables derived from the user’s intent and prompt history can make prompt creation more efficient.
+5. **Generate by type:** Create candidates depending on the variable_type.
+   - String type: Multiline strings that represent patterns consistent with the context.
+   - Select type: Clear, distinct choices that are easy for the user to select.
+   - Dictionary type: At least three key definitions, each with a multiline string (value) representing a corresponding pattern.
+6. **Generate the explanation:** Write a concise description **within 400 characters** from the following perspectives:
+   - Which parts of the prompt history were referenced (evoking the user’s own experience)
+   - How the variables help users achieve their goals (creating anticipation for future use)
+   - Use line breaks and bullet points to improve readability`
 
 /**
  * Input section template
