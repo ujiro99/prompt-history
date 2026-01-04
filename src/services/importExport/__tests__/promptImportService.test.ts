@@ -29,8 +29,13 @@ vi.mock("@wxt-dev/i18n", () => {
   }
 })
 
+vi.mock("@/services/storage/variablePresetStorage", () => ({
+  getVariablePresets: vi.fn(),
+}))
+
 import { PromptImportService } from "../promptImportService"
 import { generatePromptId } from "@/utils/idGenerator"
+import { getVariablePresets } from "@/services/storage/variablePresetStorage"
 import Papa from "papaparse"
 
 // Mock FileReader
@@ -84,6 +89,10 @@ describe("PromptImportService", () => {
     mockGeneratePromptId = vi.mocked(generatePromptId)
     mockGeneratePromptId.mockReturnValue("test-id-123")
 
+    // Setup default mock for getVariablePresets (empty array)
+    const mockGetVariablePresets = vi.mocked(getVariablePresets)
+    mockGetVariablePresets.mockResolvedValue([])
+
     // Create service after setting up mocks
     service = new PromptImportService()
   })
@@ -131,7 +140,7 @@ describe("PromptImportService", () => {
   describe("parseRowData", () => {
     it("should parse valid CSV row data to Prompt object", () => {
       const rowData = createMockCSVRowData()
-      const result = (service as any).parseRowData(rowData)
+      const result = (service as any).parseRowData(rowData, new Set())
 
       expect(result).toEqual({
         id: "test-id-123",
@@ -152,7 +161,7 @@ describe("PromptImportService", () => {
         executionCount: 5,
         isPinned: true,
       })
-      const result = (service as any).parseRowData(rowData)
+      const result = (service as any).parseRowData(rowData, new Set())
 
       expect(result.executionCount).toBe(5)
       expect(result.isPinned).toBe(true)
@@ -162,7 +171,7 @@ describe("PromptImportService", () => {
       const rowData = createMockCSVRowData({
         isPinned: "true",
       })
-      const result = (service as any).parseRowData(rowData)
+      const result = (service as any).parseRowData(rowData, new Set())
 
       expect(result.isPinned).toBe(true)
     })
@@ -171,7 +180,7 @@ describe("PromptImportService", () => {
       const rowData = createMockCSVRowData({
         executionCount: "invalid",
       })
-      const result = (service as any).parseRowData(rowData)
+      const result = (service as any).parseRowData(rowData, new Set())
 
       expect(result.executionCount).toBe(0)
     })
@@ -194,10 +203,10 @@ describe("PromptImportService", () => {
       })
 
       expect(() => {
-        ;(service as any).parseRowData(rowData)
+        ;(service as any).parseRowData(rowData, new Set())
       }).not.toThrow()
 
-      const result = (service as any).parseRowData(rowData)
+      const result = (service as any).parseRowData(rowData, new Set())
       expect(result.createdAt).toBeInstanceOf(Date)
       expect(isNaN(result.createdAt.getTime())).toBe(true)
     })
@@ -343,7 +352,7 @@ newline and, comma",1,2024-01-10T10:00:00.000Z,false,https://example.com,2024-01
         ]),
       })
 
-      const result = (service as any).parseRowData(rowData)
+      const result = (service as any).parseRowData(rowData, new Set())
 
       expect(result.variables).toBeDefined()
       expect(result.variables).toHaveLength(2)
@@ -364,7 +373,7 @@ newline and, comma",1,2024-01-10T10:00:00.000Z,false,https://example.com,2024-01
         variables: "",
       })
 
-      const result = (service as any).parseRowData(rowData)
+      const result = (service as any).parseRowData(rowData, new Set())
 
       expect(result.variables).toBeUndefined()
     })
@@ -374,7 +383,7 @@ newline and, comma",1,2024-01-10T10:00:00.000Z,false,https://example.com,2024-01
         variables: undefined,
       })
 
-      const result = (service as any).parseRowData(rowData)
+      const result = (service as any).parseRowData(rowData, new Set())
 
       expect(result.variables).toBeUndefined()
     })
@@ -384,7 +393,7 @@ newline and, comma",1,2024-01-10T10:00:00.000Z,false,https://example.com,2024-01
         variables: "invalid json",
       })
 
-      const result = (service as any).parseRowData(rowData)
+      const result = (service as any).parseRowData(rowData, new Set())
 
       // Should not throw, variables should be undefined
       expect(result.variables).toBeUndefined()
@@ -395,7 +404,7 @@ newline and, comma",1,2024-01-10T10:00:00.000Z,false,https://example.com,2024-01
         variables: JSON.stringify({ not: "an array" }),
       })
 
-      const result = (service as any).parseRowData(rowData)
+      const result = (service as any).parseRowData(rowData, new Set())
 
       // Should not throw, variables should be undefined
       expect(result.variables).toBeUndefined()
@@ -406,7 +415,7 @@ newline and, comma",1,2024-01-10T10:00:00.000Z,false,https://example.com,2024-01
         variables: JSON.stringify([]),
       })
 
-      const result = (service as any).parseRowData(rowData)
+      const result = (service as any).parseRowData(rowData, new Set())
 
       expect(result.variables).toBeDefined()
       expect(result.variables).toHaveLength(0)
@@ -474,7 +483,7 @@ newline and, comma",1,2024-01-10T10:00:00.000Z,false,https://example.com,2024-01
         useCase: "Code review automation",
       })
 
-      const result = (service as any).parseRowData(rowData)
+      const result = (service as any).parseRowData(rowData, new Set())
 
       expect(result.isAIGenerated).toBe(true)
       expect(result.categoryId).toBe("cat-123")
@@ -491,7 +500,7 @@ newline and, comma",1,2024-01-10T10:00:00.000Z,false,https://example.com,2024-01
         // New fields are undefined (not present in CSV)
       })
 
-      const result = (service as any).parseRowData(rowData)
+      const result = (service as any).parseRowData(rowData, new Set())
 
       expect(result.isAIGenerated).toBeUndefined()
       expect(result.aiMetadata).toBeUndefined()
@@ -507,7 +516,7 @@ newline and, comma",1,2024-01-10T10:00:00.000Z,false,https://example.com,2024-01
         useCase: "",
       })
 
-      const result = (service as any).parseRowData(rowData)
+      const result = (service as any).parseRowData(rowData, new Set())
 
       expect(result.isAIGenerated).toBeUndefined()
       expect(result.aiMetadata).toBeUndefined()
@@ -520,7 +529,7 @@ newline and, comma",1,2024-01-10T10:00:00.000Z,false,https://example.com,2024-01
         aiMetadata: "invalid json",
       })
 
-      const result = (service as any).parseRowData(rowData)
+      const result = (service as any).parseRowData(rowData, new Set())
 
       // Should not throw, aiMetadata should be undefined
       expect(result.aiMetadata).toBeUndefined()
@@ -534,7 +543,7 @@ newline and, comma",1,2024-01-10T10:00:00.000Z,false,https://example.com,2024-01
         }),
       })
 
-      const result = (service as any).parseRowData(rowData)
+      const result = (service as any).parseRowData(rowData, new Set())
 
       // Should not throw, aiMetadata should be undefined due to validation failure
       expect(result.aiMetadata).toBeUndefined()
@@ -550,7 +559,7 @@ newline and, comma",1,2024-01-10T10:00:00.000Z,false,https://example.com,2024-01
         }),
       })
 
-      const result = (service as any).parseRowData(rowData)
+      const result = (service as any).parseRowData(rowData, new Set())
 
       // Should not throw, aiMetadata should be undefined due to validation failure
       expect(result.aiMetadata).toBeUndefined()
@@ -566,7 +575,7 @@ newline and, comma",1,2024-01-10T10:00:00.000Z,false,https://example.com,2024-01
         }),
       })
 
-      const result = (service as any).parseRowData(rowData)
+      const result = (service as any).parseRowData(rowData, new Set())
 
       // Should not throw, aiMetadata should be undefined due to validation failure
       expect(result.aiMetadata).toBeUndefined()
@@ -582,7 +591,7 @@ newline and, comma",1,2024-01-10T10:00:00.000Z,false,https://example.com,2024-01
         }),
       })
 
-      const result = (service as any).parseRowData(rowData)
+      const result = (service as any).parseRowData(rowData, new Set())
 
       // Should not throw, aiMetadata should be undefined due to validation failure
       expect(result.aiMetadata).toBeUndefined()
@@ -631,11 +640,400 @@ newline and, comma",1,2024-01-10T10:00:00.000Z,false,https://example.com,2024-01
         }),
       })
 
-      const result = (service as any).parseRowData(rowData)
+      const result = (service as any).parseRowData(rowData, new Set())
 
       expect(result.aiMetadata).toBeDefined()
       expect(result.aiMetadata.sourcePromptIds).toEqual([])
       expect(result.aiMetadata.sourceCount).toBe(0)
+    })
+  })
+
+  describe("parseRowData with preset references", () => {
+    let mockGetVariablePresets: Mock
+
+    beforeEach(() => {
+      mockGetVariablePresets = vi.mocked(getVariablePresets)
+    })
+
+    it("should keep preset variable when preset exists", () => {
+      const existingPresetIds = new Set(["preset-1", "preset-2"])
+      const rowData = createMockCSVRowData({
+        variables: JSON.stringify([
+          {
+            name: "language",
+            type: "preset",
+            presetOptions: {
+              presetId: "preset-1",
+            },
+          },
+        ]),
+      })
+
+      const result = (service as any).parseRowData(rowData, existingPresetIds)
+
+      expect(result.variables).toBeDefined()
+      expect(result.variables).toHaveLength(1)
+      expect(result.variables[0].name).toBe("language")
+      expect(result.variables[0].type).toBe("preset")
+      expect(result.variables[0].presetOptions?.presetId).toBe("preset-1")
+    })
+
+    it("should convert preset to text when preset does not exist", () => {
+      const existingPresetIds = new Set(["preset-1"])
+      const rowData = createMockCSVRowData({
+        name: "Test Prompt",
+        variables: JSON.stringify([
+          {
+            name: "language",
+            type: "preset",
+            presetOptions: {
+              presetId: "missing-preset",
+            },
+          },
+        ]),
+      })
+
+      // Reset missingPresetInfo
+      ;(service as any).missingPresetInfo = []
+
+      const result = (service as any).parseRowData(rowData, existingPresetIds)
+
+      expect(result.variables).toBeDefined()
+      expect(result.variables).toHaveLength(1)
+      expect(result.variables[0].name).toBe("language")
+      expect(result.variables[0].type).toBe("text")
+      expect(result.variables[0].defaultValue).toBe("")
+      expect(result.variables[0].presetOptions).toBeUndefined()
+
+      // Check missingPresetInfo was updated
+      expect((service as any).missingPresetInfo).toHaveLength(1)
+      expect((service as any).missingPresetInfo[0]).toEqual({
+        presetId: "missing-preset",
+        promptName: "Test Prompt",
+        variableName: "language",
+      })
+    })
+
+    it("should handle mixed variables with both existing and missing presets", () => {
+      const existingPresetIds = new Set(["preset-1"])
+      const rowData = createMockCSVRowData({
+        name: "Mixed Prompt",
+        variables: JSON.stringify([
+          {
+            name: "language",
+            type: "preset",
+            presetOptions: {
+              presetId: "preset-1",
+            },
+          },
+          {
+            name: "framework",
+            type: "preset",
+            presetOptions: {
+              presetId: "missing-preset-1",
+            },
+          },
+          {
+            name: "description",
+            type: "text",
+            defaultValue: "Some text",
+          },
+        ]),
+      })
+
+      // Reset missingPresetInfo
+      ;(service as any).missingPresetInfo = []
+
+      const result = (service as any).parseRowData(rowData, existingPresetIds)
+
+      expect(result.variables).toBeDefined()
+      expect(result.variables).toHaveLength(3)
+
+      // First variable should keep preset type
+      expect(result.variables[0].name).toBe("language")
+      expect(result.variables[0].type).toBe("preset")
+      expect(result.variables[0].presetOptions?.presetId).toBe("preset-1")
+
+      // Second variable should be converted to text
+      expect(result.variables[1].name).toBe("framework")
+      expect(result.variables[1].type).toBe("text")
+      expect(result.variables[1].defaultValue).toBe("")
+      expect(result.variables[1].presetOptions).toBeUndefined()
+
+      // Third variable should remain as text
+      expect(result.variables[2].name).toBe("description")
+      expect(result.variables[2].type).toBe("text")
+      expect(result.variables[2].defaultValue).toBe("Some text")
+
+      // Check missingPresetInfo was updated
+      expect((service as any).missingPresetInfo).toHaveLength(1)
+      expect((service as any).missingPresetInfo[0]).toEqual({
+        presetId: "missing-preset-1",
+        promptName: "Mixed Prompt",
+        variableName: "framework",
+      })
+    })
+  })
+
+  describe("checkCSVFile with missing presets", () => {
+    it("should include missingPresets in result when presets are missing", async () => {
+      const mockGetVariablePresets = vi.mocked(getVariablePresets)
+      mockGetVariablePresets.mockResolvedValue([
+        {
+          id: "preset-1",
+          name: "Existing Preset",
+          type: "text",
+          textContent: "Content",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ])
+
+      const csvData = {
+        fields: [
+          "name",
+          "content",
+          "executionCount",
+          "lastExecutedAt",
+          "isPinned",
+          "lastExecutionUrl",
+          "createdAt",
+          "updatedAt",
+          "variables",
+        ],
+        data: [
+          {
+            name: "Prompt 1",
+            content: "Content 1",
+            executionCount: 1,
+            lastExecutedAt: "2024-01-10T10:00:00.000Z",
+            isPinned: false,
+            lastExecutionUrl: "https://example.com",
+            createdAt: "2024-01-01T10:00:00.000Z",
+            updatedAt: "2024-01-01T10:00:00.000Z",
+            variables: JSON.stringify([
+              {
+                name: "var1",
+                type: "preset",
+                presetOptions: { presetId: "missing-preset-1" },
+              },
+            ]),
+          },
+          {
+            name: "Prompt 2",
+            content: "Content 2",
+            executionCount: 1,
+            lastExecutedAt: "2024-01-11T10:00:00.000Z",
+            isPinned: false,
+            lastExecutionUrl: "https://example.com",
+            createdAt: "2024-01-02T10:00:00.000Z",
+            updatedAt: "2024-01-02T10:00:00.000Z",
+            variables: JSON.stringify([
+              {
+                name: "var2",
+                type: "preset",
+                presetOptions: { presetId: "missing-preset-1" },
+              },
+              {
+                name: "var3",
+                type: "preset",
+                presetOptions: { presetId: "missing-preset-2" },
+              },
+            ]),
+          },
+        ],
+      }
+      const csvText = Papa.unparse(csvData, {
+        header: true,
+        quotes: true,
+        delimiter: ",",
+      })
+
+      const file = new File([csvText], "test.csv", { type: "text/csv" })
+
+      // Mock readFileAsText to avoid FileReader issues
+      vi.spyOn(service as any, "readFileAsText").mockResolvedValue(csvText)
+
+      // Mock the serviceFacade
+      ;(service as any).serviceFacade = {
+        checkBulkSaving: vi.fn().mockResolvedValue({
+          imported: 2,
+          duplicates: 0,
+        }),
+      }
+
+      const result = await service.checkCSVFile(file)
+
+      expect(result.imported).toBe(2)
+      expect(result.duplicates).toBe(0)
+      expect(result.missingPresets).toBeDefined()
+      expect(result.missingPresets).toHaveLength(3)
+
+      // Check all missing preset entries
+      expect(result.missingPresets).toContainEqual({
+        presetId: "missing-preset-1",
+        promptName: "Prompt 1",
+        variableName: "var1",
+      })
+      expect(result.missingPresets).toContainEqual({
+        presetId: "missing-preset-1",
+        promptName: "Prompt 2",
+        variableName: "var2",
+      })
+      expect(result.missingPresets).toContainEqual({
+        presetId: "missing-preset-2",
+        promptName: "Prompt 2",
+        variableName: "var3",
+      })
+    })
+
+    it("should not include missingPresets when all presets exist", async () => {
+      const mockGetVariablePresets = vi.mocked(getVariablePresets)
+      mockGetVariablePresets.mockResolvedValue([
+        {
+          id: "preset-1",
+          name: "Existing Preset 1",
+          type: "text",
+          textContent: "Content 1",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "preset-2",
+          name: "Existing Preset 2",
+          type: "select",
+          selectOptions: ["Option 1", "Option 2"],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ])
+
+      const csvData = {
+        fields: [
+          "name",
+          "content",
+          "executionCount",
+          "lastExecutedAt",
+          "isPinned",
+          "lastExecutionUrl",
+          "createdAt",
+          "updatedAt",
+          "variables",
+        ],
+        data: [
+          {
+            name: "Prompt 1",
+            content: "Content 1",
+            executionCount: 1,
+            lastExecutedAt: "2024-01-10T10:00:00.000Z",
+            isPinned: false,
+            lastExecutionUrl: "https://example.com",
+            createdAt: "2024-01-01T10:00:00.000Z",
+            updatedAt: "2024-01-01T10:00:00.000Z",
+            variables: JSON.stringify([
+              {
+                name: "var1",
+                type: "preset",
+                presetOptions: { presetId: "preset-1" },
+              },
+            ]),
+          },
+        ],
+      }
+      const csvText = Papa.unparse(csvData, {
+        header: true,
+        quotes: true,
+        delimiter: ",",
+      })
+
+      const file = new File([csvText], "test.csv", { type: "text/csv" })
+
+      // Mock readFileAsText to avoid FileReader issues
+      vi.spyOn(service as any, "readFileAsText").mockResolvedValue(csvText)
+
+      // Mock the serviceFacade
+      ;(service as any).serviceFacade = {
+        checkBulkSaving: vi.fn().mockResolvedValue({
+          imported: 1,
+          duplicates: 0,
+        }),
+      }
+
+      const result = await service.checkCSVFile(file)
+
+      expect(result.imported).toBe(1)
+      expect(result.duplicates).toBe(0)
+      expect(result.missingPresets).toBeUndefined()
+    })
+  })
+
+  describe("processFile with missing presets", () => {
+    it("should include missingPresets in result after import", async () => {
+      const mockGetVariablePresets = vi.mocked(getVariablePresets)
+      mockGetVariablePresets.mockResolvedValue([])
+
+      const csvData = {
+        fields: [
+          "name",
+          "content",
+          "executionCount",
+          "lastExecutedAt",
+          "isPinned",
+          "lastExecutionUrl",
+          "createdAt",
+          "updatedAt",
+          "variables",
+        ],
+        data: [
+          {
+            name: "Import Prompt",
+            content: "Content",
+            executionCount: 1,
+            lastExecutedAt: "2024-01-10T10:00:00.000Z",
+            isPinned: false,
+            lastExecutionUrl: "https://example.com",
+            createdAt: "2024-01-01T10:00:00.000Z",
+            updatedAt: "2024-01-01T10:00:00.000Z",
+            variables: JSON.stringify([
+              {
+                name: "var1",
+                type: "preset",
+                presetOptions: { presetId: "missing-preset" },
+              },
+            ]),
+          },
+        ],
+      }
+      const csvText = Papa.unparse(csvData, {
+        header: true,
+        quotes: true,
+        delimiter: ",",
+      })
+
+      const file = new File([csvText], "test.csv", { type: "text/csv" })
+
+      // Mock readFileAsText to avoid FileReader issues
+      vi.spyOn(service as any, "readFileAsText").mockResolvedValue(csvText)
+
+      // Mock the serviceFacade
+      ;(service as any).serviceFacade = {
+        saveBulkPrompts: vi.fn().mockResolvedValue({
+          imported: 1,
+          duplicates: 0,
+        }),
+      }
+
+      const result = await service.processFile(file)
+
+      expect(result.imported).toBe(1)
+      expect(result.duplicates).toBe(0)
+      expect(result.missingPresets).toBeDefined()
+      expect(result.missingPresets).toHaveLength(1)
+      expect(result.missingPresets![0]).toEqual({
+        presetId: "missing-preset",
+        promptName: "Import Prompt",
+        variableName: "var1",
+      })
     })
   })
 })

@@ -402,7 +402,7 @@ importDialog:
     willImport: "✓ Will import $1 prompts"
     noPrompts: "• No prompts to import"
     hasDuplicates: "• $1 duplicates found"
-    hasMissingPresets: "! $1 variable presets not found"
+    hasMissingPresets: "$1 variable presets not found"
     imported: "✓ Imported $1 prompts"
     skippedDuplicates: "• Skipped $1 duplicates"
   error:

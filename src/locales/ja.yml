@@ -402,7 +402,7 @@ importDialog:
     willImport: "✓ $1件のプロンプトをインポートします"
     noPrompts: "• インポートするプロンプトはありません"
     hasDuplicates: "• $1件の重複があります"
-    hasMissingPresets: "! $1件の変数プリセットが見つかりません"
+    hasMissingPresets: "$1件の変数プリセットが見つかりません"
     imported: "✓ $1件のプロンプトをインポートしました"
     skippedDuplicates: "• $1件の重複をスキップしました"
   error:
