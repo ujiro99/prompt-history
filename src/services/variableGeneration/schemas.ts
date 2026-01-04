@@ -3,11 +3,13 @@
  * These schemas define the expected response format for AI-generated variable content
  */
 
+const MAX_EXPLANATION_LENGTH = 400
+
 /**
  * Schema for text-type variable generation
  * Generates multi-line text content
  */
-export const TEXT_SCHEMA = {
+const TEXT_SCHEMA = {
   type: "object",
   properties: {
     textContent: {
@@ -16,8 +18,8 @@ export const TEXT_SCHEMA = {
     },
     explanation: {
       type: "string",
-      description: "Explanation of the generated content (max 400 characters)",
-      maxLength: 400,
+      description: `Explanation of the generated content (max ${MAX_EXPLANATION_LENGTH} characters)`,
+      maxLength: MAX_EXPLANATION_LENGTH,
     },
   },
   required: ["textContent", "explanation"],
@@ -27,7 +29,7 @@ export const TEXT_SCHEMA = {
  * Schema for select-type variable generation
  * Generates a list of selectable options
  */
-export const SELECT_SCHEMA = {
+const SELECT_SCHEMA = {
   type: "object",
   properties: {
     selectOptions: {
@@ -41,8 +43,8 @@ export const SELECT_SCHEMA = {
     },
     explanation: {
       type: "string",
-      description: "Explanation of the generated content (max 400 characters)",
-      maxLength: 400,
+      description: `Explanation of the generated content (max ${MAX_EXPLANATION_LENGTH} characters)`,
+      maxLength: MAX_EXPLANATION_LENGTH,
     },
   },
   required: ["selectOptions", "explanation"],
@@ -52,7 +54,7 @@ export const SELECT_SCHEMA = {
  * Schema for dictionary-type variable generation
  * Generates a list of dictionary items (key-value pairs)
  */
-export const DICTIONARY_SCHEMA = {
+const DICTIONARY_SCHEMA = {
   type: "object",
   properties: {
     dictionaryItems: {
@@ -77,8 +79,8 @@ export const DICTIONARY_SCHEMA = {
     },
     explanation: {
       type: "string",
-      description: "Explanation of the generated content (max 400 characters)",
-      maxLength: 400,
+      description: `Explanation of the generated content (max ${MAX_EXPLANATION_LENGTH} characters)`,
+      maxLength: MAX_EXPLANATION_LENGTH,
     },
   },
   required: ["dictionaryItems", "explanation"],
