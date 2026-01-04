@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from "react"
-import { ScrollAreaWithGradient } from "@/components/inputMenu/ScrollAreaWithGradient"
+import { ScrollAreaWithGradient } from "@/components/shared/ScrollAreaWithGradient"
 import { DictionaryItemPreview } from "@/components/inputMenu/DictionaryItemPreview"
 import { OptionItem } from "./OptionItem"
 import type { VariablePreset, DictionaryItem } from "@/types/prompt"

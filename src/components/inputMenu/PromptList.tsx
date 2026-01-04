@@ -8,7 +8,7 @@ import {
 import { Search } from "lucide-react"
 import type { Prompt } from "@/types/prompt"
 import { cn, isEmpty } from "@/lib/utils"
-import { ScrollAreaWithGradient } from "./ScrollAreaWithGradient"
+import { ScrollAreaWithGradient } from "@/components/shared/ScrollAreaWithGradient"
 import { MenuItem } from "./MenuItem"
 import { GroupHeader } from "./GroupHeader"
 import { Input } from "@/components/ui/input"

@@ -7,7 +7,7 @@ import { VariableExpansionInfoDialog } from "./VariableExpansionInfoDialog"
 import { VariableSettingsSection } from "@/components/shared"
 import { VariablePresetDialog } from "@/components/settings/variablePresets/VariablePresetDialog"
 import { CategorySelector } from "@/components/promptOrganizer/CategorySelector"
-import { ScrollAreaWithGradient } from "@/components/inputMenu/ScrollAreaWithGradient"
+import { ScrollAreaWithGradient } from "@/components/shared/ScrollAreaWithGradient"
 import {
   Dialog,
   DialogTitle,

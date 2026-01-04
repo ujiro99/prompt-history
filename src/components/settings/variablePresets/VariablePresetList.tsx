@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import type { VariablePreset } from "@/types/prompt"
 import { i18n } from "#imports"
-import { ScrollAreaWithGradient } from "@/components/inputMenu/ScrollAreaWithGradient"
+import { ScrollAreaWithGradient } from "@/components/shared/ScrollAreaWithGradient"
 
 /**
  * Props for VariablePresetList

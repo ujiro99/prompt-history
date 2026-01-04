@@ -17,7 +17,7 @@ import {
   FieldGroup,
   FieldError,
 } from "@/components/ui/field"
-import { ScrollAreaWithGradient } from "@/components/inputMenu/ScrollAreaWithGradient"
+import { ScrollAreaWithGradient } from "@/components/shared/ScrollAreaWithGradient"
 import { RemoveDialog } from "@/components/inputMenu/controller/RemoveDialog"
 import { AIGenerationDialog } from "./AIGenerationDialog"
 import type {

@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { ScrollAreaWithGradient } from "@/components/inputMenu/ScrollAreaWithGradient"
+import { ScrollAreaWithGradient } from "@/components/shared/ScrollAreaWithGradient"
 import { useContainer } from "@/hooks/useContainer"
 import { promptImportService } from "@/services/importExport"
 import type { ImportResult } from "@/services/importExport/types"
