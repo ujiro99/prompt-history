@@ -33,7 +33,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   },
   pinnedSettings: {
     sortOrder: "composite",
-    hideOrganizerExcluded: true,
+    hideOrganizerExcluded: false,
   },
 }
 
