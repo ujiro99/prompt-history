@@ -5,6 +5,7 @@
 
 import { promptsStorage } from "@/services/storage/definitions"
 import { getPromptHistoryCount } from "./metaPromptGenerator"
+import { truncate } from "@/utils/string"
 import type { StoredPrompt } from "@/types/prompt"
 
 /**
@@ -56,17 +57,6 @@ export async function fetchPromptHistoryWithCount(
     promptHistory: formatPromptsAsText(recentPrompts),
     promptCount: recentPrompts.length,
   }
-}
-
-/**
- * Truncate string to max length
- *
- * @param str - Input string
- * @param maxLength - Maximum length (default: 1000)
- * @returns Truncated string
- */
-function truncate(str: string, maxLength = 1000): string {
-  return str.length > maxLength ? str.slice(0, maxLength) : str
 }
 
 /**
