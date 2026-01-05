@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/select"
 import { useContainer } from "@/hooks/useContainer"
 import { nextCyclic, prevCyclic } from "@/services/dom/elementUtils"
-import { isEmpty } from "@/lib/utils"
+import { isEmpty } from "@/utils/string"
 
 interface SelectOption {
   label: string

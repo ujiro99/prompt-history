@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useContainer } from "@/hooks/useContainer"
-import { isEmpty } from "@/lib/utils"
+import { isEmpty } from "@/utils/string"
 
 interface FlatOption {
   label: string

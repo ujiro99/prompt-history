@@ -13,7 +13,7 @@ import type {
   MergedAIGenerationResponse,
   ExistingVariableContent,
 } from "@/types/variableGeneration"
-import { uuid } from "@/lib/utils"
+import { generateDictItemId } from "@/utils/idGenerator"
 
 /**
  * Merge AI-generated response with existing variable content
@@ -128,7 +128,7 @@ function convertDictionaryItems(
   items: { name: string; content: string }[],
 ): DictionaryItem[] {
   return items.map((item) => ({
-    id: uuid(),
+    id: generateDictItemId(),
     name: item.name,
     content: item.content,
     isAiGenerated: true,

@@ -13,13 +13,6 @@ export function sleep(msec: number): Promise<void> {
 }
 
 /**
- * Check if a string is empty (null, undefined, or only whitespace)
- */
-export function isEmpty(str: string | null | undefined): boolean {
-  return str == null || str.trim().length === 0
-}
-
-/**
  * Generate a UUID (version 4)
  */
 export function uuid(): string {

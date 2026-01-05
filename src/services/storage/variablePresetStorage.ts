@@ -11,7 +11,7 @@ import {
   variablePresetsOrderStorage,
   promptsStorage,
 } from "./definitions"
-import { generatePromptId } from "../../utils/idGenerator"
+import { generateVariableId } from "../../utils/idGenerator"
 import Papa from "papaparse"
 
 /**
@@ -197,7 +197,7 @@ export async function duplicateVariablePreset(
   // Create new preset with new ID
   const duplicated: VariablePreset = {
     ...original,
-    id: generatePromptId(),
+    id: generateVariableId(),
     name: `${original.name} (Copy)`,
     createdAt: now,
     updatedAt: now,
@@ -207,7 +207,7 @@ export async function duplicateVariablePreset(
   if (duplicated.dictionaryItems) {
     duplicated.dictionaryItems = duplicated.dictionaryItems.map((item) => ({
       ...item,
-      id: generatePromptId(),
+      id: generateVariableId(),
     }))
   }
 
@@ -339,9 +339,7 @@ export async function importVariablePresets(
     const errorMessages = parseResult.errors.map(
       (e) => (e.row ? `[Row ${e.row + 2}] ${e.message}` : e.message), // +2 for header and 0-based index
     )
-    throw new Error(
-      `Invalid CSV format: ${errorMessages.join("; ")}`,
-    )
+    throw new Error(`Invalid CSV format: ${errorMessages.join("; ")}`)
   }
 
   if (parseResult.data.length === 0) {
@@ -357,13 +355,7 @@ export async function importVariablePresets(
       const row = parseResult.data[i]
 
       // Validate required fields
-      const requiredFields = [
-        "id",
-        "name",
-        "type",
-        "createdAt",
-        "updatedAt",
-      ]
+      const requiredFields = ["id", "name", "type", "createdAt", "updatedAt"]
       for (const field of requiredFields) {
         if (!(field in row) || !row[field as keyof VariablePresetCSVRow]) {
           throw new Error(`Missing required field: ${field}`)
@@ -385,9 +377,7 @@ export async function importVariablePresets(
         try {
           dictionaryItems = JSON.parse(row.dictionaryItems) as DictionaryItem[]
         } catch (error) {
-          throw new Error(
-            `Invalid JSON format for dictionaryItems: ${error}`,
-          )
+          throw new Error(`Invalid JSON format for dictionaryItems: ${error}`)
         }
       }
 
