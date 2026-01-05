@@ -26,7 +26,7 @@ import type {
   DictionaryItem,
 } from "@/types/prompt"
 import type {
-  AIGenerationResponse,
+  MergedAIGenerationResponse,
   ExistingVariableContent,
 } from "@/types/variableGeneration"
 import { applyResponseToPreset } from "@/services/variableGeneration"
@@ -319,7 +319,7 @@ export const VariablePresetEditor: React.FC<VariablePresetEditorProps> = ({
   /**
    * Handle AI generation apply
    */
-  const handleAiGenerationApply = (response: AIGenerationResponse) => {
+  const handleAiGenerationApply = (response: MergedAIGenerationResponse) => {
     if (!localPreset) return
 
     // Apply AI-generated response to preset using service function

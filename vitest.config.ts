@@ -3,7 +3,6 @@ import { WxtVitest } from "wxt/testing"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 import { storybookTest } from "@storybook/addon-vitest/vitest-plugin"
-import { playwright } from "@vitest/browser-playwright"
 
 const dirname =
   typeof __dirname !== "undefined"
@@ -12,12 +11,12 @@ const dirname =
 
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 export default defineConfig({
-  plugins: [WxtVitest()],
   test: {
     globals: true,
     projects: [
       {
         extends: true,
+        plugins: [WxtVitest()],
         test: {
           name: {
             label: "browser",
@@ -30,6 +29,7 @@ export default defineConfig({
       },
       {
         extends: true,
+        plugins: [WxtVitest()],
         test: {
           name: {
             label: "middle",
@@ -37,6 +37,7 @@ export default defineConfig({
           },
           include: ["**/*.test.ts"],
           environment: "node",
+          setupFiles: ["./src/test/setup.ts"],
         },
       },
       {
@@ -53,7 +54,7 @@ export default defineConfig({
           browser: {
             enabled: true,
             headless: true,
-            provider: playwright({}),
+            provider: "playwright",
             instances: [
               {
                 browser: "chromium",

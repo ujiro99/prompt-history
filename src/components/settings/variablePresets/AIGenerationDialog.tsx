@@ -11,6 +11,7 @@ import {
 import type { PresetVariableType } from "@/types/prompt"
 import type {
   AIGenerationResponse,
+  MergedAIGenerationResponse,
   ExistingVariableContent,
 } from "@/types/variableGeneration"
 import type { GenerationProgress as GenerationProgressType } from "@/types/promptOrganizer"
@@ -44,6 +45,8 @@ import type { VariableGenerationEstimate } from "@/types/variableGeneration"
 import { GeminiError, GeminiErrorType } from "@/services/genai/types"
 import { stopPropagation } from "@/utils/dom"
 
+import { TestIds } from "@/components/const"
+
 /**
  * Dialog state
  */
@@ -63,8 +66,8 @@ interface AIGenerationDialogProps {
   variableType: PresetVariableType
   /** Existing variable content (optional) */
   existingContent?: ExistingVariableContent
-  /** Callback on apply */
-  onApply: (response: AIGenerationResponse) => void
+  /** Callback on apply (receives merged response with IDs added) */
+  onApply: (response: MergedAIGenerationResponse) => void
   /** Debug state (for development/testing) */
   debugState?: DialogState
 }
@@ -268,6 +271,7 @@ export const AIGenerationDialog: React.FC<AIGenerationDialogProps> = ({
         <DialogContent
           container={container}
           className="w-xl sm:max-w-xl max-h-9/10"
+          data-testid={TestIds.variableGenerationDialog.dialog}
           {...stopPropagation()}
         >
           {/* Confirmation Screen */}

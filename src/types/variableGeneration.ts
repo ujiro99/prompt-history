@@ -33,6 +33,16 @@ export interface AIGenerationRequest {
 }
 
 /**
+ * Dictionary item from AI generation (without id)
+ */
+export interface GeneratedDictionaryItem {
+  /** Item name (displayed in dropdown) */
+  name: string
+  /** Item content (multi-line string, expanded when selected) */
+  content: string
+}
+
+/**
  * AI generation response (structured output from Gemini API)
  */
 export interface AIGenerationResponse {
@@ -42,7 +52,16 @@ export interface AIGenerationResponse {
   textContent?: string
   /** [Select type only] Generated select options */
   selectOptions?: string[]
-  /** [Dictionary type only] Generated dictionary items */
+  /** [Dictionary type only] Generated dictionary items (without id) */
+  dictionaryItems?: GeneratedDictionaryItem[]
+}
+
+/**
+ * Merged AI generation response with IDs added to dictionary items
+ */
+export interface MergedAIGenerationResponse
+  extends Omit<AIGenerationResponse, "dictionaryItems"> {
+  /** [Dictionary type only] Dictionary items with IDs */
   dictionaryItems?: DictionaryItem[]
 }
 

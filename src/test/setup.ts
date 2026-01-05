@@ -1,6 +1,16 @@
 import { vi } from "vitest"
 import "@testing-library/jest-dom"
 
+// Mock Browser.i18n.getMessage to support @wxt-dev/i18n
+const globalAny = globalThis as any
+if (!globalAny.Browser) {
+  globalAny.Browser = {}
+}
+if (!globalAny.Browser.i18n) {
+  globalAny.Browser.i18n = {}
+}
+globalAny.Browser.i18n.getMessage = vi.fn((key: string) => key)
+
 // Mock @wxt-dev/analytics to prevent Browser.runtime.connect errors
 vi.mock("@wxt-dev/analytics", () => ({
   createAnalytics: () => ({
@@ -83,3 +93,29 @@ class ResizeObserverMock {
 }
 
 vi.stubGlobal("ResizeObserver", ResizeObserverMock)
+
+// Polyfill for Pointer Capture API (used by Radix UI components)
+// jsdom doesn't support hasPointerCapture, setPointerCapture, releasePointerCapture
+if (typeof Element !== "undefined") {
+  if (!Element.prototype.hasPointerCapture) {
+    Element.prototype.hasPointerCapture = function () {
+      return false
+    }
+  }
+  if (!Element.prototype.setPointerCapture) {
+    Element.prototype.setPointerCapture = function () {
+      // no-op
+    }
+  }
+  if (!Element.prototype.releasePointerCapture) {
+    Element.prototype.releasePointerCapture = function () {
+      // no-op
+    }
+  }
+  // jsdom doesn't fully support scrollIntoView
+  if (!Element.prototype.scrollIntoView) {
+    Element.prototype.scrollIntoView = function () {
+      // no-op
+    }
+  }
+}

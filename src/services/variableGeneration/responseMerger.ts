@@ -10,6 +10,7 @@ import type {
 } from "@/types/prompt"
 import type {
   AIGenerationResponse,
+  MergedAIGenerationResponse,
   ExistingVariableContent,
 } from "@/types/variableGeneration"
 import { uuid } from "@/lib/utils"
@@ -26,7 +27,7 @@ export function mergeResponse(
   response: AIGenerationResponse,
   variableType: PresetVariableType,
   existingContent?: ExistingVariableContent,
-): AIGenerationResponse {
+): MergedAIGenerationResponse {
   switch (variableType) {
     case "text":
       return mergeTextContent(response, existingContent)
@@ -37,8 +38,11 @@ export function mergeResponse(
     case "dictionary":
       return mergeDictionaryItems(response, existingContent)
 
-    default:
-      return response
+    default: {
+      // For unknown types, return without dictionaryItems to satisfy type
+      const { dictionaryItems, ...rest } = response
+      return rest
+    }
   }
 }
 
@@ -49,17 +53,20 @@ export function mergeResponse(
 function mergeTextContent(
   response: AIGenerationResponse,
   existingContent?: ExistingVariableContent,
-): AIGenerationResponse {
+): MergedAIGenerationResponse {
+  // Exclude dictionaryItems to satisfy MergedAIGenerationResponse type
+  const { dictionaryItems, ...rest } = response
+
   if (
     !existingContent ||
     !existingContent.textContent ||
     !response.textContent
   ) {
-    return response
+    return rest
   }
 
   return {
-    ...response,
+    ...rest,
     textContent: `${response.textContent}`,
   }
 }
@@ -71,13 +78,16 @@ function mergeTextContent(
 function mergeSelectOptions(
   response: AIGenerationResponse,
   existingContent?: ExistingVariableContent,
-): AIGenerationResponse {
+): MergedAIGenerationResponse {
+  // Exclude dictionaryItems to satisfy MergedAIGenerationResponse type
+  const { dictionaryItems, ...rest } = response
+
   if (
     !existingContent ||
     !existingContent.selectOptions ||
     !response.selectOptions
   ) {
-    return response
+    return rest
   }
 
   // Combine arrays and remove duplicates (case-sensitive)
@@ -85,7 +95,7 @@ function mergeSelectOptions(
   const unique = Array.from(new Set(combined))
 
   return {
-    ...response,
+    ...rest,
     selectOptions: unique,
   }
 }
@@ -97,7 +107,7 @@ function mergeSelectOptions(
 function mergeDictionaryItems(
   response: AIGenerationResponse,
   existingContent?: ExistingVariableContent,
-): AIGenerationResponse {
+): MergedAIGenerationResponse {
   // Combine arrays (existing items first, then generated items)
   const combined = [
     ...(existingContent?.dictionaryItems || []),
@@ -129,12 +139,12 @@ function convertDictionaryItems(
  * Updates preset with AI-generated content while preserving other fields
  *
  * @param preset - Existing variable preset
- * @param response - AI generation response
+ * @param response - Merged AI generation response (with IDs added to dictionary items)
  * @returns Updated preset with AI-generated content
  */
 export function applyResponseToPreset(
   preset: VariablePreset,
-  response: AIGenerationResponse,
+  response: MergedAIGenerationResponse,
 ): VariablePreset {
   // Prepare base updates
   const updates: Partial<VariablePreset> = {

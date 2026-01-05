@@ -51,6 +51,9 @@ export const TestIds = {
     list: "template-list",
     detail: "template-detail",
   },
+  variableGenerationDialog: {
+    dialog: "variable-generation-dialog",
+  },
 } as const
 
 export enum MENU {
