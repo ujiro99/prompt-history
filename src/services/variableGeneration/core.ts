@@ -11,7 +11,7 @@ import type {
   AIGenerationRequest,
   AIGenerationResponse,
 } from "@/types/variableGeneration"
-import { getSchemaByType } from "./schemas"
+import { getSchemaByType } from "./outputSchemas"
 import { SYSTEM_INSTRUCTION } from "./defaultPrompts"
 import { generateMetaPrompt } from "@/services/variableGeneration/metaPromptGenerator"
 import { fetchPromptHistory } from "@/services/variableGeneration/promptHistoryFetcher"

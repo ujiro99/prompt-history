@@ -25,7 +25,7 @@ vi.mock("@/services/genai/GeminiClient", () => ({
 }))
 
 // Mock schemas
-vi.mock("../schemas", () => ({
+vi.mock("../outputSchemas", () => ({
   getSchemaByType: vi.fn((type) => {
     const schemas: Record<string, any> = {
       text: { type: "object", properties: { textContent: { type: "string" } } },
@@ -57,7 +57,7 @@ vi.mock("../promptHistoryFetcher", () => ({
   fetchPromptHistory: mockFetchPromptHistory,
 }))
 
-import { getSchemaByType } from "../schemas"
+import { getSchemaByType } from "../outputSchemas"
 import { generateVariable } from "../core"
 
 describe("variableGenerationService", () => {

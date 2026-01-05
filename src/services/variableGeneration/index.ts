@@ -3,7 +3,6 @@
  * Main entry point for AI-powered variable preset generation
  */
 
-export * from "./schemas"
 export * from "./core"
 export * from "./metaPromptGenerator"
 export * from "./promptHistoryFetcher"
