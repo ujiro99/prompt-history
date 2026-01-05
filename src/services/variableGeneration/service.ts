@@ -9,14 +9,25 @@ import type {
   AIGenerationRequest,
   AIGenerationResponse,
 } from "@/types/variableGeneration"
-import type {
-  GenerationProgress,
-  TokenUsage,
-} from "@/types/promptOrganizer"
+import type { GenerationProgress, TokenUsage } from "@/types/promptOrganizer"
 import type { PresetVariableType } from "@/types/prompt"
 
 export class VariableGeneratorService {
   private abortController: AbortController | null = null
+
+  private static readonly PROGRESS_THRESHOLDS = {
+    THINKING_PHASE: 20,
+    GENERATION_START: 40,
+    GENERATION_BASE: 50,
+    MAX_PROGRESS: 90,
+    COMPLETE: 100,
+  } as const
+
+  private static readonly PROGRESS_ESTIMATION = {
+    TEXT_ESTIMATED_LENGTH: 1000,
+    ADDITIONAL_PROGRESS_MAX: 40,
+    EXPECTED_ITEM_COUNT: 8,
+  } as const
 
   /**
    * Generate variable content with progress tracking
@@ -71,7 +82,8 @@ export class VariableGeneratorService {
       options.onProgress?.({
         chunk: "",
         accumulated: "",
-        estimatedProgress: 100,
+        estimatedProgress:
+          VariableGeneratorService.PROGRESS_THRESHOLDS.COMPLETE,
         status: "complete",
         thoughtsTokens: usage.thoughtsTokens,
         outputTokens: usage.outputTokens,
@@ -112,13 +124,14 @@ export class VariableGeneratorService {
     // No progress yet
     if (!accumulated) {
       if (tokenUsage.thoughtsTokens > 0) {
-        return 20 // Thinking phase
+        return VariableGeneratorService.PROGRESS_THRESHOLDS.THINKING_PHASE
       }
       return 0
     }
 
     // Base progress from thinking phase
-    let progress = 40
+    let progress: number =
+      VariableGeneratorService.PROGRESS_THRESHOLDS.GENERATION_START
 
     // Calculate based on variable type
     switch (variableType) {
@@ -126,45 +139,72 @@ export class VariableGeneratorService {
         // For text, estimate based on JSON structure
         // Look for "textContent" field
         if (accumulated.includes('"textContent"')) {
-          progress = 50
+          progress =
+            VariableGeneratorService.PROGRESS_THRESHOLDS.GENERATION_BASE
           // Estimate completion based on accumulated length
-          // Typical text response: ~500-2000 chars
-          const estimatedTotal = 1000
           const additionalProgress = Math.min(
-            (accumulated.length / estimatedTotal) * 40,
-            40,
+            (accumulated.length /
+              VariableGeneratorService.PROGRESS_ESTIMATION
+                .TEXT_ESTIMATED_LENGTH) *
+              VariableGeneratorService.PROGRESS_ESTIMATION
+                .ADDITIONAL_PROGRESS_MAX,
+            VariableGeneratorService.PROGRESS_ESTIMATION
+              .ADDITIONAL_PROGRESS_MAX,
           )
           progress += additionalProgress
         }
         break
 
-      case "select":
+      case "select": {
         // For select, count options in partial JSON
         const optionMatches = accumulated.match(/"selectOptions":\s*\[/g)
         if (optionMatches) {
-          progress = 50
+          progress =
+            VariableGeneratorService.PROGRESS_THRESHOLDS.GENERATION_BASE
           // Look for comma-separated options
           const optionCount = (accumulated.match(/,\s*"/g) || []).length
-          // Expect 3-10 options typically
-          const additionalProgress = Math.min((optionCount / 8) * 40, 40)
+          const additionalProgress = Math.min(
+            (optionCount /
+              VariableGeneratorService.PROGRESS_ESTIMATION
+                .EXPECTED_ITEM_COUNT) *
+              VariableGeneratorService.PROGRESS_ESTIMATION
+                .ADDITIONAL_PROGRESS_MAX,
+            VariableGeneratorService.PROGRESS_ESTIMATION
+              .ADDITIONAL_PROGRESS_MAX,
+          )
           progress += additionalProgress
         }
         break
+      }
 
-      case "dictionary":
+      case "dictionary": {
         // For dictionary, count completed items
         const itemMatches = accumulated.match(/"name":\s*"/g)
         const itemCount = itemMatches ? itemMatches.length : 0
         if (itemCount > 0) {
-          progress = 50
-          // Expect 3-10 items typically
-          const additionalProgress = Math.min((itemCount / 8) * 40, 40)
+          progress =
+            VariableGeneratorService.PROGRESS_THRESHOLDS.GENERATION_BASE
+          const additionalProgress = Math.min(
+            (itemCount /
+              VariableGeneratorService.PROGRESS_ESTIMATION
+                .EXPECTED_ITEM_COUNT) *
+              VariableGeneratorService.PROGRESS_ESTIMATION
+                .ADDITIONAL_PROGRESS_MAX,
+            VariableGeneratorService.PROGRESS_ESTIMATION
+              .ADDITIONAL_PROGRESS_MAX,
+          )
           progress += additionalProgress
         }
         break
+      }
     }
 
-    return Math.round(Math.min(progress, 90))
+    return Math.round(
+      Math.min(
+        progress,
+        VariableGeneratorService.PROGRESS_THRESHOLDS.MAX_PROGRESS,
+      ),
+    )
   }
 
   /**

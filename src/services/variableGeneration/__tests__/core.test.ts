@@ -11,7 +11,6 @@ import type { Usage } from "@/services/genai/types"
 
 // Mock GeminiClient
 const mockGenerateStructuredContentStream = vi.fn()
-const mockGetInstance = vi.fn()
 const mockInitialize = vi.fn()
 const mockIsInitialized = vi.fn()
 
@@ -44,6 +43,7 @@ vi.mock("../schemas", () => ({
 }))
 
 // Mock metaPromptGenerator and promptHistoryFetcher using vi.hoisted
+// These mocks are used in vi.mock() calls below
 const { mockGenerateMetaPrompt, mockFetchPromptHistory } = vi.hoisted(() => ({
   mockGenerateMetaPrompt: vi.fn().mockResolvedValue("Generated meta-prompt"),
   mockFetchPromptHistory: vi.fn().mockResolvedValue("Mock prompt history"),
@@ -58,8 +58,6 @@ vi.mock("../promptHistoryFetcher", () => ({
 }))
 
 import { getSchemaByType } from "../schemas"
-import { generateMetaPrompt } from "../metaPromptGenerator"
-import { fetchPromptHistory } from "../promptHistoryFetcher"
 import { generateVariable } from "../core"
 
 describe("variableGenerationService", () => {
@@ -88,7 +86,7 @@ describe("variableGenerationService", () => {
           request,
           apiKey: "",
         }),
-      ).rejects.toThrow("API key is required")
+      ).rejects.toThrow("variablePresets.aiGeneration.error.apiKeyRequired")
     })
 
     it("should initialize GeminiClient when not initialized", async () => {
@@ -392,7 +390,9 @@ describe("variableGenerationService", () => {
             request,
             apiKey: "test-api-key",
           }),
-        ).rejects.toThrow("Response missing required field: explanation")
+        ).rejects.toThrow(
+          "variablePresets.aiGeneration.error.missingExplanation",
+        )
       })
 
       it("should throw error when text type response is missing textContent", async () => {
@@ -412,7 +412,9 @@ describe("variableGenerationService", () => {
             request,
             apiKey: "test-api-key",
           }),
-        ).rejects.toThrow("Text type response missing textContent field")
+        ).rejects.toThrow(
+          "variablePresets.aiGeneration.error.missingTextContent",
+        )
       })
 
       it("should throw error when select type response is missing selectOptions", async () => {
@@ -433,7 +435,7 @@ describe("variableGenerationService", () => {
             apiKey: "test-api-key",
           }),
         ).rejects.toThrow(
-          "Select type response missing or invalid selectOptions field",
+          "variablePresets.aiGeneration.error.missingSelectOptions",
         )
       })
 
@@ -454,7 +456,9 @@ describe("variableGenerationService", () => {
             request,
             apiKey: "test-api-key",
           }),
-        ).rejects.toThrow("Select type response must have at least 3 options")
+        ).rejects.toThrow(
+          "variablePresets.aiGeneration.error.selectOptionsTooFew",
+        )
       })
 
       it("should throw error when dictionary type response is missing dictionaryItems", async () => {
@@ -475,7 +479,7 @@ describe("variableGenerationService", () => {
             apiKey: "test-api-key",
           }),
         ).rejects.toThrow(
-          "Dictionary type response missing or invalid dictionaryItems field",
+          "variablePresets.aiGeneration.error.missingDictionaryItems",
         )
       })
 
@@ -499,7 +503,9 @@ describe("variableGenerationService", () => {
             request,
             apiKey: "test-api-key",
           }),
-        ).rejects.toThrow("Dictionary type response must have at least 3 items")
+        ).rejects.toThrow(
+          "variablePresets.aiGeneration.error.dictionaryItemsTooFew",
+        )
       })
 
       it("should throw error when dictionary item is missing name or content", async () => {
@@ -524,7 +530,7 @@ describe("variableGenerationService", () => {
             apiKey: "test-api-key",
           }),
         ).rejects.toThrow(
-          "Dictionary items must have both name and content fields",
+          "variablePresets.aiGeneration.error.invalidDictionaryItem",
         )
       })
     })

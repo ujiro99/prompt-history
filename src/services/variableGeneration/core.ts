@@ -15,6 +15,7 @@ import { getSchemaByType } from "./schemas"
 import { SYSTEM_INSTRUCTION } from "./defaultPrompts"
 import { generateMetaPrompt } from "@/services/variableGeneration/metaPromptGenerator"
 import { fetchPromptHistory } from "@/services/variableGeneration/promptHistoryFetcher"
+import { i18n } from "#imports"
 
 /**
  * Options for variable generation
@@ -49,7 +50,7 @@ export async function generateVariable(
   // Validate API key
   if (!apiKey) {
     throw new GeminiError(
-      "API key is required for variable generation",
+      i18n.t("variablePresets.aiGeneration.error.apiKeyRequired"),
       GeminiErrorType.API_KEY_MISSING,
     )
   }
@@ -130,7 +131,7 @@ function validateResponse(
   // Check for explanation (required in all responses)
   if (!response.explanation) {
     throw new GeminiError(
-      "Response missing required field: explanation",
+      i18n.t("variablePresets.aiGeneration.error.missingExplanation"),
       GeminiErrorType.API_ERROR,
     )
   }
@@ -140,7 +141,7 @@ function validateResponse(
     case "text":
       if (!response.textContent) {
         throw new GeminiError(
-          "Text type response missing textContent field",
+          i18n.t("variablePresets.aiGeneration.error.missingTextContent"),
           GeminiErrorType.API_ERROR,
         )
       }
@@ -149,13 +150,13 @@ function validateResponse(
     case "select":
       if (!response.selectOptions || !Array.isArray(response.selectOptions)) {
         throw new GeminiError(
-          "Select type response missing or invalid selectOptions field",
+          i18n.t("variablePresets.aiGeneration.error.missingSelectOptions"),
           GeminiErrorType.API_ERROR,
         )
       }
       if (response.selectOptions.length < 3) {
         throw new GeminiError(
-          "Select type response must have at least 3 options",
+          i18n.t("variablePresets.aiGeneration.error.selectOptionsTooFew"),
           GeminiErrorType.API_ERROR,
         )
       }
@@ -167,13 +168,13 @@ function validateResponse(
         !Array.isArray(response.dictionaryItems)
       ) {
         throw new GeminiError(
-          "Dictionary type response missing or invalid dictionaryItems field",
+          i18n.t("variablePresets.aiGeneration.error.missingDictionaryItems"),
           GeminiErrorType.API_ERROR,
         )
       }
       if (response.dictionaryItems.length < 3) {
         throw new GeminiError(
-          "Dictionary type response must have at least 3 items",
+          i18n.t("variablePresets.aiGeneration.error.dictionaryItemsTooFew"),
           GeminiErrorType.API_ERROR,
         )
       }
@@ -181,7 +182,7 @@ function validateResponse(
       for (const item of response.dictionaryItems) {
         if (!item.name || !item.content) {
           throw new GeminiError(
-            "Dictionary items must have both name and content fields",
+            i18n.t("variablePresets.aiGeneration.error.invalidDictionaryItem"),
             GeminiErrorType.API_ERROR,
           )
         }
@@ -190,7 +191,9 @@ function validateResponse(
 
     default:
       throw new GeminiError(
-        `Unknown variable type: ${variableType}`,
+        i18n.t("variablePresets.aiGeneration.error.unknownVariableType", [
+          variableType,
+        ]),
         GeminiErrorType.API_ERROR,
       )
   }

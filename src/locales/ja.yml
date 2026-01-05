@@ -373,10 +373,19 @@ variablePresets:
       improving: 生成中...
     error:
       apiKeyMissing: Gemini APIキーが設定されていません
+      apiKeyRequired: 変数生成にはAPIキーが必要です
       networkError: ネットワークエラーが発生しました
       apiError: API呼び出しに失敗しました
       invalidResponse: 不正なレスポンス形式です
       cancelled: 生成がキャンセルされました
+      missingExplanation: レスポンスに必須フィールド explanation が含まれていません
+      missingTextContent: テキストタイプのレスポンスに textContent フィールドが含まれていません
+      missingSelectOptions: セレクトタイプのレスポンスに selectOptions フィールドが含まれていないか不正です
+      selectOptionsTooFew: セレクトタイプのレスポンスには少なくとも3つのオプションが必要です
+      missingDictionaryItems: ディクショナリタイプのレスポンスに dictionaryItems フィールドが含まれていないか不正です
+      dictionaryItemsTooFew: ディクショナリタイプのレスポンスには少なくとも3つのアイテムが必要です
+      invalidDictionaryItem: ディクショナリアイテムには name と content の両方のフィールドが必要です
+      unknownVariableType: "不明な変数タイプ: $1"
 
 # Import Dialog
 importDialog:

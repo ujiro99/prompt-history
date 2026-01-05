@@ -373,10 +373,19 @@ variablePresets:
       improving: Generating...
     error:
       apiKeyMissing: Gemini API key is not configured
+      apiKeyRequired: API key is required for variable generation
       networkError: Network error occurred
       apiError: API call failed
       invalidResponse: Invalid response format
       cancelled: Generation was cancelled
+      missingExplanation: "Response missing required field: explanation"
+      missingTextContent: Text type response missing textContent field
+      missingSelectOptions: Select type response missing or invalid selectOptions field
+      selectOptionsTooFew: Select type response must have at least 3 options
+      missingDictionaryItems: Dictionary type response missing or invalid dictionaryItems field
+      dictionaryItemsTooFew: Dictionary type response must have at least 3 items
+      invalidDictionaryItem: Dictionary items must have both name and content fields
+      unknownVariableType: "Unknown variable type: $1"
 
 # Import Dialog
 importDialog:

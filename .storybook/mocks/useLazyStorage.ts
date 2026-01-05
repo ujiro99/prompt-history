@@ -58,6 +58,7 @@ export function useLazyStorage<T>(
       }
       delete windowWithMock.__STORYBOOK_MOCK_DATA__
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const setLazyValue = async (

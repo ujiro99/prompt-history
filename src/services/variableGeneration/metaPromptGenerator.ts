@@ -143,10 +143,10 @@ export async function generateMetaPrompt(
     if (formattedExisting) {
       if (variableType === "text") {
         const existingSection = `\n\n${MODIFICATION_TO_EXISTING_VARIABLES}\n\n${formattedExisting}`
-        template = template + existingSection
+        template += existingSection
       } else {
         const existingSection = `\n\n${ADDITION_TO_EXISTING_VARIABLES}\n\n${formattedExisting}`
-        template = template + existingSection
+        template += existingSection
       }
     }
   }

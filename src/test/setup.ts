@@ -2,6 +2,7 @@ import { vi } from "vitest"
 import "@testing-library/jest-dom"
 
 // Mock Browser.i18n.getMessage to support @wxt-dev/i18n
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const globalAny = globalThis as any
 if (!globalAny.Browser) {
   globalAny.Browser = {}

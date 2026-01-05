@@ -3,18 +3,10 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest"
-import type { PresetVariableType } from "@/types/prompt"
 import type {
   ExistingVariableContent,
   VariableGenerationSettings,
 } from "@/types/variableGeneration"
-import {
-  DEFAULT_META_PROMPT,
-  INPUT_SECTION,
-  ADDITION_TO_EXISTING_VARIABLES,
-  MODIFICATION_TO_EXISTING_VARIABLES,
-  ADDITIONAL_INSTRUCTIONS,
-} from "../defaultPrompts"
 
 // Mock storage using vi.hoisted
 const { mockGetValue } = vi.hoisted(() => ({

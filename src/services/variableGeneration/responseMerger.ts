@@ -40,7 +40,7 @@ export function mergeResponse(
 
     default: {
       // For unknown types, return without dictionaryItems to satisfy type
-      const { dictionaryItems, ...rest } = response
+      const { dictionaryItems: _dictionaryItems, ...rest } = response
       return rest
     }
   }
@@ -55,7 +55,7 @@ function mergeTextContent(
   existingContent?: ExistingVariableContent,
 ): MergedAIGenerationResponse {
   // Exclude dictionaryItems to satisfy MergedAIGenerationResponse type
-  const { dictionaryItems, ...rest } = response
+  const { dictionaryItems: _dictionaryItems, ...rest } = response
 
   if (
     !existingContent ||
@@ -80,7 +80,7 @@ function mergeSelectOptions(
   existingContent?: ExistingVariableContent,
 ): MergedAIGenerationResponse {
   // Exclude dictionaryItems to satisfy MergedAIGenerationResponse type
-  const { dictionaryItems, ...rest } = response
+  const { dictionaryItems: _dictionaryItems, ...rest } = response
 
   if (
     !existingContent ||

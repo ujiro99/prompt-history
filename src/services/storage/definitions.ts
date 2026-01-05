@@ -54,6 +54,7 @@ export const promptsStorage = storage.defineItem<Record<string, StoredPrompt>>(
           if (prompt.variables) {
             const migratedVariables = prompt.variables.map((variable) => {
               // Type assertion needed for migration from old "textarea" type
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               if ((variable.type as any) === "textarea") {
                 return { ...variable, type: "text" as const }
               }

@@ -27,7 +27,7 @@ export const GenerationProgress: React.FC<GenerationProgressProps> = ({
 
   return (
     <section className="space-y-2">
-      <div className="rounded-lg border p-4 space-y-2 text-xs font-mono text-muted-dforeground">
+      <div className="rounded-lg border p-4 space-y-2 text-xs font-mono text-muted-foreground">
         {/* Progress Bar */}
         <div className="space-y-1">
           <div className="flex justify-between items-center">
@@ -63,7 +63,7 @@ export const GenerationProgress: React.FC<GenerationProgressProps> = ({
           progress.accumulated &&
           progress.accumulated.length > 50 && (
             <div className="space-y-1 pt-3">
-              <p>
+              <p className="text-foreground">
                 {accumulatedTextLabel ||
                   i18n.t("promptOrganizer.execute.receivingPrompts")}
               </p>

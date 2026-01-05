@@ -649,12 +649,6 @@ newline and, comma",1,2024-01-10T10:00:00.000Z,false,https://example.com,2024-01
   })
 
   describe("parseRowData with preset references", () => {
-    let mockGetVariablePresets: Mock
-
-    beforeEach(() => {
-      mockGetVariablePresets = vi.mocked(getVariablePresets)
-    })
-
     it("should keep preset variable when preset exists", () => {
       const existingPresetIds = new Set(["preset-1", "preset-2"])
       const rowData = createMockCSVRowData({

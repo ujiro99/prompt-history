@@ -33,7 +33,9 @@
       "mcp__serena__think_about_task_adherence",
       "mcp__serena__think_about_whether_you_are_done",
       "Bash(git mv:*)",
-      "mcp__serena__replace_symbol_body"
+      "mcp__serena__replace_symbol_body",
+      "WebFetch(domain:wxt.dev)",
+      "WebFetch(domain:vitest.dev)"
     ],
     "deny": [],
     "ask": []
