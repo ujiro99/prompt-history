@@ -23,7 +23,7 @@ import {
   findPromptsByPresetId,
   exportVariablePresets,
   reorderVariablePresets,
-} from "@/services/storage/variablePresetStorage"
+} from "@/services/storage/variablePreset"
 import { generateVariableId } from "@/utils/idGenerator"
 import { movePrev, moveNext } from "@/utils/array"
 import { stopPropagation } from "@/utils/dom"

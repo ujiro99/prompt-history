@@ -9,7 +9,7 @@ import {
   importVariablePresets,
   watchVariablePresets,
   watchVariablePreset,
-} from "../variablePresetStorage"
+} from "../variablePreset"
 import type { VariablePreset, Prompt } from "../../../types/prompt"
 import {
   variablePresetsStorage,
@@ -34,7 +34,7 @@ vi.mock("../definitions", () => ({
   },
 }))
 
-describe("variablePresetStorage", () => {
+describe("variablePreset", () => {
   const mockPreset: VariablePreset = {
     id: "preset-1",
     name: "Test Preset",
@@ -540,8 +540,8 @@ describe("variablePresetStorage", () => {
       const count = await importVariablePresets(csvData, "merge")
 
       expect(count).toBe(1)
-      const savedData =
-        vi.mocked(variablePresetsStorage.setValue).mock.calls[0][0]
+      const savedData = vi.mocked(variablePresetsStorage.setValue).mock
+        .calls[0][0]
       expect(savedData["preset-select"].selectOptions).toEqual([
         "Option 1",
         "Option 2",
@@ -560,8 +560,8 @@ describe("variablePresetStorage", () => {
       const count = await importVariablePresets(csvData, "merge")
 
       expect(count).toBe(1)
-      const savedData =
-        vi.mocked(variablePresetsStorage.setValue).mock.calls[0][0]
+      const savedData = vi.mocked(variablePresetsStorage.setValue).mock
+        .calls[0][0]
       expect(savedData["preset-dict"].dictionaryItems).toEqual([
         { id: "item-1", name: "Test", content: "Content" },
       ])
@@ -579,8 +579,8 @@ describe("variablePresetStorage", () => {
       const count = await importVariablePresets(csvData, "merge")
 
       expect(count).toBe(1)
-      const savedData =
-        vi.mocked(variablePresetsStorage.setValue).mock.calls[0][0]
+      const savedData = vi.mocked(variablePresetsStorage.setValue).mock
+        .calls[0][0]
       expect(savedData["preset-special"].name).toBe(
         'Name with "quotes" and, comma',
       )

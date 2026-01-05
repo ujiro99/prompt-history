@@ -29,13 +29,13 @@ vi.mock("@wxt-dev/i18n", () => {
   }
 })
 
-vi.mock("@/services/storage/variablePresetStorage", () => ({
+vi.mock("@/services/storage/variablePreset", () => ({
   getVariablePresets: vi.fn(),
 }))
 
 import { PromptImportService } from "../promptImportService"
 import { generatePromptId } from "@/utils/idGenerator"
-import { getVariablePresets } from "@/services/storage/variablePresetStorage"
+import { getVariablePresets } from "@/services/storage/variablePreset"
 import Papa from "papaparse"
 
 // Mock FileReader

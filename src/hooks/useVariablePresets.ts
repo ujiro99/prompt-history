@@ -4,7 +4,7 @@ import {
   getVariablePresets,
   watchVariablePresets,
   watchVariablePreset,
-} from "@/services/storage/variablePresetStorage"
+} from "@/services/storage/variablePreset"
 
 /**
  * Options for useVariablePresets hook

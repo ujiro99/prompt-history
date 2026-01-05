@@ -5,7 +5,7 @@ import type { Prompt, VariableConfig } from "@/types/prompt"
 import type { AIGeneratedMetadata } from "@/types/promptOrganizer"
 import { generatePromptId } from "@/utils/idGenerator"
 import { ImportError } from "./ImportError"
-import { getVariablePresets } from "@/services/storage/variablePresetStorage"
+import { getVariablePresets } from "@/services/storage/variablePreset"
 import { i18n } from "#imports"
 
 /**
