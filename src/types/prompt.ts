@@ -38,6 +38,8 @@ export interface DictionaryItem {
   name: string
   /** Item content (multi-line string, expanded when selected) */
   content: string
+  /** Whether this dictionary item was AI-generated */
+  isAiGenerated?: boolean
 }
 
 /**
@@ -58,6 +60,10 @@ export interface VariablePreset {
   selectOptions?: string[]
   /** [Dictionary type only] Dictionary items */
   dictionaryItems?: DictionaryItem[]
+  /** Whether this variable preset was AI-generated */
+  isAiGenerated?: boolean
+  /** AI generation explanation (reasoning for the generated content) */
+  aiExplanation?: string
   /** Creation date */
   createdAt: Date
   /** Update date */

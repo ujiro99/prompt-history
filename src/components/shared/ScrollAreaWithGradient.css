@@ -49,17 +49,21 @@
 
 .scroll-gradient-top {
   top: 0px;
-  background: linear-gradient(to bottom,
-      var(--ph-gradient-background),
-      transparent);
+  background: linear-gradient(
+    to bottom,
+    var(--ph-gradient-background),
+    transparent
+  );
 }
 
 .scroll-gradient-bottom {
   bottom: -1px;
   /* Slightly overlap to avoid gap */
-  background: linear-gradient(to top,
-      var(--ph-gradient-background),
-      transparent);
+  background: linear-gradient(
+    to top,
+    var(--ph-gradient-background),
+    transparent
+  );
 }
 
 /* Create named scroll-timeline on the viewport */

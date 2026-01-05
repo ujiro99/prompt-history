@@ -104,7 +104,9 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
         continue
       }
 
-      if (variable.type === "preset") {
+      if (variable.type === "select") {
+        initialValues[variable.name] = variable.selectOptions?.options[0] || ""
+      } else if (variable.type === "preset") {
         const preset = presets.get(variable.name)
         if (preset) {
           if (preset.type === "text") {

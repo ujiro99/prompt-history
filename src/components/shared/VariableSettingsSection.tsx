@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import type { VariableConfig } from "@/types/prompt"
 import { mergeVariableConfigs } from "@/utils/variables/variableParser"
 import { VariableConfigField } from "@/components/inputMenu/controller/VariableConfigField"
-import { ScrollAreaWithGradient } from "@/components/inputMenu/ScrollAreaWithGradient"
+import { ScrollAreaWithGradient } from "@/components/shared/ScrollAreaWithGradient"
 import usePrev from "@/hooks/usePrev"
 import { i18n } from "#imports"
 

@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { ScrollAreaWithGradient } from "@/components/inputMenu/ScrollAreaWithGradient"
+import { ScrollAreaWithGradient } from "@/components/shared/ScrollAreaWithGradient"
 import { useContainer } from "@/hooks/useContainer"
 import { promptImportService } from "@/services/importExport"
 import type { ImportResult } from "@/services/importExport/types"
@@ -346,6 +346,7 @@ export function ImportDialog({
                     className="text-yellow-600"
                     data-testid={TestIds.import.ui.missingPresets}
                   >
+                    <CircleAlert className="inline mb-1 mr-1 size-4" />
                     {i18n.t("importDialog.result.hasMissingPresets", [
                       missingPressetIds.size,
                     ])}
@@ -435,7 +436,7 @@ export function ImportDialog({
                     } as React.CSSProperties
                   }
                 >
-                  <ul className="space-y-1">
+                  <ul className="space-y-1 pl-1">
                     {result.missingPresets.map((info, index) => (
                       <li
                         key={`${info.promptName}-${info.variableName}-${index}`}

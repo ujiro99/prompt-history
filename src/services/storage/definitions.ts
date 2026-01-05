@@ -7,6 +7,7 @@ import type {
   AppSettings,
   ImprovePromptSettings,
 } from "@/types/prompt"
+import type { VariableGenerationSettings } from "@/types/variableGeneration"
 import type {
   Category,
   PromptOrganizerSettings,
@@ -32,7 +33,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   },
   pinnedSettings: {
     sortOrder: "composite",
-    hideOrganizerExcluded: true,
+    hideOrganizerExcluded: false,
   },
 }
 
@@ -53,6 +54,7 @@ export const promptsStorage = storage.defineItem<Record<string, StoredPrompt>>(
           if (prompt.variables) {
             const migratedVariables = prompt.variables.map((variable) => {
               // Type assertion needed for migration from old "textarea" type
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               if ((variable.type as any) === "textarea") {
                 return { ...variable, type: "text" as const }
               }
@@ -245,3 +247,19 @@ export const variablePresetsOrderStorage = storage.defineItem<string[]>(
     migrations: {},
   },
 )
+
+/**
+ * Variable Generation Settings storage definition
+ */
+export const variableGenerationSettingsStorage =
+  storage.defineItem<VariableGenerationSettings>(
+    "local:variableGenerationSettings",
+    {
+      fallback: {
+        useDefault: true,
+        promptHistoryCount: 200,
+      },
+      version: 1,
+      migrations: {},
+    },
+  )

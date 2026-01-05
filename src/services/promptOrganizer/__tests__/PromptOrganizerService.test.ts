@@ -86,7 +86,6 @@ const {
         estimatedInputTokens: 10000,
         estimatedOutputTokens: 5000,
         contextUsageRate: 0.01,
-        estimatedCost: 2.5,
         model: "gemini-2.5-flash",
         contextLimit: 1_000_000,
       }),
@@ -192,14 +191,12 @@ describe("PromptOrganizerService", () => {
       expect(
         mockTemplateGeneratorService.generateTemplates,
       ).toHaveBeenCalledOnce()
-      expect(mockCostEstimatorService.calculateCost).toHaveBeenCalledTimes(2) // Called for both estimated and actual cost
       expect(result).toHaveProperty("templates")
       expect(result).toHaveProperty("sourceCount", 2)
       expect(result).toHaveProperty("periodDays", 30)
       expect(result).toHaveProperty("executedAt")
       expect(result).toHaveProperty("inputTokens", 10000)
       expect(result).toHaveProperty("outputTokens", 5000)
-      expect(result).toHaveProperty("estimatedCost", 2.5)
     })
 
     it("should convert templates to candidates correctly", async () => {
@@ -350,15 +347,6 @@ describe("PromptOrganizerService", () => {
       expect(result.templates[1].title).toBe("Template 2")
     })
 
-    it("should calculate cost with correct token usage", async () => {
-      await service.executeOrganization(defaultSettings)
-
-      expect(mockCostEstimatorService.calculateCost).toHaveBeenCalledWith({
-        inputTokens: 10000,
-        outputTokens: 5000,
-      })
-    })
-
     it("should pass correct parameters to generateTemplates", async () => {
       await service.executeOrganization(defaultSettings)
 
@@ -409,7 +397,6 @@ describe("PromptOrganizerService", () => {
         estimatedInputTokens: 10000,
         estimatedOutputTokens: 5000,
         contextUsageRate: 0.01,
-        estimatedCost: 2.5,
         model: "gemini-2.5-flash",
         contextLimit: 1_000_000,
       })

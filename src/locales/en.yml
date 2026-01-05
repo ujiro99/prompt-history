@@ -244,6 +244,20 @@ settings:
     description: Configure how to improve prompts.
   promptOrganizerSettings: Prompt Organizer Settings
   variablePresetsSettings: Variable Preset Settings
+  variableGeneration:
+    title: Variable Generation Settings
+    description: Manage settings for automatic variable generation using AI.
+    metaPrompt: Variable Generation Prompt Settings
+    useDefault: Use default prompt
+    customPrompt: Custom prompt
+    customPromptDescription: Enter your custom prompt template
+    promptHistoryCount: Prompt history count
+    promptHistoryCountDescription: Select the number of prompt history items to use for generation
+    count50: 50 items
+    count100: 100 items
+    count200: 200 items
+    count500: 500 items
+    countUnlimited: Unlimited
 
 # Variable Presets
 variablePresets:
@@ -333,6 +347,45 @@ variablePresets:
     itemNameMaxLength: Item name must be 20 characters or less
     itemNameDuplicate: This item name is already in use
     itemContentRequired: Item content is required
+  aiGeneration:
+    button: Generate with AI
+    label: AI Generated
+    tooltip: Please enter variable name, purpose, and type
+    tooltipApiKey: Please configure API key
+    dialog:
+      title: Generate Variable with AI
+      description: AI will generate variable content based on the following information and your prompt history. Press Start to begin.
+      variableName: "Variable Name:"
+      variablePurpose: "Purpose:"
+      variableType: "Type:"
+      empty: "(Not entered)"
+      additionalInstructions: Additional Instructions
+      additionalInstructionsPlaceholder: Enter additional instructions for AI (optional)
+      start: Start
+      loading: Generating...
+      loadingDescription: AI is generating variable content. Please wait.
+      success: Variable Created
+      successDescription: AI has generated the following content.
+      explanation: AI Explanation
+      previewTitle: Generated Content
+      apply: Apply
+      retry: Retry
+      improving: Generating...
+    error:
+      apiKeyMissing: Gemini API key is not configured
+      apiKeyRequired: API key is required for variable generation
+      networkError: Network error occurred
+      apiError: API call failed
+      invalidResponse: Invalid response format
+      cancelled: Generation was cancelled
+      missingExplanation: "Response missing required field: explanation"
+      missingTextContent: Text type response missing textContent field
+      missingSelectOptions: Select type response missing or invalid selectOptions field
+      selectOptionsTooFew: Select type response must have at least 3 options
+      missingDictionaryItems: Dictionary type response missing or invalid dictionaryItems field
+      dictionaryItemsTooFew: Dictionary type response must have at least 3 items
+      invalidDictionaryItem: Dictionary items must have both name and content fields
+      unknownVariableType: "Unknown variable type: $1"
 
 # Import Dialog
 importDialog:
@@ -358,7 +411,7 @@ importDialog:
     willImport: "✓ Will import $1 prompts"
     noPrompts: "• No prompts to import"
     hasDuplicates: "• $1 duplicates found"
-    hasMissingPresets: "! $1 variable presets not found"
+    hasMissingPresets: "$1 variable presets not found"
     imported: "✓ Imported $1 prompts"
     skippedDuplicates: "• Skipped $1 duplicates"
   error:
@@ -443,7 +496,7 @@ promptOrganizer:
     sending: Sending target prompts
     thinking0: Classifying target prompts
     thinking1: Extracting patterns
-    thinking2: Refining prompts
+    thinking2: Refining output
     generating: Receiving refined results
     complete: Completed!
     error: Error occurred

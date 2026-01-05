@@ -5,7 +5,9 @@
 
 import { ChevronsUpDown } from "lucide-react"
 import { i18n } from "#imports"
+import { cn, formatTokenCount } from "@/lib/utils"
 import { Progress } from "@/components/ui/progress"
+import { Skeleton } from "@/components/ui/skeleton"
 import type { OrganizerExecutionEstimate } from "@/types/promptOrganizer"
 import {
   Collapsible,
@@ -13,24 +15,12 @@ import {
   CollapsibleContent,
 } from "@/components/ui/collapsible"
 import "@/components/ui/collapsible.css"
+import { GEMINI_CONTEXT_LIMIT } from "@/services/genai/constants"
 
 interface EstimationDisplayProps {
   estimate: OrganizerExecutionEstimate | null
   hideWhenNoEstimate?: boolean
   collapsible?: boolean
-}
-
-const MAX_TOKENS = 1000000 // Gemini 1.5 Flash context window
-
-/**
- * Format token count with K suffix for thousands
- */
-const formatTokenCount = (tokens: number | undefined): string => {
-  if (!tokens) return "0"
-  if (tokens >= 1000) {
-    return `${(tokens / 1000).toFixed(1)}K`
-  }
-  return tokens.toString()
 }
 
 /**
@@ -40,7 +30,7 @@ const calculateContextUsagePercentage = (
   estimate: OrganizerExecutionEstimate | null,
 ): number => {
   if (!estimate) return 0
-  return (estimate.estimatedInputTokens / MAX_TOKENS) * 100
+  return (estimate.estimatedInputTokens / GEMINI_CONTEXT_LIMIT) * 100
 }
 
 export const EstimationDisplay: React.FC<EstimationDisplayProps> = ({
@@ -55,13 +45,23 @@ export const EstimationDisplay: React.FC<EstimationDisplayProps> = ({
     <>
       {collapsible ? (
         <Collapsible className="flex flex-col items-end">
-          <CollapsibleTrigger className="flex items-center gap-2 hover:bg-muted transition rounded-md px-2 py-1.5">
+          <CollapsibleTrigger
+            className={cn(
+              "flex items-center gap-2 hover:bg-muted transition rounded-md px-2 py-1.5",
+              !estimate && "p-0",
+            )}
+            disabled={!estimate}
+          >
             <h3 className="text-sm cursor-pointer">
               {i18n.t("promptOrganizer.estimate.inputTokens")}
             </h3>
-            <span className="text-xs text-foreground/70 font-mono">
-              {formatTokenCount(estimate?.estimatedInputTokens)} tokens
-            </span>
+            {estimate ? (
+              <span className="text-xs text-foreground/70 font-mono">
+                {formatTokenCount(estimate.estimatedInputTokens)} tokens
+              </span>
+            ) : (
+              <Skeleton className="h-6 w-24" />
+            )}
             <ChevronsUpDown size={16} />
           </CollapsibleTrigger>
           <CollapsibleContent className="CollapsibleContent w-full pt-0.5">

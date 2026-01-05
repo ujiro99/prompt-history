@@ -22,6 +22,7 @@ This is a browser extension built with WXT (Web Extension Toolkit) and React. Th
 - `pnpm e2e:headed` - Run E2E tests in headed mode
 - `pnpm e2e:debug` - Debug E2E tests
 - `pnpm pre-e2e` - Build extension and install Playwright dependencies
+- `pnpm storybook` - Start Storybook for UI component development
 
 ## Architecture
 
@@ -32,6 +33,7 @@ This is a browser extension built with WXT (Web Extension Toolkit) and React. Th
   - `content.ts` - Content script that runs on AI service domains
 - `src/` - Source code directory
   - `components/` - React UI components
+    - `shared/` - Common components used across multiple components
   - `services/` - Core business logic services
     - `aiService/` - AI service integrations
       - `base/` - Abstract base class and common utilities
@@ -176,6 +178,11 @@ Therefore, please strictly follow the rules below.
 - All language within the source code, including comments, must be written in English.
 - Code comments should be written to aid understanding of the code's intent.
   - Avoid comments that are self-evident from the source code itself, limiting them to the absolute minimum necessary.
+
+- File naming conventions
+  - React components: PascalCase (e.g., `PromptHistoryWidget.tsx`)
+  - Utility functions / services / hooks: camelCase (e.g., `useLazyStorage.ts`)
+  - Keep file names as simple as possible, considering the directory name as well.
 
 ## Landing Page (pages/)
 

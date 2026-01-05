@@ -334,11 +334,11 @@ export const OrganizerPreviewDialog: React.FC<OrganizerPreviewDialogProps> = ({
 
                     {/* Explanation */}
                     <div className="space-y-1">
-                      <div className="text-sm font-medium">
+                      <div className="text-xs font-semibold">
                         <MessageCircleMore className="size-4 inline-block mr-1 -mt-1 stroke-fuchsia-400 fill-purple-100" />
                         {i18n.t("promptOrganizer.preview.explanation")}
                       </div>
-                      <blockquote className="font-serif text-sm border-l-2 px-4 py-3 bg-muted/60">
+                      <blockquote className="font-serif text-sm border-l-2 px-4 py-3 bg-muted/60 tracking-wider">
                         {selectedTemplate.clusterExplanation}
                       </blockquote>
                     </div>

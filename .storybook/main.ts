@@ -17,6 +17,14 @@ const config: StorybookConfig = {
   ],
   framework: "@storybook/react-vite",
   async viteFinal(config) {
+    // Allow WXT_ prefixed environment variables in Storybook
+    config.envPrefix = config.envPrefix || []
+    if (Array.isArray(config.envPrefix)) {
+      config.envPrefix.push("WXT_")
+    } else {
+      config.envPrefix = [config.envPrefix, "WXT_"]
+    }
+
     // Configure path aliases using array format for precise control
     // Using regex with ^ and $ anchors ensures exact matching, avoiding prefix conflicts
     config.resolve = config.resolve || {}
@@ -41,6 +49,14 @@ const config: StorybookConfig = {
       {
         find: /^@\/hooks\/useLazyStorage$/,
         replacement: resolve(__dirname, "./mocks/useLazyStorage.ts"),
+      },
+      {
+        find: /^@\/services\/storage\/genaiApiKey$/,
+        replacement: resolve(__dirname, "./mocks/genaiApiKey.ts"),
+      },
+      {
+        find: /^wxt\/utils\/storage$/,
+        replacement: resolve(__dirname, "./mocks/wxt-storage.ts"),
       },
       {
         find: /^#imports$/,

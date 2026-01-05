@@ -5,8 +5,8 @@ import {
   PopoverAnchor,
   PopoverPortal,
 } from "@/components/ui/popover"
-import { ScrollAreaWithGradient } from "./ScrollAreaWithGradient"
-import { BridgeArea } from "./BridgeArea"
+import { ScrollAreaWithGradient } from "@/components/shared/ScrollAreaWithGradient"
+import { BridgeArea } from "@/components/shared/BridgeArea"
 import type { DictionaryItem } from "@/types/prompt"
 import { TestIds } from "@/components/const"
 import { stopPropagation } from "@/utils/dom"

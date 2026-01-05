@@ -8,7 +8,7 @@ import { useState, useEffect } from "react"
  * initial state by passing different storage items or using decorators.
  */
 export function useLazyStorage<T>(
-  _storageItem: unknown,
+  storageItem: { getValue: () => Promise<T> },
   _options?: {
     debounceDelay?: number
     artificialSetDelay?: number
@@ -22,33 +22,43 @@ export function useLazyStorage<T>(
 
   // Simulate initial load
   useEffect(() => {
-    // Check if window has mock data set by story decorator
-    const windowWithMock = window as Window & {
-      __STORYBOOK_MOCK_DATA__?: Partial<T>
+    const loadInitialValue = async () => {
+      // Check if window has mock data set by story decorator
+      const windowWithMock = window as Window & {
+        __STORYBOOK_MOCK_DATA__?: Partial<T>
+      }
+
+      try {
+        // Get default value from the mock storage item
+        const defaultValue = await storageItem.getValue()
+
+        // Merge with story-specific mock data if provided via window
+        const mockValue = {
+          ...defaultValue,
+          ...(windowWithMock.__STORYBOOK_MOCK_DATA__ || {}),
+        } as T
+
+        setValue(mockValue)
+        setDebouncedValue(mockValue)
+      } catch (error) {
+        console.error("Failed to load initial value:", error)
+        setValue(null)
+        setDebouncedValue(null)
+      } finally {
+        setIsLoading(false)
+      }
     }
 
-    // Set default mock values based on storage item type
-    const defaultValue = {
-      mode: "url",
-      textContent: "",
-      urlContent: "",
-      lastModified: Date.now(),
-    }
-
-    // Merge with story-specific mock data if provided via window
-    const mockValue = {
-      ...defaultValue,
-      ...(windowWithMock.__STORYBOOK_MOCK_DATA__ || {}),
-    } as T
-
-    setValue(mockValue)
-    setDebouncedValue(mockValue)
-    setIsLoading(false)
+    loadInitialValue()
 
     // Cleanup on unmount
     return () => {
+      const windowWithMock = window as Window & {
+        __STORYBOOK_MOCK_DATA__?: Partial<T>
+      }
       delete windowWithMock.__STORYBOOK_MOCK_DATA__
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const setLazyValue = async (

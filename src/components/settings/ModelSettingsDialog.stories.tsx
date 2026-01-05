@@ -59,6 +59,8 @@ export const OpenNoApiKey: Story = {
   ],
 }
 
+const API_KEY = import.meta.env.WXT_GENAI_API_KEY
+
 // Dialog open with existing API key
 export const OpenWithApiKey: Story = {
   args: {
@@ -67,9 +69,7 @@ export const OpenWithApiKey: Story = {
   },
   decorators: [
     (Story) => (
-      <AiModelContext.Provider
-        value={{ genaiApiKey: "AIzaSyD1234567890abcdefghijklmnopqrstuv" }}
-      >
+      <AiModelContext.Provider value={{ genaiApiKey: API_KEY }}>
         <Story />
       </AiModelContext.Provider>
     ),

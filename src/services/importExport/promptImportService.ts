@@ -104,6 +104,8 @@ export class PromptImportService {
     const existingPresets = await getVariablePresets()
     const existingPresetIds = new Set(existingPresets.map((p) => p.id))
 
+    console.log("Existing preset IDs:", existingPresetIds)
+
     const prompts: Prompt[] = []
     const errors: string[] = []
     for (let i = 0; i < parseResult.data.length; i++) {
@@ -222,18 +224,20 @@ export class PromptImportService {
       try {
         const parsed = JSON.parse(row.variables)
         if (Array.isArray(parsed)) {
-          variables = parsed.map((item) => {
-            if (item.type === "textarea") {
+          variables = parsed.map((item: VariableConfig) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            if ((item as any).type === "textrea") {
               // Migrate old "textarea" type to "text"
               return { ...item, type: "text" as const }
             }
             // Check if this is a preset reference
-            if (item.type === "preset" && item.presetId) {
+            if (item.type === "preset" && item.presetOptions?.presetId) {
               // Check if the preset exists
-              if (!existingPresetIds.has(item.presetId)) {
+              if (!existingPresetIds.has(item.presetOptions.presetId)) {
+                console.warn("Preset not found. Replacing with text variable.")
                 // Track the affected prompt and variable
                 this.missingPresetInfo.push({
-                  presetId: item.presetId,
+                  presetId: item.presetOptions.presetId,
                   promptName: row.name,
                   variableName: item.name,
                 })

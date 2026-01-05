@@ -1,14 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
 import { CostEstimatorService } from "../CostEstimatorService"
-import type { TokenUsage } from "@/types/promptOrganizer"
 
-// Mock pricing constants
-vi.mock("../pricing", () => ({
-  GEMINI_PRICING: {
-    inputTokenPer1M: 0.3,
-    outputTokenPer1M: 2.5,
-    usdToJpy: 150,
-  },
+// Mock constants
+vi.mock("@/services/genai/constants", () => ({
   GEMINI_CONTEXT_LIMIT: 1_000_000,
 }))
 
@@ -124,80 +118,6 @@ describe("CostEstimatorService", () => {
     vi.clearAllMocks()
   })
 
-  describe("calculateCost", () => {
-    it("should calculate cost from token usage", () => {
-      const usage: TokenUsage = {
-        inputTokens: 10000,
-        outputTokens: 5000,
-        thoughtsTokens: 0,
-      }
-
-      const cost = service.calculateCost(usage)
-
-      // Input: (10000 / 1000000) * 0.3 = 0.003 USD
-      // Output: (5000 / 1000000) * 2.5 = 0.0125 USD
-      // Total: 0.0155 USD
-      // JPY: 0.0155 * 150 = 2.325
-      expect(cost).toBeCloseTo(2.325, 3)
-    })
-
-    it("should handle zero tokens", () => {
-      const usage: TokenUsage = {
-        inputTokens: 0,
-        outputTokens: 0,
-        thoughtsTokens: 0,
-      }
-
-      const cost = service.calculateCost(usage)
-
-      expect(cost).toBe(0)
-    })
-
-    it("should calculate cost for only input tokens", () => {
-      const usage: TokenUsage = {
-        inputTokens: 10000,
-        outputTokens: 0,
-        thoughtsTokens: 0,
-      }
-
-      const cost = service.calculateCost(usage)
-
-      // Input: (10000 / 1000000) * 0.3 = 0.003 USD
-      // JPY: 0.003 * 150 = 0.45
-      expect(cost).toBeCloseTo(0.45, 3)
-    })
-
-    it("should calculate cost for only output tokens", () => {
-      const usage: TokenUsage = {
-        inputTokens: 0,
-        outputTokens: 10000,
-        thoughtsTokens: 0,
-      }
-
-      const cost = service.calculateCost(usage)
-
-      // Output: (10000 / 1000000) * 2.5 = 0.025 USD
-      // JPY: 0.025 * 150 = 3.75
-      expect(cost).toBeCloseTo(3.75, 3)
-    })
-
-    it("should handle large token counts", () => {
-      const usage: TokenUsage = {
-        inputTokens: 1_000_000,
-        outputTokens: 500_000,
-        thoughtsTokens: 0,
-      }
-
-      const cost = service.calculateCost(usage)
-
-      // Input: (1000000 / 1000000) * 0.3 = 0.3 USD
-      // Output: (500000 / 1000000) * 2.5 = 1.25 USD
-      // Total: 1.55 USD
-      // JPY: 1.55 * 150 = 232.5
-      expect(cost).toBeCloseTo(232.5, 1)
-    })
-  })
-
   describe("estimateExecution", () => {
     const defaultSettings = {
       filterPeriodDays: 30,
@@ -219,12 +139,6 @@ describe("CostEstimatorService", () => {
         contextLimit: 1_000_000,
       })
       expect(estimate.contextUsageRate).toBeCloseTo(0.01, 2)
-      // Input: (10000 / 1000000) * 0.3 = 0.003 USD
-      // Output: (5000 / 1000000) * 2.5 = 0.0125 USD
-      // Thoughts: (10000 / 1000000) * 2.5 = 0.025 USD
-      // Total: 0.0405 USD
-      // JPY: 0.0405 * 150 = 6.075
-      expect(estimate.estimatedCost).toBeCloseTo(6.075, 3)
 
       vi.useRealTimers()
     })

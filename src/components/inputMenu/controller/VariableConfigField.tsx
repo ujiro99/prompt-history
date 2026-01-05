@@ -147,13 +147,6 @@ export const VariableConfigField: React.FC<VariableConfigFieldProps> = ({
       .map((opt) => opt.trim())
       .filter((opt) => opt.length > 0)
 
-    // If default value is not in options, adds it
-    if (options.length > 0 && variable.defaultValue) {
-      if (!options.includes(variable.defaultValue)) {
-        options.push(variable.defaultValue)
-      }
-    }
-
     // Unique options
     const uniqueOptions = Array.from(new Set(options))
 

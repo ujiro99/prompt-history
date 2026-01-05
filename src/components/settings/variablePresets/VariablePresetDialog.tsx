@@ -213,6 +213,22 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
   )
 
   /**
+   * Handle preset change (no display change)
+   */
+  const handleChangeBackground = useCallback(
+    async (preset: VariablePreset) => {
+      try {
+        await saveVariablePreset(preset)
+        await loadPresets()
+      } catch (error) {
+        console.error("Failed to save preset:", error)
+        throw error
+      }
+    },
+    [loadPresets],
+  )
+
+  /**
    * Handle validation state change from editor
    */
   const handleValidationChange = useCallback((hasErrors: boolean) => {
@@ -405,6 +421,7 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
                 preset={selectedPreset}
                 allPresets={presets}
                 onChange={handlePresetChange}
+                onChangeBackground={handleChangeBackground}
                 onDuplicate={handleDuplicatePreset}
                 onDelete={handleOnDelete}
                 onValidationChange={handleValidationChange}

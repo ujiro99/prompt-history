@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { AlertCircle } from "lucide-react"
 import { i18n } from "#imports"
+import { cn } from "@/lib/utils"
 
 interface ApiKeyWarningBannerProps {
   onOpenSettings: () => void
@@ -32,7 +33,10 @@ export const ApiKeyWarningBanner: React.FC<ApiKeyWarningBannerProps> = ({
 
   return (
     <div
-      className={`p-3 mb-4 ${colorClasses.bg} border ${colorClasses.border} rounded-md ${className || ""}`}
+      className={cn(
+        `p-3 mb-4 ${colorClasses.bg} border ${colorClasses.border} rounded-md`,
+        className,
+      )}
     >
       <div className="flex items-center justify-between gap-1">
         <div className="flex items-center gap-2">
