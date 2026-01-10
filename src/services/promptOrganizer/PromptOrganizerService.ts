@@ -47,15 +47,21 @@ export class PromptOrganizerService {
     },
   ): Promise<PromptOrganizerResult> {
     // 1. Get inputs in parallel
-    const [targetPrompts, categories, presets] = await Promise.all([
-      this.targetPrompts(settings),
-      categoryService.getAll(),
-      getVariablePresets(),
-    ])
+    const [targetPrompts, categories, presets, recentAIPrompts] =
+      await Promise.all([
+        this.targetPrompts(settings),
+        categoryService.getAll(),
+        getVariablePresets(),
+        this.getRecentAIGeneratedPrompts(90),
+      ])
 
     console.log(
       `${targetPrompts.length} prompts selected for organization`,
       targetPrompts,
+    )
+    console.log(
+      `${recentAIPrompts.length} recent AI-generated prompts for duplicate checking`,
+      recentAIPrompts,
     )
 
     if (targetPrompts.length === 0) {
@@ -68,6 +74,7 @@ export class PromptOrganizerService {
       settings,
       categories,
       presets,
+      recentAIPrompts,
       {
         onProgress: options?.onProgress,
       },
@@ -135,6 +142,37 @@ export class PromptOrganizerService {
         content: truncate(p.content),
       }))
     })()
+  }
+
+  /**
+   * Get recent AI-generated prompts
+   * @param days - Number of days to look back
+   * @returns List of recent AI-generated prompts
+   */
+  private async getRecentAIGeneratedPrompts(
+    days: number,
+  ): Promise<PromptForOrganization[]> {
+    // 1. Get all prompts
+    const allPrompts = await promptsService.getAllPrompts()
+
+    // 2. Calculate cutoff date
+    const cutoffDate = new Date()
+    cutoffDate.setDate(cutoffDate.getDate() - days)
+
+    // 3. Filter AI-generated prompts within the period
+    const recentAIPrompts = allPrompts.filter((p) => {
+      if (!p.isAIGenerated) return false
+      if (!p.createdAt) return false
+      return p.createdAt >= cutoffDate
+    })
+
+    // 4. Convert to PromptForOrganization format
+    return recentAIPrompts.map((p) => ({
+      id: p.id,
+      name: p.name,
+      content: truncate(p.content),
+      executionCount: p.executionCount,
+    }))
   }
 
   /**

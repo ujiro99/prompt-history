@@ -49,6 +49,7 @@ export class CostEstimatorService {
       settings.organizationPrompt,
       categories,
       presets,
+      [], // Empty array for cost estimation (no need for AI prompts in estimation)
     )
 
     // 2. Estimate token count

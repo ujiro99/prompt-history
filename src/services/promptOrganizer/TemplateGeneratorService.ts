@@ -36,6 +36,7 @@ export class TemplateGeneratorService {
    * @param settings - Organizer settings
    * @param categories - Available categories
    * @param presets - Available variable presets
+   * @param recentAIPrompts - Recent AI-generated prompts for duplicate checking
    * @param options - Generation options (progress callback)
    * @returns Generated templates and token usage
    */
@@ -44,6 +45,7 @@ export class TemplateGeneratorService {
     settings: PromptOrganizerSettings,
     categories: Array<Category>,
     presets: VariablePreset[],
+    recentAIPrompts: PromptForOrganization[],
     options?: {
       onProgress?: (progress: GenerationProgress) => void
     },
@@ -64,6 +66,7 @@ export class TemplateGeneratorService {
       settings.organizationPrompt,
       categories,
       presets,
+      recentAIPrompts,
     )
 
     const config = {
@@ -347,6 +350,7 @@ export class TemplateGeneratorService {
    * @param organizationPrompt - Custom organization prompt
    * @param categories - Available categories
    * @param presets - Available variable presets
+   * @param recentAIPrompts - Recent AI-generated prompts for duplicate checking
    * @returns Formatted prompt
    */
   public buildPrompt(
@@ -354,6 +358,7 @@ export class TemplateGeneratorService {
     organizationPrompt: string,
     categories: Array<{ id: string; name: string }>,
     presets: VariablePreset[],
+    recentAIPrompts: PromptForOrganization[],
   ): string {
     // Build category list
     const categoryList = categories
@@ -370,6 +375,17 @@ export class TemplateGeneratorService {
       )
       .join("\n\n")
 
+    // Build AI-generated prompts list
+    const aiPromptList =
+      recentAIPrompts.length > 0
+        ? recentAIPrompts
+            .map(
+              (p, idx) =>
+                `${idx + 1}. ${p.name}\n   Content: ${p.content}\n   Execution count: ${p.executionCount}`,
+            )
+            .join("\n\n")
+        : "None"
+
     return `${organizationPrompt}
 
 # Available Categories:
@@ -377,6 +393,9 @@ ${categoryList}
 
 # Available Variable Presets (YAML format):
 ${presetYml}
+
+# Recently Created AI-Generated Prompts (within 90 days):
+${aiPromptList}
 
 # Prompts to analyze:
 ${promptList}

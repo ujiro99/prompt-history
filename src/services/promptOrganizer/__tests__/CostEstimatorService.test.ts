@@ -126,10 +126,37 @@ describe("CostEstimatorService", () => {
       organizationPrompt: "Test prompt",
     }
 
+    const defaultPrompts = [
+      {
+        id: "1",
+        name: "Prompt 1",
+        content: "Content 1",
+        executionCount: 10,
+      },
+      {
+        id: "2",
+        name: "Prompt 2",
+        content: "Content 2",
+        executionCount: 5,
+      },
+    ]
+
+    const defaultCategories = [
+      { id: "cat1", name: "Category 1" },
+      { id: "cat2", name: "Category 2" },
+    ]
+
+    const defaultPresets: any[] = []
+
     it("should estimate execution cost", async () => {
       vi.setSystemTime(new Date("2025-01-20"))
 
-      const estimate = await service.estimateExecution(defaultSettings)
+      const estimate = await service.estimateExecution(
+        defaultPrompts,
+        defaultSettings,
+        defaultCategories,
+        defaultPresets,
+      )
 
       expect(estimate).toMatchObject({
         targetPromptCount: 2,
@@ -146,7 +173,12 @@ describe("CostEstimatorService", () => {
     it("should call all dependencies correctly", async () => {
       vi.setSystemTime(new Date("2025-01-20"))
 
-      await service.estimateExecution(defaultSettings)
+      await service.estimateExecution(
+        defaultPrompts,
+        defaultSettings,
+        defaultCategories,
+        defaultPresets,
+      )
 
       expect(mockPromptsService.getAllPrompts).toHaveBeenCalledOnce()
       expect(mockPromptFilterService.filterPrompts).toHaveBeenCalledWith(
@@ -163,7 +195,14 @@ describe("CostEstimatorService", () => {
     it("should throw error if GeminiClient is not initialized", async () => {
       mockGeminiClient.isInitialized.mockReturnValueOnce(false)
 
-      await expect(service.estimateExecution(defaultSettings)).rejects.toThrow(
+      await expect(
+        service.estimateExecution(
+          defaultPrompts,
+          defaultSettings,
+          defaultCategories,
+          defaultPresets,
+        ),
+      ).rejects.toThrow(
         "API key not configured. Please set your API key in settings.",
       )
     })
@@ -171,7 +210,12 @@ describe("CostEstimatorService", () => {
     it("should work when GeminiClient is already initialized", async () => {
       mockGeminiClient.isInitialized.mockReturnValue(true)
 
-      await service.estimateExecution(defaultSettings)
+      await service.estimateExecution(
+        defaultPrompts,
+        defaultSettings,
+        defaultCategories,
+        defaultPresets,
+      )
 
       // Should not attempt to initialize - that's handled by AiModelContext
       expect(mockGenaiApiKeyStorage.getValue).not.toHaveBeenCalled()
@@ -181,7 +225,12 @@ describe("CostEstimatorService", () => {
     it("should calculate context usage rate correctly", async () => {
       mockGeminiClient.estimateTokens.mockResolvedValueOnce(500_000)
 
-      const estimate = await service.estimateExecution(defaultSettings)
+      const estimate = await service.estimateExecution(
+        defaultPrompts,
+        defaultSettings,
+        defaultCategories,
+        defaultPresets,
+      )
 
       expect(estimate.contextUsageRate).toBeCloseTo(0.5, 2)
     })
@@ -189,7 +238,12 @@ describe("CostEstimatorService", () => {
     it("should estimate output tokens as 1.5 x input tokens (including thoughts)", async () => {
       mockGeminiClient.estimateTokens.mockResolvedValueOnce(20000)
 
-      const estimate = await service.estimateExecution(defaultSettings)
+      const estimate = await service.estimateExecution(
+        defaultPrompts,
+        defaultSettings,
+        defaultCategories,
+        defaultPresets,
+      )
 
       expect(estimate.estimatedInputTokens).toBe(20000)
       // 0.5x output tokens + 1x thoughts tokens = 1.5x total

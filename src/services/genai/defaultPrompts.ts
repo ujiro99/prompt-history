@@ -68,9 +68,7 @@ CRITICAL RULES:
  * This CAN be customized by users via Prompt Organizer settings.
  */
 export const DEFAULT_ORGANIZATION_PROMPT = `Analyze and organize the following user prompts using these guidelines.
-
-You must think through the task step by step INTERNALLY,
-then summarize ONLY your final decisions and short explanations in the output.
+You must think through the task step by step INTERNALLY, then summarize ONLY your final decisions and short explanations in the output.
 
 # Language:
 - Use the same main language as the user prompts for:
@@ -97,7 +95,31 @@ For each kept cluster, internally decide:
 - what the common "core pattern" is,
 
 --------------------------------------------------
-STEP 2: Pattern & variable analysis
+STEP 2: Duplicate Checking (CRITICAL)
+--------------------------------------------------
+For each cluster you kept in STEP 1, check against "Recently Created AI-Generated Prompts":
+
+1. For each cluster:
+   - Compare the cluster's PURPOSE and USE CASE with existing AI-generated prompts
+   - Use semantic similarity, not just keyword matching
+   - Consider: Do they solve the same problem? Would they be used in the same situations?
+
+2. If a similar existing prompt is found:
+   - Evaluate: Would the template from this cluster be a CLEAR IMPROVEMENT?
+   - Improvements include:
+     - Better structure or clarity
+     - More comprehensive variable coverage
+     - Significantly better prompt engineering
+     - Covers additional important use cases
+   - If NOT clearly better: DISCARD this cluster
+   - If clearly better: Keep the cluster and proceed
+
+3. Only keep clusters that will produce templates that are:
+   - Genuinely NEW (no semantic duplicate exists), OR
+   - Clear IMPROVEMENTS over existing prompts
+
+--------------------------------------------------
+STEP 3: Pattern & variable analysis
 --------------------------------------------------
 For each kept cluster:
 
@@ -121,7 +143,7 @@ For each kept cluster:
     - good default values or representative example options, if helpful.
 
 --------------------------------------------------
-STEP 3: For each resulting template, output:
+STEP 4: For each resulting template, output:
 --------------------------------------------------
 For each reusable template you create, output the following information:
 
@@ -184,10 +206,6 @@ For each reusable template you create, output the following information:
          - select options if the type is "select",
          - preset ID if the type is "preset".
    - Every {{variable_name}} in the template content should have a corresponding variable definition.
-
-# Remember:
-- Think step by step INTERNALLY.
-- Prefer fewer, high-quality templates over many noisy ones.
 `
 
 export const ORGANIZATION_SUMMARY_PROMPT = `Role:

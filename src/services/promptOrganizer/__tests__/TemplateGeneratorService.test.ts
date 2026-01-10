@@ -123,6 +123,7 @@ describe("TemplateGeneratorService", () => {
         "Test prompt",
         defaultCategories,
         defaultPresets,
+        [],
       )
 
       expect(prompt).toContain("Available Categories:")
@@ -136,6 +137,7 @@ describe("TemplateGeneratorService", () => {
         "Test prompt",
         defaultCategories,
         defaultPresets,
+        [],
       )
 
       expect(prompt).toContain("Prompts to analyze:")
@@ -156,6 +158,7 @@ describe("TemplateGeneratorService", () => {
         organizationPrompt,
         defaultCategories,
         defaultPresets,
+        [],
       )
 
       expect(prompt).toContain(organizationPrompt)
@@ -167,6 +170,7 @@ describe("TemplateGeneratorService", () => {
         "Test prompt",
         defaultCategories,
         defaultPresets,
+        [],
       )
 
       expect(prompt).toContain(
@@ -180,6 +184,7 @@ describe("TemplateGeneratorService", () => {
         "Test prompt",
         defaultCategories,
         defaultPresets,
+        [],
       )
 
       expect(prompt).toContain("Available Categories:")
@@ -193,6 +198,7 @@ describe("TemplateGeneratorService", () => {
         "Test prompt",
         [],
         defaultPresets,
+        [],
       )
 
       expect(prompt).toContain("Available Categories:")
@@ -210,6 +216,7 @@ describe("TemplateGeneratorService", () => {
         "Test prompt",
         defaultCategories,
         defaultPresets,
+        [],
       )
 
       expect(prompt).toContain("1. Single")
@@ -224,6 +231,7 @@ describe("TemplateGeneratorService", () => {
         defaultSettings,
         defaultCategories,
         defaultPresets,
+        [],
       )
 
       expect(
@@ -249,6 +257,7 @@ describe("TemplateGeneratorService", () => {
         defaultSettings,
         defaultCategories,
         defaultPresets,
+        [],
       )
 
       expect(result).toHaveProperty("templates")
@@ -275,6 +284,7 @@ describe("TemplateGeneratorService", () => {
           defaultSettings,
           defaultCategories,
           defaultPresets,
+          [],
         ),
       ).rejects.toThrow(
         "API key not configured. Please set your API key in settings.",
@@ -289,6 +299,7 @@ describe("TemplateGeneratorService", () => {
         defaultSettings,
         defaultCategories,
         defaultPresets,
+        [],
       )
 
       // Should not attempt to initialize - that's handled by AiModelContext
@@ -325,6 +336,7 @@ describe("TemplateGeneratorService", () => {
         defaultSettings,
         defaultCategories,
         defaultPresets,
+        [],
       )
 
       expect(result.templates).toHaveLength(2)
@@ -340,6 +352,7 @@ describe("TemplateGeneratorService", () => {
         defaultSettings,
         defaultCategories,
         defaultPresets,
+        [],
       )
 
       expect(buildPromptSpy).toHaveBeenCalledWith(
@@ -347,6 +360,7 @@ describe("TemplateGeneratorService", () => {
         defaultSettings.organizationPrompt,
         defaultCategories,
         defaultPresets,
+        [],
       )
     })
   })
