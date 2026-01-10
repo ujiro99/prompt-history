@@ -2,7 +2,7 @@
 
 Last updated September 20, 2025
 
-Yujiro Takeda has developed the Prompt History as a Freemium application. This SERVICE is provided by Yujiro Takeda at no cost and is intended for use "as is."
+Yujiro Takeda has developed the Prompt Autocraft as a Freemium application. This SERVICE is provided by Yujiro Takeda at no cost and is intended for use "as is."
 
 This Privacy Policy outlines how your information is collected, used, and disclosed when using the Service. By choosing to use the Service, you agree to the collection and use of information in accordance with this policy. The Personal Information collected is utilized solely for providing and enhancing the Service. Your information will not be shared with anyone except as described in this Privacy Policy.
 
@@ -10,18 +10,27 @@ Terms used in this Privacy Policy have the same meanings as defined in our Terms
 
 ## Information Collection and Use
 
-- **Prompt and Edit Data**: Any prompts entered by the user and related editing information are managed solely on the user's local device and are not transmitted to external servers, except when the optional Prompt Improver feature is used (see below).
+- **Prompt and Edit Data**: Any prompts entered by the user and related editing information are managed solely on the user's local device and are not transmitted to external servers, except when the optional AI-powered features (Prompt Improver, Prompt Organizer, or Variable Preset AI Generation) are explicitly used (see below).
 
-- **Prompt Improver Feature (Optional)**: This application offers an optional feature that uses the Gemini API to improve prompts. When you choose to use this feature:
+- **AI-Powered Features (Optional)**: This application offers optional features that use the Gemini API to enhance your experience. These features are only activated when you explicitly choose to use them:
+
+  **Available Features:**
+  - **Prompt Improver**: Improves the quality and clarity of your prompts
+    - Data sent: Your prompt text
+  - **Prompt Organizer**: Automatically organizes and extracts reusable templates from your prompt history
+    - Data sent: Your prompt history, user-created categories, and user-created variable presets
+  - **Variable Preset Generation**: Generates variable preset contents based on your usage patterns
+    - Data sent: Your prompt history, user-created categories, and user-created variable presets
+
+  **Common Requirements and Important Information:**
   - You must provide your own Gemini API key, which is stored locally on your device
-  - Your prompt text is sent to Google's Gemini API for processing when you explicitly use the improve function
-  - **Important**: If you use a free Gemini API key, Google may use your submitted prompts to improve their products and services, including machine learning technologies. If you use a paid Gemini API key, your prompts will not be used for product improvement.
-  - Your use of the Gemini API is subject to [Google's Gemini API Terms of Service](https://ai.google.dev/gemini-api/terms)
+  - Data is only sent to Google's Gemini API when you explicitly use these functions
   - We do not store, process, or have access to the content you send to the Gemini API. All data is transmitted directly between your device and Google's servers.
+  - Your use of the Gemini API is subject to [Google's Gemini API Terms of Service](https://ai.google.dev/gemini-api/terms)
+  - **Important**: If you use a free Gemini API key, Google may use your submitted data to improve their products and services, including machine learning technologies. If you use a paid Gemini API key, your data will not be used for product improvement.
 
 - **User Activity**: This application utilizes third-party services to track anonymous usage data, such as which options or buttons are most frequently clicked. User Activity data collected is used solely for feature improvement and bug resolution. It will never be used for any other purposes.
   The privacy policy of the third-party service provider used by this application is linked below:
-
   - [Google Analytics](https://marketingplatform.google.com/about/analytics/terms/us/)
 
 ## Security

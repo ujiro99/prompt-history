@@ -1,8 +1,8 @@
 {
-  "name": "prompt-history",
+  "name": "prompt-autocraft",
   "description": "Enable saving and recalling prompt history passed to the generative AI.",
   "private": true,
-  "version": "0.8.0",
+  "version": "0.9.0",
   "type": "module",
   "scripts": {
     "dev": "wxt",
