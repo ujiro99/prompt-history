@@ -180,12 +180,8 @@ describe("CostEstimatorService", () => {
         defaultPresets,
       )
 
-      expect(mockPromptsService.getAllPrompts).toHaveBeenCalledOnce()
-      expect(mockPromptFilterService.filterPrompts).toHaveBeenCalledWith(
-        expect.anything(),
-        defaultSettings,
-      )
-      expect(mockCategoryService.getAll).toHaveBeenCalledOnce()
+      // CostEstimatorService now receives prompts directly,
+      // so it doesn't call getAllPrompts or filterPrompts
       expect(mockTemplateGeneratorService.buildPrompt).toHaveBeenCalled()
       expect(mockGeminiClient.estimateTokens).toHaveBeenCalled()
 

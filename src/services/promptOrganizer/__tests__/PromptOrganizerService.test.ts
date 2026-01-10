@@ -185,7 +185,8 @@ describe("PromptOrganizerService", () => {
     it("should orchestrate full organization flow", async () => {
       const result = await service.executeOrganization(defaultSettings)
 
-      expect(mockPromptsService.getAllPrompts).toHaveBeenCalledOnce()
+      // getAllPrompts is called twice: once for targetPrompts, once for getRecentAIGeneratedPrompts
+      expect(mockPromptsService.getAllPrompts).toHaveBeenCalledTimes(2)
       expect(mockPromptFilterService.filterPrompts).toHaveBeenCalledOnce()
       expect(mockCategoryService.getAll).toHaveBeenCalledOnce()
       expect(
@@ -378,6 +379,8 @@ describe("PromptOrganizerService", () => {
             updatedAt: expect.any(Date),
           },
         ],
+        [], // presets
+        [], // recentAIPrompts
         {
           onProgress: undefined,
         },
@@ -390,7 +393,32 @@ describe("PromptOrganizerService", () => {
       const estimate = await service.estimateExecution(defaultSettings)
 
       expect(mockCostEstimatorService.estimateExecution).toHaveBeenCalledWith(
+        [
+          {
+            id: "1",
+            name: "Prompt 1",
+            content: "Content 1",
+            executionCount: 10,
+          },
+          {
+            id: "2",
+            name: "Prompt 2",
+            content: "Content 2",
+            executionCount: 5,
+          },
+        ],
         defaultSettings,
+        [
+          {
+            id: "test-cat",
+            name: "Test Category",
+            description: "Test desc",
+            isDefault: false,
+            createdAt: expect.any(Date),
+            updatedAt: expect.any(Date),
+          },
+        ],
+        [], // presets
       )
       expect(estimate).toMatchObject({
         targetPromptCount: 2,

@@ -77,7 +77,6 @@ export const OrganizerResultDialog: React.FC<OrganizerResultDialogProps> = ({
       },
       { 0: 0 } as Record<number, number>,
     ) ?? {}
-  console.log("Success message durations:", successMessageDuration)
 
   useEffect(() => {
     // Load default category for organizer results

@@ -89,7 +89,7 @@ export const InvalidFileSelected: Story = {
     await userEvent.upload(fileInput, file)
 
     // Assert
-    const msg = await screen.findByTestId(TestIds.import.ui.willImport)
+    const msg = await screen.findByTestId(TestIds.import.ui.errors)
     expect(msg).toBeInTheDocument()
   },
 }
