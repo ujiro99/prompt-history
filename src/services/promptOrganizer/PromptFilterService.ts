@@ -26,7 +26,10 @@ export class PromptFilterService {
     const now = new Date()
     const periodMs = settings.filterPeriodDays * 24 * 60 * 60 * 1000
 
-    // Filter by period and execution count
+    // Filter by
+    //  - 1. excludeFromOrganizer flag
+    //  - 2. period
+    //  - 3. count
     const filtered = prompts
       .filter((p) => {
         // Exclude prompts marked as excluded from organizer

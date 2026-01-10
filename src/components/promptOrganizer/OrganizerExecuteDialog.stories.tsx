@@ -88,7 +88,7 @@ const mockError: OrganizerError = {
 }
 
 const meta = {
-  title: "PromptOrganizer/OrganizerExecuteDialog",
+  title: "PromptOrganizer/1_OrganizerExecuteDialog",
   component: OrganizerExecuteDialog,
   parameters: {
     layout: "centered",

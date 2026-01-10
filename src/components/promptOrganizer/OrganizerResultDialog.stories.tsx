@@ -223,7 +223,7 @@ const mockResultManyTemplates: PromptOrganizerResult = {
 }
 
 const meta = {
-  title: "PromptOrganizer/OrganizerResultDialog",
+  title: "PromptOrganizer/2_OrganizerResultDialog",
   component: OrganizerResultDialog,
   parameters: {
     layout: "centered",
