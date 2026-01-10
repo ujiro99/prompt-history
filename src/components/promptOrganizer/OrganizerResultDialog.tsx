@@ -69,6 +69,15 @@ export const OrganizerResultDialog: React.FC<OrganizerResultDialogProps> = ({
       : ""
 
   const firstFadeinDuration = calculateFadeInDuration(firstText, 10)
+  const successMessageDuration =
+    result?.successMessage?.reduce(
+      (acc, paragraph, idx) => {
+        acc[idx + 1] = calculateFadeInDuration(paragraph, 10)
+        return acc
+      },
+      { 0: 0 } as Record<number, number>,
+    ) ?? {}
+  console.log("Success message durations:", successMessageDuration)
 
   useEffect(() => {
     // Load default category for organizer results
@@ -166,11 +175,18 @@ export const OrganizerResultDialog: React.FC<OrganizerResultDialogProps> = ({
                       <MessageCircleMore className="size-4 inline-block mr-1 -mt-1 stroke-fuchsia-400 fill-purple-100" />
                       {i18n.t("promptOrganizer.preview.explanation")}
                     </div>
-                    <blockquote className="font-serif border-l-2 px-4 py-3 bg-muted/60 tracking-wide">
-                      <FadeInText
-                        text={result.successMessage}
-                        delay={firstFadeinDuration + 600} // FadeInText animation + Prompt preview animation delay + extra 100ms.
-                      />
+                    <blockquote className="font-serif border-l-2 p-4 space-y-2 bg-muted/60 tracking-wide">
+                      {result.successMessage.map((paragraph, idx) => (
+                        <FadeInText
+                          key={idx}
+                          text={paragraph}
+                          delay={
+                            firstFadeinDuration +
+                            successMessageDuration[idx] +
+                            600
+                          } // FadeInText animation + Prompt preview animation delay + extra 100ms.
+                        />
+                      ))}
                     </blockquote>
                   </div>
                 )}

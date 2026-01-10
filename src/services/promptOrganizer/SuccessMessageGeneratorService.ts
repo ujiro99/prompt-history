@@ -50,7 +50,7 @@ export class SuccessMessageGeneratorService {
   public async generateSuccessMessage(
     template: GeneratedTemplate,
     signal?: AbortSignal,
-  ): Promise<string> {
+  ): Promise<string[]> {
     // API key initialization is handled by AiModelContext
     if (!this.geminiClient.isInitialized()) {
       throw new Error(
@@ -98,7 +98,7 @@ CRITICAL RULES:
         )
 
       // Return the generated text
-      return `${ret.how_it_was_created}\n\n${ret.user_benefit}`
+      return [ret.how_it_was_created, ret.user_benefit]
     } catch (error) {
       console.error("Error generating success message:", error)
       throw error

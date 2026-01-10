@@ -151,7 +151,7 @@ export interface PromptOrganizerResult {
   /** Output token count */
   outputTokens: number
   /** Success message for the first template*/
-  successMessage?: string
+  successMessage?: string[]
   /** Success message generated flag */
   successMessageGenerated?: boolean
 }

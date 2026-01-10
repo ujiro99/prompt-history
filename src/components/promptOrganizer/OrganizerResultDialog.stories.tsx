@@ -129,8 +129,49 @@ const mockResult: PromptOrganizerResult = {
   executedAt: new Date("2025-01-10T12:00:00Z"),
   inputTokens: 5000,
   outputTokens: 2000,
-  successMessage:
-    "Great! I've analyzed your prompts and found some useful patterns. These templates will help you save time on repetitive tasks.",
+  successMessage: [
+    "I've analyzed your prompts and found some useful patterns.",
+    "These templates will help you save time on repetitive tasks.",
+  ],
+  successMessageGenerated: true,
+}
+
+const mockResultJa: PromptOrganizerResult = {
+  templates: [
+    {
+      id: "1",
+      title: "文章の翻訳",
+      content: "以下の文章を翻訳してください。:\n{{code}}",
+      useCase: "文章を他の言語に翻訳する",
+      clusterExplanation:
+        "このテンプレートは、指定された文章を別の言語に翻訳するために使用されます。ユーザーが入力した文章を迅速かつ正確に翻訳することができます。",
+      categoryId: "documentCreation",
+      variables: [
+        {
+          name: "code",
+          type: "text",
+          defaultValue: "",
+        },
+      ],
+      aiMetadata: {
+        sourcePromptIds: ["prompt1", "prompt2", "prompt3"],
+        sourceCount: 3,
+        confirmed: false,
+        showInPinned: false,
+      },
+      userAction: "pending",
+    },
+  ],
+  sourceCount: 5,
+  sourcePromptIds: ["prompt1", "prompt2"],
+  periodDays: 30,
+  executedAt: new Date("2025-01-10T12:00:00Z"),
+  inputTokens: 5000,
+  outputTokens: 2000,
+  successMessage: [
+    "過去の「コミットメッセージ英訳」に関するプロンプト履歴を元に、よく使われていたパターンを整理して作成しました。",
+    "このプロンプトを使えば、日本語のコミットメッセージを入力するだけで、一貫した品質で素早く英語に翻訳できます。これにより、開発チーム内の国際的なコミュニケーションがスムーズになります。",
+  ],
   successMessageGenerated: true,
 }
 
@@ -160,7 +201,9 @@ const mockResultSingleTemplate: PromptOrganizerResult = {
   executedAt: new Date("2025-01-10T12:00:00Z"),
   inputTokens: 3000,
   outputTokens: 1000,
-  successMessage: "I've created one useful template from your prompt history.",
+  successMessage: [
+    "I've created one useful template from your prompt history.",
+  ],
   successMessageGenerated: true,
 }
 
@@ -172,8 +215,10 @@ const mockResultManyTemplates: PromptOrganizerResult = {
   executedAt: new Date("2025-01-10T12:00:00Z"),
   inputTokens: 15000,
   outputTokens: 6000,
-  successMessage:
-    "Excellent! I've discovered many useful patterns in your prompts. These 9 templates cover a wide range of your common tasks.",
+  successMessage: [
+    "Excellent! I've discovered many useful patterns in your prompts.",
+    "These 9 templates cover a wide range of your common tasks.",
+  ],
   successMessageGenerated: true,
 }
 
@@ -273,6 +318,17 @@ export const WithNullResult: Story = {
     open: true,
     onOpenChange: fn(),
     result: null,
+    onPreview: fn(),
+    onSaveAll: fn(),
+  },
+}
+
+// Dialog open with Japanese success message
+export const WithJapaneseTemplate: Story = {
+  args: {
+    open: true,
+    onOpenChange: fn(),
+    result: mockResultJa,
     onPreview: fn(),
     onSaveAll: fn(),
   },

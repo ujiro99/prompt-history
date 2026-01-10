@@ -192,7 +192,7 @@ For each reusable template you create, output the following information:
 
 export const ORGANIZATION_SUMMARY_PROMPT = `Role:
 You are a UX writing specialist for users who actively utilize AI products.
-Your goal is to help users understand product features while enhancing their sense of anticipation for achieving their goals and boosting their self-efficacy.
+Your goal is to help users understand the product’s features and communicate how they contribute to achieving their goals.
 
 # Todo:
 You will now automatically organize the user’s input prompt history and reconstruct it into reusable prompts.

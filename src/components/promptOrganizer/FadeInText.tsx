@@ -16,7 +16,7 @@ export const FadeInText: React.FC<FadeInTextProps> = ({
   const chars = useMemo(() => [...text], [text])
 
   return (
-    <span className={className}>
+    <div className={className}>
       {chars.map((ch, i) => (
         <span
           key={i}
@@ -28,6 +28,6 @@ export const FadeInText: React.FC<FadeInTextProps> = ({
           {ch === " " ? "\u00A0" : ch}
         </span>
       ))}
-    </span>
+    </div>
   )
 }
