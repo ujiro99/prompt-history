@@ -9,7 +9,7 @@ type FadeInTextProps = {
 
 export const FadeInText: React.FC<FadeInTextProps> = ({
   text,
-  stepMs = 20,
+  stepMs = 10,
   delay = 0,
   className,
 }) => {
@@ -20,7 +20,7 @@ export const FadeInText: React.FC<FadeInTextProps> = ({
       {chars.map((ch, i) => (
         <span
           key={i}
-          className="inline-block opacity-0 animate-fade-in-char"
+          className="inline-block opacity-0 animate-fade-in"
           style={{
             animationDelay: `${delay + i * stepMs}ms`,
           }}

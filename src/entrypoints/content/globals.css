@@ -130,9 +130,9 @@
 }
 
 @theme {
-  --animate-fade-in-char: fade-in-char 0.2s ease-out forwards;
+  --animate-fade-in: fade-in 0.2s ease-out forwards;
 
-  @keyframes fade-in-char {
+  @keyframes fade-in {
     from {
       opacity: 0;
       transform: translateY(2px);

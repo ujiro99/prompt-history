@@ -71,9 +71,8 @@ export const DEFAULT_ORGANIZATION_PROMPT = `Analyze and organize the following u
 
 You must think through the task step by step INTERNALLY,
 then summarize ONLY your final decisions and short explanations in the output.
-Do NOT output long intermediate thoughts or step-by-step reasoning as plain text.
 
-Language:
+# Language:
 - Use the same main language as the user prompts for:
   - the title,
   - the use case description,
@@ -82,11 +81,11 @@ Language:
 - Do NOT switch to another language unless the majority of the input prompts are in that language.
 
 --------------------------------------------------
-STEP 1: Internal clustering and selection
+STEP 1: Clustering and selection
 --------------------------------------------------
-1. Internally group user prompts by similarity in:
+1. Group user prompts by similarity in:
    - content, purpose, tasks, and structural patterns.
-2. Internally check frequency and reusability:
+2. Check frequency and reusability:
    - Focus on prompts that are frequently used and easily reusable.
    - Avoid one-time or highly specific prompts.
 3. Only keep clusters that:
@@ -95,33 +94,31 @@ STEP 1: Internal clustering and selection
 
 For each kept cluster, internally decide:
 - why these prompts belong together,
-- what the common “core pattern” is,
-- which prompts should be excluded if they do not really fit.
+- what the common "core pattern" is,
 
 --------------------------------------------------
-STEP 2: Internal pattern & variable analysis
+STEP 2: Pattern & variable analysis
 --------------------------------------------------
 For each kept cluster:
 
-1. Internally identify common fixed parts across prompts.
-2. Internally detect variable parts such as:
+1. Identify common fixed parts and patterns across prompts within the cluster.
+2. Detect variable parts in the cluster’s prompts, such as:
    - names, dates, numbers, targets, specific topics, etc.
-3. Internally choose:
-   - which parts become variables,
-   - appropriate variable names (e.g. customer_name, topic, deadline),
-   - whether each variable should be:
-     - short free text (single-line),
-     - long free text (multi-line),
-     - or a small set of options (select).
-4. Internally consider:
-   - which variables are truly necessary for reuse,
-   - good default values or example options, if helpful.
-
-Do NOT expose these internal deliberations directly.
-Use them only to create:
-- a clean, reusable template,
-- a short explanation of the cluster (why it exists),
-- clear variable definitions.
+3. Decide:
+   - which parts should become variables,
+   - appropriate variable names (e.g., customer_name, topic, deadline).
+4. Determine whether any user-defined preset variables can be applied:
+   - Determine whether applicable preset variables exist based on the name, purpose, and content fields in the \`Available Variable Presets\` list.
+   - Presets are particularly useful for:
+     - Frequently reused text snippets (e.g., project background, prompt constraints),
+     - User-defined dictionaries (e.g., customer types, prompt roles).
+   - Use presets only when they perfectly match the intended purpose of the variable.
+5. If no preset variables apply, determine which of the following types fits best:
+   - "text" (single-line or multi-line text),
+   - "select" (choose from several options).
+6. Internally consider:
+    - which variables are truly necessary for reuse,
+    - good default values or representative example options, if helpful.
 
 --------------------------------------------------
 STEP 3: For each resulting template, output:
@@ -148,10 +145,9 @@ For each reusable template you create, output the following information:
      - Avoid putting the entire prompt in a single long line.
 
 3. A brief use case description
-   - Write a short, scannable phrase that describes
-     “what this template does” and “for what kind of input”.
-   - Avoid full-sentence explanations like
-     “Use this when you want to …”.
+   - Write a short, scannable phrase that describes "what this template does" and "for what kind of input".
+   - Keep it within 80 characters if possible.
+   - Avoid full-sentence explanations like "Use this when you want to …".
    - Prefer concise action-style descriptions, for example:
      - Retrieve standardized names, taxonomy information, and trade names in a table for a list of plant names.
      - Generate a safe, situation-appropriate apology email to a client.
@@ -162,17 +158,17 @@ For each reusable template you create, output the following information:
      - short enough to read at a glance.
 
 4. A category ID
-   - Choose ONE category ID from the “Available Categories” list provided in the input.
+   - Choose ONE category ID from the "Available Categories" list provided in the input.
    - Do NOT invent new categories or free-form labels.
    - Select the ID that best matches the main usage of this template.
 
-5. A short cluster explanation (for this template)
-   - A brief explanation of:
-     - why these prompts were grouped together,
-     - what the common pattern is,
-     - how this template should be interpreted or used.
-   - Think of it as a comment for teammates.
-   - Keep it short (a few sentences or less).
+5. A brief cluster explanation (for this template)
+   - Provide a short explanation of:
+     - Why these prompts were grouped together
+     - How this template should be used
+     - The user benefits
+   - Write it as if it were a comment for team members.
+   - Keep it concise — within a few sentences.
 
 6. A list of variables used in {{variable_name}}
    - For each variable:
@@ -180,55 +176,44 @@ For each reusable template you create, output the following information:
        - the variable name,
        - a short description of what the user should input,
        - the expected input style:
-         - “short text” (single-line),
-         - “long text” (multi-line),
-         - or “select” (choose from a few options),
+         - "text" (single-line or multi-line),
+         - "select" (choose from a few options),
+         - "preset" (use a predefined variable preset by ID),
        - optional:
          - a default value or example,
-         - select options if the type is “select”.
+         - select options if the type is "select",
+         - preset ID if the type is "preset".
    - Every {{variable_name}} in the template content should have a corresponding variable definition.
 
-Remember:
+# Remember:
 - Think step by step INTERNALLY.
-- Output only the final templates, their short explanations, and variable definitions.
 - Prefer fewer, high-quality templates over many noisy ones.
 `
 
-export const ORGANIZATION_SUMMARY_PROMPT = `You are a UX writing specialist for products designed for users who work with LLMs in their daily workflows.
-Based on the prompt information I will provide, create a short 1–2 sentence success message that instantly helps the user imagine how this prompt will make their work easier.
+export const ORGANIZATION_SUMMARY_PROMPT = `Role:
+You are a UX writing specialist for users who actively utilize AI products.
+Your goal is to help users understand product features while enhancing their sense of anticipation for achieving their goals and boosting their self-efficacy.
 
-Context:
-  This message will be shown as a "result highlight" after the auto-organization feature runs.
-  The goal is not to convey "things were somehow organized," but to make the user feel: "It understands how I work, and this will genuinely make my tasks easier."
-  Ensure the message includes a clear "situation + purpose" so users can easily picture their real usage scenario.
+# Todo:
+You will now automatically organize the user’s input prompt history and reconstruct it into reusable prompts.
+For one of those reconstructed prompts, create a message that allows the user to instantly visualize its benefits.
+The message should include:
+- How it was created: Which parts of the prompt history were referenced (to evoke the user’s own experience).
+- Benefit: How this prompt helps the user achieve their goals (to build positive anticipation for using it).
 
-Input format:
-You will receive a JSON object containing:
-  - title: The prompt name (e.g., "Apology email to a client")
-  - content: The prompt text with variables (e.g., {client_name}, {project_name})
-  - useCase: A one-sentence "situation + purpose" statement (e.g., "Sending an apology email to a client")
-  - clusterExplanation: A brief explanation of how the AI performed the automatic organization
-  - categoryId: Category ID (e.g., "external_communication")
-  - sourcePromptIds: Array of IDs for prompts this one was generated from (you may use the count to suggest how frequently similar prompts were used)
-  - variables: Array of extracted variables (e.g., [{ name: "client_name" }, { name: "due_date" }])
+# Input format:
+A JSON object containing the following fields will be provided as input:
+- title: The name of the prompt (e.g., "Apology email to a client”)
+- content: The prompt text with variables (e.g., {client_name}, {project_name})
+- useCase: A one-sentence statement describing "situation + purpose” (e.g., "When sending an apology email to a client”)
+- clusterExplanation: A brief explanation of how the AI performed the automatic organization
+- category: The category (e.g., "external communication”)
+- sourcePromptCount: The number of original prompts from which this one was generated
+- variables: An array of extracted variables (e.g., [{ name: "client_name" }, { name: "due_date" }])
 
-Output requirements:
-  - Plain text only—no JSON, no bullet points.
-  - Keep it within 1–2 sentences.
-  - If a sentence becomes too long, split it into two.
+# Example messages (for tone only — do not reuse):
+- "We consolidated the prompts you used for past {useCase} tasks into one. Just fill in the required fields to recreate the same quality output instantly.”
+- "We organized the patterns you repeatedly used for {useCase} and turned them into a ready-to-use, versatile prompt.”
 
-Information to naturally include in the message:
-  - When this prompt is useful (based on useCase)
-  - How it makes the user’s task easier (e.g., avoids writing from scratch, removes structural guesswork, prevents omissions)
-  - If appropriate, nuance that it was "found from past N uses" (based on sourcePromptIds.length)
-  - If variables exist, mention that "you only need to fill in the necessary details to accomplish X" (optional if no variables)
-
-Examples (tone only—do not reuse):
-  - "We consolidated the prompts you used for past {useCase} tasks into one, so you can produce the same quality output just by filling in the required fields."
-  - "We organized the patterns you repeatedly used for {useCase}, and turned them into a ready-to-use universal prompt."
-
-Below, you will receive a single JSON object.
-Based on its contents, generate one success message that satisfies all requirements above.
-
-[INPUT]
+# Input JSON:
 `

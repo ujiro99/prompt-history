@@ -6,6 +6,29 @@
 import { GeminiClient } from "@/services/genai/GeminiClient"
 import type { GeneratedTemplate } from "@/types/promptOrganizer"
 import { ORGANIZATION_SUMMARY_PROMPT } from "@/services/genai/defaultPrompts"
+import { categoryService } from "./CategoryService"
+
+const MSG_SCHEMA = {
+  type: "object",
+  properties: {
+    how_it_was_created: {
+      type: "string",
+      description: "Explanation of how the template was created",
+      maxLength: 200,
+    },
+    user_benefit: {
+      type: "string",
+      description: "Explanation of the benefits of using the template",
+      maxLength: 200,
+    },
+  },
+  required: ["how_it_was_created", "user_benefit"],
+} as const
+
+export interface MessageGenerationResponse {
+  how_it_was_created: string
+  user_benefit: string
+}
 
 /**
  * Service for generating success messages from templates
@@ -35,8 +58,19 @@ export class SuccessMessageGeneratorService {
       )
     }
 
+    const categories = await categoryService.getAll()
+
     // Build prompt with template data
-    const templateJson = JSON.stringify(template, null, 2)
+    const inputData = {
+      title: template.title,
+      content: template.content,
+      useCase: template.useCase,
+      clusterExplanation: template.clusterExplanation,
+      category: categories.find((c) => c.id === template.categoryId)?.name,
+      sourcePromptCount: template.sourcePromptIds.length,
+      variables: template.variables,
+    }
+    const templateJson = JSON.stringify(inputData, null, 2)
     const prompt = `${ORGANIZATION_SUMMARY_PROMPT}\n${templateJson}`
 
     const systemInstruction = `You are a UX writing expert.
@@ -47,27 +81,24 @@ CRITICAL RULES:
 
     try {
       // Generate success message using Gemini stream
-      let accumulatedText = ""
-      const stream = this.geminiClient.generateContentStream(prompt, {
-        model: "gemini-2.5-flash-lite",
-        systemInstruction,
-        generateContentConfig: {
-          thinkingConfig: {
-            includeThoughts: false,
+      const ret =
+        await this.geminiClient.generateStructuredContentStream<MessageGenerationResponse>(
+          prompt,
+          MSG_SCHEMA,
+          {
+            model: "gemini-2.5-flash-lite",
+            systemInstruction,
+            generateContentConfig: {
+              thinkingConfig: {
+                includeThoughts: false,
+              },
+            },
           },
-        },
-      })
-
-      for await (const chunk of stream) {
-        // Check for cancellation
-        if (signal?.aborted) {
-          throw new Error("Generation cancelled")
-        }
-        accumulatedText += chunk.text
-      }
+          { signal },
+        )
 
       // Return the generated text
-      return accumulatedText.trim()
+      return `${ret.how_it_was_created}\n\n${ret.user_benefit}`
     } catch (error) {
       console.error("Error generating success message:", error)
       throw error

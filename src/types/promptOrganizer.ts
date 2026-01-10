@@ -2,7 +2,7 @@
  * Prompt Organizer types
  */
 
-import type { VariableConfig } from "./prompt"
+import type { VariableConfig, PresetVariableType } from "./prompt"
 
 /**
  * Category
@@ -20,6 +20,20 @@ export interface Category {
   createdAt: Date
   /** Updated at */
   updatedAt: Date
+}
+
+/**
+ * Lightweight preset metadata for organization
+ */
+export interface PresetMetadata {
+  /** Preset ID */
+  id: string
+  /** Preset name */
+  name: string
+  /** Preset type */
+  type: PresetVariableType
+  /** Usage description (optional) */
+  description?: string
 }
 
 /**

@@ -24,7 +24,6 @@ export class CostEstimatorService {
     this.geminiClient = GeminiClient.getInstance()
   }
 
-
   /**
    * Estimate execution cost before execution
    *
@@ -56,6 +55,7 @@ export class CostEstimatorService {
       targetPrompts,
       settings.organizationPrompt,
       await categoryService.getAll(),
+      [], // Empty presets array for cost estimation
     )
 
     // 4. Estimate token count

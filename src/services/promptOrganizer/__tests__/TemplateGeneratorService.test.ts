@@ -6,6 +6,7 @@ import type {
   Category,
   OrganizePromptsResponse,
 } from "@/types/promptOrganizer"
+import type { VariablePreset } from "@/types/prompt"
 
 // Mock services with vi.hoisted
 const { mockGeminiClient, mockGenaiApiKeyStorage, mockSystemInstruction } =
@@ -113,12 +114,15 @@ describe("TemplateGeneratorService", () => {
     { id: "id2", name: "Prompt 2", content: "Content 2", executionCount: 5 },
   ]
 
+  const defaultPresets: VariablePreset[] = []
+
   describe("buildPrompt", () => {
     it("should format categories correctly", () => {
       const prompt = service.buildPrompt(
         defaultPrompts,
         "Test prompt",
         defaultCategories,
+        defaultPresets,
       )
 
       expect(prompt).toContain("Available Categories:")
@@ -131,6 +135,7 @@ describe("TemplateGeneratorService", () => {
         defaultPrompts,
         "Test prompt",
         defaultCategories,
+        defaultPresets,
       )
 
       expect(prompt).toContain("Prompts to analyze:")
@@ -150,6 +155,7 @@ describe("TemplateGeneratorService", () => {
         defaultPrompts,
         organizationPrompt,
         defaultCategories,
+        defaultPresets,
       )
 
       expect(prompt).toContain(organizationPrompt)
@@ -160,6 +166,7 @@ describe("TemplateGeneratorService", () => {
         defaultPrompts,
         "Test prompt",
         defaultCategories,
+        defaultPresets,
       )
 
       expect(prompt).toContain(
@@ -168,7 +175,12 @@ describe("TemplateGeneratorService", () => {
     })
 
     it("should handle empty prompts array", () => {
-      const prompt = service.buildPrompt([], "Test prompt", defaultCategories)
+      const prompt = service.buildPrompt(
+        [],
+        "Test prompt",
+        defaultCategories,
+        defaultPresets,
+      )
 
       expect(prompt).toContain("Available Categories:")
       expect(prompt).toContain("Prompts to analyze:")
@@ -176,7 +188,12 @@ describe("TemplateGeneratorService", () => {
     })
 
     it("should handle empty categories array", () => {
-      const prompt = service.buildPrompt(defaultPrompts, "Test prompt", [])
+      const prompt = service.buildPrompt(
+        defaultPrompts,
+        "Test prompt",
+        [],
+        defaultPresets,
+      )
 
       expect(prompt).toContain("Available Categories:")
       expect(prompt).toContain("Prompts to analyze:")
@@ -192,6 +209,7 @@ describe("TemplateGeneratorService", () => {
         prompts,
         "Test prompt",
         defaultCategories,
+        defaultPresets,
       )
 
       expect(prompt).toContain("1. Single")
@@ -205,6 +223,7 @@ describe("TemplateGeneratorService", () => {
         defaultPrompts,
         defaultSettings,
         defaultCategories,
+        defaultPresets,
       )
 
       expect(
@@ -229,6 +248,7 @@ describe("TemplateGeneratorService", () => {
         defaultPrompts,
         defaultSettings,
         defaultCategories,
+        defaultPresets,
       )
 
       expect(result).toHaveProperty("templates")
@@ -254,6 +274,7 @@ describe("TemplateGeneratorService", () => {
           defaultPrompts,
           defaultSettings,
           defaultCategories,
+          defaultPresets,
         ),
       ).rejects.toThrow(
         "API key not configured. Please set your API key in settings.",
@@ -267,6 +288,7 @@ describe("TemplateGeneratorService", () => {
         defaultPrompts,
         defaultSettings,
         defaultCategories,
+        defaultPresets,
       )
 
       // Should not attempt to initialize - that's handled by AiModelContext
@@ -302,6 +324,7 @@ describe("TemplateGeneratorService", () => {
         defaultPrompts,
         defaultSettings,
         defaultCategories,
+        defaultPresets,
       )
 
       expect(result.templates).toHaveLength(2)
@@ -316,12 +339,14 @@ describe("TemplateGeneratorService", () => {
         defaultPrompts,
         defaultSettings,
         defaultCategories,
+        defaultPresets,
       )
 
       expect(buildPromptSpy).toHaveBeenCalledWith(
         defaultPrompts,
         defaultSettings.organizationPrompt,
         defaultCategories,
+        defaultPresets,
       )
     })
   })

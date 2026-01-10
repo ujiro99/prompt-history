@@ -19,6 +19,7 @@ import { DEFAULT_CATEGORIES } from "./defaultCategories"
 import { costEstimatorService } from "./CostEstimatorService"
 import { templateSaveService } from "./TemplateSaveService"
 import { promptsService } from "@/services/storage/prompts"
+import { getVariablePresets } from "@/services/storage/variablePreset"
 
 /**
  * Main service for prompt organization
@@ -57,17 +58,21 @@ export class PromptOrganizerService {
 
     const categories = await categoryService.getAll()
 
-    // 2. Generate templates using Gemini with progress callback
+    // 2. Get variable presets
+    const presets = await getVariablePresets()
+
+    // 3. Generate templates using Gemini with progress callback
     const { templates, usage } = await this.generatorService.generateTemplates(
       targetPrompts,
       settings,
       categories,
+      presets,
       {
         onProgress: options?.onProgress,
       },
     )
 
-    // 3. Convert to template candidates using TemplateConverter
+    // 4. Convert to template candidates using TemplateConverter
     const now = new Date()
     const templateCandidates: TemplateCandidate[] = await Promise.all(
       templates.map(async (template) => {
@@ -89,7 +94,7 @@ export class PromptOrganizerService {
       }),
     )
 
-    // 4. Return result
+    // 5. Return result
     return {
       templates: templateCandidates,
       sourceCount: targetPrompts.length,
