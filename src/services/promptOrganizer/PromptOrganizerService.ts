@@ -20,6 +20,7 @@ import { costEstimatorService } from "./CostEstimatorService"
 import { templateSaveService } from "./TemplateSaveService"
 import { promptsService } from "@/services/storage/prompts"
 import { getVariablePresets } from "@/services/storage/variablePreset"
+import { truncate } from "@/utils/string"
 
 /**
  * Main service for prompt organization
@@ -45,8 +46,13 @@ export class PromptOrganizerService {
       onProgress?: (progress: GenerationProgress) => void
     },
   ): Promise<PromptOrganizerResult> {
-    // 1. Get filtered prompts
-    const targetPrompts = await this.targetPrompts(settings)
+    // 1. Get inputs in parallel
+    const [targetPrompts, categories, presets] = await Promise.all([
+      this.targetPrompts(settings),
+      categoryService.getAll(),
+      getVariablePresets(),
+    ])
+
     console.log(
       `${targetPrompts.length} prompts selected for organization`,
       targetPrompts,
@@ -56,12 +62,7 @@ export class PromptOrganizerService {
       throw new Error("No prompts match the filter criteria")
     }
 
-    const categories = await categoryService.getAll()
-
-    // 2. Get variable presets
-    const presets = await getVariablePresets()
-
-    // 3. Generate templates using Gemini with progress callback
+    // 2. Generate templates using Gemini with progress callback
     const { templates, usage } = await this.generatorService.generateTemplates(
       targetPrompts,
       settings,
@@ -72,7 +73,7 @@ export class PromptOrganizerService {
       },
     )
 
-    // 4. Convert to template candidates using TemplateConverter
+    // 3. Convert to template candidates using TemplateConverter
     const now = new Date()
     const templateCandidates: TemplateCandidate[] = await Promise.all(
       templates.map(async (template) => {
@@ -94,7 +95,7 @@ export class PromptOrganizerService {
       }),
     )
 
-    // 5. Return result
+    // 6. Return result
     return {
       templates: templateCandidates,
       sourceCount: targetPrompts.length,
@@ -126,7 +127,13 @@ export class PromptOrganizerService {
       const allPrompts = await promptsService.getAllPrompts()
 
       // 2. Filter target prompts
-      return this.filterService.filterPrompts(allPrompts, settings)
+      const filtered = this.filterService.filterPrompts(allPrompts, settings)
+
+      // 3. Truncate content
+      return filtered.map((p) => ({
+        ...p,
+        content: truncate(p.content),
+      }))
     })()
   }
 
@@ -138,7 +145,20 @@ export class PromptOrganizerService {
   public async estimateExecution(
     settings: PromptOrganizerSettings,
   ): Promise<OrganizerExecutionEstimate> {
-    return costEstimatorService.estimateExecution(settings)
+    // Get inputs in parallel
+    const [targetPrompts, categories, presets] = await Promise.all([
+      this.targetPrompts(settings),
+      categoryService.getAll(),
+      getVariablePresets(),
+    ])
+
+    // Estimate
+    return costEstimatorService.estimateExecution(
+      targetPrompts,
+      settings,
+      categories,
+      presets,
+    )
   }
 
   /**
