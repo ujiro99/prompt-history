@@ -67,145 +67,90 @@ CRITICAL RULES:
  * This prompt defines HOW the AI should analyze and organize prompts into reusable templates.
  * This CAN be customized by users via Prompt Organizer settings.
  */
-export const DEFAULT_ORGANIZATION_PROMPT = `Analyze and organize the following user prompts using these guidelines.
-You must think through the task step by step INTERNALLY, then summarize ONLY your final decisions and short explanations in the output.
+export const DEFAULT_ORGANIZATION_PROMPT = `You are a prompt analysis and template generation system.
 
-# Language:
-- Use the same main language as the user prompts for:
-  - the title,
-  - the use case description,
-  - the template content,
-  - the cluster explanation.
-- Do NOT switch to another language unless the majority of the input prompts are in that language.
+Analyze the provided user prompt history and convert it into reusable prompt templates.
 
 --------------------------------------------------
-STEP 1: Clustering and selection
+GLOBAL RULES
 --------------------------------------------------
-1. Group user prompts by similarity in:
-   - content, purpose, tasks, and structural patterns.
-2. Check frequency and reusability:
-   - Focus on prompts that are frequently used and easily reusable.
-   - Avoid one-time or highly specific prompts.
-3. Only keep clusters that:
-   - contain two or more prompts, and
-   - can reasonably share one reusable template.
-
-For each kept cluster, internally decide:
-- why these prompts belong together,
-- what the common "core pattern" is,
+- Think step by step internally, but output ONLY final decisions and brief explanations.
+- Use the same main language as the majority of input prompts.
+- Focus only on reusable, frequently applicable prompt patterns.
+- Discard one-off, highly specific, or low-reuse prompts.
+- Do not output internal reasoning steps.
 
 --------------------------------------------------
-STEP 2: Duplicate Checking (CRITICAL)
+STEP 1: Clustering & Eligibility
 --------------------------------------------------
-For each cluster you kept in STEP 1, check against "Recently Created AI-Generated Prompts":
-
-1. For each cluster:
-   - Compare the cluster's PURPOSE and USE CASE with existing AI-generated prompts
-   - Use semantic similarity, not just keyword matching
-   - Consider: Do they solve the same problem? Would they be used in the same situations?
-
-2. If a similar existing prompt is found:
-   - Evaluate: Would the template from this cluster be a CLEAR IMPROVEMENT?
-   - Improvements include:
-     - Better structure or clarity
-     - More comprehensive variable coverage
-     - Significantly better prompt engineering
-     - Covers additional important use cases
-   - If NOT clearly better: DISCARD this cluster
-   - If clearly better: Keep the cluster and proceed
-
-3. Only keep clusters that will produce templates that are:
-   - Genuinely NEW (no semantic duplicate exists), OR
-   - Clear IMPROVEMENTS over existing prompts
+1. Group prompts by semantic similarity:
+   - purpose
+   - task
+   - output structure
+2. Keep a cluster ONLY if:
+   - it contains 2 or more prompts, AND
+   - a single reusable template can reasonably cover them.
 
 --------------------------------------------------
-STEP 3: Pattern & variable analysis
+STEP 2: Novelty & Improvement Check (CRITICAL)
+--------------------------------------------------
+For each eligible cluster:
+1. Compare its PURPOSE and USE CASE with existing AI-generated prompts
+   (semantic comparison, not keyword matching).
+2. Discard the cluster UNLESS it is:
+   - genuinely new, OR
+   - a clear improvement in structure, coverage, or prompt quality.
+
+--------------------------------------------------
+STEP 3: Pattern & Variable Design
 --------------------------------------------------
 For each kept cluster:
-
-1. Identify common fixed parts and patterns across prompts within the cluster.
-2. Detect variable parts in the cluster’s prompts, such as:
-   - names, dates, numbers, targets, specific topics, etc.
-3. Decide:
-   - which parts should become variables,
-   - appropriate variable names (e.g., customer_name, topic, deadline).
-4. Determine whether any user-defined preset variables can be applied:
-   - Determine whether applicable preset variables exist based on the name, purpose, and content fields in the \`Available Variable Presets\` list.
-   - Presets are particularly useful for:
-     - Frequently reused text snippets (e.g., project background, prompt constraints),
-     - User-defined dictionaries (e.g., customer types, prompt roles).
-   - Use presets only when they perfectly match the intended purpose of the variable.
-5. If no preset variables apply, determine which of the following types fits best:
-   - "text" (single-line or multi-line text),
-   - "select" (choose from several options).
-6. Internally consider:
-    - which variables are truly necessary for reuse,
-    - good default values or representative example options, if helpful.
+1. Identify fixed vs variable parts.
+2. Convert reusable differences into {{variables}}.
+3. Prefer variable presets when they exactly match the intent.
+   - Variable presets are listed under \`Available Variable Presets\`."
+   - When using a variable preset, set type to preset and output presetOptions.presetId.
+4. Otherwise assign one type:
+   - text
+   - select
+5. Include only variables necessary for reuse.
+6. Optionally define defaults or example values.
 
 --------------------------------------------------
-STEP 4: For each resulting template, output:
+STEP 4: Output (per template)
 --------------------------------------------------
-For each reusable template you create, output the following information:
+For each reusable template, output the following:
 
-1. A short title
-   - Clearly expresses what this template is for.
-   - Prefer concise, recognisable names (up to 40 characters if possible).
+1. Title
+   - Clear purpose, concise (≤40 characters preferred)
 
-2. The template content
-   - A single reusable prompt that represents the cluster.
-   - Common parts remain as fixed text.
-   - Variable parts are replaced with {{variable_name}}.
+2. Template Content
+   - One reusable prompt
+   - Use {{variable_name}} for variables
+   - Structured, readable, multi-line
+   - Use section headers, bullet points, or numbered lists
 
-   - IMPORTANT: Make the content easy to read.
-     - Break the prompt into multiple lines.
-     - Insert blank lines between major sections.
-     - Use headings for sections such as:
-       - problem description
-       - input points
-       - output format or constraints
-     - Use bullet points or numbered lists for multiple conditions or items.
-     - Avoid putting the entire prompt in a single long line.
+3. Use Case Description
+   - ≤80 characters
+   - Action- and output-focused
+   - Scannable list-style phrasing
 
-3. A brief use case description
-   - Write a short, scannable phrase that describes "what this template does" and "for what kind of input".
-   - Keep it within 80 characters if possible.
-   - Avoid full-sentence explanations like "Use this when you want to …".
-   - Prefer concise action-style descriptions, for example:
-     - Retrieve standardized names, taxonomy information, and trade names in a table for a list of plant names.
-     - Generate a safe, situation-appropriate apology email to a client.
-     - Extract only TODOs, owners, and deadlines from meeting minutes.
-   - The description should be:
-     - focused on the action and output,
-     - easy to scan in a list view,
-     - short enough to read at a glance.
+4. Category ID
+   - Select ONE from Available Categories
+   - Do not invent new categories
 
-4. A category ID
-   - Choose ONE category ID from the "Available Categories" list provided in the input.
-   - Do NOT invent new categories or free-form labels.
-   - Select the ID that best matches the main usage of this template.
+5. Cluster Explanation
+   - Why grouped
+   - How to use
+   - User benefit
+   - Short internal-facing explanation
 
-5. A brief cluster explanation (for this template)
-   - Provide a short explanation of:
-     - Why these prompts were grouped together
-     - How this template should be used
-     - The user benefits
-   - Write it as if it were a comment for team members.
-   - Keep it concise — within a few sentences.
-
-6. A list of variables used in {{variable_name}}
-   - For each variable:
-     - Provide:
-       - the variable name,
-       - a short description of what the user should input,
-       - the expected input style:
-         - "text" (single-line or multi-line),
-         - "select" (choose from a few options),
-         - "preset" (use a predefined variable preset by ID),
-       - optional:
-         - a default value or example,
-         - select options if the type is "select",
-         - preset ID if the type is "preset".
-   - Every {{variable_name}} in the template content should have a corresponding variable definition.
+6. Variables
+   - For each {{variable_name}}:
+     - name
+     - description
+     - type: preset | text | select
+     - optional: default value, select options, preset ID
 `
 
 export const ORGANIZATION_SUMMARY_PROMPT = `Role:
@@ -216,8 +161,8 @@ Your goal is to help users understand the product’s features and communicate h
 You will now automatically organize the user’s input prompt history and reconstruct it into reusable prompts.
 For one of those reconstructed prompts, create a message that allows the user to instantly visualize its benefits.
 The message should include:
-- How it was created: Which parts of the prompt history were referenced (to evoke the user’s own experience).
-- Benefit: How this prompt helps the user achieve their goals (to build positive anticipation for using it).
+- How it was created: Which parts of the prompt history were referenced (to evoke the user’s own experience). (≤160 characters preferred)
+- Benefit: How this prompt helps the user achieve their goals (to build positive anticipation for using it). (≤160 characters preferred)
 
 # Input format:
 A JSON object containing the following fields will be provided as input:

@@ -14,12 +14,12 @@ const MSG_SCHEMA = {
     how_it_was_created: {
       type: "string",
       description: "Explanation of how the template was created",
-      maxLength: 200,
+      maxLength: 160,
     },
     user_benefit: {
       type: "string",
       description: "Explanation of the benefits of using the template",
-      maxLength: 200,
+      maxLength: 160,
     },
   },
   required: ["how_it_was_created", "user_benefit"],

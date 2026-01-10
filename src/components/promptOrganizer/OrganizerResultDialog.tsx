@@ -92,7 +92,7 @@ export const OrganizerResultDialog: React.FC<OrganizerResultDialogProps> = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="w-xl sm:max-w-2xl p-8"
+        className="w-2xl sm:max-w-4xl p-8"
         container={container}
         {...stopPropagation()}
       >
@@ -113,11 +113,11 @@ export const OrganizerResultDialog: React.FC<OrganizerResultDialogProps> = ({
                   <Sparkles className="size-5 inline-block mr-1.5 -mt-1 text-amber-400 fill-amber-200" />
                   {i18n.t("promptOrganizer.summary.organizationPerformed")}
                 </label>
-                <p className="font-serif text-lg tracking-wide">
+                <div className="font-serif text-lg tracking-wide">
                   {result && result.successMessageGenerated && (
                     <FadeInText text={firstText} />
                   )}
-                </p>
+                </div>
               </div>
               <div className="space-y-4">
                 <label className="inline-block font-semibold text-base">
@@ -127,7 +127,7 @@ export const OrganizerResultDialog: React.FC<OrganizerResultDialogProps> = ({
                 {exampleTemplate && (
                   /* Preview the first prompt */
                   <div
-                    className="border-y px-3 py-4 space-y-2 opacity-0 animate-fade-in"
+                    className="border-y p-4 space-y-2 opacity-0 animate-fade-in"
                     style={{
                       animationDelay: `${firstFadeinDuration}ms`,
                       animationDuration: "500ms",
