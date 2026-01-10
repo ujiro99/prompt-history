@@ -5,14 +5,13 @@
 
 import type {
   OrganizerExecutionEstimate,
+  PromptForOrganization,
   PromptOrganizerSettings,
 } from "@/types/promptOrganizer"
 import { GeminiClient } from "@/services/genai/GeminiClient"
 import { GEMINI_CONTEXT_LIMIT } from "@/services/genai/constants"
-import { promptFilterService } from "./PromptFilterService"
 import { TemplateGeneratorService } from "./TemplateGeneratorService"
-import { categoryService } from "./CategoryService"
-import { promptsService } from "@/services/storage/prompts"
+import type { VariablePreset } from "@/types/prompt"
 
 /**
  * Cost Estimator Service
@@ -24,7 +23,6 @@ export class CostEstimatorService {
     this.geminiClient = GeminiClient.getInstance()
   }
 
-
   /**
    * Estimate execution cost before execution
    *
@@ -32,7 +30,10 @@ export class CostEstimatorService {
    * @returns Execution estimate
    */
   async estimateExecution(
+    prompts: PromptForOrganization[],
     settings: PromptOrganizerSettings,
+    categories: Array<{ id: string; name: string }>,
+    presets: VariablePreset[],
   ): Promise<OrganizerExecutionEstimate> {
     // API key initialization is handled by AiModelContext
     if (!this.geminiClient.isInitialized()) {
@@ -41,30 +42,23 @@ export class CostEstimatorService {
       )
     }
 
-    // 1. Get all prompts
-    const allPrompts = await promptsService.getAllPrompts()
-
-    // 2. Filter target prompts
-    const targetPrompts = promptFilterService.filterPrompts(
-      allPrompts,
-      settings,
-    )
-
-    // 3. Build prompt text
+    // 1. Build prompt text
     const generator = new TemplateGeneratorService()
     const promptText = generator.buildPrompt(
-      targetPrompts,
+      prompts,
       settings.organizationPrompt,
-      await categoryService.getAll(),
+      categories,
+      presets,
+      [], // Empty array for cost estimation (no need for AI prompts in estimation)
     )
 
-    // 4. Estimate token count
+    // 2. Estimate token count
     const inputTokens = await this.geminiClient.estimateTokens(promptText)
     console.log("Estimated input tokens:", inputTokens)
 
-    // 5. Calculate context usage
+    // 3. Calculate context usage
     return {
-      targetPromptCount: targetPrompts.length,
+      targetPromptCount: prompts.length,
       estimatedInputTokens: inputTokens,
       estimatedOutputTokens: inputTokens * 1.5, // including thoughts tokens
       contextUsageRate: inputTokens / GEMINI_CONTEXT_LIMIT,

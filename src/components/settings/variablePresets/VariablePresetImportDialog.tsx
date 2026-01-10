@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { useContainer } from "@/hooks/useContainer"
 import type { VariablePreset } from "@/types/prompt"
-import { importVariablePresets } from "@/services/storage/variablePresetStorage"
+import { importVariablePresets } from "@/services/storage/variablePreset"
 import { i18n } from "#imports"
 
 /**

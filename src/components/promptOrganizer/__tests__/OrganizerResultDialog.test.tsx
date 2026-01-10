@@ -185,7 +185,7 @@ describe("OrganizerResultDialog", () => {
       executedAt: new Date(),
       inputTokens: 1000,
       outputTokens: 500,
-      successMessage: "Great templates created!",
+      successMessage: ["Great templates created!"],
       successMessageGenerated,
     })
 
@@ -435,7 +435,7 @@ describe("OrganizerResultDialog", () => {
         executedAt: new Date(),
         inputTokens: 1000,
         outputTokens: 500,
-        successMessage: "Great templates created!",
+        successMessage: ["Great templates created!"],
         successMessageGenerated: true,
       }
 
@@ -484,7 +484,7 @@ describe("OrganizerResultDialog", () => {
         executedAt: new Date(),
         inputTokens: 100,
         outputTokens: 50,
-        successMessage: "",
+        successMessage: [],
         successMessageGenerated: true,
       }
 
@@ -527,7 +527,7 @@ describe("OrganizerResultDialog", () => {
         executedAt: new Date(),
         inputTokens: 1000,
         outputTokens: 500,
-        successMessage: "Great templates created!",
+        successMessage: ["Great templates created!"],
         successMessageGenerated: true,
       }
 

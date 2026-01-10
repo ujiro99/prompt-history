@@ -3,8 +3,15 @@
  * Displays organization results summary with statistics
  */
 
+import { useState, useEffect } from "react"
 import { i18n } from "#imports"
-import { NotebookPen, Save, Sparkles, BookOpenText } from "lucide-react"
+import {
+  NotebookPen,
+  Save,
+  Sparkles,
+  BookOpenText,
+  MessageCircleMore,
+} from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -18,6 +25,7 @@ import { FadeInText } from "@/components/promptOrganizer/FadeInText"
 import { useContainer } from "@/hooks/useContainer"
 import { stopPropagation } from "@/utils/dom"
 import { cn } from "@/lib/utils"
+import { categoryService } from "@/services/promptOrganizer/CategoryService"
 import type { PromptOrganizerResult } from "@/types/promptOrganizer"
 
 interface OrganizerResultDialogProps {
@@ -34,7 +42,7 @@ interface OrganizerResultDialogProps {
  * @param stepMs - Delay between each character in milliseconds
  * @returns Total animation duration in milliseconds
  */
-const calculateFadeInDuration = (text: string, stepMs: number = 20): number => {
+const calculateFadeInDuration = (text: string, stepMs: number): number => {
   return text.length * stepMs + 200 // 200ms is the animation duration from CSS
 }
 
@@ -46,8 +54,10 @@ export const OrganizerResultDialog: React.FC<OrganizerResultDialogProps> = ({
   onSaveAll,
 }) => {
   const { container } = useContainer()
+  const [category, setCategory] = useState<string>("")
 
   const templateCount = result?.templates?.length ?? 0
+  const exampleTemplate = result?.templates?.[0]
 
   // Calculate the delay for the preview of prompt and second FadeInText based on the first text's duration
   const firstText =
@@ -58,12 +68,30 @@ export const OrganizerResultDialog: React.FC<OrganizerResultDialogProps> = ({
         ])
       : ""
 
-  const firstFadeinDuration = calculateFadeInDuration(firstText)
+  const firstFadeinDuration = calculateFadeInDuration(firstText, 10)
+  const successMessageDuration =
+    result?.successMessage?.reduce(
+      (acc, paragraph, idx) => {
+        acc[idx + 1] = calculateFadeInDuration(paragraph, 10)
+        return acc
+      },
+      { 0: 0 } as Record<number, number>,
+    ) ?? {}
+
+  useEffect(() => {
+    // Load default category for organizer results
+    categoryService.getAll().then((categories) => {
+      if (categories && exampleTemplate) {
+        const cat = categories.find((c) => exampleTemplate.categoryId === c.id)
+        setCategory(cat ? cat.name : "")
+      }
+    })
+  }, [exampleTemplate])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="w-xl sm:max-w-2xl p-8"
+        className="w-2xl sm:max-w-4xl p-8"
         container={container}
         {...stopPropagation()}
       >
@@ -80,49 +108,87 @@ export const OrganizerResultDialog: React.FC<OrganizerResultDialogProps> = ({
           ) : (
             <>
               <div className="space-y-2">
-                <label className="inline-block font-semibold text-base text-foreground/60">
-                  <Sparkles className="size-5 inline-block mr-1.5 -mt-1" />
+                <label className="inline-block font-semibold text-base">
+                  <Sparkles className="size-5 inline-block mr-1.5 -mt-1 text-amber-400 fill-amber-200" />
                   {i18n.t("promptOrganizer.summary.organizationPerformed")}
                 </label>
-                <p className="font-serif text-lg tracking-wide">
+                <div className="font-serif text-lg tracking-wide">
                   {result && result.successMessageGenerated && (
                     <FadeInText text={firstText} />
                   )}
-                </p>
+                </div>
               </div>
               <div className="space-y-4">
-                <label className="inline-block font-semibold text-base text-foreground/60">
-                  <BookOpenText className="size-5 inline-block mr-1.5 -mt-1" />
+                <label className="inline-block font-semibold text-base">
+                  <BookOpenText className="size-5 inline-block mr-1.5" />
                   {i18n.t("promptOrganizer.summary.examplePrompts")}
                 </label>
-                {result && result.templates[0] && (
+                {exampleTemplate && (
                   /* Preview the first prompt */
                   <div
-                    className="border rounded-md px-3 py-2 bg-neutral-50 opacity-0 animate-fade-in-char"
+                    className="border-y p-4 space-y-2 opacity-0 animate-fade-in"
                     style={{
                       animationDelay: `${firstFadeinDuration}ms`,
                       animationDuration: "500ms",
                     }}
                   >
-                    <p className="mb-1 text-base font-semibold text-foreground/80">
-                      <span>{result.templates[0].title}</span>
-                    </p>
-                    <p className="text-sm font-muted-foreground">
-                      <span className="mr-2">
+                    <div className="space-y-0.5">
+                      <div className="text-xs font-semibold">
+                        {i18n.t("promptOrganizer.preview.title_label")}:
+                      </div>
+                      <p className="md:text-3xl font-extrabold h-auto text-foreground/80">
+                        <span>{exampleTemplate.title}</span>
+                      </p>
+                    </div>
+                    <div className="space-y-0.5">
+                      <p className="text-xs font-semibold">
                         {i18n.t("promptOrganizer.preview.useCase")}:
-                      </span>
-                      <span>{result.templates[0].useCase}</span>
-                    </p>
+                      </p>
+                      <p className="text-base font-medium text-muted-foreground">
+                        <span>{exampleTemplate.useCase}</span>
+                      </p>
+                    </div>
+                    {category && (
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs font-semibold">
+                          {i18n.t("promptOrganizer.preview.category")}:
+                        </p>
+                        <p className="border text-xs rounded-lg px-2 py-1 bg-muted/80 font-medium font-mono text-foreground/80">
+                          <span>{category}</span>
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
-                <p className="font-serif text-base/7 tracking-wide">
-                  {result && result.successMessage && (
-                    <FadeInText
-                      text={result.successMessage}
-                      delay={firstFadeinDuration + 600} // FadeInText animation + Prompt preview animation delay + extra 100ms.
-                    />
-                  )}
-                </p>
+
+                {/* Explanation message */}
+                {result && result.successMessage && (
+                  <div
+                    className="pt-2 space-y-2  opacity-0 animate-fade-in"
+                    style={{
+                      animationDelay: `${firstFadeinDuration + 400}ms`,
+                      animationDuration: "500ms",
+                    }}
+                  >
+                    <div className="text-sm font-semibold">
+                      <MessageCircleMore className="size-4 inline-block mr-1 -mt-1 stroke-fuchsia-400 fill-purple-100" />
+                      {i18n.t("promptOrganizer.preview.explanation")}
+                    </div>
+                    <blockquote className="font-serif border-l-2 p-4 space-y-2 bg-muted/60 tracking-wide">
+                      {result.successMessage.map((paragraph, idx) => (
+                        <FadeInText
+                          key={idx}
+                          text={paragraph}
+                          delay={
+                            firstFadeinDuration +
+                            successMessageDuration[idx] +
+                            600
+                          } // FadeInText animation + Prompt preview animation delay + extra 100ms.
+                        />
+                      ))}
+                    </blockquote>
+                  </div>
+                )}
               </div>
               <div className="flex justify-center">
                 {/* Preview button */}

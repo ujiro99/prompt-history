@@ -213,7 +213,7 @@ export type VariableType = "text" | "select" | "exclude" | "preset"
 
 #### ストレージサービス
 
-**ファイル**: `src/services/storage/variablePresetStorage.ts`
+**ファイル**: `src/services/storage/variablePreset.ts`
 
 ```typescript
 /**
@@ -676,7 +676,7 @@ matchPresets() + 既存のプロンプトマッチング
 
 ### ユニットテスト
 
-#### 1. variablePresetStorage.test.ts
+#### 1. variablePreset.test.ts
 
 **ストレージ操作**:
 
@@ -761,7 +761,7 @@ matchPresets() + 既存のプロンプトマッチング
 ### フェーズ1: コアデータ & ストレージ
 
 - 型定義（`VariablePreset` など）
-- ストレージサービス（`variablePresetStorage.ts`）
+- ストレージサービス（`variablePreset.ts`）
 - ストレージのユニットテスト
 
 ### フェーズ2: 変数プリセット編集
@@ -833,7 +833,7 @@ matchPresets() + 既存のプロンプトマッチング
   - [x] `StorageData` の拡張（`variablePresets` フィールド追加）
 - [x] ストレージ定義の追加（`src/services/storage/definitions.ts`）
   - [x] `variablePresetsStorage` の定義
-- [x] ストレージサービスの実装（`src/services/storage/variablePresetStorage.ts`）
+- [x] ストレージサービスの実装（`src/services/storage/variablePreset.ts`）
   - [x] `getVariablePresets()` - すべてのプリセット取得
   - [x] `saveVariablePreset()` - プリセット保存（作成・更新）
   - [x] `deleteVariablePreset()` - プリセット削除
@@ -842,7 +842,7 @@ matchPresets() + 既存のプロンプトマッチング
   - [x] `exportVariablePresets()` - JSON形式エクスポート
   - [x] `importVariablePresets()` - JSON形式インポート
   - [x] 日付変換ヘルパー関数
-- [x] ユニットテストの作成（`src/services/storage/__tests__/variablePresetStorage.test.ts`）
+- [x] ユニットテストの作成（`src/services/storage/__tests__/variablePreset.test.ts`）
   - [x] 全21テストケースの実装と検証
 
 ### ✅ フェーズ2: 変数プリセット編集UI（完了）

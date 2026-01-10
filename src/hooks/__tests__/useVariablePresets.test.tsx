@@ -6,10 +6,10 @@ import {
   getVariablePresets,
   watchVariablePresets,
   watchVariablePreset,
-} from "@/services/storage/variablePresetStorage"
+} from "@/services/storage/variablePreset"
 
 // Mock storage functions
-vi.mock("@/services/storage/variablePresetStorage", () => ({
+vi.mock("@/services/storage/variablePreset", () => ({
   getVariablePresets: vi.fn(),
   watchVariablePresets: vi.fn(),
   watchVariablePreset: vi.fn(),
@@ -31,9 +31,7 @@ describe("useVariablePresets", () => {
     name: "Test Preset 2",
     type: "dictionary",
     description: "Dictionary preset",
-    dictionaryItems: [
-      { id: "item-1", name: "Item 1", content: "Content 1" },
-    ],
+    dictionaryItems: [{ id: "item-1", name: "Item 1", content: "Content 1" }],
     createdAt: new Date("2024-01-01"),
     updatedAt: new Date("2024-01-01"),
   }
@@ -126,7 +124,10 @@ describe("useVariablePresets", () => {
     it("should watch specific preset by ID", async () => {
       let _watchCallback: (preset: VariablePreset | null) => void = () => {}
 
-      vi.mocked(getVariablePresets).mockResolvedValue([mockPreset1, mockPreset2])
+      vi.mocked(getVariablePresets).mockResolvedValue([
+        mockPreset1,
+        mockPreset2,
+      ])
       vi.mocked(watchVariablePreset).mockImplementation((_, cb) => {
         _watchCallback = cb
         return vi.fn()

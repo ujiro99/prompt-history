@@ -23,8 +23,8 @@ import {
   findPromptsByPresetId,
   exportVariablePresets,
   reorderVariablePresets,
-} from "@/services/storage/variablePresetStorage"
-import { generatePromptId } from "@/utils/idGenerator"
+} from "@/services/storage/variablePreset"
+import { generateVariableId } from "@/utils/idGenerator"
 import { movePrev, moveNext } from "@/utils/array"
 import { stopPropagation } from "@/utils/dom"
 import { i18n } from "#imports"
@@ -173,7 +173,7 @@ export const VariablePresetDialog: React.FC<VariablePresetDialogProps> = ({
    */
   const handleAddPreset = useCallback(async () => {
     const newPreset: VariablePreset = {
-      id: generatePromptId(),
+      id: generateVariableId(),
       name: "",
       type: "text",
       description: "",

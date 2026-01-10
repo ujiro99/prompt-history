@@ -21,6 +21,16 @@ export function generateCategoryId(): string {
 }
 
 /**
+ * Generate unique ID for variable item
+ */
+export function generateVariableId(): string {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) {
+    return "variable_" + crypto.randomUUID()
+  }
+  return `variable_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`
+}
+
+/**
  * Generate unique ID for dictionary item
  */
 export function generateDictItemId(): string {

@@ -17,7 +17,7 @@ import { MENU, TestIds } from "@/components/const"
 import { PromptList } from "@/components/inputMenu/PromptList"
 import { GenerationMenu } from "./GenerationMenu"
 import { SettingsMenu } from "./SettingsMenu"
-import { isEmpty } from "@/lib/utils"
+import { isEmpty } from "@/utils/string"
 import type { Prompt, SaveDialogData } from "@/types/prompt"
 import { i18n } from "#imports"
 

@@ -113,7 +113,8 @@ describe("responseMerger", () => {
         const result = mergeResponse(response, "dictionary")
 
         expect(result.dictionaryItems).toHaveLength(3)
-        expect(result.dictionaryItems![0]).toHaveProperty("id", "mock-uuid")
+        expect(result.dictionaryItems![0]).toHaveProperty("id")
+        expect(result.dictionaryItems![0].id.startsWith("dictItem_")).toBe(true)
         expect(result.dictionaryItems![0]).toHaveProperty("isAiGenerated", true)
       })
 

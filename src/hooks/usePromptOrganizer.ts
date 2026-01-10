@@ -178,11 +178,11 @@ export function usePromptOrganizer({
       status: "sending",
     })
     setResult({
-      successMessage: "",
+      successMessage: [] as string[],
       successMessageGenerated: false,
     } as PromptOrganizerResult)
 
-    let successMessage: string = ""
+    let successMessage: string[] = []
     let successMessageGenerated = false
     const abortController = new AbortController()
     let isFirstTemplateProcessed = false

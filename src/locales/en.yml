@@ -271,7 +271,7 @@ variablePresets:
   name: Variable Name
   nameDescription: The name used to reference this preset
   type: Variable Type
-  description_label: Description
+  description_label: Purpose
   description_description: Describe the use case or purpose of the variable (optional)
   textContent: Text Content
   textContentDescription: Enter the text to be inserted into the prompt

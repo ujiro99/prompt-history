@@ -139,7 +139,7 @@ const mockTemplatesMixed: TemplateCandidate[] = [
 ]
 
 const meta = {
-  title: "PromptOrganizer/OrganizerPreviewDialog",
+  title: "PromptOrganizer/3_OrganizerPreviewDialog",
   component: OrganizerPreviewDialog,
   parameters: {
     layout: "centered",

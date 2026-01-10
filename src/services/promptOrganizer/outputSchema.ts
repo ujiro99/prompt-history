@@ -45,7 +45,7 @@ export const schema = {
                 name: { type: "string" },
                 type: {
                   type: "string",
-                  enum: ["text", "select"],
+                  enum: ["text", "select", "preset"],
                 },
                 defaultValue: { type: "string" },
                 description: {
@@ -63,6 +63,16 @@ export const schema = {
                       minItems: 1,
                     },
                   },
+                },
+                presetOptions: {
+                  type: "object",
+                  properties: {
+                    presetId: {
+                      type: "string",
+                      description: "ID of the variable preset to use",
+                    },
+                  },
+                  required: ["presetId"],
                 },
               },
               required: ["name", "type"],

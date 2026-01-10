@@ -27,7 +27,7 @@ import { isMac } from "@/utils/platform"
 import { expandPrompt } from "@/utils/variables/variableFormatter"
 import { stopPropagation } from "@/utils/dom"
 import { useVariablePresets } from "@/hooks/useVariablePresets"
-import { isEmpty } from "@/lib/utils"
+import { isEmpty } from "@/utils/string"
 
 /**
  * Props for variable input dialog

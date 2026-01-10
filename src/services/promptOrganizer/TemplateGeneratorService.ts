@@ -14,8 +14,10 @@ import type {
   Category,
   GenerationProgress,
 } from "@/types/promptOrganizer"
+import type { VariablePreset } from "@/types/prompt"
 import { schema } from "./outputSchema"
 import { SYSTEM_ORGANIZATION_INSTRUCTION } from "@/services/genai/defaultPrompts"
+import { i18n } from "#imports"
 
 /**
  * Service for generating templates from prompts
@@ -33,6 +35,8 @@ export class TemplateGeneratorService {
    * @param prompts - Filtered prompts for organization
    * @param settings - Organizer settings
    * @param categories - Available categories
+   * @param presets - Available variable presets
+   * @param recentAIPrompts - Recent AI-generated prompts for duplicate checking
    * @param options - Generation options (progress callback)
    * @returns Generated templates and token usage
    */
@@ -40,6 +44,8 @@ export class TemplateGeneratorService {
     prompts: PromptForOrganization[],
     settings: PromptOrganizerSettings,
     categories: Array<Category>,
+    presets: VariablePreset[],
+    recentAIPrompts: PromptForOrganization[],
     options?: {
       onProgress?: (progress: GenerationProgress) => void
     },
@@ -59,6 +65,8 @@ export class TemplateGeneratorService {
       prompts,
       settings.organizationPrompt,
       categories,
+      presets,
+      recentAIPrompts,
     )
 
     const config = {
@@ -116,7 +124,7 @@ export class TemplateGeneratorService {
       console.info("Gemini response:", response)
 
       // Sanitize response with fail-safe
-      this.sanitizeTemplates(response.prompts)
+      this.sanitizeTemplates(response.prompts, presets)
 
       // Notify completion
       options?.onProgress?.({
@@ -216,8 +224,15 @@ export class TemplateGeneratorService {
   /**
    * Sanitize generated templates with fail-safe defaults
    * @param templates - Generated templates to sanitize
+   * @param presets - Available variable presets for validation
    */
-  private sanitizeTemplates(templates: GeneratedTemplate[]): void {
+  private sanitizeTemplates(
+    templates: GeneratedTemplate[],
+    presets: VariablePreset[],
+  ): void {
+    // Create preset ID lookup map for fast validation
+    const presetIdSet = new Set(presets.map((p) => p.id))
+
     for (const template of templates) {
       for (const variable of template.variables) {
         if (variable.type === "select") {
@@ -234,26 +249,124 @@ export class TemplateGeneratorService {
               options: ["Option 1", "Option 2"],
             }
           }
+        } else if (variable.type === "preset") {
+          // Validate preset-type variables
+          if (
+            !variable.presetOptions ||
+            !variable.presetOptions.presetId ||
+            typeof variable.presetOptions.presetId !== "string"
+          ) {
+            // Missing presetOptions structure
+            console.warn(
+              `Variable "${variable.name}" in template "${template.title}" has type "preset" but missing presetOptions. Converting to text type.`,
+            )
+            // Convert to text type
+            variable.type = "text"
+            variable.defaultValue = ""
+            delete variable.presetOptions
+          } else if (!presetIdSet.has(variable.presetOptions.presetId)) {
+            // Preset ID doesn't exist in available presets
+            console.warn(
+              `Variable "${variable.name}" in template "${template.title}" references non-existent preset "${variable.presetOptions.presetId}". Converting to text type.`,
+            )
+            // Convert to text type
+            variable.type = "text"
+            variable.defaultValue = ""
+            delete variable.presetOptions
+          }
         }
       }
     }
   }
 
   /**
+   * Build YAML representation of variable presets
+   * @param presets - Available variable presets
+   * @returns YAML-formatted string
+   */
+  private buildPresetsYml(presets: VariablePreset[]): string {
+    if (presets.length === 0) {
+      return "presets: []"
+    }
+
+    const presetYmls = presets.map((preset) => {
+      const lines: string[] = []
+      lines.push(`  - id: "${preset.id}"`)
+      lines.push(`    name: "${preset.name}"`)
+      lines.push(`    type: "${preset.type}"`)
+
+      if (preset.description) {
+        lines.push(
+          `    ${i18n.t("variablePresets.description_label")}: "${preset.description}"`,
+        )
+      }
+
+      // Add type-specific content
+      if (preset.type === "text" && preset.textContent) {
+        // Escape and format multi-line text content
+        const escapedContent = preset.textContent
+          .replace(/\\/g, "\\\\")
+          .replace(/"/g, '\\"')
+        if (escapedContent.includes("\n")) {
+          lines.push(`    content: |`)
+          escapedContent.split("\n").forEach((line) => {
+            lines.push(`      ${line}`)
+          })
+        } else {
+          lines.push(`    content: "${escapedContent}"`)
+        }
+      } else if (preset.type === "select" && preset.selectOptions) {
+        lines.push(`    options:`)
+        preset.selectOptions.forEach((option) => {
+          lines.push(`      - "${option}"`)
+        })
+      } else if (preset.type === "dictionary" && preset.dictionaryItems) {
+        lines.push(`    items:`)
+        preset.dictionaryItems.forEach((item) => {
+          lines.push(`      - name: "${item.name}"`)
+          const escapedContent = item.content
+            .replace(/\\/g, "\\\\")
+            .replace(/"/g, '\\"')
+          if (escapedContent.includes("\n")) {
+            lines.push(`        content: |`)
+            escapedContent.split("\n").forEach((line) => {
+              lines.push(`          ${line}`)
+            })
+          } else {
+            lines.push(`        content: "${escapedContent}"`)
+          }
+        })
+      }
+
+      return lines.join("\n")
+    })
+
+    return `presets:\n${presetYmls.join("\n")}`
+  }
+
+  /**
    * Build prompt for Gemini API
    * @param prompts - Filtered prompts
    * @param organizationPrompt - Custom organization prompt
+   * @param categories - Available categories
+   * @param presets - Available variable presets
+   * @param recentAIPrompts - Recent AI-generated prompts for duplicate checking
    * @returns Formatted prompt
    */
   public buildPrompt(
     prompts: PromptForOrganization[],
     organizationPrompt: string,
     categories: Array<{ id: string; name: string }>,
+    presets: VariablePreset[],
+    recentAIPrompts: PromptForOrganization[],
   ): string {
     // Build category list
     const categoryList = categories
       .map((c) => `- ID: ${c.id}  Name: ${c.name}`)
       .join("\n")
+
+    // Build preset list in YAML format
+    const presetYml = this.buildPresetsYml(presets)
 
     const promptList = prompts
       .map(
@@ -262,12 +375,29 @@ export class TemplateGeneratorService {
       )
       .join("\n\n")
 
+    // Build AI-generated prompts list
+    const aiPromptList =
+      recentAIPrompts.length > 0
+        ? recentAIPrompts
+            .map(
+              (p, idx) =>
+                `${idx + 1}. ${p.name}\n   Content: ${p.content}\n   Execution count: ${p.executionCount}`,
+            )
+            .join("\n\n")
+        : "None"
+
     return `${organizationPrompt}
 
-Available Categories:
+# Available Categories:
 ${categoryList}
 
-Prompts to analyze:
+# Available Variable Presets (YAML format):
+${presetYml}
+
+# Recently Created AI-Generated Prompts (within 90 days):
+${aiPromptList}
+
+# Prompts to analyze:
 ${promptList}
 
 Please generate prompts in JSON format according to the schema.`

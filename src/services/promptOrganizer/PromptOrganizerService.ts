@@ -19,6 +19,8 @@ import { DEFAULT_CATEGORIES } from "./defaultCategories"
 import { costEstimatorService } from "./CostEstimatorService"
 import { templateSaveService } from "./TemplateSaveService"
 import { promptsService } from "@/services/storage/prompts"
+import { getVariablePresets } from "@/services/storage/variablePreset"
+import { truncate } from "@/utils/string"
 
 /**
  * Main service for prompt organization
@@ -44,24 +46,35 @@ export class PromptOrganizerService {
       onProgress?: (progress: GenerationProgress) => void
     },
   ): Promise<PromptOrganizerResult> {
-    // 1. Get filtered prompts
-    const targetPrompts = await this.targetPrompts(settings)
+    // 1. Get inputs in parallel
+    const [targetPrompts, categories, presets, recentAIPrompts] =
+      await Promise.all([
+        this.targetPrompts(settings),
+        categoryService.getAll(),
+        getVariablePresets(),
+        this.getRecentAIGeneratedPrompts(90),
+      ])
+
     console.log(
       `${targetPrompts.length} prompts selected for organization`,
       targetPrompts,
+    )
+    console.log(
+      `${recentAIPrompts.length} recent AI-generated prompts for duplicate checking`,
+      recentAIPrompts,
     )
 
     if (targetPrompts.length === 0) {
       throw new Error("No prompts match the filter criteria")
     }
 
-    const categories = await categoryService.getAll()
-
     // 2. Generate templates using Gemini with progress callback
     const { templates, usage } = await this.generatorService.generateTemplates(
       targetPrompts,
       settings,
       categories,
+      presets,
+      recentAIPrompts,
       {
         onProgress: options?.onProgress,
       },
@@ -89,7 +102,7 @@ export class PromptOrganizerService {
       }),
     )
 
-    // 4. Return result
+    // 6. Return result
     return {
       templates: templateCandidates,
       sourceCount: targetPrompts.length,
@@ -121,8 +134,45 @@ export class PromptOrganizerService {
       const allPrompts = await promptsService.getAllPrompts()
 
       // 2. Filter target prompts
-      return this.filterService.filterPrompts(allPrompts, settings)
+      const filtered = this.filterService.filterPrompts(allPrompts, settings)
+
+      // 3. Truncate content
+      return filtered.map((p) => ({
+        ...p,
+        content: truncate(p.content),
+      }))
     })()
+  }
+
+  /**
+   * Get recent AI-generated prompts
+   * @param days - Number of days to look back
+   * @returns List of recent AI-generated prompts
+   */
+  private async getRecentAIGeneratedPrompts(
+    days: number,
+  ): Promise<PromptForOrganization[]> {
+    // 1. Get all prompts
+    const allPrompts = await promptsService.getAllPrompts()
+
+    // 2. Calculate cutoff date
+    const cutoffDate = new Date()
+    cutoffDate.setDate(cutoffDate.getDate() - days)
+
+    // 3. Filter AI-generated prompts within the period
+    const recentAIPrompts = allPrompts.filter((p) => {
+      if (!p.isAIGenerated) return false
+      if (!p.createdAt) return false
+      return p.createdAt >= cutoffDate
+    })
+
+    // 4. Convert to PromptForOrganization format
+    return recentAIPrompts.map((p) => ({
+      id: p.id,
+      name: p.name,
+      content: truncate(p.content),
+      executionCount: p.executionCount,
+    }))
   }
 
   /**
@@ -133,7 +183,20 @@ export class PromptOrganizerService {
   public async estimateExecution(
     settings: PromptOrganizerSettings,
   ): Promise<OrganizerExecutionEstimate> {
-    return costEstimatorService.estimateExecution(settings)
+    // Get inputs in parallel
+    const [targetPrompts, categories, presets] = await Promise.all([
+      this.targetPrompts(settings),
+      categoryService.getAll(),
+      getVariablePresets(),
+    ])
+
+    // Estimate
+    return costEstimatorService.estimateExecution(
+      targetPrompts,
+      settings,
+      categories,
+      presets,
+    )
   }
 
   /**
