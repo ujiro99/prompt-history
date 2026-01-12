@@ -97,7 +97,7 @@ export default async function Home({ params }: { params: Promise<LangProps> }) {
 
       <section className="py-24 md:py-32 text-center px-4 sm:px-6 lg:px-8 bg-zinc-100">
         <SectionHeading>{t.cta.heading}</SectionHeading>
-        <p className="mb-16 max-w-4xlmx-auto text-lg text-center text-zinc-800 leading-relaxed whitespace-pre-line">
+        <p className="mb-16 max-w-2xl mx-auto text-lg text-center text-zinc-800 leading-relaxed whitespace-pre-wrap text-balance">
           {t.solutions.closing}
         </p>
 
