@@ -25,7 +25,7 @@ export default async function Home({ params }: { params: Promise<LangProps> }) {
           height={100}
         />
         <p className="text-4xl md:text-6xl font-logo font-semibold text-zinc-700 tracking-wider">
-          Prompt History
+          Prompt Autocraft
         </p>
       </section>
 
@@ -92,17 +92,15 @@ export default async function Home({ params }: { params: Promise<LangProps> }) {
               />
             ))}
           </div>
-
-          <div className="my-16 mx-auto w-32 h-1 bg-gradient-to-r from-transparent via-zinc-300 to-transparent" />
-
-          <p className="max-w-4xl mt-12 mx-auto text-lg text-center text-zinc-800 leading-relaxed whitespace-pre-line">
-            {t.solutions.closing}
-          </p>
         </div>
       </section>
 
       <section className="py-24 md:py-32 text-center px-4 sm:px-6 lg:px-8 bg-zinc-100">
-        <SectionHeading className="mb-6">{t.cta.heading}</SectionHeading>
+        <SectionHeading>{t.cta.heading}</SectionHeading>
+        <p className="mb-16 max-w-2xl mx-auto text-lg text-center text-zinc-800 leading-relaxed whitespace-pre-wrap text-balance">
+          {t.solutions.closing}
+        </p>
+
         <p className="text-lg text-zinc-600 mb-4">{t.cta.subheading}</p>
 
         <CTAButton lang={lang} />

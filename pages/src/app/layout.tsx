@@ -34,9 +34,9 @@ const notoSerifDisplay = Noto_Serif_Display({
 })
 
 export const metadata: Metadata = {
-  title: "Prompt History",
+  title: "Prompt Autocraft",
   description:
-    "Enable saving and recalling prompt history passed to the generative AI.",
+    "Enable saving and recalling prompts passed to the generative AI.",
 }
 
 export default function RootLayout({

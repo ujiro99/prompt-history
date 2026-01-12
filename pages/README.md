@@ -1,4 +1,4 @@
-Prompt History pages
+Prompt Autocraft pages
 
 ## Getting Started
 

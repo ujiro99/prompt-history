@@ -7,9 +7,9 @@ const lang = {
       mainCopy:
         "Write faster. Think stronger.\nYour stored words become your power.",
       subCopy:
-        "Prompts are saved automatically. Reuse them instantly from menus or autocomplete — no setup needed, across all major AIs.",
+        "Prompts are saved automatically. Reuse them instantly from menus or autocomplete. AI also automatically generates structured prompts from your history.",
       description:
-        "Used ChatGPT or Gemini and thought, “I wish I could reuse that prompt”?\nMeet Prompt history — it automatically saves every prompt you send and lets you reuse it in a flash. Install it once, and your AI work instantly speeds up.",
+        'Used ChatGPT or Gemini and thought, "I wish I could reuse that prompt"?\nMeet Prompt Autocraft — it automatically saves every prompt you send and lets you reuse it in a flash. Install it once, and your AI work instantly speeds up.',
     },
     issues: {
       heading: 'Those "little frustrations" you feel as you use AI more',
@@ -53,7 +53,7 @@ const lang = {
       ],
     },
     solutions: {
-      heading: '"Prompt history" solves those frustrations',
+      heading: '"Prompt Autocraft" solves those frustrations',
       cards: [
         {
           emoji: "📝",
@@ -64,7 +64,7 @@ const lang = {
         {
           emoji: "⚡",
           title:
-            "Lightning-fast reuse: Instant completion without breaking flow",
+            "Instant reuse: Immediate completion without breaking flow",
           description:
             "Saved prompts can be displayed from the menu bar and appear as auto-completion in the AI chat input field. Zero time spent searching for prompts. Resume work immediately without breaking your flow of thought.",
         },
@@ -73,6 +73,24 @@ const lang = {
           title: "Cross-AI service: Reuse across different models",
           description:
             "Supports ChatGPT, Gemini, Claude, and Perplexity. Reuse the same prompts across services. Even if you use multiple AI services, no more searching around for prompts.",
+        },
+        {
+          emoji: "✨",
+          title: "Prompt improvement: AI automatically refines your prompts",
+          description:
+            "With a single button, AI analyzes your prompts and rewrites them into more effective expressions. Dramatically reduce trial-and-error time and maximize results.",
+        },
+        {
+          emoji: "🧩",
+          title: "Prompt organization: AI structures your prompt history",
+          description:
+            "AI automatically analyzes your prompt history and reconstructs it into structured prompts. Reuse prompts more quickly and efficiently.",
+        },
+        {
+          emoji: "🧬",
+          title: "Variable generation: Automatically extract prompt components",
+          description:
+            "AI analyzes prompt history and converts parts of prompts into variables. By enabling reuse of components, you can flexibly adapt to various scenarios.",
         },
       ],
       closing:
@@ -87,19 +105,19 @@ const lang = {
       heading: "Frequently Asked Questions",
       items: [
         {
-          question: "Q: Is it free? Do I need an API key?",
+          question: "Q: Is it free to use?",
           answer:
-            "A: It's free to use. No API key is required. We don't use any APIs since we input directly into the AI service's chat field.",
-        },
-        {
-          question: "Q: Is my data secure?",
-          answer:
-            "A: Yes. Prompt history does not send or store your prompt data on external servers. All data is securely managed within your browser.",
+            "A: Yes. Basic features are free to use.\nIf you use the following \"AI-Powered Features\", you will need a separate Gemini API key.\n ✓ Automatic prompt improvement\n ✓ Automatic prompt organization\n ✓ Automatic variable preset generation",
         },
         {
           question: "Q: Can I use it immediately without setup?",
           answer:
             "A: Yes. Just install it, and auto-save and reuse features will be active from the moment you send your next prompt.",
+        },
+        {
+          question: "Q: Is my data secure?",
+          answer:
+            "A: Yes. With basic features, your data is not sent to external servers.\nAll data is securely managed within your browser.\nIf you use the following \"AI-Powered Features\", data will be sent to the Gemini API.\n ✓ Automatic prompt improvement: The prompt you are typing\n ✓ Automatic prompt organization: Prompt history, categories, variable presets\n ✓ Automatic variable preset generation: Prompt history, categories, variable presets",
         },
         {
           question: "Q: Will support for more AI services be added?",
