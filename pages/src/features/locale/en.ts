@@ -9,7 +9,7 @@ const lang = {
       subCopy:
         "Prompts are saved automatically. Reuse them instantly from menus or autocomplete — no setup needed, across all major AIs.",
       description:
-        "Used ChatGPT or Gemini and thought, “I wish I could reuse that prompt”?\nMeet Prompt history — it automatically saves every prompt you send and lets you reuse it in a flash. Install it once, and your AI work instantly speeds up.",
+        'Used ChatGPT or Gemini and thought, "I wish I could reuse that prompt"?\nMeet Prompt Autocraft — it automatically saves every prompt you send and lets you reuse it in a flash. Install it once, and your AI work instantly speeds up.',
     },
     issues: {
       heading: 'Those "little frustrations" you feel as you use AI more',
@@ -53,7 +53,7 @@ const lang = {
       ],
     },
     solutions: {
-      heading: '"Prompt history" solves those frustrations',
+      heading: '"Prompt Autocraft" solves those frustrations',
       cards: [
         {
           emoji: "📝",
@@ -94,7 +94,7 @@ const lang = {
         {
           question: "Q: Is my data secure?",
           answer:
-            "A: Yes. Prompt history does not send or store your prompt data on external servers. All data is securely managed within your browser.",
+            "A: Yes. Prompt Autocraft does not send or store your prompt data on external servers. All data is securely managed within your browser.",
         },
         {
           question: "Q: Can I use it immediately without setup?",

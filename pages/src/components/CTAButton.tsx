@@ -16,7 +16,7 @@ export function CTAButton(props: CTAButtonProps) {
     <a
       href={`${StoreUrl}&utm_medium=link&utm_campaign=inline_cta`}
       className={cn(
-        "inline-flex items-center gap-2 md:max-w-100 px-5 py-4 rounded-lg transition-all duration-200 ease-out bg-white",
+        "inline-flex items-center gap-2 md:max-w-120 px-5 py-4 rounded-lg transition-all duration-200 ease-out bg-white",
         "text-lg font-semibold text-zinc-700 ring-1 ring-zinc-200/80",
         "shadow-lg shadow-zinc-300/80",
         "hover:shadow-zinc-300 hover:bg-zinc-100",
@@ -31,7 +31,7 @@ export function CTAButton(props: CTAButtonProps) {
         height={64}
       />
       <p className="inline-block text-base md:text-lg md:break-keep font-semibold text-left text-zinc-600 leading-normal whitespace-pre-line">
-        <span className="font-logo tracking-wide mr-1">Prompt History</span>
+        <span className="font-logo tracking-wide mr-1">Prompt Autocraft</span>
         {t.cta.buttonText}
       </p>
     </a>

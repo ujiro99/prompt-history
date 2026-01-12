@@ -25,7 +25,7 @@ export default async function Home({ params }: { params: Promise<LangProps> }) {
           height={100}
         />
         <p className="text-4xl md:text-6xl font-logo font-semibold text-zinc-700 tracking-wider">
-          Prompt History
+          Prompt Autocraft
         </p>
       </section>
 
