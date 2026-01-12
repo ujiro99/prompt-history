@@ -87,19 +87,19 @@ const lang = {
       heading: "Frequently Asked Questions",
       items: [
         {
-          question: "Q: Is it free? Do I need an API key?",
+          question: "Q: Is it free to use?",
           answer:
-            "A: It's free to use. No API key is required. We don't use any APIs since we input directly into the AI service's chat field.",
-        },
-        {
-          question: "Q: Is my data secure?",
-          answer:
-            "A: Yes. Prompt Autocraft does not send or store your prompt data on external servers. All data is securely managed within your browser.",
+            "A: Yes. Basic features are free to use.\nIf you use the following \"AI-Powered Features\", you will need a separate Gemini API key.\n ✓ Automatic prompt improvement\n ✓ Automatic prompt organization\n ✓ Automatic variable preset generation",
         },
         {
           question: "Q: Can I use it immediately without setup?",
           answer:
             "A: Yes. Just install it, and auto-save and reuse features will be active from the moment you send your next prompt.",
+        },
+        {
+          question: "Q: Is my data secure?",
+          answer:
+            "A: Yes. With basic features, your data is not sent to external servers.\nAll data is securely managed within your browser.\nIf you use the following \"AI-Powered Features\", data will be sent to the Gemini API.\n ✓ Automatic prompt improvement: The prompt you are typing\n ✓ Automatic prompt organization: Prompt history, categories, variable presets\n ✓ Automatic variable preset generation: Prompt history, categories, variable presets",
         },
         {
           question: "Q: Will support for more AI services be added?",
