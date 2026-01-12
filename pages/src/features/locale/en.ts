@@ -7,7 +7,7 @@ const lang = {
       mainCopy:
         "Write faster. Think stronger.\nYour stored words become your power.",
       subCopy:
-        "Prompts are saved automatically. Reuse them instantly from menus or autocomplete — no setup needed, across all major AIs.",
+        "Prompts are saved automatically. Reuse them instantly from menus or autocomplete. AI also automatically generates structured prompts from your history.",
       description:
         'Used ChatGPT or Gemini and thought, "I wish I could reuse that prompt"?\nMeet Prompt Autocraft — it automatically saves every prompt you send and lets you reuse it in a flash. Install it once, and your AI work instantly speeds up.',
     },
@@ -64,7 +64,7 @@ const lang = {
         {
           emoji: "⚡",
           title:
-            "Lightning-fast reuse: Instant completion without breaking flow",
+            "Instant reuse: Immediate completion without breaking flow",
           description:
             "Saved prompts can be displayed from the menu bar and appear as auto-completion in the AI chat input field. Zero time spent searching for prompts. Resume work immediately without breaking your flow of thought.",
         },
@@ -73,6 +73,24 @@ const lang = {
           title: "Cross-AI service: Reuse across different models",
           description:
             "Supports ChatGPT, Gemini, Claude, and Perplexity. Reuse the same prompts across services. Even if you use multiple AI services, no more searching around for prompts.",
+        },
+        {
+          emoji: "✨",
+          title: "Prompt improvement: AI automatically refines your prompts",
+          description:
+            "With a single button, AI analyzes your prompts and rewrites them into more effective expressions. Dramatically reduce trial-and-error time and maximize results.",
+        },
+        {
+          emoji: "🧩",
+          title: "Prompt organization: AI structures your prompt history",
+          description:
+            "AI automatically analyzes your prompt history and reconstructs it into structured prompts. Reuse prompts more quickly and efficiently.",
+        },
+        {
+          emoji: "🧬",
+          title: "Variable generation: Automatically extract prompt components",
+          description:
+            "AI analyzes prompt history and converts parts of prompts into variables. By enabling reuse of components, you can flexibly adapt to various scenarios.",
         },
       ],
       closing:
