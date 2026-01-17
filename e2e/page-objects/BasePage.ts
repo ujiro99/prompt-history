@@ -26,7 +26,7 @@ export abstract class BasePage {
   // Common methods
   async waitForExtensionLoad(): Promise<void> {
     // Wait until extension content script is injected
-    await this.page.waitForSelector("prompt-history-ui", {
+    await this.page.waitForSelector("prompt-autocraft-ui", {
       timeout: 5000,
       state: "attached",
     })
@@ -36,7 +36,7 @@ export abstract class BasePage {
     // Check if content script is injected
     return await this.page.evaluate(() => {
       // Check if extension added DOM elements via content script
-      return document.querySelector("prompt-history-ui") != null
+      return document.querySelector("prompt-autocraft-ui") != null
     })
   }
 

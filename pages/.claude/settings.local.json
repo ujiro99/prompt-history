@@ -2,7 +2,7 @@
   "permissions": {
     "allow": [
       "mcp__chrome-devtools__list_pages",
-      "Read(//Users/yujiro-takeda/src/github.com/ujiro99/prompt-history/**)",
+      "Read(~/src/github.com/ujiro99/prompt-autocraft/**)",
       "mcp__chrome-devtools__new_page",
       "mcp__chrome-devtools__take_snapshot",
       "mcp__chrome-devtools__evaluate_script",

@@ -34,7 +34,7 @@ export interface PromptHistoryDebugInterface {
 declare global {
   interface Window {
     /**
-     * Debug interface for prompt-history extension
+     * Debug interface for prompt-autocraft extension
      * Only available in non-production environments
      */
     debug?: PromptHistoryDebugInterface
@@ -44,4 +44,4 @@ declare global {
   var browser: any
 }
 
-export {}
+export { }

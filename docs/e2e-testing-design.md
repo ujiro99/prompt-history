@@ -85,7 +85,7 @@
 ## 5. プロジェクト構造設計
 
 ```
-prompt-history/
+prompt-autocraft/
 ├── e2e/                                # E2Eテストルートディレクトリ
 │   ├── tests/                          # テストスペックファイル
 │   │   ├── extension-detection.spec.ts # 拡張機能基盤テスト（最重要）

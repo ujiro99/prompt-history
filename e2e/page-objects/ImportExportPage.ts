@@ -9,7 +9,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
 export class ImportExportPage {
-  constructor(private page: Page) {}
+  constructor(private page: Page) { }
 
   // Load CSV fixture file content
   loadFixtureCSV(filename: string): string {
@@ -73,7 +73,7 @@ export class ImportExportPage {
     errors?: number
     errorMessages?: string[]
   }> {
-    const host = this.page.locator("prompt-history-ui")
+    const host = this.page.locator("prompt-autocraft-ui")
     const dialog = host.locator(`[data-testid="${TestIds.import.dialog}"]`)
     await dialog.waitFor({ state: "visible" })
 
@@ -130,7 +130,7 @@ export class ImportExportPage {
 
       // Override both URL.createObjectURL and download mechanisms
       const originalCreateObjectURL = URL.createObjectURL
-      URL.createObjectURL = function (blob: Blob) {
+      URL.createObjectURL = function(blob: Blob) {
         if (blob.type === "text/csv;charset=utf-8;") {
           blob
             .text()

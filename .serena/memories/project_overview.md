@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This is a browser extension called "prompt-history" that enables saving and recalling prompt history passed to generative AI services. It's built to help users manage their AI conversation history across different AI platforms, starting with ChatGPT support.
+This is a browser extension called "prompt-autocraft" that enables saving and recalling prompt history passed to generative AI services. It's built to help users manage their AI conversation history across different AI platforms, starting with ChatGPT support.
 
 ## Tech Stack
 

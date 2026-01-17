@@ -2,7 +2,7 @@
 
 ## 概要
 
-`prompt-history`の動作確認やデバッグを行うためのツールです。
+`prompt-autocraft`の動作確認やデバッグを行うためのツールです。
 process.env.NODE_ENV !== "production" の場合のみ有効になります。
 
 ## 使用方法

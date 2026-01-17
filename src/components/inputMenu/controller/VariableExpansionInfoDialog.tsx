@@ -35,7 +35,7 @@ export const VariableExpansionInfoDialog: React.FC<
   const { container } = useContainer()
 
   const VIDEO_URL =
-    "https://ujiro99.github.io/prompt-history/variable-expansion-insert.mp4"
+    "https://ujiro99.github.io/prompt-autocraft/variable-expansion-insert.mp4"
 
   useEffect(() => {
     if (!open) {

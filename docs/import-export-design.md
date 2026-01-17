@@ -13,7 +13,7 @@
 
 - 保存済みプロンプトをCSVファイルとしてエクスポート
 - すべてのプロンプトデータ（名前、内容、変数設定、ピン状態など）を含む
-- ファイル名は`prompt-history-YYYYMMDD-HHMMSS.csv`形式
+- ファイル名は`prompt-autocraft-YYYYMMDD-HHMMSS.csv`形式
 - ワンクリックでダウンロード開始
 
 #### 2.1.2 インポート機能

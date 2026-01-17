@@ -6,13 +6,13 @@ import type { PromptHistoryDebugInterface } from "@/types/global.d.ts"
 const storage = StorageService.getInstance()
 
 /**
- * Debug interface for testing and debugging prompt-history extension
+ * Debug interface for testing and debugging prompt-autocraft extension
  * Only available in non-production environments
  */
 export class DebugInterface implements PromptHistoryDebugInterface {
   private static instance: DebugInterface | null = null
 
-  private constructor() {}
+  private constructor() { }
 
   /**
    * Get singleton instance
